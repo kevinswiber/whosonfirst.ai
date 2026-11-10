@@ -6,7 +6,9 @@ import {
   cautions,
   deployLinks,
   ROLE_TITLE,
+  UNSURE,
 } from "../../data/guide";
+import { guideAnswers, usedBy } from "../../data/examples";
 import { flows, flow, maturityLabel } from "../../data/flows";
 import { HUMAN_LABEL } from "../../data/types";
 
@@ -23,11 +25,40 @@ for (const r of rules) {
   }
 }
 
+// the same for the answers a worked example gives, and the flows it is linked from
+for (const [slug, g] of Object.entries(guideAnswers)) {
+  for (const [q, [v]] of Object.entries(g.answers)) {
+    const question = questions.find((x) => x.id === q);
+    if (!question)
+      throw new Error(
+        `guide: example "${slug}" answers unknown question "${q}"`,
+      );
+    if (!question.options.some((o) => o.value === v))
+      throw new Error(
+        `guide: example "${slug}" gives unknown answer "${q}=${v}"`,
+      );
+  }
+}
+for (const slug of Object.keys(usedBy)) flow(slug);
+
 const data = {
   rules,
   cautions,
   deployLinks,
   roles: ROLE_TITLE,
+  unsure: UNSURE,
+  questions: Object.fromEntries(
+    questions.map((q) => [
+      q.id,
+      {
+        short: q.short,
+        labels: Object.fromEntries(q.options.map((o) => [o.value, o.label])),
+        branches: q.branches ?? [],
+      },
+    ]),
+  ),
+  examples: guideAnswers,
+  usedBy,
   flows: Object.fromEntries(
     flows.map((f) => [
       f.slug,
@@ -44,15 +75,16 @@ const data = {
 
 <Base
   title="Choose an authorization flow for your agent"
-  description="Answer six questions about your agent and get the authentication and authorization flows that fit, with reasons."
+  description="Answer what you know about your agent and get the authentication and authorization flows that fit, with the reason for each and a worked example."
 >
   <div class="page-head">
     <div class="wrap">
       <p class="eyebrow">Decision guide</p>
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
-        Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result.
+        Answer what you know. You get a flow to start with, what to add to it, and the worked example closest to your
+        case. Only the first question is needed, and any question can be left at “I’m not sure”, which tells you how
+        to find out. The address bar keeps your answers, so you can share the result.
       </p>
     </div>
   </div>
@@ -60,6 +92,11 @@ const data = {
   <div class="wrap">
     <decision-guide class="dg">
       <form class="dg-questions" aria-label="About your agent">
+        <p class="dg-from" hidden>
+          Filled in from <strong class="dg-from-title"></strong>, with the reason for each answer.{" "}
+          <a class="dg-from-back" href="/examples/">Back to the example</a>{" "}
+          <button class="dg-from-clear" type="reset">Start with a blank guide</button>
+        </p>
         {
           questions.map((q, i) => (
             <fieldset>
@@ -78,7 +115,17 @@ const data = {
                     </span>
                   </label>
                 ))}
+                <label class="dg-unsure-option">
+                  <input type="radio" name={q.id} value={UNSURE} />
+                  <span>
+                    <strong>I’m not sure</strong>
+                  </span>
+                </label>
               </div>
+              <p class="dg-unsure" data-for={q.id} hidden>
+                {q.unsure}
+              </p>
+              <p class="dg-because" data-for={q.id} hidden />
             </fieldset>
           ))
         }
@@ -117,6 +164,10 @@ const data = {
     cautions: { when: Record<string, string[]>; text: string }[];
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
+    unsure: string;
+    questions: Record<string, { short: string; labels: Record<string, string>; branches: { when: string; text: string }[] }>;
+    examples: Record<string, { title: string; href: string; answers: Record<string, [string, string]> }>;
+    usedBy: Record<string, { href: string; label: string }[]>;
     flows: Record<string, { short: string; tagline: string; human: string; maturity: string }>;
   }
 
@@ -130,15 +181,43 @@ const data = {
       const data: Data = JSON.parse(this.querySelector('.dg-data')!.textContent!);
       const names = [...new Set([...form.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name))];
 
-      const read = (): Answers => {
+      // "I’m not sure" is kept apart from the answers: it rules nothing in or out.
+      const read = (): { a: Answers; unsure: string[] } => {
         const fd = new FormData(form);
         const a: Answers = {};
+        const unsure: string[] = [];
         for (const n of names) {
           const v = fd.get(n);
-          if (typeof v === 'string') a[n] = v;
+          if (v === data.unsure) unsure.push(n);
+          else if (typeof v === 'string') a[n] = v;
         }
-        return a;
+        return { a, unsure };
       };
+
+      // An example's own link fills the guide in and says so. Any other entry starts blank.
+      const params = new URLSearchParams(location.search);
+      let from = params.get('from');
+      if (from && !data.examples[from]) from = null;
+      const banner = this.querySelector<HTMLElement>('.dg-from')!;
+      const showFrom = (a: Answers) => {
+        const ex = from ? data.examples[from] : undefined;
+        banner.hidden = !ex;
+        if (ex) {
+          banner.querySelector('.dg-from-title')!.textContent = ex.title;
+          banner.querySelector<HTMLAnchorElement>('.dg-from-back')!.href = ex.href;
+        }
+        for (const p of this.querySelectorAll<HTMLElement>('.dg-because')) {
+          const q = p.dataset.for!;
+          const reason = ex?.answers[q];
+          const holds = !!reason && a[q] === reason[0];
+          p.hidden = !holds;
+          p.textContent = holds ? `In this example: ${reason[1]}` : '';
+        }
+      };
+
+      // what a recommendation rests on: the answers given, and the ones it assumes
+      const said = (q: string, values: string[]) =>
+        `${data.questions[q].short}: ${values.map((v) => data.questions[q].labels[v]).join(' or ')}`;
 
       // A rule matches when every condition whose question has been answered is satisfied.
       // It only counts once at least one of its conditions has actually been answered.
@@ -156,14 +235,32 @@ const data = {
       };
 
       const render = (push = true) => {
-        const a = read();
+        const { a, unsure } = read();
         const answered = Object.keys(a).length;
 
         if (push) {
-          const qs = new URLSearchParams(a).toString();
+          const q = new URLSearchParams(a);
+          for (const n of unsure) q.set(n, data.unsure);
+          if (from) q.set('from', from);
+          const qs = q.toString();
           history.replaceState(null, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
         }
+        for (const p of this.querySelectorAll<HTMLElement>('.dg-unsure')) p.hidden = !unsure.includes(p.dataset.for!);
+        showFrom(a);
 
+        // what to do in each case, for a question left at "I’m not sure"
+        const pending = unsure.filter((n) => data.questions[n].branches.length > 0);
+        const undecided = pending.length
+          ? `<section class="dg-group dg-pending"><h2>Until you know</h2><ul>${pending
+              .flatMap((n) => data.questions[n].branches)
+              .map((b) => `<li><p><strong>${esc(b.when)}.</strong> ${esc(b.text)}</p></li>`)
+              .join('')}</ul></section>`
+          : '';
+
+        if (answered === 0 && undecided) {
+          out.innerHTML = undecided;
+          return;
+        }
         if (answered === 0) {
           out.innerHTML = `<p class="dg-empty">Pick an answer to any question. Start with the first: it decides whose name ends up on the token.</p>`;
           return;
@@ -205,10 +302,22 @@ const data = {
           html += `<section class="dg-group dg-${role}"><h2>${esc(data.roles[role])}</h2><ul>`;
           for (const r of list) {
             const f = data.flows[r.flow];
-            html += `<li><a class="dg-flow" href="/flows/${r.flow}/"><strong>${esc(f.short)}</strong><span class="dg-meta">${esc(f.human)} · ${esc(f.maturity)}</span></a><p>${esc(r.why)}</p></li>`;
+            const given = Object.entries(r.when).filter(([q]) => a[q] != null);
+            const assumed = Object.entries(r.when).filter(([q]) => a[q] == null);
+            const rests =
+              `<p class="dg-if"><span>You said</span> ${esc(given.map(([q]) => said(q, [a[q]])).join('. '))}.</p>` +
+              (assumed.length
+                ? `<p class="dg-if"><span>Assumes</span> ${esc(assumed.map(([q, v]) => said(q, v)).join('. '))}.</p>`
+                : '');
+            const worked = (data.usedBy[r.flow] ?? [])
+              .map((e) => `<a href="${e.href}">${esc(e.label)}</a>`)
+              .join('; ');
+            html += `<li><a class="dg-flow" href="/flows/${r.flow}/"><strong>${esc(f.short)}</strong><span class="dg-meta">${esc(f.human)} · ${esc(f.maturity)}</span></a><p>${esc(r.why)}</p>${rests}${worked ? `<p class="dg-worked"><span>Worked example</span> ${worked}</p>` : ''}</li>`;
           }
           html += `</ul></section>`;
         }
+
+        html += undecided;
 
         const warn = data.cautions.filter((c) => matches(c.when, a, true));
         if (warn.length) {
@@ -226,7 +335,6 @@ const data = {
       };
 
       // restore from URL
-      const params = new URLSearchParams(location.search);
       for (const n of names) {
         const v = params.get(n);
         if (!v) continue;
@@ -240,7 +348,13 @@ const data = {
         // the form forgets its answers, so the record of which one was selected has to go too:
         // otherwise the next click on a former answer is taken as clearing it
         form.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((i) => (i.dataset.was = 'false'));
-        setTimeout(() => render(), 0);
+        // a blank guide belongs to no example
+        from = null;
+        setTimeout(() => {
+          render();
+          if (document.activeElement?.classList.contains('dg-from-clear'))
+            form.querySelector<HTMLInputElement>('input[type="radio"]')?.focus();
+        }, 0);
       });
       // clicking a selected option again clears it
       form.addEventListener('click', (e) => {
@@ -385,6 +499,53 @@ const data = {
     border: 1.5px solid var(--fg);
     border-radius: var(--radius);
     padding: 1.2rem 1.3rem 1.3rem;
+  }
+  .dg-from {
+    margin: 0 0 1.6rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    font-size: 0.95rem;
+  }
+  .dg-from-clear {
+    font: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin-left: 0.4rem;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+  .dg-unsure,
+  .dg-because {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+    max-width: 40rem;
+  }
+  .dg-unsure {
+    padding: 0.5rem 0.7rem;
+    background: var(--bg-sunken);
+    border-left: 3px solid var(--accent);
+  }
+  .dg-because {
+    color: var(--fg-muted);
+  }
+  .dg-out :global(.dg-if),
+  .dg-out :global(.dg-worked) {
+    margin: 0.3rem 0 0;
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+  .dg-out :global(.dg-if span),
+  .dg-out :global(.dg-worked span) {
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-right: 0.3rem;
   }
   .dg-kicker {
     font-family: var(--font-heading);

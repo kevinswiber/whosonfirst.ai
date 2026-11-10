@@ -8,14 +8,29 @@
 export interface Question {
   id: string;
   title: string;
+  /** A word or two for the question, where a recommendation lists what it rests on. */
+  short: string;
   help?: string;
   options: { value: string; label: string; hint?: string }[];
+  /**
+   * Shown when the reader answers "I’m not sure": how to find out. That answer
+   * is offered on every question and rules nothing in or out.
+   */
+  unsure: string;
+  /** What to do in each case, shown until the reader knows which it is. */
+  branches?: { when: string; text: string }[];
 }
+
+/** The answer every question also offers. Rules never name it. */
+export const UNSURE = "unsure";
 
 export const questions: Question[] = [
   {
     id: "principal",
     title: "Whose authority is the agent using?",
+    short: "Authority",
+    unsure:
+      "Two things usually settle it. If something went wrong, whose name should the log show? And does what the agent may see differ from one person to the next? If both point at a person, choose the first. If they point at the organization, choose the second.",
     help: "The single most important question. It decides whose name is on the token.",
     options: [
       {
@@ -33,6 +48,9 @@ export const questions: Question[] = [
   {
     id: "human",
     title: "Is a person available when access is needed?",
+    short: "Person available",
+    unsure:
+      "If the agent ever starts from a schedule or an event, answer “No”. If someone starts it and waits for the result, answer “Yes”.",
     options: [
       {
         value: "present",
@@ -54,6 +72,9 @@ export const questions: Question[] = [
   {
     id: "target",
     title: "What is the agent calling?",
+    short: "Calls",
+    unsure:
+      "If it speaks the Model Context Protocol, it is an MCP server. Otherwise it is almost always an HTTP API.",
     options: [
       { value: "mcp", label: "An MCP server" },
       { value: "api", label: "An HTTP API" },
@@ -65,6 +86,9 @@ export const questions: Question[] = [
   {
     id: "boundary",
     title: "Who runs the thing being called?",
+    short: "Run by",
+    unsure:
+      "Ask who can change its configuration. If your own team can, you run it.",
     options: [
       {
         value: "same",
@@ -84,8 +108,45 @@ export const questions: Question[] = [
     ],
   },
   {
+    id: "accept",
+    title: "What does the system being called accept?",
+    short: "Accepts",
+    help: "Who runs it and what it accepts are different questions. You can run an API that only takes keys.",
+    unsure:
+      "Read its authentication page for the words OAuth, OpenID Connect, JWT or API key, and ask its owner whether a trusted issuer can be registered. Until you know, both cases are listed with the recommendations.",
+    options: [
+      {
+        value: "tokens",
+        label: "Tokens from an issuer we can register",
+        hint: "OAuth or OpenID Connect, with a trust you can configure",
+      },
+      {
+        value: "own",
+        label: "Only its own sign-in",
+        hint: "Its own accounts and its own authorization server",
+      },
+      {
+        value: "key",
+        label: "Only an API key",
+        hint: "One secret, the same for every caller",
+      },
+    ],
+    branches: [
+      {
+        when: "If it only takes an API key",
+        text: "Add a credential broker, so the agent uses the key and never holds it. A shared key carries nothing about which person asked, so anything that differs by person has to be enforced before the request leaves.",
+      },
+      {
+        when: "If it only accepts its own sign-in",
+        text: "A person connects their account at that service, or the service is set up to accept an exchange. Software acting as itself needs a client or a service account registered there.",
+      },
+    ],
+  },
+  {
     id: "runtime",
     title: "Where does the agent run?",
+    short: "Runs",
+    unsure: "Leave it. This narrows how a flow is built, not which flow.",
     options: [
       {
         value: "local",
@@ -105,6 +166,9 @@ export const questions: Question[] = [
   {
     id: "risk",
     title: "What is the worst it could do?",
+    short: "Worst case",
+    unsure:
+      "Name the worst single action it could take. If that cannot be undone, choose the third.",
     options: [
       { value: "read", label: "Read data" },
       { value: "write", label: "Change things that can be undone" },
@@ -239,14 +303,16 @@ export const rules: Rule[] = [
   // ── delegation down a chain ──
   {
     flow: "token-exchange",
-    role: "add",
+    // One common reason to use it, not a step every agent needs: an application
+    // that calls the API itself gets a token for that API directly.
+    role: "consider",
     weight: 7,
     when: {
       principal: ["user"],
       boundary: ["same"],
       target: ["mcp", "api", "agent", "internal"],
     },
-    why: "Any tool or sub-agent that calls another service for the same user should exchange the token it received for a new one, never forward it.",
+    why: "If a tool, a sub-agent or a service in the middle is handed the person’s token and has to call something else for them, it should exchange that token for a new one, never forward it. An application that calls the API itself does not need this.",
   },
   {
     flow: "transaction-tokens",
@@ -353,6 +419,14 @@ export const rules: Rule[] = [
     when: { target: ["api", "mcp", "agent"], risk: ["read"] },
     why: "Sender-constrained tokens are cheap insurance wherever both ends support them.",
   },
+  // ── what the destination accepts ──
+  {
+    flow: "credential-broker",
+    role: "add",
+    when: { accept: ["key"] },
+    why: "It only takes an API key, and a key works for whoever holds it. Keep it at a broker outside the agent, so the agent can use the key and never hold it. Where the agent runs cannot change what the destination accepts.",
+    weight: 3,
+  },
 ];
 
 export interface Caution {
@@ -376,6 +450,14 @@ export const cautions: Caution[] = [
   {
     when: { target: ["web"], principal: ["user"] },
     text: "Most websites have no way to accept a delegated token. An agent logging in with the user’s own password is impersonation, with all of the user’s power and none of the audit trail.",
+  },
+  {
+    when: { accept: ["key"], principal: ["user"] },
+    text: "One shared key carries nothing about which person asked. Enforce each person’s access in a layer you control, before the request leaves.",
+  },
+  {
+    when: { accept: ["own"] },
+    text: "It has its own authorization server, so what your identity provider issues is not accepted there as it stands. A person connects their account at that service, or the service is set up to accept an exchange. Software acting as itself needs a client or a service account registered there.",
   },
   {
     when: { runtime: ["local"] },
