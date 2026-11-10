@@ -145,9 +145,15 @@ export const workloadIdentityFederation: Flow = {
       ],
     },
   },
-  fits: [],
+  fits: [
+    "Your runtime can identify the workload and supply an identity credential.",
+    "The workload needs its own access in another trust domain, whose receiver supports that proof and whose API accepts the issued credential.",
+    "You want to avoid provisioning a long-lived application secret for an integration that supports this trust arrangement.",
+  ],
   watchOut: [
-    "**Know who else the issuer serves.** Some issuers sign for many tenants under one URL. GitHub Actions on GitHub.com uses a single issuer for every repository, so trusting that issuer alone trusts all of them.",
+    "**Workload access is not a person’s grant.** User-facing requests still need trusted user context and object, action and field checks before data reaches the person or their agent. [See the report authorization example](#permissions).",
+    "**Stopping the workload is not instant cut-off.** Fresh proofs, new exchanges and already-issued access have separate controls. [See stopping access](#stopping-access).",
+    "**Know who else the issuer serves.** Some issuers sign for many tenants under one URL. GitHub Actions on GitHub.com uses a single issuer for every repository, so trusting that issuer alone trusts all of them. [Check the receiver’s requirements](#fit).",
     "**Match stable workload claims.** Pin a subject or supported claims to the intended service account, repository and environment, or role. Avoid broad matches. Prefer identifiers that cannot be reassigned, such as IDs over names where the issuer offers them; what a receiver can match differs.",
     "**Protect credentials and their source.** A bearer identity or access token can be replayed by whoever holds a valid copy. Certificate-based authentication instead requires the private key, which must stay private. Keep both kinds of secret out of logs, prompts and tool output. Restrict access to credential endpoints: code or tools running inside the workload may otherwise obtain the same credentials.",
   ],

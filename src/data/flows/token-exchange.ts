@@ -94,8 +94,17 @@ export const tokenExchange: Flow = {
       ],
     },
   },
-  fits: [],
-  watchOut: [],
+  fits: [
+    "A tool, MCP server or sub-agent needs to call another API for the same user.",
+    "The exchange server permits that delegation and the next API accepts its issued credential.",
+    "For the actor-aware arrangement shown here, the issuer supplies trusted actor evidence and the API enforces it.",
+  ],
+  watchOut: [
+    "**Check the delegation profile.** Exchange support alone does not guarantee that the downstream token identifies the current actor or that the API uses it. [See the API’s checks](#step-7).",
+    "**An actor claim is not sender proof.** The current actor is an issuer assertion; nested earlier actors are informational history. [See what the issued token says](#step-5).",
+    "**A valid token does not settle business permissions.** The issuer maps allowed downstream actions; the API still enforces the user’s objects and fields and the tool’s actions. [See where policy is enforced](#step-7).",
+    "**Issued access may outlive the input grant.** Changing or revoking the input does not automatically invalidate the new token. [See exchange and reuse limits](#step-5).",
+  ],
   participants: [
     { id: "agent", label: "Agent", sub: "Has user’s token", role: "agent" },
     { id: "tool", label: "Tool server", sub: "Middle tier", role: "agent" },

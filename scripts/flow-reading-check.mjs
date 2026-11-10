@@ -81,9 +81,9 @@ check("valid table and its local anchor", () => {
   f.reading.brief.alternatives[1].href = "#decisions";
   validateFlowReading(f, slugs);
 });
-check("federation cautions is a valid local anchor", () => {
+check("reading-page cautions is a valid local anchor", () => {
   const f = fixture();
-  f.slug = "workload-identity-federation";
+  f.watchOut = ["Check the receiver."];
   f.reading.brief.alternatives[1].href = "#cautions";
   validateFlowReading(f, slugs);
 });
@@ -156,7 +156,7 @@ reject(
   },
   /duplicate note id/,
 );
-for (const id of ["fit", "step-1", "main", "site-nav"]) {
+for (const id of ["fit", "step-1", "main", "site-nav", "notes"]) {
   reject(
     `section id collides with ${id}`,
     (f) => {
@@ -180,16 +180,17 @@ reject(
   /duplicate note id/,
 );
 reject(
-  "note id collides with federation cautions",
+  "note id collides with cautions",
   (f) => {
-    f.slug = "workload-identity-federation";
+    f.watchOut = ["Check the receiver."];
     f.notes[0].id = "cautions";
   },
   /duplicate note id/,
 );
 reject(
-  "cautions absent outside federation pilot",
+  "cautions absent when there are no warnings",
   (f) => {
+    f.watchOut = [];
     f.reading.brief.alternatives[1].href = "#cautions";
   },
   /unknown local anchor/,

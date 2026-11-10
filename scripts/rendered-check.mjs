@@ -240,9 +240,7 @@ async function checkPilot(browser) {
     ["workload-identity-federation", 8],
   ]) {
     const url = `${origin}/flows/${slug}/`;
-    for (const width of slug === "workload-identity-federation"
-      ? [1600, 1280, 900, 320]
-      : [1280, 900, 320]) {
+    for (const width of [1600, 1280, 900, 320]) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
         reducedMotion: "reduce",
@@ -290,7 +288,7 @@ async function checkPilot(browser) {
         "pilot: required brief stays open after the walkthrough",
         (await brief.count()) === 1 &&
           (await brief.locator("details").count()) === 0 &&
-          (await page.locator(".fit").count()) === 0 &&
+          (await page.locator(".fit").count()) === 1 &&
           (await brief.evaluate((el) =>
             Boolean(
               document
@@ -299,59 +297,137 @@ async function checkPilot(browser) {
             ),
           )),
       );
-      const fitLink = page.locator(
-        '.reading-jumps a[href="#fit"], flow-contents a[href="#fit"]',
+      const contents = page.locator("flow-contents details");
+      const summary = contents.locator("summary");
+      record(
+        where,
+        "pilot: contents is open in the rail and compact otherwise",
+        (await contents.evaluate((el) => el.open)) === width >= 1568,
       );
+      if (width < 1568) {
+        await summary.focus();
+        await summary.press("Enter");
+        record(
+          where,
+          "pilot: keyboard opens contents with visible focus",
+          await contents.evaluate(
+            (el) =>
+              el.open &&
+              el.querySelector("summary") === document.activeElement &&
+              document.activeElement.matches(":focus-visible"),
+          ),
+        );
+        await summary.press("Space");
+        record(
+          where,
+          "pilot: keyboard closes contents",
+          !(await contents.evaluate((el) => el.open)),
+        );
+        await summary.press("Enter");
+      }
+      const cautionLink = contents.locator('a[href="#cautions"]');
+      await cautionLink.focus();
+      await cautionLink.press("Enter");
+      await page.waitForURL(`${url}#cautions`);
+      record(
+        where,
+        "pilot: warnings are open and directly reachable",
+        (await inView("#cautions")) &&
+          (await page
+            .locator(".reading-cautions")
+            .evaluate(
+              (el) =>
+                !el.closest("details") && el.querySelectorAll("li").length >= 3,
+            )),
+      );
+      const fitLink = contents.locator('a[href="#fit"]');
       await fitLink.focus();
       await fitLink.press("Enter");
       await page.waitForURL(`${url}#fit`);
       record(
         where,
-        "pilot: fit jump reaches the open decision brief",
+        "pilot: requirements jump reaches the open brief",
         (await inView("#fit")) &&
-          (await page.locator("#fit").textContent()) === "Does this flow fit?",
+          (await page.locator("#fit").textContent()) ===
+            "Requirements and trade-offs",
       );
+      record(
+        where,
+        "pilot: phase context stays in steps without a second menu",
+        (await page.locator(".phase-outline, .reading-jumps").count()) === 0 &&
+          (await page.locator(".phase-context[data-phase-start]").count()) ===
+            3,
+      );
+      const composition = await page.evaluate(() => {
+        const intro = document.querySelector(".intro");
+        const diagram = document.querySelector(
+          'section[aria-labelledby="walkthrough"]',
+        );
+        const cautions = document.querySelector(".reading-cautions");
+        const brief = document.querySelector(".flow-brief");
+        const notes = document.querySelector(".reading-notes");
+        const follows = (a, b) =>
+          Boolean(
+            a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING,
+          );
+        const aligned = [
+          ...document.querySelectorAll(
+            ".flow-content > section > .section-head",
+          ),
+        ].every((el) => {
+          const p = el.querySelector("p"),
+            h = el.querySelector("h2");
+          return (
+            !p ||
+            (Math.abs(
+              p.getBoundingClientRect().left - h.getBoundingClientRect().left,
+            ) < 1 &&
+              p.getBoundingClientRect().top >= h.getBoundingClientRect().bottom)
+          );
+        });
+        return (
+          follows(intro, diagram) &&
+          follows(diagram, cautions) &&
+          follows(cautions, brief) &&
+          follows(brief, notes) &&
+          Math.abs(
+            notes.getBoundingClientRect().left -
+              cautions.getBoundingClientRect().left,
+          ) < 1 &&
+          getComputedStyle(
+            brief.querySelector(".brief-columns"),
+          ).gridTemplateColumns.split(" ").length === 1 &&
+          aligned
+        );
+      });
+      record(
+        where,
+        "pilot: fit precedes diagram and detailed prose follows one column",
+        composition,
+      );
+      // Follow actual editorial links, including steps hidden by the desktop stepper.
       const links = await page
-        .locator(".phase-outline a")
-        .evaluateAll((anchors) => anchors.map((a) => a.getAttribute("href")));
-      record(
-        where,
-        "pilot: phase labels have only the actual step numbers",
-        links.length === 3 &&
-          (await page
-            .locator(".phase-outline ul")
-            .evaluate(
-              (el) =>
-                getComputedStyle(el).listStyleType === "none" &&
-                [...el.querySelectorAll("a")].every(
-                  (a) =>
-                    !/^\d/.test(a.textContent.trim()) &&
-                    /· steps? \d/.test(a.textContent),
-                ),
-            )),
-      );
-      record(
-        where,
-        "pilot: contents navigation is limited to federation",
-        (await page.locator("flow-contents").count()) ===
-          (slug === "workload-identity-federation" ? 1 : 0),
-      );
+        .locator(
+          '.reading-cautions a[href^="#step-"], .flow-brief a[href^="#step-"]',
+        )
+        .evaluateAll((anchors) => [
+          ...new Set(anchors.map((a) => a.getAttribute("href"))),
+        ]);
       for (const href of links) {
-        const link = page.locator(`.phase-outline a[href="${href}"]`);
+        const link = page
+          .locator(
+            `.reading-cautions a[href="${href}"], .flow-brief a[href="${href}"]`,
+          )
+          .first();
         await link.focus();
         await link.press("Enter");
         await page.waitForURL(`${url}${href}`);
         await page
           .waitForFunction(
             (id) => {
-              const el = document.querySelector(id);
-              const r = el.getBoundingClientRect();
-              return (
-                location.hash === id &&
-                !el.hidden &&
-                r.top >= 0 &&
-                r.top < innerHeight - 80
-              );
+              const el = document.querySelector(id),
+                r = el.getBoundingClientRect();
+              return !el.hidden && r.top >= 0 && r.top < innerHeight - 80;
             },
             href,
             { timeout: 3000 },
@@ -359,7 +435,7 @@ async function checkPilot(browser) {
           .catch(() => {});
         record(
           where,
-          `pilot: phase ${href} selects and reveals its step`,
+          `pilot: editorial ${href} link reveals its step`,
           await inView(href),
         );
       }
@@ -594,7 +670,7 @@ async function checkPilot(browser) {
           headings.join("; "),
         );
       }
-      if (slug === "workload-identity-federation" && width === 1600) {
+      if (width === 1600) {
         const gutter = await page.addStyleTag({
           content: "html { scrollbar-gutter: stable; }",
         });
@@ -655,10 +731,10 @@ async function checkPilot(browser) {
         await page.setViewportSize({ width: 320, height: 900 });
         await page.setViewportSize({ width: 1280, height: 900 });
         await page.locator('[data-act="all"]').click();
-        const link = page.locator(".phase-outline a").last();
-        await link.focus();
-        await link.press("Enter");
-        const href = await link.getAttribute("href");
+        const href = "#step-1";
+        await page.evaluate((hash) => {
+          location.hash = hash;
+        }, href);
         await page.waitForURL(`${url}${href}`);
         await page
           .waitForFunction(
@@ -701,11 +777,36 @@ async function checkPilot(browser) {
           where,
           "pilot: no-JavaScript content is complete",
           (await page.locator(".flow-step:visible").count()) === count &&
-            (await page.locator(".phase-outline a").count()) === 3 &&
+            (await page
+              .locator(".phase-context[data-phase-start]:visible")
+              .count()) === 3 &&
+            (await page.locator(".fit, .reading-cautions").count()) === 2 &&
             (await page.locator(".decision-sources a").count()) > 0,
         );
       }
-      if (!javaScriptEnabled && slug === "workload-identity-federation") {
+      if (!javaScriptEnabled) {
+        const summary = page.locator("flow-contents summary");
+        await summary.focus();
+        await summary.press("Enter");
+        record(
+          where,
+          "pilot: native contents can close without JavaScript",
+          !(await page
+            .locator("flow-contents details")
+            .evaluate((el) => el.open)),
+        );
+        await page.setViewportSize({ width: 1600, height: 900 });
+        await summary.focus();
+        await summary.press("Enter");
+        record(
+          where,
+          "pilot: closed contents can reopen after resizing without JavaScript",
+          (await summary.isVisible()) &&
+            (await page
+              .locator("flow-contents details")
+              .evaluate((el) => el.open)),
+        );
+        await page.setViewportSize({ width: 1280, height: 900 });
         await page.locator('flow-contents a[href="#cautions"]').click();
         await page.waitForURL(`${url}#cautions`);
         record(

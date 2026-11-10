@@ -37,11 +37,8 @@ export function validateFlowReading(
   if (flow.comparison) anchors.add("comparison");
   if (flow.example) anchors.add("example");
   if (reading.decisions?.presentation === "table") anchors.add("decisions");
-  if (
-    flow.slug === "workload-identity-federation" &&
-    (flow.watchOut.length || flow.notes?.length)
-  )
-    anchors.add("cautions");
+  if (flow.watchOut.length) anchors.add("cautions");
+  if (flow.notes?.length) anchors.add("notes");
   const addAnchor = (id: string, kind: string) => {
     text(id, `${kind} id`);
     if (/\s|#/.test(id)) fail(`invalid ${kind} id "${id}"`);

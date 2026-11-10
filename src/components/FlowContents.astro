@@ -5,10 +5,12 @@ interface Props {
 const { items } = Astro.props;
 ---
 <flow-contents>
-  <nav aria-label="On this page">
-    <p class="contents-title">On this page</p>
-    <ul role="list">{items.map((item) => <li><a href={`#${item.id}`}>{item.label}</a></li>)}</ul>
-  </nav>
+  <details open>
+    <summary>On this page</summary>
+    <nav aria-label="On this page">
+      <ul role="list">{items.map((item) => <li><a href={`#${item.id}`}>{item.label}</a></li>)}</ul>
+    </nav>
+  </details>
 </flow-contents>
 <script>
   class FlowContents extends HTMLElement {
@@ -16,8 +18,16 @@ const { items } = Astro.props;
     targets: HTMLElement[] = [];
     frame = 0;
     resize?: ResizeObserver;
+    disclosure?: HTMLDetailsElement;
+    wide = window.matchMedia('(min-width: 98rem)');
+    setLayout = () => {
+      if (this.disclosure) this.disclosure.open = this.wide.matches;
+    };
 
     connectedCallback() {
+      this.disclosure = this.querySelector('details')!;
+      this.setLayout();
+      this.wide.addEventListener('change', this.setLayout);
       this.links = Array.from(this.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'));
       this.targets = this.links.map((link) => document.getElementById(link.hash.slice(1))!);
       if (this.targets.some((target) => !target)) return;
@@ -59,6 +69,7 @@ const { items } = Astro.props;
     };
 
     disconnectedCallback() {
+      this.wide.removeEventListener('change', this.setLayout);
       window.removeEventListener('scroll', this.queue);
       window.removeEventListener('resize', this.queue);
       window.removeEventListener('hashchange', this.queue);
@@ -71,15 +82,16 @@ const { items } = Astro.props;
 </script>
 <style>
   flow-contents { display: block; margin-top: 1.3rem; }
-  .contents-title { margin: 0 0 0.6rem; font-family: var(--font-label); font-size: 0.78rem; font-weight: 600; }
-  ul { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; list-style: none; margin: 0; padding: 0; }
+  summary { width: fit-content; cursor: pointer; font-family: var(--font-label); font-size: 0.9rem; padding-block: 0.4rem; }
+  ul { list-style: none; margin: 0.6rem 0 0; padding: 0; }
   li { margin: 0; }
+  li + li { margin-top: 0.35rem; }
   a { display: block; border-inline-start: 2px solid transparent; padding: 0.15rem 0.35rem; font-size: 0.92rem; }
   a[aria-current="location"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
   @media (min-width: 98rem) {
+    summary { font-size: 0.78rem; font-weight: 600; margin-bottom: 0.6rem; }
     nav { max-height: calc(100dvh - 6rem); overflow-y: auto; scrollbar-width: thin; padding-block: 0.2rem; }
-    ul { display: block; }
-    li + li { margin-top: 0.35rem; }
+    ul { margin-top: 0; }
     a { padding-block: 0.25rem; }
   }
   @media print { flow-contents { display: none; } }

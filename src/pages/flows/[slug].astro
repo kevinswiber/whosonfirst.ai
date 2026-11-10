@@ -46,11 +46,14 @@ const sections = [
 ];
 const rel = related(flow);
 // Keep this navigation trial local until more complete flows establish a pattern.
-const hasContents = flow.slug === "workload-identity-federation";
+const hasContents = Boolean(flow.reading);
 const contents = hasContents
   ? [
       { id: "walkthrough", label: "Diagram" },
-      { id: "fit", label: "Does this flow fit?" },
+      ...(flow.watchOut.length
+        ? [{ id: "cautions", label: "Watch out for" }]
+        : []),
+      { id: "fit", label: "Requirements and trade-offs" },
       ...(flow.reading?.decisions?.presentation === "table"
         ? [{ id: "decisions", label: "Implementation choices" }]
         : []),
@@ -58,9 +61,7 @@ const contents = hasContents
         ? [{ id: "comparison", label: "By environment" }]
         : []),
       ...sections.map((section) => ({ id: section.id, label: section.title })),
-      ...(flow.watchOut.length || flow.notes?.length
-        ? [{ id: "cautions", label: "Cautions and notes" }]
-        : []),
+      ...(flow.notes?.length ? [{ id: "notes", label: "Further notes" }] : []),
       { id: "standards", label: "Sources" },
       ...(rel.length ? [{ id: "related", label: "Related flows" }] : []),
     ]
@@ -231,7 +232,7 @@ const details = [
   <div class:list={["wrap", "body", { "with-contents": hasContents }]}>
     <div class:list={["intro", { "reading-intro": flow.reading }]}>
       <div class="prose" set:html={block(flow.summary)} />
-      {!flow.reading && <aside class="fit">
+      {flow.fits.length > 0 && <aside class="fit">
         <h2>Use it when</h2>
         <ul>
           {flow.fits.map((x) => <li set:html={inline(x)} />)}
@@ -241,16 +242,6 @@ const details = [
 
     {hasContents && <FlowContents items={contents} />}
     <div class="flow-content">
-    {flow.reading && !hasContents && (
-      <nav class="reading-jumps" aria-label="On this page">
-        <a href="#walkthrough">Diagram</a>
-        <a href="#fit">Fit &amp; requirements</a>
-        {flow.reading.decisions && <a href={flow.reading.decisions.presentation === "table" ? "#decisions" : `#step-${flow.reading.decisions.items[0].atStep}`}>Implementation choices</a>}
-        {flow.example && <a href="#example">Examples</a>}
-        <a href="#standards">Sources</a>
-      </nav>
-    )}
-
     <section aria-labelledby="walkthrough">
       <div class="section-head">
         <h2 id="walkthrough">Step by step</h2>
@@ -261,18 +252,18 @@ const details = [
         </p>
       </div>
       {flow.illustrated && !flow.reading && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
-      {flow.reading?.phases && (
-        <nav class="phase-outline" aria-label="Walkthrough phases">
-          <ul role="list">{flow.reading.phases.map((phase) => (
-            <li>
-              <a href={`#step-${phase.start}`}>{phase.title} <span>· {phase.start === phase.end ? "step" : "steps"} {phase.start}{phase.end !== phase.start && `–${phase.end}`}</span></a>
-            </li>
-          ))}</ul>
-        </nav>
-      )}
       <FlowDiagram flow={flow} />
       {flow.reading && flow.illustrated && <div class="prose drawn drawn-after" set:html={block(flow.illustrated.steps)} />}
     </section>
+
+    {flow.reading && flow.watchOut.length > 0 && (
+      <section class="reading-cautions" aria-labelledby="cautions">
+        <h2 id="cautions">Watch out for</h2>
+        <ul class="watch">
+          {flow.watchOut.map((item) => <li set:html={inline(item)} />)}
+        </ul>
+      </section>
+    )}
 
     {flow.reading && <FlowBrief brief={flow.reading.brief} />}
 
@@ -393,8 +384,8 @@ const details = [
       ))
     }
 
-    {(flow.watchOut.length > 0 || flow.notes?.length) && <section id={hasContents ? "cautions" : undefined} class:list={["cols", { "notes-only": flow.watchOut.length === 0 }]} aria-label="Cautions and notes">
-      {flow.watchOut.length > 0 && <div>
+    {((!flow.reading && flow.watchOut.length > 0) || flow.notes?.length) && <section id={flow.reading ? "notes" : undefined} class:list={[{ "cols": !flow.reading, "notes-only": !flow.reading && flow.watchOut.length === 0, "reading-notes": flow.reading }]} aria-label={flow.reading ? "Further notes" : "Cautions and notes"}>
+      {!flow.reading && flow.watchOut.length > 0 && <div>
         <h2>Watch out for</h2>
         <ul class="watch">
           {flow.watchOut.map((x) => <li set:html={inline(x)} />)}
@@ -506,13 +497,10 @@ const details = [
     .contents-page-head .wrap { padding-inline-start: var(--gutter); }
     .with-contents > :global(flow-contents) { display: none; }
   }
-  .intro.reading-intro { grid-template-columns: minmax(0, 1fr); }
-  .reading-intro .prose { max-width: var(--prose); }
-  .reading-jumps { display: flex; flex-wrap: wrap; gap: 0.5rem 1.3rem; margin-top: 1.3rem; }
-  .phase-outline { margin: 1.25rem 0; }
-  .phase-outline ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin: 0; padding: 0; list-style: none; }
-  .phase-outline a { font-weight: 600; }
-  .phase-outline span { font-weight: 400; white-space: nowrap; }
+  .with-contents .flow-content > section > .section-head { display: block; }
+  .with-contents .section-head p { margin-top: 0.55rem; max-width: var(--prose); }
+  .reading-cautions, .reading-notes { max-width: var(--prose); }
+  .reading-notes .notes > h2:not(:first-child) { margin-top: 2.5rem; }
   .cols.notes-only { grid-template-columns: minmax(0, 1fr); }
   .notes-only .notes { max-width: var(--prose); }
 

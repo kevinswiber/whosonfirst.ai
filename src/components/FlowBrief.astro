@@ -7,7 +7,7 @@ interface Props {
 const { brief } = Astro.props;
 ---
 <section class="flow-brief" aria-labelledby="fit">
-  <h2 id="fit">Does this flow fit?</h2>
+  <h2 id="fit">Requirements and trade-offs</h2>
   <div class="brief-columns">
     <dl class="brief-facts">
       <div><dt>Whose authority?</dt><dd set:html={block(brief.authority)} /></div>
@@ -33,7 +33,7 @@ const { brief } = Astro.props;
   )}
 </section>
 <style>
-  .flow-brief { margin-top: 1.75rem; padding-block: 1.3rem; border-block: 1px solid var(--border-strong); }
+  .flow-brief { max-width: var(--prose); margin-top: 1.75rem; padding-block: 1.3rem; border-block: 1px solid var(--border-strong); }
   h2 { margin: 0 0 1.1rem; font-size: 1.4rem; }
   h3, dt { font-family: var(--font-body); font-size: 1rem; font-weight: 600; margin: 0 0 0.35rem; }
   .brief-columns { display: grid; gap: 1.5rem 2.5rem; }
@@ -45,5 +45,4 @@ const { brief } = Astro.props;
   .responsibility { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1.4rem; }
   .alternatives { margin-top: 1.2rem; }
   .alternatives li { max-width: var(--prose); }
-  @media (min-width: 60rem) { .brief-columns { grid-template-columns: 1fr 1fr; } }
 </style>
