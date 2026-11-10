@@ -1013,7 +1013,8 @@ await ctx.close();
       /You were following A support agent, for the rep who asked/.test(
         trail.text,
       ) &&
-      trail.href === "/examples/support-agent/?path=auth0#separate-apps",
+      trail.href ===
+        "/examples/support-agent/?variation=separate-apps&path=auth0#separate-apps",
     JSON.stringify(trail),
   );
   await page.click("[data-trail] a");
@@ -1029,6 +1030,41 @@ await ctx.close();
       st.focusTop < 200,
     JSON.stringify(st),
   );
+  // a variation chosen by a link's anchor is written into the address, so it outlasts the
+  // anchor: moving around the page, a reload, and a trip to a flow page all keep it
+  await page.goto(`${origin}${EXAMPLE}#separate-apps`, {
+    waitUntil: "networkidle",
+  });
+  await page.waitForTimeout(100);
+  const kept = {
+    arrived: await page.evaluate(() => location.search + location.hash),
+  };
+  await page.click('#separate-apps .we-context a[href="#design"]');
+  await page.waitForTimeout(100);
+  kept.moved = await page.evaluate(() => location.search + location.hash);
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForTimeout(100);
+  kept.reloaded = (await state()).variations.join();
+  await page.click(
+    'worked-example .we-design .xd-steps a[href="/flows/authorization-code-pkce/"]',
+  );
+  await page.waitForLoadState("networkidle");
+  await page.click("[data-trail] a");
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(100);
+  st = await state();
+  kept.back = st.variations.join();
+  kept.focus = st.focus;
+  eg(
+    "a variation chosen by a link stays chosen: in the address, after a reload, and on the way back from a flow page",
+    kept.arrived === "?variation=separate-apps#separate-apps" &&
+      kept.moved === "?variation=separate-apps#design" &&
+      kept.reloaded === "separate-apps" &&
+      kept.back === "separate-apps" &&
+      kept.focus === "design",
+    JSON.stringify(kept),
+  );
+
   // a link under a heading, outside any variation, returns to that heading
   const backTo = [];
   for (const [link, anchor] of [

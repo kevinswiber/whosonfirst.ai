@@ -50,6 +50,9 @@ class WorkedExample extends HTMLElement {
       this.#apply(select.dataset.select ?? "", true);
 
     this.#render(false);
+    // A selection that came from the anchor goes into the address as well, so
+    // it outlasts the anchor: another section, a reload, the way back.
+    if (select && this.contains(select)) this.#write(true);
     if (target && this.contains(target))
       requestAnimationFrame(() => this.#land(target));
 
@@ -63,6 +66,7 @@ class WorkedExample extends HTMLElement {
       if (pick) {
         this.#apply(pick.dataset.select ?? "", true);
         this.#render(false);
+        this.#write(true);
       }
       this.#land(to);
     });
@@ -188,15 +192,8 @@ class WorkedExample extends HTMLElement {
     }
 
     if (!fromReader) return;
-    const q = new URLSearchParams();
-    for (const c of this.#controls) {
-      if (!c.checked || c.dataset.default !== undefined) continue;
-      q.set(c.name, c.type === "radio" ? c.value : "1");
-    }
-    if (this.#path && this.#path !== this.#paths[0]?.dataset.path)
-      q.set("path", this.#path);
-    const qs = q.toString();
-    history.replaceState(null, "", `${location.pathname}${qs ? `?${qs}` : ""}`);
+    // the anchor described where the reader arrived, not what they chose since
+    this.#write(false);
     if (this.#live) {
       const showing = [...this.querySelectorAll<HTMLElement>("[data-announce]")]
         .filter((el) => !el.closest("[hidden]"))
@@ -206,6 +203,23 @@ class WorkedExample extends HTMLElement {
         .filter(Boolean)
         .join(" ");
     }
+  }
+
+  /** Keep the selection in the address, so it can be shared, reloaded and returned to. */
+  #write(keepAnchor: boolean) {
+    const q = new URLSearchParams();
+    for (const c of this.#controls) {
+      if (!c.checked || c.dataset.default !== undefined) continue;
+      q.set(c.name, c.type === "radio" ? c.value : "1");
+    }
+    if (this.#path && this.#path !== this.#paths[0]?.dataset.path)
+      q.set("path", this.#path);
+    const qs = q.toString();
+    history.replaceState(
+      null,
+      "",
+      `${location.pathname}${qs ? `?${qs}` : ""}${keepAnchor ? location.hash : ""}`,
+    );
   }
 
   /** Bring a link's target to the top and put keyboard focus on its heading. */
