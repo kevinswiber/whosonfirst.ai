@@ -17,7 +17,7 @@ export const glossary: Term[] = [
   {
     term: "Actor",
     aka: ["act claim"],
-    def: "The party presenting a token when it is not the subject. Recorded in the `act` claim, which is what distinguishes delegation from impersonation.",
+    def: "A party authorized to act for the subject. In an RFC 8693 JWT, the issuer identifies the current actor with `act`. That assertion is not by itself proof of the presenter’s key possession; other profiles may represent actor evidence differently.",
     see: { href: "/flows/token-exchange/", label: "Token exchange" },
   },
   {

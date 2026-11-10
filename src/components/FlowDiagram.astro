@@ -13,6 +13,7 @@
  * and the diagram opens on demand at full size.
  */
 import { Code } from "astro:components";
+import FlowDecisions from "./FlowDecisions.astro";
 import type { Flow, StepKind } from "../data/types";
 import { block, inline } from "../lib/md";
 import { codeThemes } from "../lib/code-themes.mjs";
@@ -172,7 +173,7 @@ const rows = steps.map((s, i) => {
 const usedKinds = [...new Set(steps.map((s) => s.kind))];
 ---
 
-<flow-diagram class="flow" data-count={steps.length}>
+<flow-diagram class="flow" data-count={steps.length} data-reading={flow.reading ? "" : undefined}>
   <details class="flow-stage" open>
     <summary>
       <span class="flow-stage-title">Sequence diagram</span>
@@ -311,6 +312,12 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       {
         rows.map((r) => (
           <li class={`flow-step kind-${r.s.kind}`} data-step={r.i} id={`step-${r.i + 1}`}>
+            {flow.reading?.phases?.filter((phase) => r.i + 1 >= phase.start && r.i + 1 <= phase.end).map((phase) => (
+              <div class="phase-context" data-phase-start={r.i + 1 === phase.start ? "" : undefined}>
+                <p><strong>{phase.title}</strong></p>
+                <p set:html={inline(phase.summary)} />
+              </div>
+            ))}
             <p class="step-meta">
               <span class={`step-num role-${r.from.role}`}>{r.i + 1}</span>
               <span class="step-route">
@@ -334,6 +341,10 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
                 themes={codeThemes as any}
                 defaultColor={false}
               />
+            )}
+            {flow.reading?.decisions?.presentation === "inline" && <FlowDecisions decisions={flow.reading.decisions} atStep={r.i + 1} />}
+            {flow.reading?.decisions?.presentation === "table" && flow.reading.decisions.items.some((item) => item.atStep === r.i + 1) && (
+              <p class="decision-link"><a href="#decisions">Choices at this step: {flow.reading.decisions.items.filter((item) => item.atStep === r.i + 1).map((item) => item.title.toLowerCase()).join('; ')}</a></p>
             )}
             {r.snapshot.length > 0 && (
               <div class="held">
@@ -427,15 +438,32 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
         }
       });
 
-      const fromHash = () => {
-        const m = /^#step-(\d+)$/.exec(location.hash);
-        if (m) this.go(Number(m[1]) - 1, false);
-      };
-      window.addEventListener('hashchange', fromHash);
+      window.addEventListener('hashchange', this.fromHash);
       this.narrow.addEventListener('change', this.setMode);
       this.setMode();
       this.go(0, false);
-      fromHash();
+      this.selectHash(false);
+    }
+
+    fromHash = () => this.selectHash(true);
+
+    selectHash(changed: boolean) {
+      const m = /^#step-(\d+)$/.exec(location.hash);
+      if (!m) return;
+      const index = Number(m[1]) - 1;
+      this.go(index, false);
+      if (!this.hasAttribute('data-reading') || index < 0 || index >= this.count) return;
+      this.stop();
+      // Select before scrolling: the browser cannot place a fragment on a hidden step.
+      requestAnimationFrame(() => {
+        // A later hash may have won while this callback waited for layout.
+        if (location.hash !== `#step-${index + 1}`) return;
+        const target = this.querySelector<HTMLElement>(`#step-${index + 1}`)!;
+        const box = target.getBoundingClientRect();
+        if (changed || box.top < 70 || box.top > window.innerHeight - 120) {
+          target.scrollIntoView({ block: 'start', behavior: 'instant' });
+        }
+      });
     }
 
     setMode = () => {
@@ -557,12 +585,19 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     disconnectedCallback() {
       this.stop();
       this.narrow.removeEventListener('change', this.setMode);
+      window.removeEventListener('hashchange', this.fromHash);
     }
   }
   customElements.define('flow-diagram', FlowDiagram);
 </script>
 
 <style>
+  .phase-context { border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem; }
+  .phase-context p { margin: 0; }
+  .phase-context p + p { margin-top: 0.3rem; }
+  .flow:is([data-all], [data-narrative], :not([data-js])) .phase-context:not([data-phase-start]) { display: none; }
+  .decision-link { margin: 1rem 0 0; }
+
   .flow {
     display: grid;
     gap: 1.25rem;
@@ -1126,5 +1161,15 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       min-width: 0;
       overflow-wrap: anywhere;
     }
+  }
+  @media print {
+    .flow[data-reading] { display: block; }
+    .flow[data-reading] :is(.flow-stage, .flow-bar) { display: none; }
+    .flow[data-reading] .flow-panel { position: static; max-height: none; overflow: visible; }
+    .flow[data-reading] .flow-step[hidden] { display: block; }
+    .flow[data-reading] .flow-step { break-inside: auto; }
+    .flow[data-reading] .phase-context:not([data-phase-start]) { display: none; }
+    .flow[data-reading] :global(pre) { max-height: none; overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .flow[data-reading] :global(code) { white-space: inherit; }
   }
 </style>

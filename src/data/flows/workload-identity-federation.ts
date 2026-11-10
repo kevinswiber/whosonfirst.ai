@@ -9,28 +9,147 @@ export const workloadIdentityFederation: Flow = {
   maturity: "stable",
   tagline:
     "Your agent uses an identity established by its runtime to obtain short-lived access from a system that trusts that identity.",
-  summary: `The place an agent runs already knows which workload it started. Cloud services, virtual machines, containers, CI jobs and on-premises infrastructure can all turn that knowledge into an identity the workload can prove. Kubernetes service account tokens are one implementation, worked through [further down](#example).
-
-Two related ideas are involved, and they are not interchangeable. **Platform-provided workload identity** means the infrastructure establishes the workload’s identity and supplies its credentials, so the application owner does not provision a long-lived application secret. **Workload identity federation** means a receiving system trusts an identity established in another trust domain and uses it to grant access.
-
-A Lambda function calling AWS APIs with its execution role is using native workload identity: one identity system, and nothing is federated. Using that function’s identity to obtain access in a different identity system is federation. The other system does not have to belong to another cloud provider. A Kubernetes cluster and the cloud it runs in are separate trust domains, and so are a CI service and the account it deploys to.
-
-What the pattern removes is the need to provision and manage a long-lived application secret, for the integrations that support it. It does not remove credentials. The identity credential and whatever is issued in exchange are short-lived, and they still need protecting. The destination also has to support the trust arrangement: an API that only accepts an API key cannot be federated to, and a [credential broker](/flows/credential-broker/) is the usual answer there.`,
-  fits: [
-    "Agents running where the platform can identify the workload: a cloud function, virtual machine or managed container, a Kubernetes pod, a CI job.",
-    "Calling cloud APIs, or any service that can be configured to trust the platform’s identities, as the agent itself.",
-    "Anywhere you would otherwise deliver an API key or client secret to the workload, provided the destination supports the trust arrangement.",
-  ],
+  summary: `An agent uses an identity established by its runtime to obtain access in another trust domain. That trust crossing is federation, even when both systems run in the same cloud. The walkthrough shows one JWT-based exchange; a [Kubernetes pod](#example) provides the worked example.`,
+  reading: {
+    brief: {
+      authority:
+        "The workload’s own access, granted by the receiving system. This diagram uses a JWT identity credential and OIDC discovery.",
+      benefit:
+        "For an integration that supports federation, the application owner avoids provisioning a long-lived application secret.",
+      cost: "You still protect credentials and maintain trust and permissions. Stopping fresh identity proofs, blocking new exchanges and invalidating issued access are separate controls. [See stopping access](#stopping-access).",
+      prerequisites: [
+        "The runtime can issue the expected proof. The receiver trusts its specific issuer, requires the intended audience, and matches the intended workload claims.",
+        "For the discovery arrangement drawn here, the receiver can reach the registered issuer’s discovery document and signing keys, and validates signature and lifetime.",
+        "An administrator grants the matched workload appropriate permissions. The target API accepts the credential the receiver issues and enforces that grant.",
+      ],
+      responsibilities:
+        "This credential carries no person’s grant. A user-facing request still needs trusted user context and object, action and field checks in the application, service or API, before data reaches the person or their agent. [See the report A/report B example](#permissions). A service-only background job instead uses its scoped service permissions.",
+      alternatives: [
+        {
+          condition:
+            "If the destination accepts only an API key, it cannot use this trust arrangement.",
+          label: "Consider a credential broker.",
+          href: "/flows/credential-broker/",
+        },
+        {
+          condition:
+            "If the downstream API must enforce a person’s delegated grant itself, it needs a supported user-aware credential.",
+          label: "See token exchange.",
+          href: "/flows/token-exchange/",
+        },
+      ],
+    },
+    phases: [
+      {
+        title: "Obtain identity proof",
+        summary:
+          "The platform identifies the workload and supplies its credential.",
+        start: 1,
+        end: 1,
+      },
+      {
+        title: "Establish receiving trust",
+        summary:
+          "The receiver verifies the proof and matches its configured trust rule.",
+        start: 2,
+        end: 5,
+      },
+      {
+        title: "Obtain and use access",
+        summary:
+          "The receiver issues a credential that the target API accepts.",
+        start: 6,
+        end: 8,
+      },
+    ],
+    decisions: {
+      presentation: "table",
+      items: [
+        {
+          atStep: 5,
+          title: "Separate workload identities",
+          benefit:
+            "Different workloads can have distinct grants and cut-off controls where the receiver enforces them.",
+          cost: "More identities, trust rules and grants to create and maintain. Replicas using one identity still share its grant.",
+          mitigation: {
+            action:
+              "Use reusable policy templates, with a specific identity and grant for each workload that needs separation.",
+            conditions:
+              "The platform must distinguish those workloads, and the receiver must enforce the intended permissions and cut-off per identity. Restrict who can obtain or run as that identity.",
+            addedCost:
+              "Owners still review each binding and permission change; a shared template needs careful change control.",
+            remaining:
+              "Separate identities do not constrain a workload beyond its granted access or guarantee immediate invalidation of issued credentials.",
+          },
+          sources: [
+            {
+              label: "EKS: service accounts, role trust and permissions",
+              href: "https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html",
+            },
+          ],
+        },
+        {
+          atStep: 6,
+          title: "Shorter issued lifetimes",
+          benefit:
+            "Within the receiver’s supported range, shorter validity reduces how long a copied credential can be used.",
+          cost: "More frequent renewals increase dependency on the issuer and exchange service. Proof and issued-access lifetimes can differ.",
+          mitigation: {
+            action:
+              "Use the supported SDK’s renewal behavior and allow time for renewal before expiry.",
+            conditions:
+              "The platform and receiver must support the chosen lifetimes; verify how that SDK refreshes each credential in this configuration.",
+            addedCost:
+              "Monitor renewal failures and handle expiry without sending expired credentials.",
+            remaining:
+              "Narrower permission limits what can be done; lifetime limits time. An unexpired proof can still obtain new access while trust permits it.",
+          },
+          sources: [
+            {
+              label: "JWT expiry (RFC 7519 §4.1.4)",
+              href: "https://www.rfc-editor.org/rfc/rfc7519.html#section-4.1.4",
+            },
+            {
+              label: "AWS STS: a provider-specific lifetime example",
+              href: "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html",
+            },
+          ],
+        },
+        {
+          atStep: 6,
+          title: "Reuse valid issued credentials",
+          benefit:
+            "If the SDK supports reuse, fewer calls need a new exchange. This can bridge a brief issuer outage while the credential remains accepted.",
+          cost: "Cached credentials require protection and expiry handling, and may outlive a change to upstream trust or permissions.",
+          mitigation: {
+            action:
+              "Reuse only within a matching workload, receiver, target and effective permission context.",
+            conditions:
+              "Keep any binding or grant context intact. The credential must remain valid and accepted; caching is an operating choice, not an availability guarantee.",
+            addedCost:
+              "The SDK or application must isolate cache entries and handle renewal and invalidation correctly.",
+            remaining:
+              "Blocking new exchanges does not recall an issued credential. Earlier cut-off needs a control the receiver or target actually enforces.",
+          },
+          sources: [
+            {
+              label: "AWS: revoking issued role sessions",
+              href: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_revoke-sessions.html",
+            },
+            {
+              label: "Kubernetes: offline proof validation limits",
+              href: "https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#schema-for-service-account-private-claims",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  fits: [],
   watchOut: [
-    "**Trust a specific issuer, and know who else it serves.** Some issuers sign for many tenants under one URL. GitHub Actions on GitHub.com uses a single issuer for every repository, so trusting the issuer alone trusts all of them.",
-    "**Require the audience you intended.** The identity credential should name the receiving token service, and the receiver should refuse any other value. A credential issued for one recipient and accepted by another is a confused-deputy path.",
-    "**Match the exact workload.** Pin the subject, or the claims that stand in for it, to one workload: one service account, one repository and environment, one role. Avoid wildcards and prefix matches, and prefer identifiers that cannot be reassigned, such as IDs over names where the issuer offers them. What a rule can match on differs by receiver.",
-    "**Grant the least access that works.** The role or permission behind the trust rule is what a stolen credential is worth.",
-    "**Do not share one identity between agents.** Agents that share a service account, a role or a job identity are one principal to every system downstream. They cannot be limited, audited or cut off separately.",
-    "**Short-lived credentials still need protecting.** A bearer token, such as a JWT identity credential or an access token issued for it, can be replayed by whoever holds a copy until it expires. Certificate-based authentication is different: it requires proof of possession of the matching private key, so the key is what has to stay private. Keep tokens and private keys out of logs, prompts and tool output. Limit what can reach the platform’s credential endpoints too: anything that can make requests from inside the workload, including a tool the agent was talked into calling, may be able to ask for the same credentials.",
-    "**Deleting the workload does not cut off its credentials.** It stops the platform issuing or renewing the identity credential. A copy that has not expired can still be exchanged for new access while the receiver’s trust rule stands, and what the receiver already issued has a lifetime of its own. See the note on stopping access.",
-    "**The receiver has to reach the issuer’s keys.** A private cluster or an internal identity provider has to publish its discovery document and keys somewhere the receiver can fetch them, or upload the keys where the receiver allows that.",
-    "**Workload identity is not a user’s authority.** Federation establishes which workload is calling. It does not carry a person’s identity or consent, and it does not turn the agent’s access into the user’s. Carrying a user’s authority is delegation: see [token exchange](/flows/token-exchange/).",
+    "**Know who else the issuer serves.** Some issuers sign for many tenants under one URL. GitHub Actions on GitHub.com uses a single issuer for every repository, so trusting that issuer alone trusts all of them.",
+    "**Match stable workload claims.** Pin a subject or supported claims to the intended service account, repository and environment, or role. Avoid broad matches. Prefer identifiers that cannot be reassigned, such as IDs over names where the issuer offers them; what a receiver can match differs.",
+    "**Protect credentials and their source.** A bearer identity or access token can be replayed by whoever holds a valid copy. Certificate-based authentication instead requires the private key, which must stay private. Keep both kinds of secret out of logs, prompts and tool output. Restrict access to credential endpoints: code or tools running inside the workload may otherwise obtain the same credentials.",
   ],
   participants: [
     {
@@ -78,7 +197,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "back",
       label: "Present identity credential",
       title: "The workload presents it to the receiving token service",
-      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The note on request formats, below, sets out the differences.
+      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The [request-format note](#request-formats) sets out the differences.
 
 *Usually handled by an SDK or credential library, once it is told where to find the identity credential and what to ask for.*`,
     },
@@ -97,7 +216,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "self",
       label: "Validate the credential",
       title: "The token service validates what it was given",
-      body: `It checks the signature against the issuer’s keys, that the issuer is one it was configured to trust, that the audience names this token service, and that the credential has not expired. The audience check is what stops a token issued for one recipient from being replayed at another: RFC 7519 requires a recipient to reject a JWT whose audience does not include it. What the audience value should be is for the receiver to define, and differs by provider.
+      body: `It checks the signature against the issuer’s keys, that the issuer is one it was configured to trust, that the audience names this token service, and that the credential has not expired. The audience check is what stops a token issued for one recipient from being replayed at another: RFC 7519 requires a recipient to reject a JWT with a present audience claim that does not include it. This arrangement requires that claim; JWT does not require it in every use. What the audience value should be is for the receiver to define, and differs by provider.
 
 So far the receiver knows only that a trusted issuer made this statement, for this recipient, recently. It has not yet decided what the workload may do.
 
@@ -107,18 +226,19 @@ So far the receiver knows only that a trusted issuer made this statement, for th
       from: "sts",
       kind: "self",
       label: "Apply the trust rule",
-      title: "A trust rule turns the identity into permissions",
-      body: `An administrator wrote the rule in advance: credentials from *this* issuer, for *this* audience, naming *this* workload, get *that* access. Receivers call it different things, such as a role trust policy, a federated identity credential, or an attribute condition on an identity pool. The syntax differs, and so does what a rule can match on, but this rule is the security boundary everywhere. One that matches more workloads than you meant gives each of them the access.
+      title: "Match the identity, then apply its permission grant",
+      body: `An administrator configures which issuer, audience and specific workload claims the receiver will accept. A role trust policy, federated identity credential or identity-pool condition handles that match, with syntax and supported claims that differ by receiver. A separate permission grant decides what the matched identity may do. A trust rule that admits extra workloads can let them reach the same grant. The illustration shows those two decisions together; it is not vendor syntax.
 
 *Written ahead of time by whoever administers the receiving system. This part is yours to get right.*`,
       code: {
         lang: "yaml",
-        text: `# Conceptual trust rule.
+        text: `# Conceptual trust and permission binding.
 # Each receiver has its own syntax.
-issuer:   https://identity.platform.example
-audience: https://sts.receiver.example
-subject:  workload:research-agent
-grants:   role/model-inference`,
+trust:
+  issuer:   https://identity.platform.example
+  audience: https://sts.receiver.example
+  subject:  workload:research-agent
+permission_grant: role/model-inference`,
       },
     },
     {
@@ -150,9 +270,9 @@ How long the credential lasts is the receiver’s setting, and differs by provid
       kind: "resp",
       label: "200 OK",
       title: "The API responds",
-      body: `The API authorized the call with the access the trust rule granted. Its logs attribute the call to that role or identity, which traces back to one workload if the rule was written for one.
+      body: `The API validates the issued credential and enforces the workload’s permission grant. Its logs can identify the granted role or identity; multiple processes using that identity may still share it.
 
-That is the agent’s own authority. Nothing in this flow carries a human user’s identity or consent. If the agent is acting for a person, that authority has to come from a delegation flow, such as [authorization code](/flows/authorization-code-pkce/) or [token exchange](/flows/token-exchange/).`,
+The credential carries the workload’s access, not a person’s grant. For a user-facing request, trusted application or service code can enforce that person’s object/action permissions while the downstream API authorizes the service. If the downstream API must independently enforce the person’s grant, it needs trustworthy user context through a supported mechanism, such as [token exchange](/flows/token-exchange/). In either case, check access before returning data to the person or their agent. [The report example](#permissions) makes that boundary concrete.`,
     },
   ],
   standards: [
@@ -206,9 +326,10 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
       title: "What the platform and the SDK do for you",
       body: `In most deployments you write none of the eight steps. The platform issues the identity credential and keeps it fresh. A cloud SDK or credential library, pointed at that credential, makes the exchange, caches what comes back, renews it, and attaches it to requests or signs them. The receiving system does the validation. What is left to you is configuration: which identity the workload runs as, the trust rule on the receiving side, and the access behind it.
 
-With native workload identity there is less still. A function, virtual machine or managed container calling its own cloud’s APIs is handed credentials for that cloud’s identity system by the platform, and nothing is exchanged. Federation starts when the system being called is not the one that established the identity.`,
+**Platform-provided workload identity** means the infrastructure identifies the workload and supplies credentials, so the application owner does not provision a long-lived secret for that integration. A function, virtual machine or container calling its own cloud’s APIs uses that native identity, without federation. **Federation** starts when another trust domain accepts the identity. A Kubernetes cluster and its cloud provider, or a CI service and the account it deploys to, can be separate trust domains without crossing cloud vendors.`,
     },
     {
+      id: "request-formats",
       title: "One exchange, several request formats",
       body: `No single specification defines this pattern. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The exchange itself is where they differ.
 
@@ -223,10 +344,11 @@ With native workload identity there is less still. A function, virtual machine o
 Audience values, credential lifetimes, the claims a rule can match on and the way keys are discovered are each provider’s own. Do not carry one provider’s settings over to another.`,
     },
     {
+      id: "stopping-access",
       title: "Stopping access",
-      body: `Cutting off a workload is three separate events. Each has its own control, and none of them brings about the others.
+      body: `Cutting off a workload involves three controls. They are not guaranteed to take effect together.
 
-**The platform stops issuing or renewing the identity credential.** Deleting the workload or disabling its platform identity does this. It does not recall a credential already handed out. A copy that has not expired is still a validly signed statement.
+**The platform stops issuing or renewing the identity credential.** Use the platform’s control for ending issuance or renewal. Deleting the workload or disabling its identity can do that; verify the chosen platform’s behavior. This does not by itself recall a credential already handed out. An unexpired copy is still a validly signed statement.
 
 **The receiving system stops accepting that credential in new exchanges.** A receiver that validates a JWT offline, against cached keys, sees a valid signature and an unexpired token. It cannot see that the pod, service account or job behind the token is gone. So a copied token can go on obtaining new downstream credentials after its workload is deleted, for as long as it is unexpired and the trust rule is in place. Removing or narrowing the trust rule is what stops further exchanges, once that change has taken effect.
 
@@ -358,7 +480,7 @@ Read the file fresh each time, because it rotates on disk.`,
       },
       {
         title: "The agent exchanges the token",
-        body: `The receiver in this example takes OAuth token exchange (RFC 8693), the form Google Cloud’s Security Token Service follows. The request is illustrative: the host, audience and scope are placeholders. Microsoft Entra would take the same token as a \`client_assertion\`, and AWS as the \`WebIdentityToken\` parameter of \`AssumeRoleWithWebIdentity\`.`,
+        body: `The receiver in this example takes OAuth token exchange (RFC 8693), the form Google Cloud’s Security Token Service follows. The request is illustrative: the host, audience and scope are placeholders. Microsoft Entra can take the same **kind** of token as a \`client_assertion\`, and AWS as the \`WebIdentityToken\` parameter of \`AssumeRoleWithWebIdentity\`. The actual token’s audience and registered issuer/subject trust must match that receiver; a token minted for one recipient is not assumed valid at another.`,
         code: {
           lang: "http",
           text: `POST /token HTTP/1.1
@@ -374,15 +496,16 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       },
       {
         title: "The trust rule names the service account",
-        body: `The rule on the receiving side pins the cluster’s issuer, the audience, and one namespace and service account. A rule that accepts any token from the cluster lets every pod in it become your agent.`,
+        body: `The receiver pins the cluster’s issuer, the intended audience, and one namespace and service account. A broader rule can admit other service accounts able to obtain an accepted token. The trusted account also needs a permission grant; matching its identity is not itself the application’s access policy.`,
         code: {
           lang: "yaml",
-          text: `# Conceptual trust rule.
+          text: `# Conceptual trust and permission binding.
 # Each receiver has its own syntax.
-issuer:   https://oidc.cluster.example
-audience: https://sts.example
-subject:  system:serviceaccount:agents:research-agent
-grants:   role/model-inference`,
+trust:
+  issuer:   https://oidc.cluster.example
+  audience: https://sts.example
+  subject:  system:serviceaccount:agents:research-agent
+permission_grant: role/model-inference`,
         },
       },
       {
@@ -395,7 +518,7 @@ grants:   role/model-inference`,
     {
       id: "permissions",
       title: "From identity to permissions",
-      intro: `A validated credential says who is calling. What the caller may do is a separate decision, and the system that receives the call makes it. Three jobs are involved. Keeping them apart is what lets workload identity support roles and permissions of your own.`,
+      intro: `A validated credential identifies a principal. Permissions and application rules decide what it may do. Keep issuer trust, identity and enforcement separate; then decide which trusted layer owns the user-facing policy, as the report example below shows.`,
       parts: [
         {
           title: "Trust the issuer",
@@ -418,6 +541,28 @@ may:
   - reconciliation-drafts:create
 # Not granted: payments:approve`,
           },
+        },
+        {
+          title: "The service may read report B; Alice may not",
+          body: `Alice may read report A. A reporting service’s workload credential permits it to read both A and B. If Alice asks for B, trusted application or API code must reject the request before B reaches Alice or her agent. The service credential alone cannot decide Alice’s entitlement. An object ID supplied by a caller is something to check, not evidence of permission.
+
+Use authenticated user context and trusted tenant/ownership data to check the requested object and action on every relevant path. Even an allowed object may contain fields the requester must not see. OWASP calls the object failure BOLA (API1) and treats unauthorized property exposure separately (API3). A final chat-output filter is too late once the agent has received forbidden data.
+
+Here the downstream API may authorize only the service. That keeps its integration simpler, while the application owns user policy, context integrity and preventing bypass of its checks. Shared policy code and object-scoped queries can reduce duplication; they still need cross-user and cross-tenant tests and do not remove the service credential’s broad access. This is application authorization outside the credential exchange, illustrated here rather than tested.`,
+          sources: [
+            {
+              label: "OWASP API1: Broken Object Level Authorization",
+              href: "https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/",
+            },
+            {
+              label: "OWASP API3: Broken Object Property Level Authorization",
+              href: "https://api-security.owasp.org/editions/2023/en/0xa3-broken-object-property-level-authorization/",
+            },
+            {
+              label: "OWASP Authorization Cheat Sheet",
+              href: "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+            },
+          ],
         },
       ],
       after: `Workload identity can underpin custom roles and permissions like these. It does not define them, and it does not convey a human user’s authority. The API, gateway or authorization service has to enforce the resulting policy.`,

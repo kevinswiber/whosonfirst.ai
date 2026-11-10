@@ -120,7 +120,7 @@ export const tokens: TokenSpec[] = [
     name: "Delegated token",
     path: "Authorization server → tool → downstream API",
     intro:
-      "The result of a token exchange. The user is still the subject; the `act` claim names who is acting for them. Nested `act` claims record the chain.",
+      "Selected illustrative claims from an actor-aware token-exchange profile. The user remains the subject; `act` is the issuer’s actor assertion. Nested history appears only if the profile preserves it.",
     lines: [
       { text: "{" },
       {
@@ -133,7 +133,7 @@ export const tokens: TokenSpec[] = [
         text: '"sub": "user:alice",',
         indent: 1,
         cat: "who",
-        note: "Still Alice. Delegation keeps the original subject so that downstream permissions are hers.",
+        note: "Still Alice in this profile. The API must validate the credential and enforce the permitted user and actor access; the subject claim does not implement that policy.",
       },
       {
         text: '"aud": "https://warehouse.example/api",',
@@ -145,25 +145,25 @@ export const tokens: TokenSpec[] = [
         text: '"scope": "sales.read",',
         indent: 1,
         cat: "may",
-        note: "Narrower than the original grant. Each exchange is a chance to drop privileges the next hop does not need.",
+        note: "The issuer maps the permitted upstream operation to downstream actions. Scope strings from different APIs cannot be compared as a proof of narrowing; request only the access needed.",
       },
       {
         text: '"exp": 1794269100,',
         indent: 1,
         cat: "when",
-        note: "Shorter-lived than the token it was exchanged for.",
+        note: "Validity is set by the issuer’s policy. It need not match the input token’s lifetime, and input revocation does not automatically invalidate this token.",
       },
       {
         text: '"act": {',
         indent: 1,
         cat: "what",
-        note: "The **actor** claim from RFC 8693. Its presence is the difference between delegation (“the tool, acting for Alice”) and impersonation (“Alice”). Without it the API cannot tell software from the person.",
+        note: "The **actor** claim from RFC 8693 records delegation in this JWT profile. Actor-dependent API policy requires accepted actor evidence; other token formats may carry it differently. This claim alone is not proof of who possesses a key.",
       },
       {
         text: '"sub": "https://tools.example/mcp",',
         indent: 2,
         cat: "what",
-        note: "The current actor: the party presenting this token.",
+        note: "The current actor identified by the issuer. A copied bearer token can still be presented by someone else.",
       },
       {
         text: '"act": { "sub": "research-agent" }',

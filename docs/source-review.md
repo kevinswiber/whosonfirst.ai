@@ -144,7 +144,9 @@ These pages describe products, and products change stage and name without notice
 
 **`src/data/flows/workload-identity-federation.ts`.** The comparison of providers, the worked example and the documented implementations. Each part lists its `sources`; open each and check the part still follows it, the link still resolves, and the release stage in the part's `tags` is still the stage the vendor states.
 
-**`src/data/flows/token-exchange.ts`.** The documented implementation and its linked AWS source.
+**`src/data/flows/token-exchange.ts`.** The documented implementation and its linked AWS source. Also read its `reading.brief`, phase/decision copy and linked decision sources: actor evidence and policy mapping are profile-dependent, while input/output revocation is not automatically linked. Propagate actor-claim corrections to the Actor entry in `src/data/glossary.ts` and `delegated-token` in `src/data/tokens.ts`.
+
+**Reading aids on both of these flows.** Recheck the visible prerequisites, responsibilities, alternatives and decision sources alongside the steps they explain. Federation's identity granularity, supported lifetimes and cache behavior depend on the selected platform/receiver; retain those conditions and the three distinct cut-off effects. Its `permissions` section also cites OWASP API1, API3 and the Authorization Cheat Sheet for application user/object/action/property policy. Review those sources and the report example separately from the credential-flow standards. They support application authorization outside the exchange's basis; a citation is not automatically a new protocol dependency. Apply the existing reference-role rule to any actual new requirement before changing `standards`, `roles`, `basis` or maturity.
 
 **Platform entries in the tracker.** `aws-*`, `gcp-*`, `entra-wif`, `azure-managed-identities`, `github-actions-oidc`. Each `detail` states one or two specific facts (a default session length, a required permission, "wildcards are not supported"). Check that fact and that the `url` resolves to the page meant.
 
@@ -227,6 +229,8 @@ agenticcommerce.dev
 www.agenticcommerce.dev
 genai.owasp.org
 owasp.org
+api-security.owasp.org
+cheatsheetseries.owasp.org
 www.nccoe.nist.gov
 docs.aws.amazon.com
 aws.amazon.com

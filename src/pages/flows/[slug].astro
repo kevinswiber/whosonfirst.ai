@@ -2,6 +2,8 @@
 import { Code } from "astro:components";
 import Base from "../../layouts/Base.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
+import FlowBrief from "../../components/FlowBrief.astro";
+import FlowDecisions from "../../components/FlowDecisions.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
@@ -206,15 +208,28 @@ const details = [
   </div>
 
   <div class="wrap body">
-    <div class="intro">
+    <div class:list={["intro", { "reading-intro": flow.reading }]}>
       <div class="prose" set:html={block(flow.summary)} />
-      <aside class="fit">
+      {!flow.reading && <aside class="fit">
         <h2>Use it when</h2>
         <ul>
           {flow.fits.map((x) => <li set:html={inline(x)} />)}
         </ul>
-      </aside>
+      </aside>}
     </div>
+
+    {flow.reading && <FlowBrief brief={flow.reading.brief} />}
+    {flow.reading && (
+      <nav class="reading-jumps" aria-label="On this page">
+        <a href="#walkthrough">Walkthrough</a>
+        {flow.reading.decisions?.presentation === "table" && <a href="#decisions">Implementation choices</a>}
+        {flow.comparison && <a href="#comparison">By environment</a>}
+        {flow.example && <a href="#example">Worked example</a>}
+        {flow.sections?.map((section) => <a href={`#${section.id}`}>{section.title}</a>)}
+        <a href="#standards">Sources</a>
+        {rel.length > 0 && <a href="#related">Related flows</a>}
+      </nav>
+    )}
 
     <section aria-labelledby="walkthrough">
       <div class="section-head">
@@ -226,8 +241,28 @@ const details = [
         </p>
       </div>
       {flow.illustrated && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
+      {flow.reading?.phases && (
+        <nav class="phase-outline" aria-label="Walkthrough phases">
+          <ol>{flow.reading.phases.map((phase) => (
+            <li>
+              <a href={`#step-${phase.start}`}>{phase.title} <span>({phase.start === phase.end ? "step" : "steps"} {phase.start}{phase.end !== phase.start && `–${phase.end}`})</span></a>
+              <p set:html={inline(phase.summary)} />
+            </li>
+          ))}</ol>
+        </nav>
+      )}
       <FlowDiagram flow={flow} />
     </section>
+
+    {flow.reading?.decisions?.presentation === "table" && (
+      <section aria-labelledby="decisions">
+        <div class="section-head">
+          <h2 id="decisions">Implementation choices</h2>
+          <p>These are independent choices, constrained by what your platform and receiver support.</p>
+        </div>
+        <FlowDecisions decisions={flow.reading.decisions} />
+      </section>
+    )}
 
     {
       flow.comparison && (
@@ -336,26 +371,26 @@ const details = [
       ))
     }
 
-    <section class="cols" aria-label="Cautions and notes">
-      <div>
+    {(flow.watchOut.length > 0 || flow.notes?.length) && <section class:list={["cols", { "notes-only": flow.watchOut.length === 0 }]} aria-label="Cautions and notes">
+      {flow.watchOut.length > 0 && <div>
         <h2>Watch out for</h2>
         <ul class="watch">
           {flow.watchOut.map((x) => <li set:html={inline(x)} />)}
         </ul>
-      </div>
+      </div>}
       {
         flow.notes && (
           <div class="notes">
             {flow.notes.map((note) => (
               <>
-                <h2>{note.title}</h2>
+                <h2 id={note.id}>{note.title}</h2>
                 <div set:html={block(note.body)} />
               </>
             ))}
           </div>
         )
       }
-    </section>
+    </section>}
 
     <section aria-labelledby="standards">
       <div class="section-head">
@@ -382,10 +417,13 @@ const details = [
             </div>
           ))
         ) : (
-          <div class="grid">
-            {standards.map((s) => (
-              <StandardCard standard={s} compact />
-            ))}
+          <div>
+            {flow.reading && <h3>Protocol references</h3>}
+            <div class="grid">
+              {standards.map((s) => (
+                <StandardCard standard={s} compact />
+              ))}
+            </div>
           </div>
         )
       }
@@ -428,6 +466,18 @@ const details = [
 </Base>
 
 <style>
+  .intro.reading-intro { grid-template-columns: minmax(0, 1fr); }
+  .reading-intro .prose { max-width: var(--prose); }
+  .reading-jumps { display: flex; flex-wrap: wrap; gap: 0.5rem 1.3rem; margin-top: 1.3rem; }
+  .phase-outline { margin: 1.25rem 0; }
+  .phase-outline ol { display: grid; gap: 1rem 1.5rem; margin: 0; padding-left: 1.4rem; }
+  .phase-outline a { font-weight: 600; }
+  .phase-outline span { font-weight: 400; white-space: nowrap; }
+  .phase-outline p { margin: 0.25rem 0 0; }
+  .cols.notes-only { grid-template-columns: minmax(0, 1fr); }
+  .notes-only .notes { max-width: var(--prose); }
+  @media (min-width: 60rem) { .phase-outline ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
   /* arrow keys only step the diagram where it is a stepper */
   @media (max-width: 47.99rem) {
     .keys {

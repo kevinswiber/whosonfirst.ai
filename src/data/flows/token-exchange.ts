@@ -8,21 +8,94 @@ export const tokenExchange: Flow = {
   human: "any",
   maturity: "stable",
   tagline:
-    "Trade the token you were given for a new one that names both the user and the service now acting for them.",
-  summary: `An agent calls a tool. The tool needs to call something else to do its job. What credential does it use? Forwarding the token it received is the tempting answer and the wrong one: that token was issued for the tool, not for the downstream API, and passing it along makes every hop a place where it can be stolen and replayed.
-
-Token exchange is the standard alternative. The middle service presents the token it received and asks the authorization server for a new token aimed at the next hop. The new token can keep the user as its subject while adding an \`act\` claim that names the service acting for them. Downstream, the API can see the whole story: who this is for, and who is doing it.`,
-  fits: [
-    "A tool, MCP server or sub-agent must call another API **for the same user**.",
-    "All hops trust the same authorization server (or servers that trust each other).",
-    "You need downstream audit logs to distinguish the user from the software acting for them.",
-  ],
-  watchOut: [
-    "**Impersonation versus delegation.** If the new token has the user as `sub` and no `act` claim, the downstream API believes the user is calling directly. That is impersonation. Sometimes it is what you want; you should know which one you are getting.",
-    "RFC 8693 defines the mechanism and leaves policy open. Which clients may exchange which tokens for which audiences is yours to configure, and the default in many products is “anything.”",
-    "Each exchange should narrow scope, never widen it.",
-    "Support differs between vendors in which parameters are honored and whether `act` is emitted. Test with the tokens you will really get.",
-  ],
+    "Obtain a token for the next API, with user and actor identity when the supported profile carries both.",
+  summary: `A reporting tool needs warehouse data for Alice. It exchanges the user token it received for a separate token addressed to the warehouse. The walkthrough illustrates an actor-aware delegation profile; supporting token exchange alone does not guarantee those actor semantics.`,
+  reading: {
+    brief: {
+      authority:
+        "Alice’s delegated grant, with the reporting tool identified as the current actor in this illustration.",
+      benefit:
+        "The warehouse receives a token intended for it and can apply policy to both Alice and the tool.",
+      cost: "Every fresh exchange adds a call to the issuer. Changing or revoking the input grant does not automatically invalidate an issued warehouse token. [See the consequence at step 5](#step-5).",
+      prerequisites: [
+        "Alice already authorized the reporting task. The tool validates its incoming token and authenticates to the exchange server.",
+        "The exchange server trusts the input issuer and token type, permits this tool’s exchange, and maps the requested operation to allowed downstream actions.",
+        "The warehouse accepts the new credential and trusts its issuer. This actor-aware arrangement also needs an issuance profile that supplies trusted actor evidence and an API that enforces it.",
+      ],
+      responsibilities:
+        "The exchange server decides what it may issue. The warehouse must still enforce Alice’s allowed objects and fields and the tool’s permitted actions. A valid delegated token does not supply those business rules. [See the API’s checks](#step-7).",
+      alternatives: [
+        {
+          condition:
+            "If the warehouse cannot accept a suitable delegated credential or actor evidence, this arrangement does not meet that goal.",
+          label: "Review the enforcement boundary.",
+          href: "#step-7",
+        },
+        {
+          condition:
+            "If a trusted application will enforce user policy while the downstream API authorizes the service, workload access may fit.",
+          label: "Workload identity federation",
+          href: "/flows/workload-identity-federation/",
+        },
+      ],
+    },
+    phases: [
+      {
+        title: "Establish the request",
+        summary: "The tool receives and validates the user’s token.",
+        start: 1,
+        end: 2,
+      },
+      {
+        title: "Issue downstream access",
+        summary:
+          "The issuer evaluates the exchange and creates a token for the warehouse.",
+        start: 3,
+        end: 5,
+      },
+      {
+        title: "Enforce and return",
+        summary:
+          "The warehouse applies policy before data returns through the tool.",
+        start: 6,
+        end: 9,
+      },
+    ],
+    decisions: {
+      presentation: "inline",
+      items: [
+        {
+          atStep: 5,
+          title: "A fresh exchange or a valid cached token",
+          benefit:
+            "A separate warehouse token keeps audiences apart; a fresh exchange lets the issuer evaluate the request again.",
+          cost: "Fresh exchanges add latency and issuer availability dependence. An already-issued token has its own lifetime and revocation behavior.",
+          mitigation: {
+            action:
+              "Where supported, reuse an issued token while it remains valid.",
+            conditions:
+              "Keep cache entries separate by user, current actor, target, effective permissions, sender binding and any required grant context. Reuse only within the same context.",
+            addedCost:
+              "The tool owns cache isolation, protected storage, expiry and renewal handling. This is deployment advice, not a feature guaranteed by token exchange.",
+            remaining:
+              "A cached token may remain usable after upstream authority changes unless the deployment can cut off that issued access. Short validity limits time; it does not eliminate misuse of permitted calls.",
+          },
+          sources: [
+            {
+              label: "RFC 8693 §2.1: input and output tokens",
+              href: "https://www.rfc-editor.org/rfc/rfc8693.html#section-2.1",
+            },
+            {
+              label: "RFC 8693 §4.1: actor identity",
+              href: "https://www.rfc-editor.org/rfc/rfc8693.html#section-4.1",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  fits: [],
+  watchOut: [],
   participants: [
     { id: "agent", label: "Agent", sub: "Has user’s token", role: "agent" },
     { id: "tool", label: "Tool server", sub: "Middle tier", role: "agent" },
@@ -36,7 +109,7 @@ Token exchange is the standard alternative. The middle service presents the toke
       kind: "back",
       label: "Call tool with user’s token",
       title: "The agent calls a tool for the user",
-      body: `The agent already holds an access token obtained with the user’s consent. Its audience is the tool server.`,
+      body: `The agent already holds an access token obtained with the user’s consent. Its audience is the tool server. The listing shows selected illustrative claims, not a complete JWT.`,
       code: {
         lang: "json",
         text: `{
@@ -54,7 +127,7 @@ Token exchange is the standard alternative. The middle service presents the toke
       kind: "self",
       label: "Validate; needs downstream data",
       title: "The tool validates the token and hits a wall",
-      body: `The token is valid here. But to build the report the tool must read from a data warehouse, and token A is not addressed to the warehouse. The tool must not forward it. The MCP specification forbids this outright, calling it token passthrough.`,
+      body: `The tool validates token A and checks that Alice may request this report operation. To build the report it must also read warehouse data. Token A is addressed to the tool, not the warehouse, so the tool must not forward it. The MCP specification forbids this token passthrough. The warehouse’s data-access checks still follow at [step 7](#step-7).`,
       gain: [["tool", "token A (aud: tool)"]],
     },
     {
@@ -63,7 +136,7 @@ Token exchange is the standard alternative. The middle service presents the toke
       kind: "back",
       label: "Token exchange request",
       title: "The tool asks for a token for the next hop",
-      body: `The tool authenticates as itself and presents token A as the \`subject_token\`. It names the audience it needs and the narrowest scope that will do.`,
+      body: `The tool authenticates as itself and presents token A as the \`subject_token\`, requesting the target and actions it needs. In this illustrative profile the issuer establishes the tool’s actor identity from the authenticated client and its policy. Other profiles may require an \`actor_token\` and its type. Client authentication and actor establishment must be agreed with this issuer; a caller-supplied actor name is not evidence. [RFC 8693 §2.1](https://www.rfc-editor.org/rfc/rfc8693.html#section-2.1) defines the request parameters, not a universal delegation policy.`,
       code: {
         lang: "http",
         text: `POST /token HTTP/1.1
@@ -83,7 +156,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "self",
       label: "Policy: may tool act for user?",
       title: "The authorization server decides",
-      body: `This is the control point. The server checks that token A is valid, that this client is allowed to exchange tokens, that the requested audience is permitted for it, and that the requested scope does not exceed what the user originally granted.`,
+      body: `The issuer validates token A under its accepted token profile, permits this tool to exchange it, and checks the requested target and actions against policy. Here it maps the user-authorized \`reports.generate\` operation at the tool to the permitted \`sales.read\` action at the warehouse. These scope strings belong to different APIs; comparing the strings cannot prove that authority was narrowed. The issuer owns that mapping and issues only the downstream access this request is allowed.`,
     },
     {
       from: "as",
@@ -91,7 +164,9 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "resp",
       label: "Token B: sub=user, act=tool",
       title: "A new token that records the delegation",
-      body: `Token B is addressed to the warehouse. Its subject is still Alice. The \`act\` claim says the tool server is the party actually presenting it. If the tool calls yet another service and exchanges again, the previous actor is nested inside the new one, so the chain is preserved.`,
+      body: `Token B is addressed to the warehouse and keeps Alice as its subject. The \`act\` claim is the issuer’s identification of the current actor, the reporting tool. It does not by itself prove that whoever presents this bearer token holds the tool’s key. The listing shows selected illustrative claims, not a complete RFC 9068 token.
+
+A profile may preserve earlier actors as nested \`act\` claims. [RFC 8693 §4.1](https://www.rfc-editor.org/rfc/rfc8693.html#section-4.1) makes that history informational: prior actors are not inputs to access-control decisions. Issuance and consumption of actor evidence depend on the profile and implementation. Verify both with the tokens you will receive; exchange support alone does not promise this output.`,
       code: {
         lang: "json",
         text: `{
@@ -120,7 +195,9 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "self",
       label: "Check aud; read sub and act",
       title: "The API sees both parties",
-      body: `The warehouse can apply Alice’s row-level permissions **and** a rule such as “the reporting tool may read sales data but not payroll,” and can log both identities.`,
+      body: `The warehouse validates the credential from its trusted issuer, including validity and the warehouse audience. This profile requires accepted current-actor evidence; missing or unrecognized evidence fails that policy. Another format may identify the actor differently, so absence of \`act\` is not a universal test for impersonation.
+
+The warehouse then enforces Alice’s allowed rows, objects and fields **and** the reporting tool’s permitted actions, such as reading sales but not payroll. A valid delegated token does not implement these business rules. These [application authorization checks](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) sit outside the exchange protocol. If the warehouse cannot enforce the intended identities, this actor-aware arrangement does not fit; a separately authorized downstream connection or trusted application policy is a different composition.`,
     },
     {
       from: "api",
@@ -136,7 +213,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "resp",
       label: "Tool result",
       title: "The tool returns its result",
-      body: `The agent never held a credential for the warehouse. If the agent’s context is compromised, the attacker gets token A, which is good only at the tool.`,
+      body: `The agent never held the warehouse credential. A stolen token A cannot be used directly at a warehouse that enforces its audience. But a compromised agent may still invoke the tool’s permitted operations and receive their results. Credential separation does not prevent misuse of that allowed access or disclosure of returned data.`,
     },
   ],
   standards: ["rfc8693", "rfc8707", "rfc9068", "mcp-authorization"],
@@ -149,7 +226,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
   notes: [
     {
       title: "Where the agent shows up",
-      body: `In this picture the agent appears in token A as \`client_id\` and vanishes from token B unless the authorization server carries it forward. Several current drafts are about exactly this gap: how to represent an agent, as distinct from the application hosting it, in the \`act\` chain. See the [standards tracker](/standards/?topic=delegation).`,
+      body: `In this picture the agent appears in token A as \`client_id\` and is absent from token B unless the issuer’s profile carries it forward. Earlier actors may be preserved as informational history; they do not automatically become downstream policy inputs. Several current drafts explore representing an agent separately from its hosting application. See the [standards tracker](/standards/?topic=delegation).`,
     },
     {
       title: "A documented implementation",
@@ -157,7 +234,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 
 The same article protects two other data sources using mechanisms other than RFC 8693 token exchange, with different enforcement boundaries. DynamoDB access is limited by IAM, through \`AssumeRoleWithWebIdentity\` with session tags. A knowledge base is filtered in the agent’s own code, which AWS calls application-layer enforcement.
 
-**This is not workload identity.** In [workload identity federation](/flows/workload-identity-federation/) the agent proves what it is and receives access of its own. Here a user’s authority travels with the request, and the downstream system applies that user’s permissions. An agent often needs both: its own identity to authenticate the exchange, and the user’s token as the subject.`,
+In [workload identity federation](/flows/workload-identity-federation/) the workload proves what it is and receives access of its own. A trusted application can still enforce user permissions while using that service access. Here, instead, the downstream credential carries the user’s delegated authority for the receiver to enforce. An agent often needs both its own identity to authenticate the exchange and the user’s token as the subject.`,
     },
   ],
 };

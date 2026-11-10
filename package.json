@@ -3,20 +3,21 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Who’s on First: a field guide to agent authentication and authorization.",
+  "description": "Who\u2019s on First: a field guide to agent authentication and authorization.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "npm run build && wrangler dev",
     "check": "biome check",
     "fmt": "biome check --write",
-    "test": "astro check && node scripts/rating-check.mjs && node scripts/contrast-check.mjs",
+    "test": "astro check && node scripts/rating-check.mjs && node scripts/contrast-check.mjs && node scripts/flow-reading-check.mjs",
     "check:types": "astro check",
     "check:rating": "node scripts/rating-check.mjs",
     "check:contrast": "node scripts/contrast-check.mjs",
     "check:rendered": "node scripts/rendered-check.mjs",
     "generate-types": "wrangler types",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "check:reading": "node scripts/flow-reading-check.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

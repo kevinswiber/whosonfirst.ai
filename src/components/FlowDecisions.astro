@@ -1,0 +1,101 @@
+---
+import type { FlowReading } from "../data/types";
+import { block, esc } from "../lib/md";
+
+type Decisions = NonNullable<FlowReading["decisions"]>;
+type Item = Decisions["items"][number];
+interface Props {
+  decisions: Decisions;
+  atStep?: number;
+}
+const { decisions, atStep } = Astro.props;
+const items =
+  atStep === undefined
+    ? decisions.items
+    : decisions.items.filter((item) => item.atStep === atStep);
+const mitigation = (item: Item) => {
+  const m = item.mitigation;
+  if (!m) return "";
+  const fields = [
+    ["Action", m.action],
+    ["This depends on", m.conditions],
+    ["Added work", m.addedCost],
+    ["What remains", m.remaining],
+  ];
+  return `<details data-reading-optional><summary>Mitigation: ${esc(item.title)}</summary><div class="mitigation-body"><dl>${fields.map(([label, value]) => `<div><dt>${label}</dt><dd>${block(value)}</dd></div>`).join("")}</dl></div></details>`;
+};
+const sources = (item: Item) =>
+  `<ul class="decision-sources">${item.sources.map((s) => `<li><a href="${esc(s.href)}" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ul>`;
+---
+{decisions.presentation === 'inline' ? (
+  items.map((item) => (
+    <aside class="flow-decision" aria-label={item.title}>
+      <h4>{item.title}</h4>
+      <dl class="decision-facts">
+        <div><dt>You gain</dt><dd set:html={block(item.benefit)} /></div>
+        <div><dt>You take on</dt><dd set:html={block(item.cost)} /></div>
+      </dl>
+      <div class="decision-detail" set:html={mitigation(item)} />
+      <div set:html={sources(item)} />
+    </aside>
+  ))
+) : (
+  <div class="flow-decisions">
+    <div class="decision-wide">
+      <table class="decision-table">
+        <caption class="visually-hidden">Implementation choices and their consequences</caption>
+        <thead><tr><th scope="col">Choice</th><th scope="col">You gain</th><th scope="col">You take on</th><th scope="col">Reduce the downside</th></tr></thead>
+        <tbody>{items.map((item) => (
+          <tr>
+            <th scope="row">{item.title}<div set:html={sources(item)} /></th>
+            <td set:html={block(item.benefit)} />
+            <td set:html={block(item.cost)} />
+            <td><div class="decision-detail" set:html={mitigation(item)} /></td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+    <div class="decision-narrow">{items.map((item) => (
+      <article class="flow-decision">
+        <h3>{item.title}</h3>
+        <dl class="decision-facts">
+          <div><dt>You gain</dt><dd set:html={block(item.benefit)} /></div>
+          <div><dt>You take on</dt><dd set:html={block(item.cost)} /></div>
+        </dl>
+        <div class="decision-detail" set:html={mitigation(item)} />
+        <div set:html={sources(item)} />
+      </article>
+    ))}</div>
+  </div>
+)}
+<style>
+  .flow-decision { margin-top: 1.2rem; border-top: 1px solid var(--border-strong); padding-top: 1rem; }
+  h3, h4 { font-family: var(--font-body); font-size: 1.1rem; margin: 0 0 0.6rem; }
+  .decision-facts { margin: 0; }
+  .decision-facts > div + div { margin-top: 0.7rem; }
+  dt, .decision-detail :global(dt) { font-weight: 600; }
+  dd, .decision-detail :global(dd) { margin: 0.15rem 0 0; }
+  dd :global(p), td :global(p), .decision-detail :global(p) { margin: 0; }
+  .decision-detail :global(details) { margin-top: 0.8rem; }
+  .decision-detail :global(summary) { color: var(--accent); cursor: pointer; font-weight: 600; }
+  .decision-detail :global(dl) { margin: 0.8rem 0 0; }
+  .decision-detail :global(dl > div + div) { margin-top: 0.75rem; }
+  :global(.decision-sources) { margin: 0.8rem 0 0; padding-left: 1.1rem; font-size: 0.9rem; font-weight: 400; }
+  .decision-table { table-layout: fixed; width: 100%; }
+  .decision-table th, .decision-table td { width: 25%; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
+  .decision-table th[scope='row'] { font-family: var(--font-body); font-size: 1rem; text-transform: none; letter-spacing: 0; color: var(--fg); }
+  .decision-table th:first-child { width: 19%; }
+  .decision-table th:last-child { width: 31%; }
+  .decision-narrow { display: none; }
+  @media (max-width: 59.99rem) {
+    .decision-wide { display: none; }
+    .decision-narrow { display: block; }
+  }
+  @media print {
+    .decision-wide { display: none; }
+    .decision-narrow { display: block; }
+    .decision-detail :global(details::details-content) { content-visibility: visible; display: block; }
+    .decision-detail :global(details > summary) { display: none; }
+    .decision-detail :global(.mitigation-body) { display: block; }
+  }
+</style>

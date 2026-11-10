@@ -92,6 +92,35 @@ export const REF_ROLE_BLURB: Record<RefRole, string> = {
     "Listed, but the sources read so far do not settle what the flow needs from them.",
 };
 
+/** Optional reading aids for a flow; omitted when the existing explanation is sufficient. */
+export interface FlowReading {
+  brief: {
+    authority: string;
+    benefit: string;
+    cost: string;
+    prerequisites: string[];
+    responsibilities: string;
+    alternatives: { condition: string; label: string; href: string }[];
+  };
+  phases?: { title: string; summary: string; start: number; end: number }[];
+  decisions?: {
+    presentation: "inline" | "table";
+    items: {
+      atStep: number;
+      title: string;
+      benefit: string;
+      cost: string;
+      mitigation?: {
+        action: string;
+        conditions: string;
+        addedCost: string;
+        remaining: string;
+      };
+      sources: { label: string; href: string }[];
+    }[];
+  };
+}
+
 export interface Flow {
   slug: string;
   title: string;
@@ -104,6 +133,7 @@ export interface Flow {
   tagline: string;
   /** Opening paragraph(s) on the flow page. */
   summary: string;
+  reading?: FlowReading;
   fits: string[];
   watchOut: string[];
   participants: Participant[];
@@ -119,7 +149,7 @@ export interface Flow {
   basis?: string[];
   related: string[];
   /** Optional closing notes rendered after the diagram, md-lite blocks. */
-  notes?: { title: string; body: string }[];
+  notes?: { id?: string; title: string; body: string }[];
   /**
    * For a flow that covers more than its diagram draws. `steps` says, above the diagram, which
    * arrangement is drawn and what else exists. `references` says, beside the required references,

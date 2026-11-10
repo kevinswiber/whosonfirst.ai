@@ -1,3 +1,4 @@
+import { validateFlowReading } from "../flow-reading";
 import type { Rating } from "../rating";
 import { levelOf, rate } from "../rating";
 import { std } from "../standards";
@@ -47,6 +48,8 @@ export const flows: Flow[] = [
 ];
 
 const bySlug = new Map(flows.map((f) => [f.slug, f]));
+const knownSlugs = new Set(bySlug.keys());
+for (const f of flows) validateFlowReading(f, knownSlugs);
 
 // A flow that classifies its references classifies all of them, bases itself on required ones,
 // and carries the rating those required references give it.

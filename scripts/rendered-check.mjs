@@ -11,6 +11,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
  *
  *   npm run build && node scripts/rendered-check.mjs
  *   node scripts/rendered-check.mjs --verbose           list every measurement
+ *   node scripts/rendered-check.mjs --only=pilot        two-flow focused checks
  *
  * Needs Chromium for Playwright: `npx playwright install chromium`.
  * Exits 1 if any check fails.
@@ -232,8 +233,372 @@ const sideways = () => {
   };
 };
 
+// The two opt-in pages get a small, separately runnable interaction check.
+async function checkPilot(browser) {
+  for (const [slug, count] of [
+    ["token-exchange", 9],
+    ["workload-identity-federation", 8],
+  ]) {
+    const url = `${origin}/flows/${slug}/`;
+    for (const width of [1280, 900, 320]) {
+      const context = await browser.newContext({
+        viewport: { width, height: 900 },
+        reducedMotion: "reduce",
+      });
+      const page = await context.newPage();
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(String(error)));
+      const where = `pilot ${slug} ${width}px`;
+      await page.goto(`${url}#step-${count}`);
+      await page.locator("flow-diagram[data-js]").waitFor();
+      await page.evaluate(() => document.fonts.ready);
+      const inView = async (id) =>
+        page.locator(id).evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            getComputedStyle(el).display !== "none" &&
+            r.top >= 0 &&
+            r.top < innerHeight - 80
+          );
+        });
+      await page
+        .waitForFunction(
+          (id) => {
+            const el = document.querySelector(id);
+            const r = el.getBoundingClientRect();
+            return (
+              location.hash === id &&
+              !el.hidden &&
+              r.top >= 0 &&
+              r.top < innerHeight - 80
+            );
+          },
+          `#step-${count}`,
+          { timeout: 3000 },
+        )
+        .catch(() => {});
+      record(
+        where,
+        "pilot: initial step hash reveals explanation in viewport",
+        await inView(`#step-${count}`),
+      );
+      const brief = page.locator(".flow-brief");
+      record(
+        where,
+        "pilot: required brief is open before the walkthrough",
+        (await brief.count()) === 1 &&
+          (await brief.locator("details").count()) === 0 &&
+          (await page.locator(".fit").count()) === 0,
+      );
+      const links = await page
+        .locator(".phase-outline a")
+        .evaluateAll((anchors) => anchors.map((a) => a.getAttribute("href")));
+      for (const href of links) {
+        const link = page.locator(`.phase-outline a[href="${href}"]`);
+        await link.focus();
+        await link.press("Enter");
+        await page.waitForURL(`${url}${href}`);
+        await page
+          .waitForFunction(
+            (id) => {
+              const el = document.querySelector(id);
+              const r = el.getBoundingClientRect();
+              return (
+                location.hash === id &&
+                !el.hidden &&
+                r.top >= 0 &&
+                r.top < innerHeight - 80
+              );
+            },
+            href,
+            { timeout: 3000 },
+          )
+          .catch(() => {});
+        record(
+          where,
+          `pilot: phase ${href} selects and reveals its step`,
+          await inView(href),
+        );
+      }
+      if (width >= 768) await page.locator('[data-act="all"]').click();
+      record(
+        where,
+        "pilot: full narrative exposes every step",
+        (await page.locator(".flow-step:visible").count()) === count,
+      );
+      const anchorProblems = await page.evaluate(() => {
+        const ids = [...document.querySelectorAll("[id]")].map((el) => el.id);
+        const duplicate = ids.filter((id, n) => ids.indexOf(id) !== n);
+        const missing = [...document.querySelectorAll('a[href^="#"]')]
+          .filter((a) => {
+            const id = decodeURIComponent(a.getAttribute("href").slice(1));
+            return id && !document.getElementById(id);
+          })
+          .map((a) => a.getAttribute("href"));
+        return [...duplicate, ...missing];
+      });
+      record(
+        where,
+        "pilot: local anchors resolve uniquely",
+        anchorProblems.length === 0,
+        anchorProblems.join(", "),
+      );
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - innerWidth,
+      );
+      record(
+        where,
+        "pilot: no sideways page overflow",
+        overflow <= 1,
+        `${overflow}px`,
+      );
+      if (slug === "workload-identity-federation") {
+        const section = page.locator('section[aria-labelledby="decisions"]');
+        const tree = await section.ariaSnapshot();
+        const tableCount = (tree.match(/- table/g) ?? []).length;
+        const cards = await section
+          .locator(".decision-narrow article:visible")
+          .count();
+        record(
+          where,
+          "pilot: one accessible decision presentation",
+          width >= 960
+            ? tableCount === 1 && cards === 0
+            : tableCount === 0 && cards === 3,
+        );
+      }
+      record(
+        where,
+        "pilot: authority, prerequisites, responsibility and alternatives stay visible",
+        (await brief.locator(".brief-facts").isVisible()) &&
+          (await brief.locator(".prerequisites").isVisible()) &&
+          (await brief.locator(".responsibility").isVisible()) &&
+          (await brief.locator(".alternatives a").first().isVisible()),
+      );
+      if (slug === "workload-identity-federation") {
+        const permissions = page.locator(
+          'section[aria-labelledby="permissions"]',
+        );
+        const report = permissions.locator(".part").last();
+        record(
+          where,
+          "pilot: report authorization example is open with its sources",
+          (await report.isVisible()) &&
+            (await report.locator("details").count()) === 0 &&
+            (await report.locator(".sources a").count()) === 3 &&
+            /Alice/.test(await report.textContent()) &&
+            /report B/.test(await report.textContent()),
+        );
+        record(
+          where,
+          "pilot: environment, example, implementations and cut-off notes remain",
+          (await page
+            .locator(
+              "#comparison, #example, #implementations, #stopping-access, #request-formats",
+            )
+            .count()) === 5,
+        );
+      }
+      const optional = page
+        .locator("details[data-reading-optional]:visible")
+        .first();
+      await optional.locator("summary").focus();
+      await optional.locator("summary").press("Enter");
+      record(
+        where,
+        "pilot: keyboard opens optional detail and retains visible focus",
+        await optional.evaluate(
+          (el) =>
+            el.open &&
+            document.activeElement === el.querySelector("summary") &&
+            getComputedStyle(document.activeElement).outlineStyle !== "none",
+        ),
+      );
+      await optional.locator("summary").press("Space");
+      record(
+        where,
+        "pilot: keyboard closes optional detail",
+        await optional.evaluate((el) => !el.open),
+      );
+      if (width === 1280 || width === 320) {
+        await page.addScriptTag({ path: axePath });
+        for (const theme of THEMES) {
+          await page.emulateMedia({ colorScheme: theme });
+          // Measure the settled theme, after link-color transitions finish.
+          await page.evaluate(async () => {
+            await new Promise(requestAnimationFrame);
+            await Promise.all(
+              document.getAnimations().map((a) => a.finished.catch(() => {})),
+            );
+          });
+          const violations = await page.evaluate(async () => {
+            const result = await window.axe.run(document, {
+              runOnly: {
+                type: "tag",
+                values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+              },
+            });
+            return result.violations.map(
+              (v) => `${v.id}: ${v.nodes[0].target.join(" ")}`,
+            );
+          });
+          record(
+            `${where} ${theme}`,
+            "pilot: axe WCAG A/AA",
+            violations.length === 0,
+            violations.join("; "),
+          );
+        }
+        const headings = await page.evaluate(() => {
+          let level = 0;
+          const problems = [];
+          for (const h of document.querySelectorAll(
+            "main h1, main h2, main h3, main h4, main h5, main h6",
+          )) {
+            if (!h.checkVisibility()) continue;
+            const next = Number(h.tagName.slice(1));
+            if (next > level + 1)
+              problems.push(`${level} to ${next}: ${h.textContent.trim()}`);
+            level = next;
+          }
+          return problems;
+        });
+        record(
+          where,
+          "pilot: visible headings do not skip levels",
+          headings.length === 0,
+          headings.join("; "),
+        );
+      }
+      if (width === 1280) {
+        await page.setViewportSize({ width: 320, height: 900 });
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await page.locator('[data-act="all"]').click();
+        const link = page.locator(".phase-outline a").last();
+        await link.focus();
+        await link.press("Enter");
+        const href = await link.getAttribute("href");
+        await page.waitForURL(`${url}${href}`);
+        await page
+          .waitForFunction(
+            (id) => {
+              const el = document.querySelector(id),
+                r = el.getBoundingClientRect();
+              return !el.hidden && r.top >= 0 && r.top < innerHeight - 80;
+            },
+            href,
+            { timeout: 3000 },
+          )
+          .catch(() => {});
+        record(
+          where,
+          "pilot: step navigation survives viewport and All steps changes",
+          await inView(href),
+        );
+      }
+      record(
+        where,
+        "pilot: no script errors",
+        errors.length === 0,
+        errors.join("; "),
+      );
+      await context.close();
+    }
+    for (const javaScriptEnabled of [true, false]) {
+      const context = await browser.newContext({
+        viewport: { width: 1280, height: 900 },
+        javaScriptEnabled,
+      });
+      const page = await context.newPage();
+      await page.goto(url);
+      if (javaScriptEnabled)
+        await page.locator("flow-diagram[data-js]").waitFor();
+      const where = `pilot ${slug} ${javaScriptEnabled ? "JS" : "no JS"}`;
+      if (!javaScriptEnabled) {
+        record(
+          where,
+          "pilot: no-JavaScript content is complete",
+          (await page.locator(".flow-step:visible").count()) === count &&
+            (await page.locator(".phase-outline a").count()) === 3 &&
+            (await page.locator(".decision-sources a").count()) > 0,
+        );
+      }
+      // Close optional disclosures first; print must not depend on interaction or JS.
+      await page
+        .locator("details[data-reading-optional]")
+        .evaluateAll((details) =>
+          details.forEach((d) => {
+            d.open = false;
+          }),
+        );
+      await page.emulateMedia({ media: "print" });
+      const print = await page.evaluate(() => {
+        const visible = (el) =>
+          el.getBoundingClientRect().height > 0 &&
+          getComputedStyle(el).display !== "none";
+        const panel = getComputedStyle(document.querySelector(".flow-panel"));
+        const mitigations = [
+          ...document.querySelectorAll(".mitigation-body"),
+        ].filter((el) => !el.closest(".decision-wide"));
+        return {
+          steps: [...document.querySelectorAll(".flow-step")].filter(visible)
+            .length,
+          complete:
+            mitigations.length > 0 &&
+            mitigations.every(
+              (el) =>
+                visible(el) &&
+                el.getBoundingClientRect().height >= el.scrollHeight - 1,
+            ),
+          unclamped:
+            panel.maxHeight === "none" &&
+            panel.overflowY === "visible" &&
+            panel.position === "static",
+          controlsHidden: !visible(document.querySelector(".flow-bar")),
+        };
+      });
+      record(
+        where,
+        "pilot: print exposes all steps and closed mitigation content",
+        print.steps === count &&
+          print.complete &&
+          print.unclamped &&
+          print.controlsHidden,
+        JSON.stringify(print),
+      );
+      await context.close();
+    }
+  }
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${origin}/flows/client-credentials/`);
+  record(
+    "pilot fallback",
+    "pilot: unpiloted flow retains fit and old rendering",
+    (await page.locator(".fit").count()) === 1 &&
+      (await page
+        .locator(".flow-brief, flow-diagram[data-reading]")
+        .count()) === 0,
+  );
+  await context.close();
+}
+
 /* ---------- run ---------- */
 const browser = await chromium.launch();
+await checkPilot(browser);
+if (process.argv.includes("--only=pilot")) {
+  await browser.close();
+  server.close();
+  const failed = results.filter((r) => !r.ok);
+  for (const r of verbose ? results : failed)
+    console.log(
+      `${r.ok ? "✓" : "✗"} ${r.where}: ${r.check}${r.detail ? ` — ${r.detail}` : ""}`,
+    );
+  console.log(
+    `\n${results.length} focused two-flow checks, ${failed.length} failed. Full matrix not run.`,
+  );
+  process.exit(failed.length ? 1 : 0);
+}
 for (const theme of THEMES) {
   for (const vp of VIEWPORTS) {
     const ctx = await browser.newContext({
@@ -948,7 +1313,7 @@ else
       `✗ ${r.where.padEnd(44)} ${r.check}${r.detail ? `  — ${r.detail}` : ""}`,
     );
 console.log(
-  `\n${PAGES.length} pages × ${VIEWPORTS.length} viewports × ${THEMES.length} themes, and ${NARROW_PAGES.length} pages at ${NARROW.width}px`,
+  `\n${PAGES.length} pages × ${VIEWPORTS.length} viewports × ${THEMES.length} themes, and ${NARROW_PAGES.length} pages at ${NARROW.width}px, plus the two-flow pilot`,
 );
 for (const [check, { pass, fail }] of byCheck)
   console.log(
