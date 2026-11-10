@@ -363,7 +363,28 @@ async function checkPilot(browser) {
           await inView(href),
         );
       }
+      const scopeGap = () =>
+        page
+          .locator(".drawn")
+          .evaluate(
+            (el) =>
+              el.getBoundingClientRect().top -
+              document.querySelector("flow-diagram").getBoundingClientRect()
+                .bottom,
+          );
+      if (slug === "workload-identity-federation")
+        record(
+          where,
+          "pilot: diagram explanation has space in stepper or narrow mode",
+          (await scopeGap()) > 0,
+        );
       if (width >= 768) await page.locator('[data-act="all"]').click();
+      if (slug === "workload-identity-federation")
+        record(
+          where,
+          "pilot: diagram explanation has space in All steps",
+          (await scopeGap()) > 0,
+        );
       record(
         where,
         "pilot: full narrative exposes every step",
@@ -447,7 +468,7 @@ async function checkPilot(browser) {
         record(
           where,
           "pilot: contents tracks scrolling without taking diagram space",
-          width >= 1536
+          width >= 1568
             ? layout.position === "sticky" &&
                 layout.top > 60 &&
                 layout.top < 100 &&
@@ -573,6 +594,63 @@ async function checkPilot(browser) {
           headings.join("; "),
         );
       }
+      if (slug === "workload-identity-federation" && width === 1600) {
+        const gutter = await page.addStyleTag({
+          content: "html { scrollbar-gutter: stable; }",
+        });
+        for (const boundary of [1536, 1568]) {
+          await page.setViewportSize({ width: boundary, height: 900 });
+          const layout = await page.evaluate(() => ({
+            position: getComputedStyle(document.querySelector("flow-contents"))
+              .position,
+            width: document
+              .querySelector("flow-diagram")
+              .getBoundingClientRect().width,
+            full:
+              parseFloat(getComputedStyle(document.documentElement).fontSize) *
+              72,
+          }));
+          record(
+            where,
+            `pilot: sidebar breakpoint preserves width with a scrollbar at ${boundary}px`,
+            boundary === 1536
+              ? layout.position === "static"
+              : layout.position === "sticky" &&
+                  Math.abs(layout.width - layout.full) <= 1,
+            JSON.stringify(layout),
+          );
+        }
+        await gutter.evaluate((el) => el.remove());
+        await page.setViewportSize({ width: 1600, height: 3000 });
+        for (const id of ["standards", "related"]) {
+          await page.locator(`flow-contents a[href="#${id}"]`).click();
+          await page.waitForURL(`${url}#${id}`);
+          await page
+            .waitForFunction(
+              (id) =>
+                document.querySelector(
+                  'flow-contents [aria-current="location"]',
+                )?.hash === `#${id}`,
+              id,
+              { timeout: 3000 },
+            )
+            .catch(() => {});
+          record(
+            where,
+            `pilot: tall viewport retains requested ${id} at page bottom`,
+            await page.evaluate(
+              (id) =>
+                window.scrollY + innerHeight >=
+                  document.documentElement.scrollHeight - 2 &&
+                document.querySelector(
+                  'flow-contents [aria-current="location"]',
+                )?.hash === `#${id}`,
+              id,
+            ),
+          );
+        }
+        await page.setViewportSize({ width: 1600, height: 900 });
+      }
       if (width === 1280) {
         await page.setViewportSize({ width: 320, height: 900 });
         await page.setViewportSize({ width: 1280, height: 900 });
@@ -653,6 +731,7 @@ async function checkPilot(browser) {
           el.getBoundingClientRect().height > 0 &&
           getComputedStyle(el).display !== "none";
         const panel = getComputedStyle(document.querySelector(".flow-panel"));
+        const scope = document.querySelector(".drawn-after");
         const mitigations = [
           ...document.querySelectorAll(".mitigation-body"),
         ].filter((el) => !el.closest(".decision-wide"));
@@ -670,6 +749,11 @@ async function checkPilot(browser) {
             panel.maxHeight === "none" &&
             panel.overflowY === "visible" &&
             panel.position === "static",
+          scopeClear:
+            !scope ||
+            scope.getBoundingClientRect().top >
+              document.querySelector("flow-diagram").getBoundingClientRect()
+                .bottom,
           controlsHidden:
             !visible(document.querySelector(".flow-bar")) &&
             [...document.querySelectorAll("flow-contents")].every(
@@ -683,6 +767,7 @@ async function checkPilot(browser) {
         print.steps === count &&
           print.complete &&
           print.unclamped &&
+          print.scopeClear &&
           print.controlsHidden,
         JSON.stringify(print),
       );

@@ -44,7 +44,14 @@ const { items } = Astro.props;
         if (target.getBoundingClientRect().top <= threshold) current = index;
         else break;
       }
-      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) current = this.links.length - 1;
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        // A tall viewport may bottom out before the requested heading reaches the header.
+        const requested = this.links.findIndex((link) => link.hash === window.location.hash);
+        const top = this.targets[requested]?.getBoundingClientRect().top;
+        current = top !== undefined && top >= threshold - 2 && top < window.innerHeight
+          ? requested
+          : this.links.length - 1;
+      }
       for (const [index, link] of this.links.entries()) {
         if (index === current) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');
@@ -69,7 +76,7 @@ const { items } = Astro.props;
   li { margin: 0; }
   a { display: block; border-inline-start: 2px solid transparent; padding: 0.15rem 0.35rem; font-size: 0.92rem; }
   a[aria-current="location"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  @media (min-width: 96rem) {
+  @media (min-width: 98rem) {
     nav { max-height: calc(100dvh - 6rem); overflow-y: auto; scrollbar-width: thin; padding-block: 0.2rem; }
     ul { display: block; }
     li + li { margin-top: 0.35rem; }

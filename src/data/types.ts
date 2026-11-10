@@ -151,8 +151,9 @@ export interface Flow {
   /** Optional closing notes rendered after the diagram, md-lite blocks. */
   notes?: { id?: string; title: string; body: string }[];
   /**
-   * For a flow that covers more than its diagram draws. `steps` says, above the diagram, which
-   * arrangement is drawn and what else exists. `references` says, beside the required references,
+   * For a flow that covers more than its diagram draws. `steps` names the arrangement drawn and
+   * its variants: above the diagram on ordinary pages, after it on pages with `reading` aids.
+   * `references` says, beside the required references,
    * that they and the rating belong to that arrangement and not to every implementation.
    */
   illustrated?: { steps: string; references: string };

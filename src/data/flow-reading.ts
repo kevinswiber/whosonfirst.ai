@@ -25,19 +25,32 @@ export function validateFlowReading(
     fail("brief.prerequisites must not be empty");
   for (const value of brief.prerequisites) text(value, "brief prerequisite");
 
-  const anchors = new Set(["walkthrough", "fit", "standards"]);
+  const anchors = new Set([
+    "main",
+    "site-nav",
+    "walkthrough",
+    "fit",
+    "standards",
+  ]);
   for (let n = 1; n <= flow.steps.length; n++) anchors.add(`step-${n}`);
   if (flow.related.length) anchors.add("related");
   if (flow.comparison) anchors.add("comparison");
   if (flow.example) anchors.add("example");
   if (reading.decisions?.presentation === "table") anchors.add("decisions");
-  for (const section of flow.sections ?? []) anchors.add(section.id);
+  if (
+    flow.slug === "workload-identity-federation" &&
+    (flow.watchOut.length || flow.notes?.length)
+  )
+    anchors.add("cautions");
+  const addAnchor = (id: string, kind: string) => {
+    text(id, `${kind} id`);
+    if (/\s|#/.test(id)) fail(`invalid ${kind} id "${id}"`);
+    if (anchors.has(id)) fail(`duplicate ${kind} id "${id}"`);
+    anchors.add(id);
+  };
+  for (const section of flow.sections ?? []) addAnchor(section.id, "section");
   for (const note of flow.notes ?? []) {
-    if (note.id === undefined) continue;
-    text(note.id, "note id");
-    if (/\s|#/.test(note.id)) fail(`invalid note id "${note.id}"`);
-    if (anchors.has(note.id)) fail(`duplicate note id "${note.id}"`);
-    anchors.add(note.id);
+    if (note.id !== undefined) addAnchor(note.id, "note");
   }
   for (const alternative of brief.alternatives) {
     text(alternative.condition, "alternative condition");

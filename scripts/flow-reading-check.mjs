@@ -6,6 +6,7 @@ const fixture = () => ({
   slug: "example",
   steps: [{}, {}, {}],
   related: ["other"],
+  watchOut: [],
   notes: [{ id: "stopping", title: "Stopping", body: "Detail." }],
   reading: {
     brief: {
@@ -80,6 +81,12 @@ check("valid table and its local anchor", () => {
   f.reading.brief.alternatives[1].href = "#decisions";
   validateFlowReading(f, slugs);
 });
+check("federation cautions is a valid local anchor", () => {
+  const f = fixture();
+  f.slug = "workload-identity-federation";
+  f.reading.brief.alternatives[1].href = "#cautions";
+  validateFlowReading(f, slugs);
+});
 const reject = (name, change, diagnostic) =>
   check(name, () => {
     const f = fixture();
@@ -148,6 +155,44 @@ reject(
     f.notes[0].id = "step-1";
   },
   /duplicate note id/,
+);
+for (const id of ["fit", "step-1", "main", "site-nav"]) {
+  reject(
+    `section id collides with ${id}`,
+    (f) => {
+      f.sections = [{ id, title: "Collision", body: "Detail." }];
+    },
+    /duplicate section id/,
+  );
+}
+reject(
+  "repeated section id",
+  (f) => {
+    f.sections = [{ id: "extra" }, { id: "extra" }];
+  },
+  /duplicate section id/,
+);
+reject(
+  "note id collides with section",
+  (f) => {
+    f.sections = [{ id: "stopping" }];
+  },
+  /duplicate note id/,
+);
+reject(
+  "note id collides with federation cautions",
+  (f) => {
+    f.slug = "workload-identity-federation";
+    f.notes[0].id = "cautions";
+  },
+  /duplicate note id/,
+);
+reject(
+  "cautions absent outside federation pilot",
+  (f) => {
+    f.reading.brief.alternatives[1].href = "#cautions";
+  },
+  /unknown local anchor/,
 );
 reject(
   "unsupported alternative route",

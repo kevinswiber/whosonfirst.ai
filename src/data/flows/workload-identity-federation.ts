@@ -308,7 +308,7 @@ The credential carries the workload’s access, not a person’s grant. For a us
     "aws-sts-web-identity": "optional", // its request format and what it returns
     "aws-outbound-federation": "optional", // AWS as the identity provider
     "gcp-wif": "optional", // one receiving system
-    "gcp-wif-x509": "optional", // a proof other than a JWT, named above the diagram and in the cautions; not drawn
+    "gcp-wif-x509": "optional", // a proof other than a JWT, named after the diagram and in the request-format notes; not drawn
     "entra-wif": "optional", // one receiving system
     "aws-iam-roles": "background", // native identity, named as the contrast with federation
     "gcp-auth": "background", // native identity, named as the contrast with federation

@@ -271,7 +271,7 @@ const details = [
         </nav>
       )}
       <FlowDiagram flow={flow} />
-      {flow.reading && flow.illustrated && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
+      {flow.reading && flow.illustrated && <div class="prose drawn drawn-after" set:html={block(flow.illustrated.steps)} />}
     </section>
 
     {flow.reading && <FlowBrief brief={flow.reading.brief} />}
@@ -491,7 +491,7 @@ const details = [
 <style>
   .flow-content { display: contents; }
   .with-contents, .contents-page-head { --contents-width: 11rem; --contents-gap: 1.5rem; }
-  @media (min-width: 96rem) {
+  @media (min-width: 98rem) {
     .body.with-contents, .contents-page-head .wrap {
       max-width: calc(var(--wide) + var(--contents-width) + var(--contents-gap) + 2 * var(--gutter));
     }
@@ -586,10 +586,11 @@ const details = [
     background: var(--bg-raised);
   }
 
-  /* what the diagram draws, said before it */
+  /* Ordinary pages introduce the diagram here; reading pages explain variants after it. */
   .drawn {
     margin: -0.6rem 0 1.4rem;
   }
+  .drawn-after { margin: 1.25rem 0 0; }
   .drawn :global(p) {
     margin: 0;
   }
