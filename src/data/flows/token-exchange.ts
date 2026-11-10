@@ -9,7 +9,7 @@ export const tokenExchange: Flow = {
   maturity: "stable",
   tagline:
     "Obtain a token for the next API, with user and actor identity when the supported profile carries both.",
-  summary: `A reporting tool needs warehouse data for Alice. It exchanges the user token it received for a separate token addressed to the warehouse. The walkthrough illustrates an actor-aware delegation profile; supporting token exchange alone does not guarantee those actor semantics.`,
+  summary: `A reporting tool exchanges Alice’s token for a separate token addressed to the warehouse. This diagram shows an actor-aware delegation profile; the warehouse still enforces Alice’s permissions and the tool’s allowed actions.`,
   reading: {
     brief: {
       authority:

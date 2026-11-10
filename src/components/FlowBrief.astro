@@ -6,8 +6,8 @@ interface Props {
 }
 const { brief } = Astro.props;
 ---
-<section class="flow-brief" aria-label="Before you choose this flow">
-  <h2>Before you choose this flow</h2>
+<section class="flow-brief" aria-labelledby="fit">
+  <h2 id="fit">Does this flow fit?</h2>
   <div class="brief-columns">
     <dl class="brief-facts">
       <div><dt>Whose authority?</dt><dd set:html={block(brief.authority)} /></div>

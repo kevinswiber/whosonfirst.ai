@@ -285,10 +285,27 @@ async function checkPilot(browser) {
       const brief = page.locator(".flow-brief");
       record(
         where,
-        "pilot: required brief is open before the walkthrough",
+        "pilot: required brief stays open after the walkthrough",
         (await brief.count()) === 1 &&
           (await brief.locator("details").count()) === 0 &&
-          (await page.locator(".fit").count()) === 0,
+          (await page.locator(".fit").count()) === 0 &&
+          (await brief.evaluate((el) =>
+            Boolean(
+              document
+                .querySelector('section[aria-labelledby="walkthrough"]')
+                .compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
+            ),
+          )),
+      );
+      const fitLink = page.locator('.reading-jumps a[href="#fit"]');
+      await fitLink.focus();
+      await fitLink.press("Enter");
+      await page.waitForURL(`${url}#fit`);
+      record(
+        where,
+        "pilot: fit jump reaches the open decision brief",
+        (await inView("#fit")) &&
+          (await page.locator("#fit").textContent()) === "Does this flow fit?",
       );
       const links = await page
         .locator(".phase-outline a")

@@ -9,7 +9,7 @@ export const workloadIdentityFederation: Flow = {
   maturity: "stable",
   tagline:
     "Your agent uses an identity established by its runtime to obtain short-lived access from a system that trusts that identity.",
-  summary: `An agent uses an identity established by its runtime to obtain access in another trust domain. That trust crossing is federation, even when both systems run in the same cloud. The walkthrough shows one JWT-based exchange; a [Kubernetes pod](#example) provides the worked example.`,
+  summary: `An agent uses its runtime identity to obtain access in another trust domain. This diagram shows JWT-based workload access using OIDC discovery; user-level permissions require separate enforcement.`,
   reading: {
     brief: {
       authority:

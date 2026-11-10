@@ -25,7 +25,7 @@ export function validateFlowReading(
     fail("brief.prerequisites must not be empty");
   for (const value of brief.prerequisites) text(value, "brief prerequisite");
 
-  const anchors = new Set(["walkthrough", "standards"]);
+  const anchors = new Set(["walkthrough", "fit", "standards"]);
   for (let n = 1; n <= flow.steps.length; n++) anchors.add(`step-${n}`);
   if (flow.related.length) anchors.add("related");
   if (flow.comparison) anchors.add("comparison");

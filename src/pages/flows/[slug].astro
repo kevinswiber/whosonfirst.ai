@@ -218,16 +218,13 @@ const details = [
       </aside>}
     </div>
 
-    {flow.reading && <FlowBrief brief={flow.reading.brief} />}
     {flow.reading && (
       <nav class="reading-jumps" aria-label="On this page">
-        <a href="#walkthrough">Walkthrough</a>
-        {flow.reading.decisions?.presentation === "table" && <a href="#decisions">Implementation choices</a>}
-        {flow.comparison && <a href="#comparison">By environment</a>}
-        {flow.example && <a href="#example">Worked example</a>}
-        {flow.sections?.map((section) => <a href={`#${section.id}`}>{section.title}</a>)}
+        <a href="#walkthrough">Diagram</a>
+        <a href="#fit">Fit &amp; requirements</a>
+        {flow.reading.decisions && <a href={flow.reading.decisions.presentation === "table" ? "#decisions" : `#step-${flow.reading.decisions.items[0].atStep}`}>Implementation choices</a>}
+        {flow.example && <a href="#example">Examples</a>}
         <a href="#standards">Sources</a>
-        {rel.length > 0 && <a href="#related">Related flows</a>}
       </nav>
     )}
 
@@ -240,19 +237,21 @@ const details = [
           <kbd>→</kbd> or select any arrow.</span>
         </p>
       </div>
-      {flow.illustrated && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
+      {flow.illustrated && !flow.reading && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
       {flow.reading?.phases && (
         <nav class="phase-outline" aria-label="Walkthrough phases">
           <ol>{flow.reading.phases.map((phase) => (
             <li>
               <a href={`#step-${phase.start}`}>{phase.title} <span>({phase.start === phase.end ? "step" : "steps"} {phase.start}{phase.end !== phase.start && `–${phase.end}`})</span></a>
-              <p set:html={inline(phase.summary)} />
             </li>
           ))}</ol>
         </nav>
       )}
       <FlowDiagram flow={flow} />
+      {flow.reading && flow.illustrated && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
     </section>
+
+    {flow.reading && <FlowBrief brief={flow.reading.brief} />}
 
     {flow.reading?.decisions?.presentation === "table" && (
       <section aria-labelledby="decisions">
@@ -470,13 +469,11 @@ const details = [
   .reading-intro .prose { max-width: var(--prose); }
   .reading-jumps { display: flex; flex-wrap: wrap; gap: 0.5rem 1.3rem; margin-top: 1.3rem; }
   .phase-outline { margin: 1.25rem 0; }
-  .phase-outline ol { display: grid; gap: 1rem 1.5rem; margin: 0; padding-left: 1.4rem; }
+  .phase-outline ol { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; margin: 0; padding-left: 1.4rem; }
   .phase-outline a { font-weight: 600; }
   .phase-outline span { font-weight: 400; white-space: nowrap; }
-  .phase-outline p { margin: 0.25rem 0 0; }
   .cols.notes-only { grid-template-columns: minmax(0, 1fr); }
   .notes-only .notes { max-width: var(--prose); }
-  @media (min-width: 60rem) { .phase-outline ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
   /* arrow keys only step the diagram where it is a stepper */
   @media (max-width: 47.99rem) {
