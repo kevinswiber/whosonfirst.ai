@@ -146,6 +146,18 @@ These pages describe products, and products change stage and name without notice
 
 **`src/data/flows/token-exchange.ts`.** The documented implementation and its linked AWS source.
 
+**`src/data/examples/` and `src/pages/examples/`.** The worked examples. Every row of a build section that names a product cites a page in `src/data/examples/sources.ts`; open each and check that the row still follows it and the link still resolves. The facts most likely to move:
+
+- Okta: the claims in an access token (`cid`, `uid`, `scp`), that a custom authorization server needs API Access Management, the consent defaults, and in the token exchange guide the `act` claim, the single-server audience and trusted servers
+- Auth0: which claim names the application under each access token profile (`azp`, `client_id`), skipping consent for first-party applications, the Custom API client and client grant that on-behalf-of exchange needs, its limits, and what Token Vault says it stores and returns
+- Microsoft Entra: `azp` and `appid` by token version, `scp`, user and admin consent, that the on-behalf-of flow is for user principals and is not RFC 8693, and the default refresh token lifetime
+- Keycloak: that standard token exchange is supported and on by default, and what an exchange may ask for by default
+- AWS: the AgentCore article behind the Salesforce path
+- Google Cloud: the stage of Agent Identity and what its auth manager returns
+- Agent Substrate, agentgateway, Infisical Agent Vault and the Kubernetes Agent Sandbox: version or stage, and where each says credentials are added
+
+An evidence label is a claim too. Check that a combination labelled "documented together" is still documented as one flow, and whether a part labelled "to design and verify", "not confirmed" or "not established" has since been documented. If it has, the row and the label both change.
+
 **Platform entries in the tracker.** `aws-*`, `gcp-*`, `entra-wif`, `azure-managed-identities`, `github-actions-oidc`. Each `detail` states one or two specific facts (a default session length, a required permission, "wildcards are not supported"). Check that fact and that the `url` resolves to the page meant.
 
 **`src/pages/deployments/kubernetes.mdx`.** The table of features and stages, including the two rows marked Beta.
@@ -198,8 +210,9 @@ For the person, or the session, that makes the changes. One fact is often stated
    - "verified in November 2026" in `src/pages/about.mdx`
    - "reviewed in November 2026" in the callout of `src/pages/deployments/agent-platforms.mdx`
    - "read in November 2026" in `src/data/flows/workload-identity-federation.ts`
+   - `SOURCES_READ` in `src/data/examples/index.ts`, shown on each worked example as "Sources read"
 
-   The last two are dates for those pages alone. Change them only if those pages were re-read.
+   The last three are dates for those pages alone. Change them only if those pages were re-read.
 7. **How facts were checked.** `src/pages/about.mdx` and the Accuracy section of `README.md` say which facts came from primary sources and which were reported. If a run read process states from the datatracker itself, that description changes.
 8. Run `npm run check`, `npm test` and `npm run build`.
 
@@ -240,10 +253,12 @@ developer.hashicorp.com
 developers.cloudflare.com
 platform.claude.com
 developers.openai.com
+agentgateway.dev
+infisical.com
 ```
 
 Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the flows' `sources` link to, plus what the checks above read: `author-tools.ietf.org` for diffs between draft revisions, `api.github.com` and `raw.githubusercontent.com` for releases and files of projects hosted on GitHub, and `www.agenticcommerce.dev`, where `agenticcommerce.dev` redirects. From `developer.okta.com` on, they are the documentation sites of the vendors on the agent platforms page, which links to none of them; they are where that review starts, and a vendor may keep the relevant page elsewhere.
 
-When a link is added to the tracker or to a flow's `sources`, add its host here.
+When a link is added to the tracker, to a flow's `sources` or to `src/data/examples/sources.ts`, add its host here.
 
 Being on the list does not mean a host answers. If one refuses the run, list the items that depend on it as not checked, with what was tried.

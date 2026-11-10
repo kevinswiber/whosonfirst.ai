@@ -1,9 +1,10 @@
 # whosonfirst.ai
 
-Who’s on First is a field guide to agent authentication and authorization: who is acting, for whom, and who said they could. It is published at [whosonfirst.ai](https://whosonfirst.ai).
+Who’s on First is a field guide to agent authentication and authorization: who’s acting, and what they are allowed to do. It is published at [whosonfirst.ai](https://whosonfirst.ai).
 
-The site covers every common way an agent obtains and presents credentials, with a person present, with a person on call, and with no human at all. It has three parts:
+The site covers every common way an agent obtains and presents credentials, with a person present, with a person on call, and with no human at all. It has four parts:
 
+- **Examples**: situations worked through from start to finish. Each has one starting design, the variations that change it, and who has to do what to build it on named products.
 - **Flows**: 19 interactive sequence diagrams, from OAuth authorization code with PKCE to workload identity tokens and agent payment mandates.
 - **Deployments**: how the starting credential changes on Kubernetes, managed agent platforms, local machines, CI and sandboxes.
 - **Standards**: a filterable tracker of the RFCs, drafts, specifications and projects involved, with status.
@@ -66,8 +67,12 @@ Biome does not handle `.mdx`, so the deployment guides and the About page are no
 | `src/data/glossary.ts`                | Glossary terms                                                                                    |
 | `src/data/site.ts`                    | The "last reviewed" date shown across the site                                                    |
 | `src/components/FlowDiagram.astro`    | Sequence diagram and step-through panel; a step narrative on a phone                              |
+| `src/data/examples/*.ts`              | The worked examples: designs, responsibilities for each build path, evidence, sources             |
+| `src/pages/examples/*.astro`          | One page per example: its prose, and which design and build path each part belongs to             |
+| `src/components/ExampleDesign.astro`  | One design of an example: a sequence diagram, and the same steps as a numbered list               |
+| `src/components/BuildPanel.astro`     | One build path: the evidence label, a row for each job, limits, setup links and a check           |
+| `src/scripts/worked-example.ts`       | Narrows an example page to the selected variation and build path, and keeps that in the address   |
 | `src/data/verify.ts`                  | “What can the API verify?”: two credentials, four checks, and the wording of each verdict         |
-| `src/components/VerifyBrief.astro`    | The compact demonstration of that on the home page                                                |
 | `src/components/VerifyDetail.astro`   | The full comparison, on the Concepts page                                                         |
 | `src/components/LastHop.astro`        | The same question across a longer chain, on the Concepts page                                     |
 | `src/components/DocMeta.astro`        | Page facts: one line for the specification followed and the review date, the rest in a disclosure |
@@ -86,6 +91,12 @@ A flow that is a pattern more than a protocol can keep its steps general and add
 Further sections of the same form go in `sections`, after the example: for instance what a receiving system still has to decide, or documented implementations. A part can carry `tags` (whose product it is, its release stage, what kind of example it is) and `sources` (the documents it is drawn from, linked by title). A product's release stage is a tag on the part. It is not the flow's maturity rating, which comes from the standards the diagram's flow requires.
 
 If such a flow's diagram draws one arrangement among several, say so in `illustrated`: `steps` is shown above the diagram, and `references` beside the required references. The page then labels its basis, its required references and its rating as those of the flow the diagram draws.
+
+**Add or change a worked example.** An example is an authored design: one situation, a starting design, and variations that each change one requirement. Its structured facts are in `src/data/examples/`: the parties and steps of each design, a row for each job someone has to do with a cell for each build path, the evidence for each combination, and the documents cited (`sources.ts`). Its prose is in `src/pages/examples/`.
+
+Three rules keep an example honest. A row names a product only where that product’s documentation says it does the job, and links the page. The evidence label describes the whole combination on a path, unresolved parts included: “documented together” is for a combination a vendor documents as one flow, “composed here” for one this site assembled, and a part nobody documents is marked as a gap in its own row with a label that names it. And nothing is called run or tested, because nothing has been.
+
+An example page is complete with JavaScript off: the starting design, every variation and every build path are in the HTML, in order. Each part that belongs to one selection carries `data-if`, and `<worked-example>` hides what is not selected. A variation has its own anchor, so a link to it lands on it either way. Register an example in `src/data/examples/index.ts`, which also holds the links from flow pages (`usedBy`) and the example’s answers to the decision guide (`guideAnswers`).
 
 **Add or update a standard.** Edit `src/data/standards.ts`. Flows refer to standards by `id`. The first standard a flow lists is shown at the top of its page as the primary specification, with its status and revision, so list the one the flow follows most closely first.
 
@@ -124,7 +135,7 @@ Three rules hold throughout:
 Two checks cover this:
 
 - `npm test` includes a token audit (`scripts/contrast-check.mjs`) that fails if any declared text pairing falls below 4.5:1 in either theme.
-- `npm run check:rendered` (after `npm run build`) opens the built site in a browser (`scripts/rendered-check.mjs`) and measures what is drawn: contrast and size of every diagram label in each step state, size and line length of running text, sideways overflow (also at 320px, on every flow page), accessibility violations (axe-core, WCAG 2.1 A and AA), and whether the things a reader depends on are present and work: the home page explainer fits one screen and switches, both answers to "whose authority" appear before either list of flows, each page's review date and specification are on its first line of facts with the rest behind a disclosure, the standards lookup precedes its history, the phone menu opens from the keyboard and shows every destination, the phone flow page reads as a narrative with the diagram on demand and easy to leave, and the stepper keeps keyboard focus usable (Left and Right step, Down scrolls, focus moves off a disabled button). It needs Chromium: `npx playwright install chromium`.
+- `npm run check:rendered` (after `npm run build`) opens the built site in a browser (`scripts/rendered-check.mjs`) and measures what is drawn: contrast and size of every diagram label in each step state, size and line length of running text, sideways overflow (also at 320px, on every flow page), accessibility violations (axe-core, WCAG 2.1 A and AA), and whether the things a reader depends on are present and work: the home page opens on one situation with one primary button on the first screen, its situation links land on the variation that answers them, a worked example narrows to the selected variation and build path and keeps a valid path selected, the guide's "I'm not sure" tells you how to find out, each page's review date and specification are on its first line of facts with the rest behind a disclosure, the standards lookup precedes its history, the phone menu opens from the keyboard and shows every destination, the phone flow page reads as a narrative with the diagram on demand and easy to leave, and the stepper keeps keyboard focus usable (Left and Right step, Down scrolls, focus moves off a disabled button). It needs Chromium: `npx playwright install chromium`.
 
 ## Accuracy
 
