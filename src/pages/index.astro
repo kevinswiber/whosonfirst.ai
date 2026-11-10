@@ -1,118 +1,72 @@
 ---
 import Base from "../layouts/Base.astro";
-import VerifyBrief from "../components/VerifyBrief.astro";
 import DocMeta from "../components/DocMeta.astro";
-import { byGroup, flow, flows } from "../data/flows";
+import { byGroup, flows } from "../data/flows";
 import { standards } from "../data/standards";
 import { REVIEWED } from "../data/site";
-import { questions } from "../data/guide";
-import { must } from "../lib/must";
 
 const groups = byGroup();
 const drafts = standards.filter(
   (s) => s.status === "wg-draft" || s.status === "draft",
 ).length;
-const short = (slug: string) => flow(slug).short;
 
-// The decision guide's first two questions, in its own words.
-const question = (id: string) =>
-  must(
-    questions.find((q) => q.id === id),
-    `guide question "${id}"`,
-  );
-const principal = question("principal");
-const human = question("human");
-const label = (q: typeof principal, value: string) =>
-  must(
-    q.options.find((o) => o.value === value),
-    `answer "${value}" to guide question "${q.id}"`,
-  ).label;
-
-// Two answers, shown together. Each then has its own next question, and that
-// question is not the same thing: software can run unattended on authority a
-// person delegated earlier.
-const authority = [
+// One situation, shown before anything asks the reader to classify theirs.
+const path = [
   {
-    id: "person",
-    choice: "Acting for a person",
-    token: "The token names that person. Their permissions set the limit.",
-    next: human.title,
-    branches: [
-      {
-        when: label(human, "present"),
-        links: [
-          ["mcp-authorization", "calling an MCP server"],
-          [
-            "authorization-code-pkce",
-            "calling an HTTP API, with a browser at hand",
-          ],
-          ["device-authorization", "no browser where the agent runs"],
-        ],
-      },
-      {
-        when: label(human, "reachable"),
-        links: [
-          ["ciba", "ask them on a device they already use"],
-          [
-            "step-up-authorization",
-            "a fresh approval for one sensitive action",
-          ],
-          ["url-elicitation", "an MCP server needs a grant from a third party"],
-        ],
-      },
-      {
-        when: label(human, "absent"),
-        note: "The agent runs unattended on authority the person delegated earlier. The arrangement to be most careful with.",
-        links: [
-          [
-            "authorization-code-pkce",
-            "consent once, then run on a refresh token",
-          ],
-          ["cross-app-access", "the company identity provider decides"],
-        ],
-      },
-    ],
+    role: "human",
+    name: "Dana",
+    sub: "support rep",
+    does: "asks for a customer’s record",
   },
   {
-    id: "agent",
-    choice: "Acting under its own service identity",
-    token:
-      "The token names the agent. Policy an administrator sets is the only control.",
-    next: "Where does its identity come from?",
-    branches: [
-      {
-        when: "The platform it runs on",
-        links: [
-          [
-            "workload-identity-federation",
-            "Kubernetes or a cloud workload calling an outside API",
-          ],
-          [
-            "spiffe-workload-identity",
-            "service to service inside your own platform",
-          ],
-        ],
-      },
-      {
-        when: "A registered client credential",
-        links: [
-          ["client-credentials", "a client with a key or secret of its own"],
-        ],
-      },
-    ],
+    role: "agent",
+    name: "Support agent",
+    sub: "software",
+    does: "requests it",
+  },
+  {
+    role: "resource",
+    name: "Records service",
+    sub: "holds customer records",
+    does: "checks whether Dana may see it",
   },
 ] as const;
 
+// Entry labels are situations. Each opens the part of an example that answers it.
+const situations = [
+  {
+    href: "/examples/invoice-agent/",
+    title: "An agent reconciles invoices overnight",
+    text: "Nobody is signed in when it runs. Whose access is it using?",
+  },
+  {
+    href: "/examples/invoice-agent/#key-only-supplier",
+    title: "A service will only give you an API key",
+    text: "How an agent can use a key it never holds.",
+  },
+  {
+    href: "/examples/invoice-agent/#payment-approval",
+    title: "A payment needs someone’s approval first",
+    text: "What an approval has to be tied to before it means anything.",
+  },
+];
+
+// For readers who know what they are looking for.
 const sections = [
   {
-    href: "/concepts/",
-    title: "Concepts",
-    text: "Principals, delegation versus impersonation, audience, proof of possession, and an annotated tour of nine tokens.",
+    href: "/guide/",
+    title: "Choose a flow",
+    text: "Answer what you know about your agent and get the flows that fit, with the reason for each.",
   },
   {
     href: "/flows/",
     title: `${flows.length} flows`,
     text: "Every flow as a sequence diagram you can step through, with the HTTP on the wire and who holds what at each step.",
+  },
+  {
+    href: "/concepts/",
+    title: "Concepts",
+    text: "Principals, delegation versus impersonation, audience, proof of possession, and an annotated tour of nine tokens.",
   },
   {
     href: "/deployments/",
@@ -123,6 +77,11 @@ const sections = [
     href: "/standards/",
     title: "Standards tracker",
     text: `${standards.length} RFCs, drafts and specifications with current status. ${drafts} of them are still drafts.`,
+  },
+  {
+    href: "/glossary/",
+    title: "Glossary",
+    text: "The terms this guide uses, each in a sentence or two.",
   },
 ];
 
@@ -152,35 +111,42 @@ const news = [
 
 <Base>
   <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="hero-text">
-        <p class="eyebrow">Authentication and authorization for AI agents</p>
-        <h1>Who is acting, for whom, and who said they could?</h1>
-        <p class="lede">
-          A guide for people building and reviewing agent integrations. For each authorization flow: who holds the
-          credential, whose authority it carries, and what the receiving service can verify.
-        </p>
-        <nav class="routes" aria-label="Start here">
-          <ul>
-            <li>
-              <a href="/guide/">Choose an authorization flow</a>
-              <span>Six questions, starting with whose authority the agent uses.</span>
-            </li>
-            <li>
-              <a href="/concepts/#roles">Understand the roles</a>
-              <span>User, agent, authorization server, resource server.</span>
-            </li>
-            <li>
-              <a href="/flows/">Browse flows and standards</a>
-              <span>
-                {flows.length} flows, step by step, and a <a href="/standards/">tracker of {standards.length} specifications</a>.
-              </span>
-            </li>
-          </ul>
-        </nav>
-      </div>
+    <div class="wrap">
+      <p class="eyebrow">Authentication and authorization for AI agents</p>
+      <h1>Who’s acting, and what are they allowed to do?</h1>
+      <p class="lede">
+        Understand how AI agents get access, whose permissions they use, and what you need to build and check.
+      </p>
 
-      <VerifyBrief />
+      <section class="opener" aria-labelledby="situation">
+        <p class="opener-label">Start with a situation</p>
+        <h2 id="situation">An agent should help Dana without seeing more than Dana can</h2>
+        <p class="opener-text">
+          Dana works in support. She can see the customers in her region, and no others. When she asks an agent to find
+          a customer’s record, how do those limits follow the request?
+        </p>
+        <ol class="path" aria-label="The request, in three steps">
+          {
+            path.map((p) => (
+              <li class={`role-${p.role}`}>
+                <span class="path-box">
+                  <b>{p.name}</b>
+                  <i>{p.sub}</i>
+                </span>
+                <span class="path-does">{p.does}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="idea">
+          <strong>The records service has to enforce Dana’s limit, even when the agent asks for more.</strong> To do that,
+          it needs a trustworthy way to know who the agent is acting for.
+        </p>
+        <p class="cta">
+          <a class="btn primary" href="/examples/support-agent/">Walk through this example</a>
+          <span>Follow the request, understand the design, and find implementation options.</span>
+        </p>
+      </section>
 
       <div class="hero-meta">
         <DocMeta lead="An independent guide, not a specification" reviewed={REVIEWED} />
@@ -189,65 +155,28 @@ const news = [
   </section>
 
   <section class="section">
-    <div class="wrap au">
-      <div class="section-head">
-        <h2>{principal.title}</h2>
-        <p>The first question to settle. It decides whose name is on the token.</p>
-      </div>
-      <fieldset class="au-choices">
-        <legend class="visually-hidden">{principal.title}</legend>
+    <div class="wrap">
+      <h2 class="minor">More situations</h2>
+      <ul class="situations">
         {
-          authority.map((a, i) => (
-            <label>
-              <input type="radio" name="authority" value={a.id} checked={i === 0} />
-              <span class="au-choice">
-                <strong>{a.choice}</strong>
-                <span>{a.token}</span>
-              </span>
-            </label>
+          situations.map((s) => (
+            <li>
+              <a href={s.href}>{s.title}</a>
+              <span>{s.text}</span>
+            </li>
           ))
         }
-      </fieldset>
-      {
-        authority.map((a) => (
-          <div class="au-branch" data-authority={a.id}>
-            <h3>
-              <span class="au-next">Then</span>
-              {a.next}
-            </h3>
-            <div class="au-paths">
-              {a.branches.map((b) => (
-                <div>
-                  <h4>{b.when}</h4>
-                  {'note' in b && <p class="note">{b.note}</p>}
-                  <ul>
-                    {b.links.map(([slug, hint]) => (
-                      <li>
-                        <a href={`/flows/${slug}/`}>{short(slug)}</a>
-                        <span class="hint">{hint}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      }
-      <p class="more">
-        The decision guide asks four more questions: what the agent calls, who runs that, where the agent runs and
-        what is at stake. Chains of agents and tools have <a href="/flows/#g-delegation">flows of their own</a>.
-      </p>
-      <p class="cta">
-        <a class="btn primary" href="/guide/">Answer all six questions</a>
-        <a class="btn" href="/flows/">See all {flows.length} flows</a>
+      </ul>
+      <p class="quiet">
+        <a href="/examples/">All examples</a>. Each ends with who is responsible for what, which is the part to read if
+        you are reviewing a design someone else built.
       </p>
     </div>
   </section>
 
   <section class="section">
     <div class="wrap">
-      <h2>What is here</h2>
+      <h2 class="minor">Know what you are looking for?</h2>
       <div class="grid two what">
         {
           sections.map((s) => (
@@ -309,205 +238,218 @@ const news = [
   .hero {
     border-bottom: 1px solid var(--fg);
     background: var(--bg);
-    padding-block: clamp(2.5rem, 7vw, 5rem) clamp(2rem, 5vw, 3.5rem);
-  }
-  .hero-grid {
-    display: grid;
-    gap: 2rem 3rem;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-  }
-  @media (min-width: 64rem) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
-    }
+    padding-block: clamp(2rem, 5vw, 3.5rem) clamp(1.6rem, 4vw, 2.6rem);
   }
   .hero h1 {
     font-size: calc(clamp(2.2rem, 4.6vw, 3.5rem) * var(--display-scale));
-    max-width: 17ch;
+    max-width: 24ch;
   }
-  .cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin: 1.2rem 0 0;
+  .hero .lede {
+    max-width: 36rem;
   }
-
   .hero-meta {
-    grid-column: 1 / -1;
+    margin-top: 2rem;
   }
   .hero-meta :global(.doc-meta) {
     margin-top: 0;
   }
-
-  /* three ways in, set as a short list of links */
-  .routes ul {
-    list-style: none;
-    padding: 0;
-    margin: 1.6rem 0 0;
-    border-top: 1px solid var(--fg);
-    max-width: 36rem;
-  }
-  .routes li {
-    margin: 0;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    gap: 0.1rem;
-  }
-  .routes li > a {
-    font-size: 1.08rem;
-    font-weight: 600;
-    justify-self: start;
-  }
-  .routes li > a::after {
-    content: ' →';
-  }
-  .routes span {
-    font-size: 0.93rem;
-    color: var(--fg-muted);
-  }
-
   .section h2 {
     margin-top: 0;
   }
-  /* both answers are on screen before either one's list of flows */
-  .au-choices {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-    gap: 0.6rem;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    min-width: 0;
-  }
-  .au-choices label {
-    display: block;
-    cursor: pointer;
-  }
-  .au-choices input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .au-choice {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 0.7rem;
-    height: 100%;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--bg-raised);
-  }
-  .au-choice::before {
-    content: '';
-    grid-row: 1 / span 2;
-    width: 1rem;
-    height: 1rem;
-    margin-top: 0.25rem;
-    border: 1.5px solid var(--fg);
-    border-radius: 50%;
-    background: var(--bg-raised);
-  }
-  .au-choice strong {
-    font-size: 1.12rem;
-    line-height: 1.3;
-  }
-  .au-choice span {
-    grid-column: 2;
-    font-size: 0.93rem;
-    line-height: 1.4;
-    color: var(--fg-muted);
-  }
-  .au-choices label:hover .au-choice {
-    border-color: var(--fg);
-  }
-  .au-choices input:checked + .au-choice {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--accent);
-    background: var(--accent-soft);
-  }
-  .au-choices input:checked + .au-choice::before {
-    border-color: var(--accent);
-    background: radial-gradient(var(--accent) 0 45%, var(--bg-raised) 50%);
-  }
-  .au-choices input:focus-visible + .au-choice {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
 
-  /* only the chosen answer's paths are shown; without :has() both are */
-  .au-branch {
-    margin-top: 1.4rem;
-    padding-top: 1.1rem;
-    border-top: 1px solid var(--fg);
+  /* one situation, one idea, one next step */
+  .opener {
+    margin-top: 1.6rem;
+    border-top: 3px solid var(--fg);
+    padding-top: 0.9rem;
   }
-  @supports selector(:has(*)) {
-    .au-branch {
-      display: none;
-    }
-    .au:has(input[value='person']:checked) [data-authority='person'],
-    .au:has(input[value='agent']:checked) [data-authority='agent'] {
-      display: block;
-    }
-  }
-  .au-branch h3 {
-    margin: 0 0 0.9rem;
-    font-size: 1.14rem;
-  }
-  .au-next {
+  .opener-label {
     font-family: var(--font-label);
-    font-size: 0.7rem;
+    font-size: 0.74rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--fg-muted);
-    margin-right: 0.6em;
-  }
-  .au-paths {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-    gap: 1.2rem 2rem;
-  }
-  .au-paths h4 {
-    margin: 0 0 0.4rem;
-    padding-bottom: 0.35rem;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.98rem;
-  }
-  .au-paths .note {
-    margin: 0 0 0.5rem;
-    font-size: 0.88rem;
-    color: var(--fg-muted);
-  }
-  .au-paths ul {
-    list-style: none;
-    padding: 0;
     margin: 0;
   }
-  .au-paths li {
-    margin: 0 0 0.45rem;
-    line-height: 1.35;
+  .opener h2 {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    line-height: 1.25;
+    letter-spacing: 0;
+    margin: 0.25rem 0 0.6rem;
   }
-  .au-paths .hint {
+  .opener-text {
+    max-width: var(--prose);
+    margin: 0;
+  }
+  .path {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem 2.4rem;
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+    max-width: 46rem;
+  }
+  .path li {
+    position: relative;
+    margin: 0;
+    min-width: 0;
+  }
+  .path-box {
     display: block;
-    font-size: 0.88rem;
+    border: 1.3px solid var(--role);
+    background: var(--role-soft);
+    padding: 0.5rem 0.7rem;
+  }
+  .path-box b {
+    display: block;
+    font-size: 1rem;
+  }
+  .path-box i {
+    font-style: normal;
+    font-size: 0.86rem;
     color: var(--fg-muted);
   }
-  .more {
-    margin: 1.6rem 0 0;
+  .path-does {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+  }
+  .path li + li::before {
+    content: '→';
+    position: absolute;
+    left: -1.58rem;
+    top: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
     color: var(--fg-muted);
+  }
+  .idea {
+    font-size: 1.14rem;
+    line-height: 1.5;
+    max-width: 37rem;
+    margin: 1.3rem 0 0;
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    margin: 1.1rem 0 0;
+  }
+  .cta .btn {
+    font-size: 0.95rem;
+  }
+  .cta span {
+    font-size: 0.94rem;
+    color: var(--fg-muted);
+  }
+  /* on a phone the picture stays on one row, and one supporting label goes */
+  @media (max-width: 40rem) {
+    .opener-label {
+      display: none;
+    }
+    .opener {
+      margin-top: 1.2rem;
+      padding-top: 0.75rem;
+    }
+    .opener h2 {
+      font-size: 1.25rem;
+      margin-top: 0;
+    }
+    .path {
+      gap: 0.4rem 1.2rem;
+    }
+    .path-box {
+      display: flex;
+      align-items: center;
+      min-height: 3rem;
+      padding: 0.35rem 0.45rem;
+    }
+    .path-box b {
+      font-size: 0.92rem;
+      line-height: 1.25;
+    }
+    .path-box i {
+      display: none;
+    }
+    .path-does {
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+    .path li + li::before {
+      left: -0.9rem;
+      top: 0.72rem;
+      font-size: 0.95rem;
+    }
+    .idea {
+      font-size: 1.06rem;
+    }
+  }
+  @media (max-width: 22rem) {
+    .path {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.45rem;
+    }
+    .path li {
+      display: grid;
+      grid-template-columns: 6.8rem minmax(0, 1fr);
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .path-box {
+      min-height: 0;
+    }
+    .path-does {
+      margin-top: 0;
+    }
+    .path li + li::before {
+      content: none;
+    }
+  }
+
+  /* what comes after: quieter, in the order a reader needs it */
+  .minor {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    letter-spacing: 0;
+  }
+  .situations {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--fg);
     max-width: 44rem;
   }
-
+  .situations li {
+    margin: 0;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    gap: 0.1rem;
+  }
+  .situations a {
+    font-weight: 600;
+    justify-self: start;
+  }
+  .situations span {
+    font-size: 0.94rem;
+    color: var(--fg-muted);
+  }
+  .quiet {
+    margin: 0.9rem 0 0;
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+    max-width: 38rem;
+  }
   .what {
-    margin-top: 1.2rem;
+    margin-top: 1rem;
   }
   .what h3 {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
   }
-
   .news {
     list-style: none;
     padding: 0;

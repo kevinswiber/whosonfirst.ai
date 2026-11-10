@@ -1,8 +1,7 @@
 /**
  * "What can the API verify?" — one user, one agent, one API, and two credentials
- * the agent might present. Used by the compact demonstration on the home page
- * (VerifyBrief) and by the full comparison on the Concepts page (VerifyDetail),
- * so the two cannot drift apart.
+ * the agent might present. Used by the full comparison on the Concepts page
+ * (VerifyDetail).
  *
  * Five things are kept apart here, because a credential can settle one without
  * settling the others:
