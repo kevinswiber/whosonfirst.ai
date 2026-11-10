@@ -1,0 +1,160 @@
+---
+/**
+ * What it takes to build one design on one path: the evidence for the
+ * combination, a row for each job someone has to do, the limits that apply,
+ * and where the setup instructions are.
+ *
+ * The rows are shown twice, as a table where there is room and as blocks
+ * where there is not. CSS shows one and removes the other with display: none,
+ * which also takes it out of the accessibility tree.
+ */
+import {
+  EVIDENCE_LABEL,
+  type Cell,
+  type Evidence,
+  type Owner,
+  type Source,
+} from "../data/examples/types";
+
+interface Props {
+  /** Completes "Building: …". */
+  heading: string;
+  evidence: Evidence;
+  rows: { job: string; owner: Owner; cell: Cell }[];
+  conditions?: string[];
+  setup?: Source[];
+  /** Said after "The steps to configure each part are at its source." */
+  setupNote?: string;
+  check?: string;
+  /** Heading level of the panel's own heading. */
+  level?: 3 | 4;
+}
+const {
+  heading,
+  evidence,
+  rows,
+  conditions = [],
+  setup = [],
+  setupNote,
+  check,
+  level = 3,
+} = Astro.props;
+const H = `h${level}` as "h3" | "h4";
+const Sub = `h${level + 1}` as "h4" | "h5";
+const tone = (stage: string) =>
+  /^(GA|1\.0)/.test(stage)
+    ? "green"
+    : /Preview|Beta|Experimental/i.test(stage)
+      ? "amber"
+      : "";
+---
+
+<div class="bp">
+  <H class="bp-status"><span>Building:</span> {heading}.</H>
+  <p class="ev-line">
+    {
+      evidence.chips.map((c) => (
+        <span class="ev" data-level={c.level}>
+          {c.label ?? EVIDENCE_LABEL[c.level]}
+        </span>
+      ))
+    }
+    <span class="ev-text">{evidence.text}</span>
+  </p>
+
+  <div class="ho-wide">
+    <table class="ho">
+      <thead>
+        <tr>
+          <th scope="col">Responsibility</th>
+          <th scope="col">Whose</th>
+          <th scope="col">On this path</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr>
+              <th scope="row">{r.job}</th>
+              <td class="ho-owner">
+                <span class="owner">{r.owner}</span>
+              </td>
+              <td>
+                {r.cell.who && <strong class:list={{ gap: r.cell.gap }}>{r.cell.who}</strong>}
+                {r.cell.stage && (
+                  <span class="chip" data-tone={tone(r.cell.stage)}>
+                    {r.cell.stage}
+                  </span>
+                )}
+                {r.cell.text}
+                {r.cell.note && <span class="ho-note">{r.cell.note}</span>}
+                {r.cell.sources?.map((s) => (
+                  <a class="ho-src" href={s.href} rel="noopener">
+                    {s.label}
+                  </a>
+                ))}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="ho-narrow">
+    {
+      rows.map((r) => (
+        <div class="ho-block">
+          <Sub class="ho-job">{r.job}</Sub>
+          <span class="owner">{r.owner}</span>
+          <p>
+            {r.cell.who && <strong class:list={{ gap: r.cell.gap }}>{r.cell.who}</strong>}
+            {r.cell.stage && (
+              <span class="chip" data-tone={tone(r.cell.stage)}>
+                {r.cell.stage}
+              </span>
+            )}
+            {r.cell.text}
+            {r.cell.note && <span class="ho-note">{r.cell.note}</span>}
+            {r.cell.sources?.map((s) => (
+              <a class="ho-src" href={s.href} rel="noopener">
+                {s.label}
+              </a>
+            ))}
+          </p>
+        </div>
+      ))
+    }
+  </div>
+
+  {conditions.length > 0 && <ul class="bp-cond">{conditions.map((c) => <li>{c}</li>)}</ul>}
+  <slot />
+  {
+    setup.length > 0 && (
+      <>
+        <Sub class="bp-sub">Where the setup instructions are</Sub>
+        <p class="bp-quiet">
+          The steps to configure each part are at its source.{setupNote && ` ${setupNote}`}
+        </p>
+        <ul class="bp-setup">
+          {setup.map((s) => (
+            <li>
+              <a href={s.href} rel="noopener">
+                {s.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+  {
+    check && (
+      <>
+        <Sub class="bp-sub">One check that the boundary holds</Sub>
+        <div class="bp-check">
+          <p>{check}</p>
+        </div>
+      </>
+    )
+  }
+</div>

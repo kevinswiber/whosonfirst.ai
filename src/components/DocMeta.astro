@@ -28,6 +28,11 @@ interface Props {
   reviewed: string;
   /** What the review date is a review of: "Guide" on a flow page, "Tracker" on the standards page. */
   subject?: string;
+  /**
+   * The date's label, where "reviewed" would claim too much: a worked example
+   * says when its sources were read.
+   */
+  reviewedKey?: string;
   details?: MetaItem[];
   /** The disclosure's label. */
   more?: string;
@@ -37,6 +42,7 @@ const {
   lead,
   reviewed,
   subject,
+  reviewedKey,
   details = [],
   more = "Sources and review details",
 } = Astro.props;
@@ -64,7 +70,7 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
     }
     {lead && <span class="doc-fact">{lead}</span>}
     <span class="doc-fact">
-      <span class="doc-key">{subject ? `${subject} reviewed` : 'Reviewed'}</span>
+      <span class="doc-key">{reviewedKey ?? (subject ? `${subject} reviewed` : 'Reviewed')}</span>
       {reviewed}
     </span>
   </p>

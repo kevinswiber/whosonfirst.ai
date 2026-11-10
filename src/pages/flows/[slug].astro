@@ -6,6 +6,7 @@ import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
 import { flows, maturityLabel, rating, related } from "../../data/flows";
+import { usedBy } from "../../data/examples";
 import { std } from "../../data/standards";
 import { REVIEWED } from "../../data/site";
 import {
@@ -42,6 +43,8 @@ const sections = [
   ...(flow.sections ?? []),
 ];
 const rel = related(flow);
+// where a worked example uses this flow
+const worked = usedBy[flow.slug] ?? [];
 const i = flows.indexOf(flow);
 const prev = flows[i - 1];
 const next = flows[i + 1];
@@ -206,6 +209,10 @@ const details = [
   </div>
 
   <div class="wrap body">
+    {/* Filled in by the script below when the reader came here from a worked example. */}
+    <p class="trail" data-trail hidden>
+      You were following <strong></strong>. <a href="/examples/">Back to it, where you left off</a>
+    </p>
     <div class="intro">
       <div class="prose" set:html={block(flow.summary)} />
       <aside class="fit">
@@ -392,6 +399,21 @@ const details = [
     </section>
 
     {
+      worked.length > 0 && (
+        <section aria-labelledby="worked-examples">
+          <h2 id="worked-examples">Worked examples that use this flow</h2>
+          <ul class="worked-examples">
+            {worked.map((e) => (
+              <li>
+                <a href={e.href}>{e.label}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
       rel.length > 0 && (
         <section aria-labelledby="related">
           <h2 id="related">Related flows</h2>
@@ -427,7 +449,41 @@ const details = [
   </div>
 </Base>
 
+<script>
+  // A reader who came from a worked example is offered the way back to where they left it.
+  // The example page records the place when a link to a flow is followed.
+  try {
+    const trail = JSON.parse(sessionStorage.getItem('wof:trail') ?? 'null');
+    const bar = document.querySelector<HTMLElement>('[data-trail]');
+    const cameFrom = document.referrer ? new URL(document.referrer) : null;
+    if (trail && bar && cameFrom?.origin === location.origin && cameFrom.pathname === trail.path) {
+      bar.querySelector('strong')!.textContent = trail.title;
+      bar.querySelector('a')!.href = trail.href;
+      bar.hidden = false;
+    }
+  } catch {}
+</script>
+
 <style>
+  .trail {
+    margin: 0 0 1.4rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    font-size: 0.95rem;
+  }
+  .worked-examples {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    max-width: 44rem;
+    border-top: 1px solid var(--fg);
+  }
+  .worked-examples li {
+    margin: 0;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+  }
   /* arrow keys only step the diagram where it is a stepper */
   @media (max-width: 47.99rem) {
     .keys {

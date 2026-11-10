@@ -40,6 +40,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const QUICK = { href: "/guide/", label: "Choose a flow" };
 const nav = [
   QUICK,
+  // A recognizable way in for a reader who does not know the terms yet.
+  { href: "/examples/", label: "Examples" },
   { href: "/flows/", label: "Flows" },
   { href: "/concepts/", label: "Concepts" },
   { href: "/deployments/", label: "Deployments" },

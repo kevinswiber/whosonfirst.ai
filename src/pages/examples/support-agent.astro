@@ -1,0 +1,554 @@
+---
+import Base from "../../layouts/Base.astro";
+import DocMeta from "../../components/DocMeta.astro";
+import ExampleDesign from "../../components/ExampleDesign.astro";
+import BuildPanel from "../../components/BuildPanel.astro";
+import "../../styles/examples.css";
+import {
+  guideLink,
+  supportAgent as ex,
+  supportBuild,
+  SOURCES_READ,
+} from "../../data/examples";
+import { SRC } from "../../data/examples/sources";
+import type { Pair } from "../../data/examples/types";
+import { must } from "../../lib/must";
+
+const design = (id: string) => must(ex.designs[id], `design "${id}"`);
+const pathLabel = (id: string) => must(ex.paths[id], `path "${id}"`).label;
+const onPath = (id: string) =>
+  id === "salesforce" ? "the Salesforce path" : pathLabel(id);
+
+const why: Pair[] = [
+  [
+    "Why the token names its recipient",
+    "A service should refuse a token intended for another. If services accepted each other’s tokens, anything a token reached could reuse it somewhere else.",
+  ],
+  [
+    "Why there is no token exchange",
+    "The application Dana signed in to is the one calling the records API, so it obtains an access token intended for the records API directly. Nothing needs exchanging. The first variation below shows one common reason to use token exchange.",
+  ],
+  [
+    "Why the records API checks, and not the agent",
+    "The agent reads what customers write and can be talked into asking for more. The records API applies Dana’s access and the application’s limits whatever the agent asks for.",
+  ],
+];
+const separateChanges: Pair[] = [
+  [
+    "Two applications, so two recipients",
+    "In the starting design, the application obtained an access token intended for the records API directly. No exchange was needed. Here the console’s access token is intended for the agent service, and the records API needs one intended for itself.",
+  ],
+  [
+    "Four things a token says, kept apart",
+    "Who it is for is still Dana. Who it was issued to changes from the console to the agent service. Who it is intended for changes from the agent service to the records API. What it permits is whatever the exchange asked for and policy allowed.",
+  ],
+  [
+    "Trust is configured, not created",
+    "The identity provider has to be told which service may exchange which token, and for which recipient. Exchange does not establish that trust.",
+  ],
+  [
+    "None of it is automatic",
+    "Whether the new token still names Dana, whether it names the agent service, and whether it permits less than the first all depend on configuration. An exchange narrows nothing unless it asks for less and policy holds it to that.",
+  ],
+  [
+    "The records API’s job is the same",
+    "It validates the token intended for it, checks the permission and its own region rule, and logs what the token names.",
+  ],
+];
+const unattendedChanges: Pair[] = [
+  [
+    "The access is still Dana’s",
+    "Running without her does not make this the agent’s own work. Each access token is still issued for her.",
+  ],
+  [
+    "No session to borrow",
+    "The starting design gets its access token while Dana is signed in. Later there is no sign-in, so the application asks for a refresh token and redeems it when the worker needs an access token.",
+  ],
+  [
+    "A boundary inside the application",
+    "The starting design treated the application as one thing. Here the part that holds the refresh token is kept apart from the part that runs the agent. A promise not to keep a copy is not a boundary. Being unable to read it is.",
+  ],
+  [
+    "The records API’s job is the same",
+    "It validates each access token, applies Dana’s access and the application’s read-only limit, checks its own region rule, and logs what the token names.",
+  ],
+  [
+    "More to protect, and to end",
+    "The stored refresh token, the backend’s client credentials, and a way for Dana or an administrator to end the grant.",
+  ],
+  [
+    "What is documented, and what is not",
+    "Each identity provider documents refresh tokens. This design is composed here. The trusted backend still needs to be designed and verified, and no recipe for it was run.",
+  ],
+];
+const details = [
+  {
+    label: "Kind of page",
+    value:
+      "A worked example: an authored design, with the evidence for each part",
+    note: "What the evidence labels mean",
+    noteHref: "/examples/#evidence",
+  },
+  { label: "Run", value: "Nothing on this page has been run by this site" },
+  {
+    label: "Vendor documentation",
+    value: `Read in ${SOURCES_READ}, and not tested`,
+    note: "How facts were checked",
+    noteHref: "/about/#how-facts-were-checked",
+  },
+];
+---
+
+<Base
+  title={ex.title}
+  description="A rep asks an agent for a customer’s record. A worked example of an agent using one person’s access: the starting design, two variations, and what you would have to build."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow"><a href="/examples/">Examples</a></p>
+      <h1>{ex.title}</h1>
+      <p class="lede">
+        Dana, a support rep, asks an agent for a customer’s record. Reps can see the customers in their own region,
+        and no others. The agent should help Dana without seeing more than Dana can.
+      </p>
+      <DocMeta
+        lead="A worked example, not a tested recipe"
+        reviewed={SOURCES_READ}
+        reviewedKey="Sources read"
+        details={details}
+        more="What this page is, and how it was checked"
+      />
+    </div>
+  </div>
+
+  <div class="wrap">
+    <worked-example class="we" data-title={ex.title} data-base="Showing the starting design.">
+      <p class="we-jump">
+        Jump to: <a href="#design">the starting design</a> · <a href="#why">why it is built this way</a> ·{" "}
+        <a href="#variations">variations</a> · <a href="#build">who does what, and setup</a>
+      </p>
+
+      <h2 id="needs">What has to happen</h2>
+      <p class="we-narrow">Whichever products you use, three things have to happen for Dana’s limit to hold.</p>
+      <ol class="we-needs">
+        <li>
+          <div>
+            <strong>Connect the request to Dana in a way the records service can trust.</strong>
+            The agent saying so is not enough. The agent is the thing being limited.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Have the records service check Dana’s access, using its own rules and data.</strong>
+            Dana’s region and the customer’s region can both be stored in the records service.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Apply the agent application’s own limits, and record which application acted.</strong>
+            The application may be allowed less than Dana: to read, and not to change. The log should show the application,
+            and that it was acting for Dana.
+          </div>
+        </li>
+      </ol>
+      <p class="we-gist">
+        In short: the records service needs a trustworthy way to know who the agent is acting for. Then it applies its
+        access rules.
+      </p>
+
+      <h2 id="design" data-return>The starting design</h2>
+      <p class="we-narrow">
+        Here is the simplest way to do all three. The support agent is one application, and Dana signs in to it: its
+        screen and its backend belong together. The records service is an API you control, which the rest of this page
+        calls the records API.
+      </p>
+      <div class="we-how">
+        <div>
+          <h3>Dana signs in</h3>
+          <p>
+            The application does not check Dana’s password itself. It sends her to the identity provider, the service
+            your organization uses to sign people in. Whether the application may then act for her is a matter of
+            consent, and your policy decides whose: each rep’s, or an administrator’s on behalf of everyone.
+          </p>
+        </div>
+        <div>
+          <h3>The application gets an access token for the records API</h3>
+          <p>
+            With sign-in done, the identity provider gives the application an access token: a short-lived, signed
+            statement that this application may call the records API for Dana, to read and nothing more. Three things
+            about it matter. It is for Dana. It was issued to this application, which the standards call the client. And
+            it is intended for the records API, which they call the token’s audience.
+          </p>
+          <p class="we-quiet">
+            The identity provider issues such a token only if it has been set up to: the records API is registered with
+            it, with a read permission this application is allowed to ask for. Sign-in also gives the application an ID
+            token, which tells the application who signed in. That one is for the application itself, and is not what it
+            sends to the records API.
+          </p>
+        </div>
+        <div>
+          <h3>The application calls the records API</h3>
+          <p>
+            When Dana asks for customer 8841, the application sends the request to the records API with the access token
+            attached. Dana never handles a token. The application does.
+          </p>
+        </div>
+        <div>
+          <h3>The records API checks the token, then applies its own rules</h3>
+          <p>
+            The records API trusts that identity provider. It validates the token: that it is genuine, has not expired,
+            and is intended for the records API. That is its trustworthy answer to who the application is acting for.
+            The rest it does itself. It checks that the token permits reading. It applies its own rule to its own data:
+            is customer 8841 in Dana’s region? And it logs the user and the application that the token names. The token
+            enforces none of this.
+          </p>
+          <p class="we-quiet">
+            RFC 9068, the JWT profile for access tokens, says a service should use the authorization claims in a token
+            “in combination with any other contextual information available”.{" "}
+            <a href={SRC.rfc9068.href} rel="noopener">{SRC.rfc9068.label}</a>
+          </p>
+        </div>
+      </div>
+      <div class="we-design">
+        <ExampleDesign design={design("base")} />
+        <aside class="we-assume" aria-labelledby="assumes">
+          <p class="we-label" id="assumes">This design assumes</p>
+          <ul>
+            <li>
+              <strong>The work is Dana’s.</strong> What the agent may see depends on who asked, so it works within her
+              access and not a blanket one of its own.
+            </li>
+            <li>
+              <strong>Dana is signed in.</strong> There is a session to start from. One variation below takes that away.
+            </li>
+            <li>
+              <strong>One application.</strong> Dana signs in to the agent application itself. Another variation below
+              splits it in two.
+            </li>
+            <li>
+              <strong>You control the records API,</strong> and it trusts the identity provider the reps sign in with.
+            </li>
+          </ul>
+        </aside>
+      </div>
+
+      <h2 id="why" data-return>Why it is built this way</h2>
+      <h3 class="we-sub">Why a token for Dana, and not a key of the agent’s own</h3>
+      <p class="we-narrow">
+        The simplest build of all gives the agent one key for the records API. Compare what the API has to go on in each
+        case.
+      </p>
+      <div class="we-outs">
+        <div class="we-out">
+          <h4>One key, shared by everything the agent does</h4>
+          <p class="we-cred">key: support-agent-7f3…</p>
+          <p>
+            The key tells the records API which application is calling. It carries no trusted information about Dana.
+          </p>
+          <p>
+            So the API can apply the application’s limits, and not Dana’s. Unless something else it trusts says who
+            asked, every rep gets whatever the agent may reach.
+          </p>
+        </div>
+        <div class="we-out ok">
+          <h4>An access token issued for Dana</h4>
+          <p class="we-cred">access token: for Dana · issued to the support agent · for the records API · read only</p>
+          <p>
+            Once the API has validated it, the token is a statement about Dana from an identity provider the API trusts.
+          </p>
+          <p>
+            The API still applies its own rule about regions. If customer 8841 is outside Dana’s region, it refuses.
+          </p>
+        </div>
+      </div>
+      <p class="we-narrow">
+        The format is not what matters. What matters is whether the records API gets information about Dana that it can
+        trust, and then applies its rules.
+      </p>
+      <dl class="we-pairs">
+        {
+          why.map(([t, d]) => (
+            <div>
+              <dt>{t}</dt>
+              <dd>{d}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <h3 class="we-sub" id="not-proved" data-return>What this design does not prove</h3>
+      <p class="we-narrow">
+        Who is presenting the token. A copied token works for whoever holds it, and so does a copied key. This design
+        limits what a copy is worth: the token expires soon, is intended for the records API alone, and permits reading
+        only. Tying a token to the application that holds it is a separate mechanism, which this example does not use:{" "}
+        <a href="/flows/dpop/">sender-constrained tokens (DPoP)</a>.
+      </p>
+
+      <h2 id="variations">Variations</h2>
+      <p class="we-narrow">
+        Each of these changes one requirement of the starting design. They are separate cases, not stages to go through,
+        and the two together have not been written up.
+      </p>
+      <form class="we-controls" data-controls data-js hidden>
+        <fieldset>
+          <legend class="we-label">What is different</legend>
+          <div class="we-opt">
+            <input type="radio" name="variation" id="v-base" value="base" data-token="v:base" data-default checked />
+            <label for="v-base">Nothing. The starting design, as above</label>
+          </div>
+          <div class="we-opt">
+            <input type="radio" name="variation" id="v-separate" value="separate-apps" data-token="v:separate-apps" />
+            <label for="v-separate">
+              The support console and the agent are separate applications <span class="we-kind">Alternative</span>
+            </label>
+          </div>
+          <div class="we-opt">
+            <input type="radio" name="variation" id="v-unattended" value="unattended" data-token="v:unattended" />
+            <label for="v-unattended">
+              The agent keeps working after Dana has gone home <span class="we-kind">Alternative</span>
+            </label>
+          </div>
+        </fieldset>
+      </form>
+
+      <div class="we-variation" id="separate-apps" data-select="v:separate-apps" data-if="v:separate-apps" data-return>
+        <h3 class="we-status" data-announce>
+          <span>Variation:</span> the support console and the agent are separate applications.
+        </h3>
+        <p class="we-context">
+          A different core. It replaces this example’s starting design, in which Dana signs in to the support agent
+          itself and the agent calls the records API for her. <a href="#design">Read the starting design</a>
+        </p>
+        <div class="we-how">
+          <div>
+            <h4>The changed requirement</h4>
+            <p>
+              The console that reps already use is one application. The agent is a service of its own, which the console
+              calls. Dana signs in to the console, as she always has.
+            </p>
+          </div>
+          <div>
+            <h4>The boundary this creates</h4>
+            <p>
+              The console calls the agent service with an access token intended for the agent service. The agent service
+              still has to call the records API for Dana. The records API should not accept a token intended for someone
+              else, so the token the agent service was given is no use there.
+            </p>
+          </div>
+          <div>
+            <h4>What the agent service does about it</h4>
+            <p>
+              It asks the identity provider to exchange the token it was given for one intended for the records API.
+              That step is called token exchange. The identity provider agrees only where a policy you configure says
+              this service may exchange for that recipient.
+            </p>
+          </div>
+        </div>
+        <ExampleDesign design={design("separate-apps")} level={4} />
+        <h4 class="we-sub">What this changes from the starting design, and why</h4>
+        <dl class="we-pairs">
+          {
+            separateChanges.map(([t, d]) => (
+              <div>
+                <dt>{t}</dt>
+                <dd>{d}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="we-quiet we-narrow">
+          Keycloak’s documentation says as much about permissions: by default an exchange can ask for scopes and
+          audiences the first token did not have. <a href={SRC.kcTx.href} rel="noopener">{SRC.kcTx.label}</a>
+        </p>
+        <p class="we-narrow">
+          This variation shows one common reason to use token exchange: a service in the middle was handed a token
+          intended for itself, and has to call something else for the same person. The starting design does not require
+          it.
+        </p>
+      </div>
+
+      <div class="we-variation" id="unattended" data-select="v:unattended" data-if="v:unattended" data-return>
+        <h3 class="we-status" data-announce>
+          <span>Variation:</span> the agent keeps working after Dana has gone home.
+        </h3>
+        <p class="we-context">
+          A different core. It replaces this example’s starting design, in which Dana signs in to the support agent
+          and the agent calls the records API for her while she waits. <a href="#design">Read the starting design</a>
+        </p>
+        <p class="we-quiet we-narrow">
+          Refresh-token mechanism documented. The component that keeps the refresh token outside the agent worker still
+          needs to be designed and verified.
+        </p>
+        <div class="we-how">
+          <div>
+            <h4>The changed requirement</h4>
+            <p>
+              A case takes hours. Dana hands it to the agent and goes home, and the agent has to go on reading records
+              for her. The work is still Dana’s, so the access it uses is still hers.
+            </p>
+          </div>
+          <div>
+            <h4>What keeps her authority available</h4>
+            <p>
+              At sign-in the application also asks for a refresh token: a longer-lived credential that the identity
+              provider will redeem for new access tokens without Dana present. Each identity provider documents this.
+            </p>
+          </div>
+          <div>
+            <h4>Which part of the application may hold it</h4>
+            <p>
+              A refresh token is worth far more than an access token, and the agent is the part of the application that
+              reads what customers write. So the application is divided by responsibility. A trusted backend completes
+              the sign-in. It receives an authorization code at its callback, and exchanges that code at the token
+              endpoint for the tokens. It keeps the refresh token, and later redeems it. The agent worker runs the
+              agent. It is never passed the refresh token, and cannot read where it is kept.
+            </p>
+            <p class="we-quiet">
+              The callback delivers a code, not tokens. The tokens come back from a second request, which the backend
+              makes to the token endpoint. <a href={SRC.rfc6749code.href} rel="noopener">{SRC.rfc6749code.label}</a>
+            </p>
+          </div>
+          <div>
+            <h4>How the worker gets an access token</h4>
+            <p>
+              It asks the trusted backend, which acts as a token broker. The backend authenticates the worker and checks
+              what it is asking for: which user, for which task, with which permission. Only then does it redeem the
+              refresh token and return a short-lived access token. A worker must not be able to ask for another user’s
+              grant, or for more than its task needs.
+            </p>
+          </div>
+          <div>
+            <h4>Still one application</h4>
+            <p>
+              The backend and the worker are two parts of one application and one OAuth client. The identity provider
+              issued the refresh token to that client and redeems it for no other. Where the client has credentials it
+              must authenticate when it redeems, and those credentials stay with the backend.
+            </p>
+            <p class="we-quiet">
+              RFC 6749 binds a refresh token to the client it was issued to, and says it is shared only between that
+              client and the authorization server. <a href={SRC.rfc6749.href} rel="noopener">{SRC.rfc6749.label}</a>
+            </p>
+          </div>
+        </div>
+        <ExampleDesign design={design("unattended")} level={4} />
+        <aside class="we-assume wide" aria-labelledby="unattended-assumes">
+          <p class="we-label" id="unattended-assumes">This variation assumes</p>
+          <ul>
+            <li><strong>Dana agreed to follow-up work.</strong> Her consent covers access while she is away.</li>
+            <li>
+              <strong>The backend is out of the agent’s reach.</strong> The worker’s code, and anything it can be talked
+              into, cannot read the backend’s storage or its client credentials.
+            </li>
+            <li><strong>The worker has an identity of its own,</strong> which the backend can check.</li>
+            <li><strong>One OAuth client.</strong> Dividing the application does not create a second one.</li>
+          </ul>
+        </aside>
+        <h4 class="we-sub">What this changes from the starting design, and why</h4>
+        <dl class="we-pairs">
+          {
+            unattendedChanges.map(([t, d]) => (
+              <div>
+                <dt>{t}</dt>
+                <dd>{d}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <h3 class="we-sub">Other changes, and where they lead</h3>
+      <ul class="we-next">
+        <li>
+          <strong>The records API only takes an API key.</strong> One shared key carries nothing about which rep asked.
+          Enforce each rep’s access in a layer you control, and keep the key at a broker:{" "}
+          <a href="/flows/credential-broker/">credential broker</a>.
+        </li>
+        <li>
+          <strong>The agent can issue a refund.</strong> Ask Dana to confirm that one action, tied to its amount:{" "}
+          <a href="/flows/step-up-authorization/">step-up authorization</a>.
+        </li>
+        <li>
+          <strong>The work is the organization’s, not Dana’s.</strong> Then the agent acts as itself: see{" "}
+          <a href="/examples/invoice-agent/">the invoice agent</a>.
+        </li>
+      </ul>
+
+      <h2 id="build" data-return>Building it</h2>
+      <p class="we-quiet we-narrow">
+        Each row is a job someone has to do. “Platform” rows name a documented capability. The rest are yours, and no
+        product does them for you.
+      </p>
+      <div class="we-picker" role="group" aria-label="Build path" data-js hidden>
+        {
+          Object.entries(ex.paths).map(([id, p]) => (
+            <button
+              type="button"
+              class="we-path"
+              data-path={id}
+              data-label={p.label}
+              data-if={id === "salesforce" ? "v:separate-apps" : undefined}
+              data-only={id === "salesforce" ? "the exchange variation" : undefined}
+              aria-pressed="false"
+            >
+              {p.label}
+              <small>Fits when: {p.fits}</small>
+            </button>
+          ))
+        }
+      </div>
+      <p class="we-moved" data-moved hidden></p>
+      <p class="we-quiet we-narrow" data-if="v:separate-apps">
+        The Salesforce path appears with the exchange variation because the one Salesforce architecture written up is an
+        exchange.
+      </p>
+      {
+        ex.cases.map((c) =>
+          c.paths.map((p) => {
+            const b = supportBuild(c.id, p);
+            return (
+              <div data-if={`v:${c.id} path:${p}`}>
+                <BuildPanel
+                  heading={`${c.name}, on ${onPath(p)}`}
+                  evidence={b.evidence}
+                  rows={b.rows}
+                  conditions={b.conditions}
+                  setup={b.setup}
+                  setupNote={
+                    c.id === "unattended"
+                      ? "There are none for the trusted backend, which is yours to design."
+                      : undefined
+                  }
+                  check={c.check}
+                >
+                  {c.id === "separate-apps" && (
+                    <p class="we-alt">
+                      <span class="we-kind" style="margin-left:0">
+                        Also documented
+                      </span>{" "}
+                      <strong>Keycloak</strong>, as an alternative with its own evidence. It is not written up as a path
+                      here. Its standard token exchange works between clients in one realm, and its example token names
+                      the exchanging client in azp.{" "}
+                      <a href={SRC.kcTx.href} rel="noopener">
+                        {SRC.kcTx.label}
+                      </a>
+                    </p>
+                  )}
+                </BuildPanel>
+              </div>
+            );
+          }),
+        )
+      }
+      <p class="we-quiet we-narrow" style="margin-top:1.4rem">
+        This page is an architecture walkthrough. Nothing on it has been run by this site.
+      </p>
+      <p class="we-narrow">
+        <a href={guideLink(ex.slug)}>See this example as answers in the decision guide</a>
+      </p>
+      <p class="visually-hidden" role="status" data-live></p>
+    </worked-example>
+  </div>
+</Base>
+
+<script>
+  import "../../scripts/worked-example";
+</script>

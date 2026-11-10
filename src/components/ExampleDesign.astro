@@ -1,0 +1,396 @@
+---
+/**
+ * One design of a worked example: a sequence diagram and the same steps as a
+ * numbered list.
+ *
+ * Both are rendered at build time and say the same thing. The list is the one
+ * to read: it has room for a full sentence and links to the flow behind a
+ * step. The diagram is hidden on a narrow screen, where the list stands alone.
+ *
+ * Color means role, as everywhere on the site.
+ */
+import { flow as flowBySlug } from "../data/flows";
+import type { Design } from "../data/examples/types";
+import { must } from "../lib/must";
+
+interface Props {
+  design: Design;
+  /** Heading level for the design's title. */
+  level?: 3 | 4;
+}
+const { design, level = 3 } = Astro.props;
+const Title = `h${level}` as "h3" | "h4";
+const P = design.parties;
+const steps = design.steps;
+const n = P.length;
+
+const party = (id: string) =>
+  must(
+    P.find((p) => p.id === id),
+    `party "${id}" in "${design.title}"`,
+  );
+
+// ---- geometry: labels are drawn at 14px, as on the flow pages ----
+const boxW = 164;
+const boxH = 48;
+const gap = n <= 3 ? 220 : n === 4 ? 204 : 196;
+const padX = boxW / 2 + 12;
+const CHAR = 7.1;
+const W = padX * 2 + gap * (n - 1);
+const top = 4;
+const y0 = top + boxH + 54;
+const rowH = 62;
+const LINE = 17;
+const xOf = (id: string) => padX + gap * P.findIndex((p) => p.id === id);
+
+// A note in mid-sequence needs room before the next step's label.
+const ys: number[] = [];
+let y = y0;
+steps.forEach((s, i) => {
+  ys.push(y);
+  y += rowH + (!s.to && i < steps.length - 1 ? 16 : 0);
+});
+const H = ys[ys.length - 1] + 34;
+
+/** Split a label into at most two balanced lines. */
+const wrap = (label: string, max: number): string[] => {
+  if (label.length <= max) return [label];
+  const words = label.split(" ");
+  let best = [label];
+  let bestLen = Number.POSITIVE_INFINITY;
+  for (let k = 1; k < words.length; k++) {
+    const a = words.slice(0, k).join(" ");
+    const b = words.slice(k).join(" ");
+    const len = Math.max(a.length, b.length);
+    if (len < bestLen) {
+      bestLen = len;
+      best = [a, b];
+    }
+  }
+  return best;
+};
+
+const drawn = steps.map((s, i) => {
+  const from = party(s.from);
+  const x1 = xOf(s.from);
+  const yy = ys[i];
+  if (!s.to) {
+    const lines = wrap(s.label, 30);
+    const w = Math.max(...lines.map((l) => l.length)) * CHAR + 60;
+    const nx = Math.min(Math.max(x1 - w / 2, 4), W - w - 4);
+    const h = lines.length > 1 ? 44 : 30;
+    return {
+      kind: "note" as const,
+      i,
+      y: yy,
+      role: from.role,
+      lines,
+      w,
+      nx,
+      h,
+    };
+  }
+  party(s.to);
+  const x2 = xOf(s.to);
+  const dir = x2 > x1 ? 1 : -1;
+  const span = Math.abs(x2 - x1);
+  const prev = steps[i - 1];
+  const reply = !!prev && prev.to === s.from && prev.from === s.to;
+  const lines = wrap(s.label, Math.floor((span - 36) / CHAR));
+  const widest = Math.max(...lines.map((l) => l.length)) * CHAR;
+  if (widest > span - 8)
+    console.warn(
+      `[example] arrow label too long for its span in "${design.title}": "${s.label}"`,
+    );
+  const lx = Math.min(
+    Math.max((x1 + x2) / 2 + dir * 5, widest / 2 + 6),
+    W - widest / 2 - 6,
+  );
+  const tip = x2 - dir * 3;
+  return {
+    kind: "arrow" as const,
+    i,
+    y: yy,
+    role: from.role,
+    x1,
+    dir,
+    tip,
+    reply,
+    lines,
+    lx,
+  };
+});
+
+// Every flow a step names has to exist.
+const flowLink = (ref: string) => {
+  const [slug, hash] = ref.split("#");
+  const f = flowBySlug(slug);
+  return { href: `/flows/${slug}/${hash ? `#${hash}` : ""}`, label: f.short };
+};
+---
+
+<div class="xd" data-kind={design.kind}>
+  <div class="xd-head">
+    <span class="xd-kind">{design.kind}</span>
+    <Title class="xd-title">{design.title}</Title>
+  </div>
+  <div
+    class="xd-canvas"
+    tabindex="0"
+    role="group"
+    aria-label={`Diagram: ${design.title}. It scrolls sideways when it is wider than the page.`}
+  >
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      role="img"
+      aria-label={`Sequence diagram of the ${steps.length} steps listed below it`}
+    >
+      {
+        P.map((p) => {
+          const cx = xOf(p.id);
+          return (
+            <g class={`role-${p.role}`}>
+              <line class="xd-life" x1={cx} y1={top + boxH} x2={cx} y2={H - 6} />
+              <rect class="xd-box" x={cx - boxW / 2} y={top} width={boxW} height={boxH} />
+              <text class="xd-name" x={cx} y={top + (p.sub ? 21 : 29)} text-anchor="middle">
+                {p.label}
+              </text>
+              {p.sub && (
+                <text class="xd-sub" x={cx} y={top + 38} text-anchor="middle">
+                  {p.sub}
+                </text>
+              )}
+            </g>
+          );
+        })
+      }
+      {
+        drawn.map((d) =>
+          d.kind === "note" ? (
+            <g class={`role-${d.role}`}>
+              <rect class="xd-note" x={d.nx} y={d.y - d.h / 2} width={d.w} height={d.h} rx={d.h / 2} />
+              <circle class="xd-num" cx={d.nx + 18} cy={d.y} r="11" />
+              <text class="xd-numt" x={d.nx + 18} y={d.y + 4.5} text-anchor="middle">
+                {d.i + 1}
+              </text>
+              {d.lines.map((l, k) => (
+                <text
+                  x={d.nx + 36 + (d.w - 48) / 2}
+                  y={d.y + 5 + (k - (d.lines.length - 1) / 2) * LINE}
+                  text-anchor="middle"
+                >
+                  {l}
+                </text>
+              ))}
+            </g>
+          ) : (
+            <g class={`role-${d.role}`}>
+              <line
+                class="xd-arrow"
+                x1={d.x1 + d.dir * 13}
+                y1={d.y}
+                x2={d.tip - d.dir * 7}
+                y2={d.y}
+                stroke-dasharray={d.reply ? "5 4" : undefined}
+              />
+              <polygon
+                class="xd-tip"
+                points={`${d.tip},${d.y} ${d.tip - d.dir * 9},${d.y - 4.5} ${d.tip - d.dir * 9},${d.y + 4.5}`}
+              />
+              {d.lines.map((l, k) => (
+                <>
+                  <rect
+                    class="xd-lbg"
+                    x={d.lx - (l.length * CHAR) / 2 - 3}
+                    y={d.y - 11 - (d.lines.length - k) * LINE}
+                    width={l.length * CHAR + 6}
+                    height={LINE}
+                  />
+                  <text x={d.lx} y={d.y + 2 - (d.lines.length - k) * LINE} text-anchor="middle">
+                    {l}
+                  </text>
+                </>
+              ))}
+              <circle class="xd-num" cx={d.x1} cy={d.y} r="11" />
+              <text class="xd-numt" x={d.x1} y={d.y + 4.5} text-anchor="middle">
+                {d.i + 1}
+              </text>
+            </g>
+          ),
+        )
+      }
+    </svg>
+  </div>
+  <ol class="xd-steps">
+    {
+      steps.map((s) => {
+        const link = s.flow ? flowLink(s.flow) : undefined;
+        return (
+          <li>
+            <span>
+              <span class={`xd-who role-${party(s.from).role}`}>{party(s.from).label}</span>
+              {s.to && (
+                <>
+                  {" → "}
+                  <span class={`xd-who role-${party(s.to).role}`}>{party(s.to).label}</span>
+                </>
+              )}{" "}
+              {s.detail ?? s.label}.
+              {link && (
+                <>
+                  {" "}
+                  <a class="xd-flow" href={link.href}>
+                    {link.label}
+                  </a>
+                </>
+              )}
+            </span>
+          </li>
+        );
+      })
+    }
+  </ol>
+  {design.note && <p class="xd-foot">{design.note}</p>}
+</div>
+
+<style>
+  .xd {
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--fg);
+    background: var(--bg-raised);
+    padding: 0.9rem 1rem 1rem;
+  }
+  .xd[data-kind="Addition"] {
+    border-top-color: var(--accent);
+  }
+  .xd[data-kind="Alternative"] {
+    border-top-color: var(--amber);
+  }
+  .xd-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.7rem;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+  .xd-kind {
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    border: 1px solid var(--border-strong);
+    padding: 0.1rem 0.4rem;
+  }
+  .xd-title {
+    font-family: var(--font-heading);
+    font-size: 1.02rem;
+    line-height: 1.35;
+    letter-spacing: 0;
+    margin: 0;
+  }
+  .xd-canvas {
+    overflow-x: auto;
+    margin: 0.2rem 0 0.7rem;
+  }
+  .xd-canvas svg {
+    display: block;
+  }
+  .xd text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    fill: var(--fg);
+  }
+  .xd .xd-name {
+    font-weight: 600;
+  }
+  .xd .xd-sub {
+    font-size: 12.5px;
+    fill: var(--fg-muted);
+  }
+  .xd-box {
+    fill: var(--role-soft);
+    stroke: var(--role);
+    stroke-width: 1.3;
+  }
+  .xd-life {
+    stroke: var(--role);
+    stroke-width: 1.2;
+  }
+  .xd-arrow {
+    stroke: var(--fg);
+    stroke-width: 1.3;
+    fill: none;
+  }
+  .xd-tip {
+    fill: var(--fg);
+  }
+  .xd-num {
+    fill: var(--bg-raised);
+    stroke: var(--role);
+    stroke-width: 1.5;
+  }
+  .xd .xd-numt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .xd-lbg {
+    fill: var(--bg-raised);
+  }
+  .xd-note {
+    fill: var(--bg-sunken);
+    stroke: var(--border-strong);
+  }
+  /* On a narrow screen the numbered list says everything the diagram does. */
+  @media (max-width: 44rem) {
+    .xd-canvas {
+      display: none;
+    }
+  }
+  .xd-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: xd;
+  }
+  .xd-steps li {
+    counter-increment: xd;
+    display: grid;
+    grid-template-columns: 1.7rem minmax(0, 1fr);
+    gap: 0 0.5rem;
+    padding: 0.4rem 0;
+    border-top: 1px dashed var(--border-strong);
+    margin: 0;
+    font-size: 0.97rem;
+  }
+  .xd-steps li::before {
+    content: counter(xd);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--fg-muted);
+    padding-top: 0.2rem;
+  }
+  .xd-who {
+    display: inline-block;
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.5;
+    padding: 0 0.35rem;
+    background: var(--role-soft);
+    border: 1px solid var(--role);
+  }
+  .xd-flow {
+    font-size: 0.92rem;
+  }
+  .xd-foot {
+    margin: 0.7rem 0 0;
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+    max-width: var(--prose);
+  }
+</style>

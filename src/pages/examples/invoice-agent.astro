@@ -1,0 +1,361 @@
+---
+import Base from "../../layouts/Base.astro";
+import DocMeta from "../../components/DocMeta.astro";
+import ExampleDesign from "../../components/ExampleDesign.astro";
+import BuildPanel from "../../components/BuildPanel.astro";
+import "../../styles/examples.css";
+import {
+  guideLink,
+  invoiceAgent as ex,
+  invoiceBuild,
+  SOURCES_READ,
+} from "../../data/examples";
+import type { Pair } from "../../data/examples/types";
+import { must } from "../../lib/must";
+
+const { own, key, approval, accountant } = ex.blocks;
+const paths = Object.entries(ex.paths);
+const additions = [
+  { id: "key", anchor: "key-only-supplier", block: key },
+  { id: "approval", anchor: "payment-approval", block: approval },
+] as const;
+
+const why: Pair[] = [
+  [
+    "An identity from the platform, not a stored secret",
+    "A client secret or API key would carry the same authority. But someone has to create, deliver, store and rotate it, and anything that can read the agent’s environment can use it from anywhere.",
+  ],
+  [
+    "Its own identity, not an accountant’s account",
+    "Under her account the log would blame a person for the agent’s work, and the agent’s access would change whenever hers did.",
+  ],
+  [
+    "Two permissions, enforced by the ledger",
+    "The agent may read invoices and create drafts. Nothing grants it payment approval, and the ledger is what holds it to that, whatever the agent is told to try.",
+  ],
+];
+/** Where a reader is, said at the top of every variation: a link can land on any of them. */
+const context =
+  "Part of the example “An agent that reconciles invoices overnight”. In it an agent matches the day’s invoices against the ledger at 02:00, with an identity of its own, and nobody is signed in when it runs.";
+const details = [
+  {
+    label: "Kind of page",
+    value:
+      "A worked example: an authored design, with the evidence for each part",
+    note: "What the evidence labels mean",
+    noteHref: "/examples/#evidence",
+  },
+  { label: "Run", value: "Nothing on this page has been run by this site" },
+  {
+    label: "Vendor documentation",
+    value: `Read in ${SOURCES_READ}, and not tested`,
+    note: "How facts were checked",
+    noteHref: "/about/#how-facts-were-checked",
+  },
+];
+---
+
+<Base
+  title={ex.title}
+  description="An agent matches invoices against the ledger while nobody is signed in. A worked example of an agent with an identity of its own: the starting design, three variations, and what you would have to build."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow"><a href="/examples/">Examples</a></p>
+      <h1>{ex.title}</h1>
+      <p class="lede">
+        At 02:00 an agent matches the day’s invoices against the ledger and leaves reconciliation drafts for the finance
+        team to review in the morning. It should be able to read invoices and write drafts, and nothing else.
+      </p>
+      <DocMeta
+        lead="A worked example, not a tested recipe"
+        reviewed={SOURCES_READ}
+        reviewedKey="Sources read"
+        details={details}
+        more="What this page is, and how it was checked"
+      />
+    </div>
+  </div>
+
+  <div class="wrap">
+    <worked-example
+      class="we"
+      data-title={ex.title}
+      data-base="Showing the starting design."
+      data-derive="unwritten:accountant+approval"
+    >
+      <p class="we-jump">
+        Jump to: <a href="#why">why it is built this way</a> · <a href="#variations">variations</a> ·{" "}
+        <a href="#build">who does what, and setup</a>
+      </p>
+
+      <h2 id="design" data-return>The starting design</h2>
+      <p class="we-narrow">
+        The agent has an identity of its own, issued by the platform it runs on. It presents that to the identity
+        platform the ledger trusts, and gets back a token carrying two permissions. The ledger checks that token on
+        every call.
+      </p>
+      <div class="we-design">
+        <ExampleDesign design={own.design} />
+        <aside class="we-assume" aria-labelledby="assumes">
+          <p class="we-label" id="assumes">This design assumes</p>
+          <ul>
+            <li>
+              <strong>The work is the organization’s.</strong> It is the same whoever is on shift, and the log should
+              say the agent did it. That is why the agent has an identity of its own.
+            </li>
+            <li>
+              <strong>Running overnight is not what decides that.</strong> An agent can also run unattended on one
+              person’s access, granted earlier. That is the first variation below.
+            </li>
+            <li>
+              <strong>You control the ledger API,</strong> so you can make it trust the issuer of the agent’s identity.
+            </li>
+            <li><strong>It reads and drafts.</strong> It does not approve.</li>
+          </ul>
+        </aside>
+      </div>
+
+      <h2 id="why" data-return>Why it is built this way</h2>
+      <dl class="we-pairs">
+        {
+          why.map(([t, d]) => (
+            <div>
+              <dt>{t}</dt>
+              <dd>{d}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <h2 id="variations">Variations</h2>
+      <p class="we-narrow">
+        Change one thing about the situation and see what the design needs. Each variation was written up by hand. Where
+        one has not been, the page says so.
+      </p>
+      <form class="we-controls" data-controls data-js hidden>
+        <fieldset>
+          <legend class="we-label">Whose access it uses</legend>
+          <div class="we-opt">
+            <input type="radio" name="access" id="access-own" value="own" data-token="own" data-default checked />
+            <label for="access-own">An identity of its own, as above</label>
+          </div>
+          <div class="we-opt">
+            <input type="radio" name="access" id="access-accountant" value="accountant" data-token="accountant" />
+            <label for="access-accountant">
+              One accountant’s, granted earlier <span class="we-kind">Alternative</span>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="we-label">What else is true</legend>
+          <div class="we-opt">
+            <input type="checkbox" name="key" id="add-key" data-token="key" />
+            <label for="add-key">{key.label} <span class="we-kind">Addition</span></label>
+          </div>
+          <div class="we-opt">
+            <input type="checkbox" name="approval" id="add-approval" data-token="approval" />
+            <label for="add-approval">
+              {approval.label} <span class="we-kind">Addition, with required parts</span>
+            </label>
+          </div>
+        </fieldset>
+      </form>
+
+      <div class="we-notice" data-if="unwritten">
+        <h3 data-announce>One combination has not been written up</h3>
+        <p>
+          Nobody has written up an accountant’s access together with payment approval, so this page will not assemble
+          one for you. The parts do not simply add: when the agent already acts for a person, who approves, and whether
+          that may be the same person, is a design question of its own.
+        </p>
+        <p data-js hidden>
+          The closest that have been:{" "}
+          <button type="button" class="we-linkbtn" data-uncheck="approval">
+            one accountant’s access, without payment approval</button
+          >, or{" "}
+          <button type="button" class="we-linkbtn" data-check="own">
+            the agent’s own identity, with payment approval</button
+          >.
+        </p>
+      </div>
+
+      <div
+        class="we-variation"
+        id="accountants-access"
+        data-select="accountant"
+        data-if="accountant !unwritten"
+        data-return
+      >
+        <h3 class="we-status" data-announce>
+          <span>Variation:</span> one accountant’s access, granted earlier, in place of the starting design.
+        </h3>
+        <p class="we-context">{context} <a href="#design">Read the starting design</a></p>
+        <p class="we-quiet we-narrow">
+          A different core. It replaces the starting design, and the two do not mix. Refresh-token mechanism documented.
+          The component that keeps the refresh token outside the agent still needs to be designed and verified.
+        </p>
+        <ExampleDesign design={accountant.design} level={4} />
+        <p class="we-quiet we-narrow" data-if="accountant key !unwritten">
+          With an employee’s access, the supplier still receives one shared key. The key carries nothing about which
+          employee the agent was working for, so anything that differs by person has to be enforced before the request
+          leaves.
+        </p>
+        <h4 class="we-sub">What this changes, and why</h4>
+        <dl class="we-pairs">
+          {
+            must(accountant.delta, "accountant delta").map(([t, d]) => (
+              <div>
+                <dt>{t}</dt>
+                <dd>{d}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <h4 class="we-sub">Why not something simpler</h4>
+        <dl class="we-pairs">
+          {
+            accountant.simpler.map(([t, d]) => (
+              <div>
+                <dt>{t}</dt>
+                <dd>{d}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <p class="we-quiet we-narrow" data-if="own key approval" data-js hidden>
+        Two additions to the starting design. Each is drawn on its own, because they are separate decisions and not
+        steps in one sequence.
+      </p>
+      {
+        additions.map(({ id, anchor, block }) => (
+          <div class="we-variation" id={anchor} data-select={id} data-if={`${id} !unwritten`} data-return>
+            <h3 class="we-status" data-announce>
+              <span>Variation:</span> {must(block.label, "label").replace(/^./, (c) => c.toLowerCase())}.
+            </h3>
+            <p class="we-context">
+              {context} <a href="#design">Read the starting design</a>
+            </p>
+            <p class="we-quiet we-narrow">An addition to the starting design, which stays as it is.</p>
+            <ExampleDesign design={block.design} level={4} />
+            <h4 class="we-sub">What changes, and why</h4>
+            <dl class="we-pairs">
+              {must(block.delta, "delta").map(([t, d]) => (
+                <div>
+                  <dt>{t}</dt>
+                  <dd>{d}</dd>
+                </div>
+              ))}
+            </dl>
+            <h4 class="we-sub">Why not something simpler</h4>
+            <dl class="we-pairs">
+              {block.simpler.map(([t, d]) => (
+                <div>
+                  <dt>{t}</dt>
+                  <dd>{d}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))
+      }
+
+      <h2 id="build" data-return>Building it</h2>
+      <p class="we-quiet we-narrow">
+        Each row is a job someone has to do. “Platform” rows name a documented capability. The rest are yours, and no
+        product does them for you.
+      </p>
+      <div class="we-picker" role="group" aria-label="Build path" data-if="own" data-js hidden>
+        {
+          paths.map(([id, p]) => (
+            <button type="button" class="we-path" data-path={id} data-label={p.label} aria-pressed="false">
+              {p.label}
+              <small>Fits when: {p.fits}</small>
+            </button>
+          ))
+        }
+      </div>
+      <p class="we-quiet we-narrow" data-if="unwritten">
+        There is nothing to build from until this combination is written up.
+      </p>
+      {
+        paths.map(([p, info]) => {
+          const b = invoiceBuild("own", p);
+          return (
+            <div data-if={`own path:${p}`}>
+              <BuildPanel
+                heading={`the starting design, on ${info.label}`}
+                evidence={b.evidence}
+                rows={b.rows}
+                conditions={b.conditions}
+                setup={b.setup}
+                check={own.check}
+              />
+            </div>
+          );
+        })
+      }
+      {
+        additions.map(({ id, block }) =>
+          paths.map(([p, info]) => {
+            const b = invoiceBuild(id, p);
+            return (
+              <div data-if={`own ${id} path:${p}`}>
+                <BuildPanel
+                  heading={`${must(block.label, "label").replace(/^./, (c) => c.toLowerCase())}, on ${info.label}`}
+                  evidence={b.evidence}
+                  rows={b.rows}
+                  conditions={b.conditions}
+                  setup={b.setup}
+                  check={block.check}
+                />
+              </div>
+            );
+          }),
+        )
+      }
+      <div data-if="accountant !unwritten">
+        <BuildPanel
+          heading="one accountant’s access, granted earlier"
+          evidence={invoiceBuild("accountant", "all").evidence}
+          rows={invoiceBuild("accountant", "all").rows}
+          check={accountant.check}
+        />
+        <p class="we-quiet we-narrow" data-if="accountant key !unwritten" style="margin-top:.9rem">
+          The key-only supplier is built the same way under either design. Its build paths are written up with the
+          agent’s own identity.
+        </p>
+      </div>
+      <p class="we-quiet we-narrow" style="margin-top:1.4rem">
+        This page is an architecture walkthrough. Nothing on it has been run by this site.
+      </p>
+
+      <h2>What would lead to another design</h2>
+      <ul class="we-next">
+        <li>
+          <strong>The supplier offers OAuth.</strong> Drop the proxy and use{" "}
+          <a href="/flows/client-credentials/">client credentials</a>.
+        </li>
+        <li>
+          <strong>The ledger is a service you do not control.</strong> What it accepts decides the design.{" "}
+          <a href={guideLink(ex.slug)}>The guide asks that question</a>, filled in for this example.
+        </li>
+        <li>
+          <strong>A person is waiting on the answer.</strong> Then it is acting for them, in their session: see{" "}
+          <a href="/examples/support-agent/">the support agent</a>.
+        </li>
+      </ul>
+      <p class="we-narrow" style="margin-top:1.2rem">
+        Running on Kubernetes? The <a href="/deployments/kubernetes/">Kubernetes deployment guide</a> covers what is
+        particular to it: the identity layers, service accounts and the mesh.
+      </p>
+      <p class="visually-hidden" role="status" data-live></p>
+    </worked-example>
+  </div>
+</Base>
+
+<script>
+  import "../../scripts/worked-example";
+</script>
