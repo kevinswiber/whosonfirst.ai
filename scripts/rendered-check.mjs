@@ -1029,6 +1029,44 @@ await ctx.close();
       st.focusTop < 200,
     JSON.stringify(st),
   );
+  // a link under a heading, outside any variation, returns to that heading
+  const backTo = [];
+  for (const [link, anchor] of [
+    [
+      '.we-design .xd-steps a[href="/flows/authorization-code-pkce/"]',
+      "design",
+    ],
+    ['a[href="/flows/dpop/"]', "not-proved"],
+    ['.we-next a[href="/flows/credential-broker/"]', "variations"],
+  ]) {
+    await page.goto(`${origin}${EXAMPLE}`, { waitUntil: "networkidle" });
+    await page.click(`worked-example ${link}`);
+    await page.waitForLoadState("networkidle");
+    const href = await page.evaluate(() =>
+      document.querySelector("[data-trail] a")?.getAttribute("href"),
+    );
+    await page.click("[data-trail] a");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(100);
+    const at = await page.evaluate(() => ({
+      focus: document.activeElement?.id,
+      top: Math.round(
+        document.activeElement?.getBoundingClientRect().top ?? -1,
+      ),
+    }));
+    backTo.push({ anchor, href, ...at });
+  }
+  eg(
+    "the way back returns to the section the reader left, wherever in it the link was",
+    backTo.every(
+      (b) =>
+        b.href === `${EXAMPLE}#${b.anchor}` &&
+        b.focus === b.anchor &&
+        b.top >= 0 &&
+        b.top < 200,
+    ),
+    JSON.stringify(backTo),
+  );
   await page.goto(`${origin}/flows/token-exchange/`, {
     waitUntil: "networkidle",
   });

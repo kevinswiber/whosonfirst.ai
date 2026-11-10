@@ -96,7 +96,7 @@ class WorkedExample extends HTMLElement {
       // remember where a reader left for a flow page, so that page can offer the way back
       const out = el?.closest<HTMLAnchorElement>('a[href^="/flows/"]');
       if (out) {
-        const at = out.closest<HTMLElement>("[data-return]");
+        const at = this.#returnPoint(out);
         try {
           sessionStorage.setItem(
             TRAIL_KEY,
@@ -109,6 +109,24 @@ class WorkedExample extends HTMLElement {
         } catch {}
       }
     });
+  }
+
+  /**
+   * Where a link sits, as somewhere to come back to: the marked part that
+   * contains it, or else the nearest marked heading above it. Parts the
+   * reader has not selected are passed over, since returning to one would
+   * select it.
+   */
+  #returnPoint(link: Element): HTMLElement | undefined {
+    const inside = link.closest<HTMLElement>("[data-return]");
+    if (inside) return inside;
+    return [...this.querySelectorAll<HTMLElement>("[data-return]")]
+      .filter(
+        (m) =>
+          !m.closest("[hidden]") &&
+          m.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING,
+      )
+      .pop();
   }
 
   /** Check or uncheck the controls that carry these tokens. */
