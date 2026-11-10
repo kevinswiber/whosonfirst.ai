@@ -3,6 +3,7 @@ import { Code } from "astro:components";
 import Base from "../../layouts/Base.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
 import FlowBrief from "../../components/FlowBrief.astro";
+import FlowContents from "../../components/FlowContents.astro";
 import FlowDecisions from "../../components/FlowDecisions.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
@@ -44,6 +45,26 @@ const sections = [
   ...(flow.sections ?? []),
 ];
 const rel = related(flow);
+// Keep this navigation trial local until more complete flows establish a pattern.
+const hasContents = flow.slug === "workload-identity-federation";
+const contents = hasContents
+  ? [
+      { id: "walkthrough", label: "Diagram" },
+      { id: "fit", label: "Does this flow fit?" },
+      ...(flow.reading?.decisions?.presentation === "table"
+        ? [{ id: "decisions", label: "Implementation choices" }]
+        : []),
+      ...(flow.comparison
+        ? [{ id: "comparison", label: "By environment" }]
+        : []),
+      ...sections.map((section) => ({ id: section.id, label: section.title })),
+      ...(flow.watchOut.length || flow.notes?.length
+        ? [{ id: "cautions", label: "Cautions and notes" }]
+        : []),
+      { id: "standards", label: "Sources" },
+      ...(rel.length ? [{ id: "related", label: "Related flows" }] : []),
+    ]
+  : [];
 const i = flows.indexOf(flow);
 const prev = flows[i - 1];
 const next = flows[i + 1];
@@ -198,7 +219,7 @@ const details = [
 ---
 
 <Base title={flow.title} description={flow.tagline}>
-  <div class="page-head">
+  <div class:list={["page-head", { "contents-page-head": hasContents }]}>
     <div class="wrap">
       <p class="eyebrow"><a href="/flows/">Flows</a> / {group.title}</p>
       <h1>{flow.title}</h1>
@@ -207,7 +228,7 @@ const details = [
     </div>
   </div>
 
-  <div class="wrap body">
+  <div class:list={["wrap", "body", { "with-contents": hasContents }]}>
     <div class:list={["intro", { "reading-intro": flow.reading }]}>
       <div class="prose" set:html={block(flow.summary)} />
       {!flow.reading && <aside class="fit">
@@ -218,7 +239,9 @@ const details = [
       </aside>}
     </div>
 
-    {flow.reading && (
+    {hasContents && <FlowContents items={contents} />}
+    <div class="flow-content">
+    {flow.reading && !hasContents && (
       <nav class="reading-jumps" aria-label="On this page">
         <a href="#walkthrough">Diagram</a>
         <a href="#fit">Fit &amp; requirements</a>
@@ -240,11 +263,11 @@ const details = [
       {flow.illustrated && !flow.reading && <div class="prose drawn" set:html={block(flow.illustrated.steps)} />}
       {flow.reading?.phases && (
         <nav class="phase-outline" aria-label="Walkthrough phases">
-          <ol>{flow.reading.phases.map((phase) => (
+          <ul role="list">{flow.reading.phases.map((phase) => (
             <li>
-              <a href={`#step-${phase.start}`}>{phase.title} <span>({phase.start === phase.end ? "step" : "steps"} {phase.start}{phase.end !== phase.start && `–${phase.end}`})</span></a>
+              <a href={`#step-${phase.start}`}>{phase.title} <span>· {phase.start === phase.end ? "step" : "steps"} {phase.start}{phase.end !== phase.start && `–${phase.end}`}</span></a>
             </li>
-          ))}</ol>
+          ))}</ul>
         </nav>
       )}
       <FlowDiagram flow={flow} />
@@ -370,7 +393,7 @@ const details = [
       ))
     }
 
-    {(flow.watchOut.length > 0 || flow.notes?.length) && <section class:list={["cols", { "notes-only": flow.watchOut.length === 0 }]} aria-label="Cautions and notes">
+    {(flow.watchOut.length > 0 || flow.notes?.length) && <section id={hasContents ? "cautions" : undefined} class:list={["cols", { "notes-only": flow.watchOut.length === 0 }]} aria-label="Cautions and notes">
       {flow.watchOut.length > 0 && <div>
         <h2>Watch out for</h2>
         <ul class="watch">
@@ -461,15 +484,33 @@ const details = [
         )
       }
     </nav>
+    </div>
   </div>
 </Base>
 
 <style>
+  .flow-content { display: contents; }
+  .with-contents, .contents-page-head { --contents-width: 11rem; --contents-gap: 1.5rem; }
+  @media (min-width: 96rem) {
+    .body.with-contents, .contents-page-head .wrap {
+      max-width: calc(var(--wide) + var(--contents-width) + var(--contents-gap) + 2 * var(--gutter));
+    }
+    .contents-page-head .wrap { padding-inline-start: calc(var(--gutter) + var(--contents-width) + var(--contents-gap)); }
+    .body.with-contents { display: grid; grid-template-columns: var(--contents-width) minmax(0, 1fr); column-gap: var(--contents-gap); align-items: start; }
+    .with-contents > .intro { grid-column: 2; }
+    .with-contents > :global(flow-contents) { grid-column: 1; grid-row: 2; position: sticky; top: 4.6rem; margin-top: clamp(2.5rem, 5vw, 3.75rem); }
+    .with-contents > .flow-content { display: block; grid-column: 2; grid-row: 2; min-width: 0; }
+  }
+  @media print {
+    .body.with-contents { display: block; }
+    .contents-page-head .wrap { padding-inline-start: var(--gutter); }
+    .with-contents > :global(flow-contents) { display: none; }
+  }
   .intro.reading-intro { grid-template-columns: minmax(0, 1fr); }
   .reading-intro .prose { max-width: var(--prose); }
   .reading-jumps { display: flex; flex-wrap: wrap; gap: 0.5rem 1.3rem; margin-top: 1.3rem; }
   .phase-outline { margin: 1.25rem 0; }
-  .phase-outline ol { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; margin: 0; padding-left: 1.4rem; }
+  .phase-outline ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin: 0; padding: 0; list-style: none; }
   .phase-outline a { font-weight: 600; }
   .phase-outline span { font-weight: 400; white-space: nowrap; }
   .cols.notes-only { grid-template-columns: minmax(0, 1fr); }
@@ -481,7 +522,7 @@ const details = [
       display: none;
     }
   }
-  .body > section {
+  .flow-content > section {
     margin-top: clamp(2.5rem, 5vw, 3.75rem);
   }
   .body h2 {

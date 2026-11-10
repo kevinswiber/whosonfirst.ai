@@ -240,7 +240,9 @@ async function checkPilot(browser) {
     ["workload-identity-federation", 8],
   ]) {
     const url = `${origin}/flows/${slug}/`;
-    for (const width of [1280, 900, 320]) {
+    for (const width of slug === "workload-identity-federation"
+      ? [1600, 1280, 900, 320]
+      : [1280, 900, 320]) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
         reducedMotion: "reduce",
@@ -297,7 +299,9 @@ async function checkPilot(browser) {
             ),
           )),
       );
-      const fitLink = page.locator('.reading-jumps a[href="#fit"]');
+      const fitLink = page.locator(
+        '.reading-jumps a[href="#fit"], flow-contents a[href="#fit"]',
+      );
       await fitLink.focus();
       await fitLink.press("Enter");
       await page.waitForURL(`${url}#fit`);
@@ -310,6 +314,28 @@ async function checkPilot(browser) {
       const links = await page
         .locator(".phase-outline a")
         .evaluateAll((anchors) => anchors.map((a) => a.getAttribute("href")));
+      record(
+        where,
+        "pilot: phase labels have only the actual step numbers",
+        links.length === 3 &&
+          (await page
+            .locator(".phase-outline ul")
+            .evaluate(
+              (el) =>
+                getComputedStyle(el).listStyleType === "none" &&
+                [...el.querySelectorAll("a")].every(
+                  (a) =>
+                    !/^\d/.test(a.textContent.trim()) &&
+                    /· steps? \d/.test(a.textContent),
+                ),
+            )),
+      );
+      record(
+        where,
+        "pilot: contents navigation is limited to federation",
+        (await page.locator("flow-contents").count()) ===
+          (slug === "workload-identity-federation" ? 1 : 0),
+      );
       for (const href of links) {
         const link = page.locator(`.phase-outline a[href="${href}"]`);
         await link.focus();
@@ -370,6 +396,66 @@ async function checkPilot(browser) {
         `${overflow}px`,
       );
       if (slug === "workload-identity-federation") {
+        const nav = page.locator(
+          'flow-contents nav[aria-label="On this page"]',
+        );
+        const permissionsLink = nav.locator('a[href="#permissions"]');
+        await permissionsLink.focus();
+        await permissionsLink.press("Enter");
+        await page.waitForURL(`${url}#permissions`);
+        await page.waitForFunction(
+          () =>
+            document.querySelector('flow-contents a[aria-current="location"]')
+              ?.hash === "#permissions",
+        );
+        record(
+          where,
+          "pilot: keyboard contents jump marks its visible section",
+          (await inView("#permissions")) &&
+            (await nav.locator('[aria-current="location"]').count()) === 1,
+        );
+        // Scroll independently of fragment navigation: current location must follow reading.
+        await page
+          .locator("#implementations")
+          .evaluate((el) =>
+            window.scrollTo(
+              0,
+              window.scrollY + el.getBoundingClientRect().top - 85,
+            ),
+          );
+        await page.waitForFunction(
+          () =>
+            document.querySelector('flow-contents a[aria-current="location"]')
+              ?.hash === "#implementations",
+        );
+        const layout = await page.evaluate(() => {
+          const nav = document.querySelector("flow-contents"),
+            diagram = document.querySelector("flow-diagram");
+          const nr = nav.getBoundingClientRect(),
+            dr = diagram.getBoundingClientRect();
+          return {
+            position: getComputedStyle(nav).position,
+            top: nr.top,
+            right: nr.right,
+            left: dr.left,
+            diagramWidth: dr.width,
+            fullWidth:
+              parseFloat(getComputedStyle(document.documentElement).fontSize) *
+              72,
+          };
+        });
+        record(
+          where,
+          "pilot: contents tracks scrolling without taking diagram space",
+          width >= 1536
+            ? layout.position === "sticky" &&
+                layout.top > 60 &&
+                layout.top < 100 &&
+                layout.right < layout.left &&
+                Math.abs(layout.diagramWidth - layout.fullWidth) <= 1
+            : layout.position === "static",
+          JSON.stringify(layout),
+        );
         const section = page.locator('section[aria-labelledby="decisions"]');
         const tree = await section.ariaSnapshot();
         const tableCount = (tree.match(/- table/g) ?? []).length;
@@ -437,7 +523,7 @@ async function checkPilot(browser) {
         "pilot: keyboard closes optional detail",
         await optional.evaluate((el) => !el.open),
       );
-      if (width === 1280 || width === 320) {
+      if (width === 1600 || width === 1280 || width === 320) {
         await page.addScriptTag({ path: axePath });
         for (const theme of THEMES) {
           await page.emulateMedia({ colorScheme: theme });
@@ -525,6 +611,7 @@ async function checkPilot(browser) {
       const context = await browser.newContext({
         viewport: { width: 1280, height: 900 },
         javaScriptEnabled,
+        reducedMotion: "reduce",
       });
       const page = await context.newPage();
       await page.goto(url);
@@ -538,6 +625,18 @@ async function checkPilot(browser) {
           (await page.locator(".flow-step:visible").count()) === count &&
             (await page.locator(".phase-outline a").count()) === 3 &&
             (await page.locator(".decision-sources a").count()) > 0,
+        );
+      }
+      if (!javaScriptEnabled && slug === "workload-identity-federation") {
+        await page.locator('flow-contents a[href="#cautions"]').click();
+        await page.waitForURL(`${url}#cautions`);
+        record(
+          where,
+          "pilot: native contents works without JavaScript",
+          await page.locator("#cautions").evaluate((el) => {
+            const r = el.getBoundingClientRect();
+            return r.top >= 0 && r.top < innerHeight;
+          }),
         );
       }
       // Close optional disclosures first; print must not depend on interaction or JS.
@@ -571,7 +670,11 @@ async function checkPilot(browser) {
             panel.maxHeight === "none" &&
             panel.overflowY === "visible" &&
             panel.position === "static",
-          controlsHidden: !visible(document.querySelector(".flow-bar")),
+          controlsHidden:
+            !visible(document.querySelector(".flow-bar")) &&
+            [...document.querySelectorAll("flow-contents")].every(
+              (el) => !visible(el),
+            ),
         };
       });
       record(

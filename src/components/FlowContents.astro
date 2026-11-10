@@ -1,0 +1,79 @@
+---
+interface Props {
+  items: { id: string; label: string }[];
+}
+const { items } = Astro.props;
+---
+<flow-contents>
+  <nav aria-label="On this page">
+    <p class="contents-title">On this page</p>
+    <ul role="list">{items.map((item) => <li><a href={`#${item.id}`}>{item.label}</a></li>)}</ul>
+  </nav>
+</flow-contents>
+<script>
+  class FlowContents extends HTMLElement {
+    links: HTMLAnchorElement[] = [];
+    targets: HTMLElement[] = [];
+    frame = 0;
+    resize?: ResizeObserver;
+
+    connectedCallback() {
+      this.links = Array.from(this.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'));
+      this.targets = this.links.map((link) => document.getElementById(link.hash.slice(1))!);
+      if (this.targets.some((target) => !target)) return;
+      window.addEventListener('scroll', this.queue, { passive: true });
+      window.addEventListener('resize', this.queue);
+      window.addEventListener('hashchange', this.queue);
+      this.resize = new ResizeObserver(this.queue);
+      this.resize.observe(this.parentElement!);
+      document.fonts.ready.then(this.queue);
+      this.queue();
+    }
+
+    queue = () => {
+      if (!this.isConnected || this.frame) return;
+      this.frame = requestAnimationFrame(this.update);
+    };
+
+    update = () => {
+      this.frame = 0;
+      // Match the native fragment offset, leaving room for the site header.
+      const threshold = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 2;
+      let current = -1;
+      for (const [index, target] of this.targets.entries()) {
+        if (target.getBoundingClientRect().top <= threshold) current = index;
+        else break;
+      }
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) current = this.links.length - 1;
+      for (const [index, link] of this.links.entries()) {
+        if (index === current) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+    };
+
+    disconnectedCallback() {
+      window.removeEventListener('scroll', this.queue);
+      window.removeEventListener('resize', this.queue);
+      window.removeEventListener('hashchange', this.queue);
+      this.resize?.disconnect();
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+    }
+  }
+  customElements.define('flow-contents', FlowContents);
+</script>
+<style>
+  flow-contents { display: block; margin-top: 1.3rem; }
+  .contents-title { margin: 0 0 0.6rem; font-family: var(--font-label); font-size: 0.78rem; font-weight: 600; }
+  ul { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; list-style: none; margin: 0; padding: 0; }
+  li { margin: 0; }
+  a { display: block; border-inline-start: 2px solid transparent; padding: 0.15rem 0.35rem; font-size: 0.92rem; }
+  a[aria-current="location"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  @media (min-width: 96rem) {
+    nav { max-height: calc(100dvh - 6rem); overflow-y: auto; scrollbar-width: thin; padding-block: 0.2rem; }
+    ul { display: block; }
+    li + li { margin-top: 0.35rem; }
+    a { padding-block: 0.25rem; }
+  }
+  @media print { flow-contents { display: none; } }
+</style>
