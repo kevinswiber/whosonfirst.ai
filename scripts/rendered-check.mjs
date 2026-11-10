@@ -68,6 +68,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 /* ---------- what is looked at ---------- */
 const FLOW = "/flows/mcp-authorization/";
+const EXAMPLE = "/examples/support-agent/";
 const PAGES = [
   { path: "/", name: "home" },
   { path: FLOW, name: "flow" },
@@ -76,6 +77,9 @@ const PAGES = [
   { path: "/flows/", name: "flows index" },
   { path: "/guide/", name: "decision guide" },
   { path: "/deployments/kubernetes/", name: "deployment guide" },
+  { path: "/examples/", name: "examples index" },
+  { path: EXAMPLE, name: "worked example" },
+  { path: "/examples/invoice-agent/", name: "second worked example" },
 ];
 const VIEWPORTS = [
   { name: "desktop", width: 1280, height: 900 },
@@ -187,7 +191,7 @@ const diagramLabels = () => {
 const prose = () => {
   const out = [];
   for (const p of document.querySelectorAll(
-    "main .prose p, main .article > p, main .step-body p, main .lede",
+    "main .prose p, main .article > p, main .step-body p, main .lede, main .we-narrow, main .we-how p, main .opener-text",
   )) {
     if (!p.offsetParent) continue;
     const cs = getComputedStyle(p);
@@ -255,6 +259,7 @@ for (const theme of THEMES) {
       if (pg.name === "home") {
         const dest = [
           "/guide/",
+          "/examples/",
           "/flows/",
           "/concepts/",
           "/deployments/",
@@ -393,133 +398,149 @@ for (const theme of THEMES) {
       }
 
       if (pg.name === "home") {
-        const first = await page.evaluate(() => {
-          const panel = [...document.querySelectorAll(".vb-panel")].find(
-            (p) => p.offsetParent,
-          );
-          const box = document.querySelector(".vb").getBoundingClientRect();
-          return panel
-            ? {
-                rows: panel.querySelectorAll("tbody tr").length,
-                marks: [...panel.querySelectorAll(".vb-mark")].map((m) =>
-                  m.textContent.trim(),
-                ),
-                height: box.height,
-              }
-            : null;
-        });
-        record(
-          where,
-          "explainer shows a complete first state",
-          !!first && first.rows === 3,
-          first ? first.marks.join(", ") : "not visible",
-        );
-        record(
-          where,
-          "explainer fits in one screen",
-          !!first && first.height <= vp.height,
-          first ? `${Math.round(first.height)}px of ${vp.height}px` : "",
-        );
-        const pathClean = () =>
-          page.evaluate(() => {
-            const panel = [...document.querySelectorAll(".vb-panel")].find(
-              (e) => e.offsetParent,
-            );
-            const path = panel.querySelector(".vb-path");
-            const box = path.getBoundingClientRect();
-            const rects = (s) =>
-              [...path.querySelectorAll(s)].map((e) =>
-                e.getBoundingClientRect(),
-              );
-            const hit = (a, c) =>
-              a.left < c.right - 0.5 &&
-              c.left < a.right - 0.5 &&
-              a.top < c.bottom - 0.5 &&
-              c.top < a.bottom - 0.5;
-            let bad = 0;
-            const labels = rects(".vb-label");
-            labels.forEach((l, i) => {
-              for (const n of rects(".vb-node")) if (hit(l, n)) bad++;
-              labels.forEach((o, j) => {
-                if (j > i && hit(l, o)) bad++;
-              });
-              if (l.left < box.left - 0.5 || l.right > box.right + 0.5) bad++;
-            });
-            const broken = [...panel.querySelectorAll(".vb-reads code")].filter(
-              (c) => c.getClientRects().length > 1,
-            ).length;
-            return { bad, broken };
-          });
-        const keyPath = await pathClean();
-        await page.check('.vb input[value="delegated"]', { force: true });
-        const second = await page.evaluate(() =>
-          [...document.querySelectorAll(".vb-panel")]
-            .filter((p) => p.offsetParent)
-            .map((p) => p.dataset.credential),
-        );
-        record(
-          where,
-          "choosing the other credential changes the panel",
-          second.length === 1 && second[0] === "delegated",
-          second.join(","),
-        );
-        const tokenPath = await pathClean();
-        record(
-          where,
-          "explainer path: no label overlaps a box or is clipped, no claim is broken, in either state",
-          keyPath.bad + keyPath.broken + tokenPath.bad + tokenPath.broken === 0,
-          JSON.stringify({ keyPath, tokenPath }),
-        );
-        // both answers to "whose authority" are on screen together, before either list of flows
-        const au = await page.evaluate(() => {
-          const choices = [
-            ...document.querySelectorAll(".au-choices label"),
-          ].map((l) => l.getBoundingClientRect());
-          const branch = [...document.querySelectorAll(".au-branch")].find(
-            (b) => b.offsetParent,
+        // the opening: one situation, one idea, one next step, before anything asks the
+        // reader to classify their own case
+        const home = await page.evaluate(() => {
+          const hero = document.querySelector(".hero");
+          const text = (sel) =>
+            hero.querySelector(sel)?.textContent.replace(/\s+/g, " ").trim() ??
+            "";
+          const top = (el) => el.getBoundingClientRect().top;
+          const path = [...hero.querySelectorAll(".path li")];
+          const primary = [...document.querySelectorAll("main .btn.primary")];
+          const focusable = document.querySelector(
+            "main a[href], main button, main input",
           );
           return {
-            n: choices.length,
-            lastChoiceBottom: Math.max(...choices.map((r) => r.bottom)),
-            firstChoiceTop: Math.min(...choices.map((r) => r.top)),
-            branchTop: branch?.getBoundingClientRect().top ?? 0,
-            shown: [...document.querySelectorAll(".au-branch")]
-              .filter((b) => b.offsetParent)
-              .map((b) => b.dataset.authority),
+            h1: text("h1"),
+            idea: text(".idea"),
+            names: path.map((li) => li.querySelector("b").textContent),
+            oneRow: new Set(path.map((li) => Math.round(top(li)))).size === 1,
+            primary: primary.length,
+            primaryHref: primary[0]?.getAttribute("href"),
+            firstFocusable: focusable?.getAttribute("href"),
+            buttonBottom: primary[0]
+              ? Math.round(primary[0].getBoundingClientRect().bottom + scrollY)
+              : -1,
+            headlineToButton: primary[0]
+              ? Math.round(
+                  primary[0].getBoundingClientRect().bottom -
+                    top(hero.querySelector("h1")),
+                )
+              : -1,
+            choices: document.querySelectorAll("main input").length,
+            situations: [...document.querySelectorAll(".situations a")].map(
+              (a) => a.getAttribute("href"),
+            ),
+            direct: [...document.querySelectorAll(".what a")].map((a) =>
+              a.getAttribute("href"),
+            ),
+            screen: innerHeight,
           };
         });
         record(
           where,
-          "both authority answers shown before either branch",
-          au.n === 2 &&
-            au.lastChoiceBottom <= au.branchTop &&
-            au.lastChoiceBottom - au.firstChoiceTop <= vp.height,
-          `${Math.round(au.lastChoiceBottom - au.firstChoiceTop)}px for both`,
-        );
-        await page.check('.au-choices input[value="agent"]', { force: true });
-        const after = await page.evaluate(() =>
-          [...document.querySelectorAll(".au-branch")]
-            .filter((b) => b.offsetParent)
-            .map((b) => b.dataset.authority),
+          "home states the question and one takeaway, as settled",
+          home.h1 === "Who’s acting, and what are they allowed to do?" &&
+            home.idea ===
+              "The records service has to enforce Dana’s limit, even when the agent asks for more. To do that, it needs a trustworthy way to know who the agent is acting for.",
+          `${home.h1} / ${home.idea}`,
         );
         record(
           where,
-          "one branch at a time, switched by the answer",
-          au.shown.join() === "person" && after.join() === "agent",
-          `${au.shown} then ${after}`,
-        );
-        const routes = await page.evaluate(() =>
-          [...document.querySelectorAll(".routes li > a")].map((a) =>
-            a.getAttribute("href"),
-          ),
+          "home shows the request as one row: person, agent, records service",
+          home.names.join(" > ") === "Dana > Support agent > Records service" &&
+            home.oneRow,
+          `${home.names.join(" > ")}${home.oneRow ? "" : ", not on one row"}`,
         );
         record(
           where,
-          "three ways in: guide, roles, flows",
-          ["/guide/", "/concepts/#roles", "/flows/"].every((h) =>
-            routes.includes(h),
-          ),
-          routes.join(" "),
+          "home has one primary button, first in the tab order, leading into the first example",
+          home.primary === 1 &&
+            home.primaryHref === EXAMPLE &&
+            home.firstFocusable === EXAMPLE &&
+            home.choices === 0,
+          `${home.primary} primary, to ${home.primaryHref}; first focusable ${home.firstFocusable}; ${home.choices} inputs`,
+        );
+        record(
+          where,
+          vp.name === "desktop"
+            ? "home: the button is on the first screen"
+            : "home: headline to button fits one screen",
+          vp.name === "desktop"
+            ? home.buttonBottom <= home.screen
+            : home.headlineToButton <= home.screen,
+          `button ends ${home.buttonBottom}px down, headline to button ${home.headlineToButton}px, screen ${home.screen}px`,
+        );
+        record(
+          where,
+          "home: situation links point at the part that answers them, and direct routes remain",
+          home.situations.join(" ") ===
+            "/examples/invoice-agent/ /examples/invoice-agent/#key-only-supplier /examples/invoice-agent/#payment-approval" &&
+            [
+              "/guide/",
+              "/flows/",
+              "/concepts/",
+              "/deployments/",
+              "/standards/",
+              "/glossary/",
+            ].every((h) => home.direct.includes(h)),
+          `${home.situations.join(" ")} | ${home.direct.join(" ")}`,
+        );
+      }
+
+      if (pg.name === "worked example") {
+        // with the script running, the page shows the starting design, no variation, and one build path
+        const ex = await page.evaluate(() => {
+          const shown = (sel) =>
+            [...document.querySelectorAll(sel)].filter((el) => el.offsetParent)
+              .length;
+          const svg = document.querySelector(".xd-canvas svg");
+          const scale =
+            svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+          return {
+            variations: shown(".we-variation"),
+            builds: shown(".bp"),
+            controls: shown(".we-controls"),
+            canvas: shown(".xd-canvas"),
+            steps: shown(".xd-steps"),
+            smallestLabel: svg.getBoundingClientRect().width
+              ? Math.min(
+                  ...[...svg.querySelectorAll("text")].map(
+                    (t) => parseFloat(getComputedStyle(t).fontSize) * scale,
+                  ),
+                )
+              : null,
+            facts: document
+              .querySelector(".page-head .doc-line")
+              .textContent.replace(/\s+/g, " "),
+          };
+        });
+        record(
+          where,
+          "example opens on the starting design: no variation, one build path",
+          ex.variations === 0 && ex.builds === 1 && ex.controls === 1,
+          `${ex.variations} variations, ${ex.builds} build panels shown`,
+        );
+        record(
+          where,
+          vp.name === "phone"
+            ? "example on a phone: numbered steps stand in for the diagram"
+            : `example diagram labels at least ${MIN_LABEL}px`,
+          vp.name === "phone"
+            ? ex.canvas === 0 && ex.steps >= 1
+            : ex.smallestLabel >= MIN_LABEL,
+          vp.name === "phone"
+            ? `${ex.canvas} diagrams, ${ex.steps} step lists shown`
+            : `smallest ${ex.smallestLabel?.toFixed(1)}px`,
+        );
+        record(
+          where,
+          "example says when its sources were read, and does not call itself reviewed or tested",
+          /Sources read\s*\w+ \d{4}/i.test(ex.facts) &&
+            /not a tested recipe/.test(ex.facts) &&
+            !/reviewed/i.test(ex.facts),
+          ex.facts.trim(),
         );
       }
 
@@ -843,7 +864,7 @@ await ctx.close();
       'decision-guide input[name="principal"][value="user"]',
     );
     if (!(await answer.isChecked())) await answer.check({ force: true });
-    await page.click('decision-guide button[type="reset"]');
+    await page.click('decision-guide .btn[type="reset"]');
     await answer.click({ force: true });
     await page.waitForTimeout(50);
     again.push(await answer.isChecked());
@@ -853,6 +874,390 @@ await ctx.close();
     "an answer can be chosen again straight after Start over",
     again.every(Boolean),
     again.every(Boolean) ? "" : `selected after one click: ${again.join(", ")}`,
+  );
+  await ctx.close();
+}
+// worked examples: what the reader selects is what is shown, a link to a variation lands on
+// it, a valid build path is always selected, and the way back from a flow page works
+{
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  const state = () =>
+    page.evaluate(() => {
+      const shown = (sel) =>
+        [...document.querySelectorAll(sel)].filter((el) => el.offsetParent);
+      const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
+      const active = document.activeElement;
+      return {
+        variations: shown(".we-variation").map((v) => v.id),
+        builds: shown(".bp-status").map(text),
+        paths: shown(".we-path").map((b) => b.dataset.path),
+        pressed: shown('.we-path[aria-pressed="true"]').map(
+          (b) => b.dataset.path,
+        ),
+        chips: shown(".ev").map(text),
+        gaps: shown(".ho .gap").map(text),
+        moved: shown("[data-moved]").map(text).join(""),
+        focus:
+          active?.closest(".we-variation")?.id ?? active?.id ?? active?.tagName,
+        focusTop: active
+          ? Math.round(active.getBoundingClientRect().top)
+          : null,
+        search: location.search,
+        live: text(
+          document.querySelector("[data-live]") ?? document.body,
+        ).slice(0, 200),
+      };
+    });
+  const eg = (check, ok, detail = "") =>
+    record("worked example", check, ok, detail);
+
+  await page.goto(`${origin}${EXAMPLE}`, { waitUntil: "networkidle" });
+  await page.focus("#v-base");
+  await page.keyboard.press("ArrowDown");
+  let st = await state();
+  eg(
+    "arrow keys choose a variation: it appears, with its own build rows and the Salesforce path",
+    st.variations.join() === "separate-apps" &&
+      st.builds.length === 1 &&
+      /separate applications, on Okta/.test(st.builds[0]) &&
+      st.paths.join() === "okta,auth0,entra,salesforce" &&
+      st.search === "?variation=separate-apps",
+    JSON.stringify(st),
+  );
+  await page.click('.we-path[data-path="salesforce"]');
+  await page.focus("#v-separate");
+  await page.keyboard.press("ArrowDown");
+  st = await state();
+  eg(
+    "leaving the exchange variation with Salesforce selected leaves a valid, visible selection and says so",
+    st.variations.join() === "unattended" &&
+      st.paths.join() === "okta,auth0,entra" &&
+      st.pressed.join() === "okta" &&
+      /written up for the exchange variation only, so Okta is selected instead/.test(
+        st.moved,
+      ) &&
+      /Okta is selected instead/.test(st.live),
+    JSON.stringify(st),
+  );
+  eg(
+    "the unattended variation's label names what is documented, what is composed and what is still to design",
+    st.chips.join(" + ") ===
+      "Capability documented: refresh tokens + Composed here + To design and verify: the trusted backend" &&
+      st.gaps.length === 2 &&
+      st.gaps.every((g) => g === "Yours to design and verify"),
+    `${st.chips.join(" + ")} | ${st.gaps.join(" / ")}`,
+  );
+  const boundary = await page.evaluate(() => {
+    const steps = [
+      ...document.querySelectorAll("#unattended .xd-steps li"),
+    ].map((li) => ({
+      who: [...li.querySelectorAll(".xd-who")].map((w) => w.textContent),
+      text: li.textContent.replace(/\s+/g, " "),
+    }));
+    return {
+      toWorker: steps
+        .filter((x) => x.who[1] === "Agent worker")
+        .map((x) => x.text),
+      fromWorker: steps
+        .filter((x) => x.who[0] === "Agent worker")
+        .map((x) => x.text),
+      tokens: steps.filter(
+        (x) =>
+          x.who[0] === "Identity provider" && x.who[1] === "Trusted backend",
+      ).length,
+    };
+  });
+  eg(
+    "unattended steps: the trusted backend gets the tokens, and the worker is only ever given an access token",
+    boundary.tokens === 1 &&
+      boundary.toWorker.length === 1 &&
+      /never the refresh token/.test(boundary.toWorker[0]) &&
+      boundary.fromWorker.every((t) => !/refresh token/.test(t)),
+    JSON.stringify(boundary),
+  );
+
+  // a link that names a variation lands on it, with the build path it names
+  await page.goto(`${origin}${EXAMPLE}?path=auth0#separate-apps`, {
+    waitUntil: "networkidle",
+  });
+  await page.waitForTimeout(100);
+  st = await state();
+  eg(
+    "a link to a variation selects it, lands on its heading and puts focus there",
+    st.variations.join() === "separate-apps" &&
+      st.pressed.join() === "auth0" &&
+      st.focus === "separate-apps" &&
+      st.focusTop >= 0 &&
+      st.focusTop < 200,
+    JSON.stringify(st),
+  );
+
+  // from the variation to a flow page, and back to where the reader left
+  await page.click('#separate-apps .xd-steps a[href="/flows/token-exchange/"]');
+  await page.waitForLoadState("networkidle");
+  const trail = await page.evaluate(() => {
+    const bar = document.querySelector("[data-trail]");
+    return {
+      shown: !!bar?.offsetParent,
+      text: bar?.textContent.replace(/\s+/g, " ").trim(),
+      href: bar?.querySelector("a")?.getAttribute("href"),
+    };
+  });
+  eg(
+    "a flow page reached from an example offers the way back to where the reader left",
+    trail.shown &&
+      /You were following A support agent, for the rep who asked/.test(
+        trail.text,
+      ) &&
+      trail.href === "/examples/support-agent/?path=auth0#separate-apps",
+    JSON.stringify(trail),
+  );
+  await page.click("[data-trail] a");
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(100);
+  st = await state();
+  eg(
+    "returning keeps the variation and build path, and arrives at the variation",
+    st.variations.join() === "separate-apps" &&
+      st.pressed.join() === "auth0" &&
+      st.focus === "separate-apps" &&
+      st.focusTop >= 0 &&
+      st.focusTop < 200,
+    JSON.stringify(st),
+  );
+  await page.goto(`${origin}/flows/token-exchange/`, {
+    waitUntil: "networkidle",
+  });
+  eg(
+    "a flow page opened any other way shows no way back, and lists the examples that use it",
+    await page.evaluate(
+      () =>
+        !document.querySelector("[data-trail]").offsetParent &&
+        [...document.querySelectorAll(".worked-examples a")].some(
+          (a) =>
+            a.getAttribute("href") === "/examples/support-agent/#separate-apps",
+        ),
+    ),
+  );
+
+  // the home page's situation links answer their question directly
+  for (const [label, anchor, token] of [
+    ["A service will only give you an API key", "key-only-supplier", "add-key"],
+    [
+      "A payment needs someone’s approval first",
+      "payment-approval",
+      "add-approval",
+    ],
+  ]) {
+    await page.goto(`${origin}/`, { waitUntil: "networkidle" });
+    await page.click(`.situations a:has-text("${label}")`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(100);
+    st = await state();
+    const there = await page.evaluate(
+      ([id, input]) => {
+        const v = document.getElementById(id);
+        return {
+          checked: document.getElementById(input).checked,
+          context:
+            v.querySelector(".we-context")?.textContent.replace(/\s+/g, " ") ??
+            "",
+          baseline:
+            v.querySelector('.we-context a[href="#design"]')?.textContent ?? "",
+          designTop: Math.round(
+            v.querySelector(".xd").getBoundingClientRect().top,
+          ),
+          path: document.querySelectorAll('.we-path[aria-pressed="true"]')
+            .length,
+        };
+      },
+      [anchor, token],
+    );
+    eg(
+      `home link “${label}” selects its variation, lands on its heading, and offers the starting design`,
+      there.checked &&
+        st.variations.join() === anchor &&
+        st.focus === anchor &&
+        st.focusTop >= 0 &&
+        st.focusTop < 200 &&
+        /An agent that reconciles invoices overnight/.test(there.context) &&
+        there.baseline === "Read the starting design" &&
+        there.designTop < 900 &&
+        there.path === 1,
+      JSON.stringify({ ...there, focus: st.focus, top: st.focusTop }),
+    );
+  }
+
+  // the second example: a combination nobody wrote up says so, and builds nothing
+  await page.goto(`${origin}/examples/invoice-agent/`, {
+    waitUntil: "networkidle",
+  });
+  await page.check("#access-accountant");
+  st = await state();
+  eg(
+    "accountant's access: an authored design whose trusted backend is still to design and verify",
+    st.variations.join() === "accountants-access" &&
+      st.chips.join(" + ") ===
+        "Composed here + To design and verify: the trusted backend" &&
+      st.gaps.length === 2 &&
+      st.paths.length === 0,
+    JSON.stringify(st),
+  );
+  await page.check("#add-approval");
+  st = await state();
+  eg(
+    "a combination that was not written up says so, and offers nothing to build",
+    st.variations.length === 0 &&
+      st.builds.length === 0 &&
+      (await page.evaluate(
+        () =>
+          !!document.querySelector(".we-notice").offsetParent &&
+          /has not been written up/.test(
+            document.querySelector(".we-notice").textContent,
+          ),
+      )),
+    JSON.stringify(st),
+  );
+  await ctx.close();
+
+  // without the script the whole example is on the page, in order, and a link to a variation still lands on it
+  const plain = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    javaScriptEnabled: false,
+    reducedMotion: "reduce",
+  });
+  const bare = await plain.newPage();
+  await bare.goto(`${origin}${EXAMPLE}#unattended`, { waitUntil: "load" });
+  const all = await bare.evaluate(() => {
+    const shown = (sel) =>
+      [...document.querySelectorAll(sel)].filter((el) => el.offsetParent)
+        .length;
+    return {
+      variations: shown(".we-variation"),
+      builds: shown(".bp"),
+      controls: shown(".we-controls") + shown(".we-picker"),
+      top: Math.round(
+        document.getElementById("unattended").getBoundingClientRect().top,
+      ),
+    };
+  });
+  eg(
+    "without JavaScript every variation and build path is shown, controls are not, and a variation link still lands",
+    all.variations === 2 &&
+      all.builds === 10 &&
+      all.controls === 0 &&
+      all.top >= 0 &&
+      all.top < 200,
+    JSON.stringify(all),
+  );
+  await plain.close();
+}
+// decision guide: "I’m not sure" explains how to find out and rules nothing in or out, a
+// recommendation says what it rests on, and only an example's own link fills the guide in
+{
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+  });
+  const page = await ctx.newPage();
+  const dg = (check, ok, detail = "") =>
+    record("decision guide", check, ok, detail);
+  const out = () =>
+    page.evaluate(() => {
+      const text = (el) => el?.textContent.replace(/\s+/g, " ").trim() ?? "";
+      const group = (cls) =>
+        [...document.querySelectorAll(`.dg-out .${cls} .dg-flow strong`)].map(
+          text,
+        );
+      const shown = (sel) =>
+        [...document.querySelectorAll(sel)].filter((el) => el.offsetParent);
+      return {
+        status: text(document.querySelector(".dg-status")),
+        start: group("dg-start"),
+        add: group("dg-add"),
+        consider: group("dg-consider"),
+        rests: text(document.querySelector(".dg-out .dg-if")),
+        worked: [...document.querySelectorAll(".dg-out .dg-worked a")].map(
+          (a) => a.getAttribute("href"),
+        ),
+        pending: text(document.querySelector(".dg-out .dg-pending")),
+        hints: shown(".dg-unsure").map(text),
+        banner: text(shown(".dg-from")[0]),
+        because: shown(".dg-because").length,
+        checked: document.querySelectorAll("decision-guide input:checked")
+          .length,
+        search: location.search,
+      };
+    });
+  await page.goto(`${origin}/guide/`, { waitUntil: "networkidle" });
+  let g = await out();
+  dg(
+    "opened from the navigation it is blank, with no example attached",
+    g.checked === 0 && g.banner === "" && g.because === 0,
+    JSON.stringify(g),
+  );
+  await page.check('decision-guide input[name="principal"][value="unsure"]', {
+    force: true,
+  });
+  await page.check('decision-guide input[name="accept"][value="unsure"]', {
+    force: true,
+  });
+  g = await out();
+  dg(
+    "“I’m not sure” says how to find out, counts as no answer, and lists both cases until you know",
+    g.hints.length === 2 &&
+      /whose name should the log show/.test(g.hints[0]) &&
+      /If it only takes an API key/.test(g.pending) &&
+      /If it only accepts its own sign-in/.test(g.pending) &&
+      g.start.length === 0 &&
+      /principal=unsure/.test(g.search),
+    JSON.stringify(g),
+  );
+  await page.check('decision-guide input[name="principal"][value="user"]', {
+    force: true,
+  });
+  await page.check('decision-guide input[name="accept"][value="key"]', {
+    force: true,
+  });
+  g = await out();
+  dg(
+    "the accepted-credential question changes the outcome, and each recommendation says what it rests on",
+    g.add.includes("Credential broker") &&
+      /^You said Authority: A specific person’s/.test(g.rests) &&
+      g.worked.includes("/examples/support-agent/#design") &&
+      /^2 of 7 answered/.test(g.status),
+    JSON.stringify(g),
+  );
+  await page.goto(
+    `${origin}/guide/?principal=user&human=present&target=api&boundary=same&accept=tokens&runtime=k8s&risk=read&from=support-agent`,
+    { waitUntil: "networkidle" },
+  );
+  g = await out();
+  dg(
+    "an example's own link fills the guide in, says which example, and gives the reason for each answer",
+    /Filled in from A support agent, for the rep who asked/.test(g.banner) &&
+      g.checked === 7 &&
+      g.because === 7,
+    JSON.stringify(g),
+  );
+  dg(
+    "for that example the guide starts with sign-in, and offers token exchange as worth a look, not a step to add",
+    g.start.includes("Authorization code + PKCE") &&
+      !g.add.includes("Token exchange") &&
+      g.consider.includes("Token exchange") &&
+      g.worked.includes("/examples/support-agent/#separate-apps"),
+    JSON.stringify(g),
+  );
+  await page.click(".dg-from-clear");
+  await page.waitForTimeout(50);
+  g = await out();
+  dg(
+    "“Start with a blank guide” clears the answers and the example",
+    g.checked === 0 && g.banner === "" && g.search === "",
+    JSON.stringify(g),
   );
   await ctx.close();
 }
