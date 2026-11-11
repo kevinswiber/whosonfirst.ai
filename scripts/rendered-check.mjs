@@ -2089,6 +2089,26 @@ await ctx.close();
       out === `${origin}/`,
     JSON.stringify({ shut, out }),
   );
+  // widened after a link, Back, then narrowed again: closing the diagram on
+  // the way back to a phone's width steps back one entry, not off the page
+  await arrive();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.goBack();
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  const narrowed = await now();
+  record(
+    where,
+    "widened after a link, Back, then narrowed: the reader is still on the flow, diagram closed",
+    narrowed.path === FLOW && narrowed.open === false,
+    JSON.stringify(narrowed),
+  );
   // a link to a step still opens on that step, with the diagram closed
   await page.goto(`${origin}/`, { waitUntil: "networkidle" });
   await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });

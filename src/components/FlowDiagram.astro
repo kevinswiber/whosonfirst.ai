@@ -588,12 +588,13 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     popped = () => {
       const stage = this.querySelector<HTMLDetailsElement>('.flow-stage')!;
       const state = history.state;
+      // The count of entries is kept whatever the width, so that narrowing the
+      // window again and closing the diagram steps back the right distance.
       if (state?.diagram) {
         // Forward into the open diagram, or Back past a link followed inside it
-        if (!this.narrative) return;
         this.shown = true;
         this.above = 0;
-        stage.open = true;
+        if (this.narrative) stage.open = true;
         return;
       }
       if (!this.shown) return;
