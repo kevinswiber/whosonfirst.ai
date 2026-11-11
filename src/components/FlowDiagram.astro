@@ -556,13 +556,14 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     keepHistory() {
       const stage = this.querySelector<HTMLDetailsElement>('.flow-stage')!;
       const step = () => (/^#step-\d+$/.test(location.hash) ? location.hash.slice(1) : null);
-      // a reload with the diagram open keeps it open, so Back still has something to close
+      // A reload with the diagram open keeps it open, so Back still has something
+      // to close. The count is restored at any width; beside the panel it is open anyway.
       const { diagram, above } = history.state ?? {};
-      if ((diagram || above) && this.narrative) {
+      if (diagram || above) {
         this.shown = true;
         this.above = above ?? 0;
         this.reached = step();
-        stage.open = true;
+        if (this.narrative) stage.open = true;
       }
       stage.addEventListener('toggle', () => {
         if (!this.narrative) return;
@@ -678,7 +679,8 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
 
       if (reveal && !all) {
         this.reveal();
-        history.replaceState(null, '', `#step-${i + 1}`);
+        // keeps the entries a phone added, should the window have been widened since
+        history.replaceState(history.state, '', `#step-${i + 1}`);
       }
     }
 

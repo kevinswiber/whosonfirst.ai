@@ -2109,6 +2109,39 @@ await ctx.close();
     narrowed.path === FLOW && narrowed.open === false,
     JSON.stringify(narrowed),
   );
+  // widened, stepped with Next, narrowed: the entry the phone added is still
+  // known for what it is, and Forward opens the diagram again
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.click('[data-act="next"]');
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  await page.goForward();
+  await settle();
+  const stepped = await now();
+  record(
+    where,
+    "widened, stepped, narrowed: Forward still opens the diagram",
+    stepped.path === FLOW && stepped.open === true,
+    JSON.stringify(stepped),
+  );
+  // widened, reloaded, narrowed: closing the diagram takes its entry, so Back leaves
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.reload({ waitUntil: "networkidle" });
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  await page.goBack();
+  await settle();
+  record(
+    where,
+    "widened, reloaded, narrowed: the next Back leaves the page",
+    page.url() === `${origin}/`,
+    page.url(),
+  );
   // a link to a step still opens on that step, with the diagram closed
   await page.goto(`${origin}/`, { waitUntil: "networkidle" });
   await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });
