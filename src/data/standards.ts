@@ -198,6 +198,21 @@ export const standards: Standard[] = [
     url: rfc(7009),
   },
   {
+    id: "refresh-token-expiration",
+    name: "Refresh Token and Authorization Expiration",
+    ref: "draft-ietf-oauth-refresh-token-expiration",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -03, July 2026. OAuth working group document, adopted in December 2025.",
+    topics: ["core"],
+    summary:
+      "Two fields in the token response: `refresh_token_timeout`, how long the client may hold a refresh token without using it, and `authorization_expires_in`, when the user’s approval for those scopes ends. A refresh token must not outlive the approval behind it.",
+    agents:
+      "Tells an agent that runs unattended on a refresh token when it will stop working, so it can ask the person to approve again while they are there. The draft names clients that run in the background as the ones an expiry interrupts. A response without the fields promises nothing: the client must still expect the token to be revoked at any time.",
+    url: draft("draft-ietf-oauth-refresh-token-expiration"),
+  },
+  {
     id: "rfc9126",
     name: "Pushed Authorization Requests",
     ref: "RFC 9126",
