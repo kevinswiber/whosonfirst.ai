@@ -1,0 +1,128 @@
+---
+/**
+ * The ending of a deployment guide: where to go next. Built from the guide's
+ * own text (the flows it links to), the list of guides in data/deployments.ts
+ * and the decision guide, so it names nothing the guide does not and cannot
+ * go stale.
+ */
+import { placeAt, places } from "../data/deployments";
+import { flows } from "../data/flows";
+
+interface Props {
+  /** The guide's rendered HTML. */
+  html: string;
+  /** The guide's address, such as /deployments/local/. */
+  path: string;
+}
+const { html, path } = Astro.props;
+
+const MAX_FLOWS = 3;
+const here = placeAt(path);
+const known = new Map(flows.map((f) => [f.slug, f]));
+const named: string[] = [];
+for (const m of html.matchAll(/href="\/flows\/([a-z0-9-]+)\/[^"]*"/g)) {
+  if (known.has(m[1]) && !named.includes(m[1])) named.push(m[1]);
+}
+const leaned = named.slice(0, MAX_FLOWS).flatMap((s) => known.get(s) ?? []);
+const others = (here?.alsoRead ?? []).flatMap((s) =>
+  places.filter((p) => p.slug === s),
+);
+---
+
+<nav class="way-on" aria-labelledby="way-on">
+  <h2 id="way-on">Where to go next</h2>
+  <div class="cols">
+    {
+      leaned.length > 0 && (
+        <section>
+          <h3>See the messages</h3>
+          <ul>
+            {leaned.map((f) => (
+              <li>
+                <a href={`/flows/${f.slug}/`}>{f.short}</a>
+                <span>{f.tagline}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+    {
+      others.length > 0 && (
+        <section>
+          <h3>Where else the agent runs</h3>
+          <ul>
+            {others.map((p) => (
+              <li>
+                <a href={p.href}>{p.title}</a>
+                <span>{p.blurb}</span>
+              </li>
+            ))}
+            <li>
+              <a href="/deployments/">All the deployment guides</a>
+            </li>
+          </ul>
+        </section>
+      )
+    }
+    <section>
+      <h3>Pick a flow</h3>
+      <ul>
+        <li>
+          <a href="/guide/">Which flow fits your agent?</a>
+          <span>Answer a few questions about where it runs and who it acts for.</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+</nav>
+
+<style>
+  .way-on {
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--fg);
+  }
+  .way-on h2 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  }
+  .cols {
+    display: grid;
+    gap: 1.4rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  h3 {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1.5px solid var(--fg);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    margin: 0;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  li a {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 560;
+  }
+  li span {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+    margin-top: 0.15rem;
+  }
+</style>

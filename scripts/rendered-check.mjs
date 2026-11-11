@@ -694,6 +694,50 @@ record(
     );
   }
 
+  // A deployment guide ends with a way on: the flows it names, the other
+  // guides and the decision guide. The index page lists every guide.
+  {
+    const guides = built.filter((p) => /^\/deployments\/[^/]+\/$/.test(p.path));
+    const index = built.find((p) => p.path === "/deployments/");
+    const wrong = [];
+    for (const g of guides) {
+      const m = /<nav class="way-on[^"]*"[\s\S]*?<\/nav>/.exec(g.html);
+      if (!m) {
+        wrong.push(`${g.path} has no way on at its end`);
+        continue;
+      }
+      const hrefs = [...m[0].matchAll(/href="([^"#]+)"/g)].map((x) => x[1]);
+      if (!hrefs.includes("/guide/"))
+        wrong.push(`${g.path} does not link to the decision guide`);
+      if (!hrefs.some((h) => h.startsWith("/flows/")))
+        wrong.push(`${g.path} names no flow`);
+      if (
+        !hrefs.some((h) =>
+          guides.some((o) => o.path === h && o.path !== g.path),
+        )
+      )
+        wrong.push(`${g.path} links to no other guide`);
+      if (hrefs.includes(g.path)) wrong.push(`${g.path} links to itself`);
+      if (g.html.lastIndexOf('class="article"') > g.html.indexOf(m[0]))
+        wrong.push(`${g.path} puts the way on before its text`);
+      const text = g.html.slice(
+        g.html.indexOf('class="article"'),
+        g.html.indexOf(m[0]),
+      );
+      for (const h of hrefs.filter((h) => h.startsWith("/flows/")))
+        if (!text.includes(`href="${h}`))
+          wrong.push(`${g.path} points to ${h}, which it does not name`);
+      if (index && !index.html.includes(`href="${g.path}"`))
+        wrong.push(`${g.path} is not on the index page`);
+    }
+    record(
+      "deployment-way-on",
+      "every deployment guide ends with a way on, drawn from the flows it names and the other guides",
+      guides.length > 0 && wrong.length === 0,
+      wrong.slice(0, 8).join("; "),
+    );
+  }
+
   // What a page tells a search engine: data that parses, about this page.
   const data = [];
   for (const p of indexed) {
