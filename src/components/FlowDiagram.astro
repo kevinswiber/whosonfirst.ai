@@ -491,7 +491,9 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
           if (this.narrative) {
             // the diagram is a map of the narrative: jump to that step's text
             this.querySelector(`#step-${i + 1}`)?.scrollIntoView({ block: 'start' });
-            history.replaceState(null, '', `#step-${i + 1}`);
+            // keeps the entry that opening the diagram added
+            history.replaceState(history.state, '', `#step-${i + 1}`);
+            this.reached = `step-${i + 1}`;
             return;
           }
           if (this.all) this.toggleAll();
@@ -532,7 +534,69 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       this.setMode();
       this.go(0, false);
       fromHash();
+      this.keepHistory();
     }
+
+    /** Set while the diagram, opened on a phone, has an entry of its own in the history. */
+    shown = false;
+    /** Set while closing the diagram with its own control takes that entry back off. */
+    closing = false;
+    /** The step last pressed in the open diagram, which Back returns the reader to. */
+    reached: string | null = null;
+
+    /**
+     * On a phone the diagram opens like a sheet: opening it adds one entry to the
+     * history, and Back closes it and leaves the reader where they were, at the
+     * step they had reached. Closing it with its own control takes the entry back,
+     * so the next Back leaves the page. Beside the panel the diagram is always
+     * open, and none of this applies.
+     */
+    keepHistory() {
+      const stage = this.querySelector<HTMLDetailsElement>('.flow-stage')!;
+      // a reload with the diagram open keeps it open, so Back still has something to close
+      if (history.state?.diagram && this.narrative) {
+        this.shown = true;
+        this.reached = /^#step-\d+$/.test(location.hash) ? location.hash.slice(1) : null;
+        stage.open = true;
+      }
+      stage.addEventListener('toggle', () => {
+        if (!this.narrative) return;
+        if (stage.open && !history.state?.diagram) {
+          history.pushState({ ...history.state, diagram: true }, '', location.href);
+          this.shown = true;
+          this.reached = null;
+        } else if (!stage.open && this.shown && history.state?.diagram) {
+          this.closing = true;
+          history.back();
+        }
+      });
+      window.addEventListener('popstate', this.popped);
+    }
+
+    popped = () => {
+      const stage = this.querySelector<HTMLDetailsElement>('.flow-stage')!;
+      if (history.state?.diagram) {
+        // Forward, back into the open diagram
+        if (!this.narrative) return;
+        this.shown = true;
+        stage.open = true;
+        return;
+      }
+      if (!this.shown) return;
+      const { closing, reached } = this;
+      this.shown = this.closing = false;
+      const step = reached ? this.querySelector<HTMLElement>(`#${reached}`) : null;
+      // the entry from before the diagram opened takes the step the reader reached
+      if (step) history.replaceState(history.state, '', `#${reached}`);
+      stage.open = false;
+      const summary = stage.querySelector<HTMLElement>('summary')!;
+      // after the browser has put back its own scroll position for this entry
+      requestAnimationFrame(() => {
+        if (step && !closing) return step.scrollIntoView({ block: 'start' });
+        summary.scrollIntoView({ block: closing ? 'center' : 'nearest' });
+        summary.focus({ preventScroll: true });
+      });
+    };
 
     setMode = () => {
       this.narrative = this.narrow.matches;
@@ -660,6 +724,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     disconnectedCallback() {
       this.stop();
       this.narrow.removeEventListener('change', this.setMode);
+      window.removeEventListener('popstate', this.popped);
     }
   }
   customElements.define('flow-diagram', FlowDiagram);
