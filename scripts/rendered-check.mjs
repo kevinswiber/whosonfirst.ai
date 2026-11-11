@@ -2065,7 +2065,32 @@ await ctx.close();
       retraced.stepInView,
     JSON.stringify({ followed, retraced }),
   );
+  // and closed with its own control after such a link, the diagram leaves
+  // nothing behind: the address keeps the step, and the next Back leaves
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  await page.click(".flow-back button");
+  await settle();
+  const shut = await now();
+  await page.goBack();
+  await settle();
+  const out = page.url();
+  record(
+    where,
+    "closed with its own control after a link, the diagram leaves no entry behind",
+    shut.open === false &&
+      shut.hash === "#step-6" &&
+      shut.onSummary &&
+      out === `${origin}/`,
+    JSON.stringify({ shut, out }),
+  );
   // a link to a step still opens on that step, with the diagram closed
+  await page.goto(`${origin}/`, { waitUntil: "networkidle" });
   await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });
   await settle();
   const linked = await now();
