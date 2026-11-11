@@ -1262,7 +1262,7 @@ export const standards: Standard[] = [
     body: "W3C",
     status: "final",
     detail:
-      "W3C Recommendation, May 2025. Decentralized Identifiers 1.1 is at Candidate Recommendation.",
+      "W3C Recommendation, May 2025. Version 2.1 is a W3C Working Draft, 22 October 2026. Decentralized Identifiers 1.1 is at Candidate Recommendation.",
     topics: ["credentials"],
     summary:
       "A data model for cryptographically verifiable claims made by an issuer about a subject.",
