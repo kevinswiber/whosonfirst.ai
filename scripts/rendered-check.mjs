@@ -1685,6 +1685,34 @@ for (const theme of THEMES) {
             location.hash = `#step-${n}`;
           }, count);
           await page.waitForTimeout(80);
+          // an address that names a late step is a link people paste: opened fresh,
+          // it has to leave that step's row in view, as pressing the step does
+          // (leave the page first: a reload would restore the scroll position it had)
+          const flowUrl = page.url();
+          await page.goto("about:blank");
+          await page.goto(flowUrl, { waitUntil: "networkidle" });
+          await page.waitForTimeout(300);
+          const addressed = await page.evaluate(() => {
+            const row = document
+              .querySelector("svg .step.is-active .hit")
+              .getBoundingClientRect();
+            const header = document
+              .querySelector(".site-header")
+              .getBoundingClientRect().bottom;
+            return {
+              count: document.querySelector(".flow-count").textContent,
+              hash: location.hash,
+              inView: row.top >= header - 1 && row.bottom <= innerHeight + 1,
+              row: [Math.round(row.top), Math.round(row.bottom)],
+              window: [Math.round(header), innerHeight],
+            };
+          });
+          record(
+            where,
+            "an address that names a late step opens with that step’s row in view in the diagram",
+            addressed.inView && addressed.count.startsWith(`Step ${count} `),
+            JSON.stringify(addressed),
+          );
           // keyboard: Left and Right step, Down is left to scrolling, and focus is never stranded
           // (the loop above ends on the last step, where Next is disabled and Previous is not)
           await page.focus('[data-act="prev"]');

@@ -524,7 +524,12 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
         // a late step sits a screen or more below the first.
         if (!this.narrative && !this.all) {
           this.scrollIntoView({ block: 'start', behavior: 'instant' });
-          this.reveal();
+          this.reveal(true);
+          // The page settles after the jump (the header's height, the pinned strip),
+          // and the row can slip back out; look again once it has.
+          const again = () => requestAnimationFrame(() => requestAnimationFrame(() => this.reveal(true)));
+          again();
+          if (document.readyState !== 'complete') window.addEventListener('load', again, { once: true });
         }
       };
       window.addEventListener('hashchange', fromHash);
@@ -593,7 +598,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     }
 
     /** Brings the current step's row into view: inside the diagram's own frame where it has one, and on the page. */
-    reveal() {
+    reveal(instant = false) {
       const canvas = this.querySelector<HTMLElement>('.flow-canvas')!;
       const g = this.querySelector<SVGGElement>(`svg .step[data-step="${this.index}"] .hit`);
       if (!g) return;
@@ -617,8 +622,10 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
         const lower = window.innerHeight - 16;
         const by = now.top < upper ? now.top - upper : now.bottom > lower ? now.bottom - lower : 0;
         if (by) {
-          const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          window.scrollBy({ top: by, behavior: calm ? 'auto' : 'smooth' });
+          // Arriving from an address is a jump, not a step: a smooth scroll begun
+          // straight after the jump to the diagram is cut short by it.
+          const calm = instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.scrollBy({ top: by, behavior: calm ? 'instant' : 'smooth' });
         }
       }
     }
