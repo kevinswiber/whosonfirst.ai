@@ -49,7 +49,7 @@ The specification is through IETF approval and waiting in the RFC Editor’s que
     agent:
       "Trades its domain A token at its home authorization server for a short-lived grant, presents the grant at domain B’s token endpoint, and calls the API with the token domain B issues. It also authenticates to domain B as a client if domain B requires that.",
     asa: "Decides what crosses its boundary: which clients may obtain grants for which external domains, and which claims about the user are released. Signs a short-lived grant whose only audience is domain B’s authorization server. It can end the arrangement by refusing to issue grants.",
-    asb: "Verifies the grant against keys it has agreed to trust for domain A, checks that it is the audience, and maps the incoming subject and claims to its own. Then issues its own access token, and is free to grant less than was asked. The trust between the two authorization servers is set up in advance: the specification does not create it for you.",
+    asb: "Verifies the grant against keys it has agreed to trust for domain A, checks that it is the audience, and maps the incoming subject and claims to its own. Then issues its own access token, and is free to grant less than was asked. It may accept each grant only once. The trust between the two authorization servers is set up in advance: the specification does not create it for you.",
     api: "Validates a token from its own authorization server. It sees nothing issued by domain A.",
   },
   participants: [
@@ -133,14 +133,13 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
 &assertion=<JWT authorization grant>
 &resource=https://api.b.example`,
       },
-      lose: [["agent", "JWT grant (aud: AS B)"]],
     },
     {
       from: "asb",
       kind: "self",
       label: "Trust A’s key; map claims",
       title: "Domain B applies its own policy",
-      body: `Domain B verifies the signature against keys it has agreed to trust for domain A, checks it is the audience, and maps the incoming subject and claims to its own. It is free to grant less than was asked.`,
+      body: `Domain B verifies the signature against keys it has agreed to trust for domain A, checks it is the audience, and maps the incoming subject and claims to its own. It is free to grant less than was asked. Whether a grant can be used twice is also domain B’s choice: the draft lets a client present the same grant again when its access token expires, if the grant has not expired, and lists accepting each grant only once among its defenses against a copied one.`,
     },
     {
       from: "asb",
