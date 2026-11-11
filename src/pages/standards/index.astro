@@ -34,8 +34,8 @@ const details = [
   },
   {
     label: `${standards.length} entries`,
-    value: `${published} published, ${draftCount} drafts`,
-    note: `${standards.length - published - draftCount} projects and guidance`,
+    // three counts side by side: as a note, the last read as a part of the drafts
+    value: `${published} published, ${draftCount} drafts, ${standards.length - published - draftCount} projects and guidance`,
   },
   {
     label: "IETF process states",
