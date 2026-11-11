@@ -102,6 +102,21 @@ export const standards: Standard[] = [
     url: rfc(10017),
   },
   {
+    id: "first-party-apps",
+    name: "OAuth for First-Party Applications",
+    ref: "draft-ietf-oauth-first-party-apps",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -04, July 2026. A working group last call opened in June 2026; since July the draft has working group consensus and is waiting for its write-up.",
+    topics: ["core"],
+    summary:
+      "An Authorization Challenge Endpoint, so that an app can sign a user in without a browser. The app collects what the user enters, such as a username, a one-time code or a passkey response, and posts it to the authorization server until it gets an authorization code. The server can send the user to a browser at any step.",
+    agents:
+      "Only for first-party apps: native apps run by the same organization as the authorization server, which users recognize as that organization’s, and which the server must verify as such. It is not a way for an agent to collect a person’s credentials for someone else’s service. The draft says other uses “may lead to unintended security and privacy problems,” and that a profile for other clients must say how it avoids them.",
+    url: draft("draft-ietf-oauth-first-party-apps"),
+  },
+  {
     id: "rfc9700",
     name: "OAuth 2.0 Security Best Current Practice",
     ref: "RFC 9700",
