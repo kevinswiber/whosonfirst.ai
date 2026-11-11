@@ -2038,6 +2038,33 @@ await ctx.close();
     widened.path === FLOW && widened.open === true,
     JSON.stringify(widened),
   );
+  // a link to another step, followed with the diagram open, goes to that
+  // step and is not taken for Back; Back then retraces both
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  const followed = await now();
+  await page.goBack();
+  await settle();
+  await page.goBack();
+  await settle();
+  const retraced = await now();
+  record(
+    where,
+    "with the diagram open, a link to another step goes there, and Back retraces it",
+    followed.hash === "#step-6" &&
+      followed.open === true &&
+      followed.stepInView &&
+      retraced.path === FLOW &&
+      retraced.open === false &&
+      retraced.hash === "#step-4" &&
+      retraced.stepInView,
+    JSON.stringify({ followed, retraced }),
+  );
   // a link to a step still opens on that step, with the diagram closed
   await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });
   await settle();
