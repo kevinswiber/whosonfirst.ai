@@ -1254,6 +1254,21 @@ export const standards: Standard[] = [
       "The mechanism for telling everything an agent has touched that its access just ended, without waiting for tokens to expire.",
     url: "https://openid.net/wg/sharedsignals/",
   },
+  {
+    id: "status-list",
+    name: "Token Status List",
+    ref: "draft-ietf-oauth-status-list",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -21, June 2026. Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
+    topics: ["signals", "credentials"],
+    summary:
+      "A signed, compressed list of statuses, one for each token, published by or for the token’s issuer. A token names its place in a list, and whoever relies on it fetches the list to see whether the token is valid, revoked or suspended. Defined for JWT, SD-JWT, CWT and ISO mdoc, among others; the draft names access tokens and verifiable credentials as uses.",
+    agents:
+      "Lets an API that checks self-contained tokens on its own learn that one has been revoked, without asking the issuer about each token. It learns only as fast as it fetches the list again, and a token past its expiry stays expired whatever the list says.",
+    url: draft("draft-ietf-oauth-status-list"),
+  },
 
   /* ───────────── Verifiable credentials ───────────── */
   {
