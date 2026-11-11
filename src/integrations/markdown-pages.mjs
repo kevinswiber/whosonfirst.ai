@@ -238,7 +238,7 @@ function guideRules(main) {
     element("h2", {}, [say("The rules")]),
     element("p", {}, [
       say(
-        "On the page, a script turns the answers into recommendations. These are the rules it applies. A rule applies when every question it names that has been answered has one of the answers listed, and at least one of them has been answered. A question left unanswered rules nothing out. A flow is shown once, under the strongest heading any of its rules gives it.",
+        "On the page, a script turns the answers into recommendations. These are the rules it applies. A rule applies when every question it names that has been answered has one of the answers listed, and at least one of them has been answered. A question left unanswered rules nothing out. A flow is shown once, under the strongest heading any of its rules gives it. Where two of a flow’s rules apply under the same heading, the reason shown is the one from the rule that matches more of the answers, or from the one listed first when they match as many.",
       ),
     ]),
   ];
