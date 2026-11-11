@@ -129,6 +129,22 @@ const NARROW_PAGES = [
   ]),
 ];
 
+/** What people type into the tracker's lookup, and how many entries it must show at least. */
+const TYPED_NAMES = [
+  ["mutual TLS", 5],
+  ["RFC9728", 1],
+  ["OAuth2.1", 4],
+  ["CIMD", 1],
+  ["DPoP", 4],
+  ["mTLS", 3],
+  ["JAR", 1],
+  ["PRM", 1],
+  ["DCR", 1],
+  ["PAR", 1],
+  ["RAR", 1],
+  ["device flow", 1],
+];
+
 const results = []; // { where, check, ok, detail }
 const record = (where, check, ok, detail = "") =>
   results.push({ where, check, ok, detail });
@@ -1477,6 +1493,35 @@ for (const theme of THEMES) {
             where,
             "history sits after the lookup",
             lookup.moved > lookup.first,
+          );
+          // Names people type, each with the fewest entries it must find. The
+          // first group is what the entries' own text already gave; the second
+          // is what only an entry's otherNames give.
+          for (const [typed, atLeast] of TYPED_NAMES) {
+            const found = await page.evaluate((q) => {
+              const input = document.querySelector(".sx-search input");
+              input.value = q;
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              return document.querySelectorAll(".sx-item:not([hidden])").length;
+            }, typed);
+            record(
+              where,
+              `lookup finds an entry for "${typed}"`,
+              found >= atLeast,
+              `${found} shown, at least ${atLeast} expected`,
+            );
+          }
+          const leaked = await page.evaluate(() => {
+            const input = document.querySelector(".sx-search input");
+            input.value = "";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            const item = document.querySelector("#rfc9396");
+            return /\bRAR\b/.test(item.innerText);
+          });
+          record(
+            where,
+            "an entry's other names are not shown in its text",
+            !leaked,
           );
         }
       }
