@@ -588,6 +588,8 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       const step = reached ? this.querySelector<HTMLElement>(`#${reached}`) : null;
       // the entry from before the diagram opened takes the step the reader reached
       if (step) history.replaceState(history.state, '', `#${reached}`);
+      // widened since it opened, the diagram sits beside the panel and stays open
+      if (!this.narrative) return;
       stage.open = false;
       const summary = stage.querySelector<HTMLElement>('summary')!;
       // after the browser has put back its own scroll position for this entry

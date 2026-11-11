@@ -2022,6 +2022,22 @@ await ctx.close();
       left === `${origin}/`,
     JSON.stringify({ closed, left }),
   );
+  // opened on a phone, then widened (a phone turned on its side, a window
+  // dragged wider): Back takes the entry, and the diagram, now beside the
+  // panel with no control to open it, stays open
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.goBack();
+  await settle();
+  const widened = await now();
+  await page.setViewportSize({ width: 390, height: 844 });
+  record(
+    where,
+    "widened after opening, Back leaves the diagram open beside the panel",
+    widened.path === FLOW && widened.open === true,
+    JSON.stringify(widened),
+  );
   // a link to a step still opens on that step, with the diagram closed
   await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });
   await settle();
