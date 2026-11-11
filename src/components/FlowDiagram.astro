@@ -262,7 +262,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     </ul>
     <p class="flow-hint">Drag to see every party and step. Tap a step to jump to its explanation.</p>
     <div class="flow-canvas" tabindex="0" role="group" aria-label={`Sequence diagram: ${flow.title}`}>
-      <div class="flow-sheet" style={`--natural: ${W}px`}>
+      <div class="flow-sheet" style={`--natural: ${W}px; --aspect: ${(W / H).toFixed(4)}`}>
       <svg class="flow-heads" viewBox={`0 0 ${W} ${headH}`} width={W} height={headH} aria-hidden="true">
         {
           P.map((p) => {
@@ -1275,6 +1275,126 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     .held-chip {
       min-width: 0;
       overflow-wrap: anywhere;
+    }
+  }
+
+  /* On paper there is nothing to press, so the page prints as it reads with the
+     script off: every step in order, each with its message and who holds what
+     afterward, and none of the controls. The diagram is drawn whole, inside the
+     width of the page, with no step singled out. */
+  @media print {
+    .flow {
+      display: block;
+    }
+    .flow-panel {
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+    .flow-bar,
+    .flow-stage > summary,
+    .flow-hint,
+    .flow-back {
+      display: none !important;
+    }
+    .flow-step[hidden] {
+      display: block;
+    }
+    .flow-step {
+      break-inside: avoid;
+    }
+    .flow-step:not(.phase-start) .step-phase {
+      display: none;
+    }
+    /* a printer leaves out backgrounds unless told: the number is white on its color */
+    .step-num {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .step-phase {
+      break-after: avoid;
+    }
+
+    /* a phone keeps the diagram closed; on paper it is there, if the browser
+       can open it */
+    .flow-stage::details-content {
+      content-visibility: visible;
+    }
+    .flow-stage {
+      margin-bottom: 1.25rem;
+    }
+    /* a drawing cannot be split between two pages, and a browser cuts off what
+       does not fit on one: the diagram is kept whole, on a page of its own if need
+       be, and drawn small enough that its full height fits on a sheet */
+    /* the frames that suit a screen of one width or another do not apply */
+    .flow .flow-canvas {
+      break-inside: avoid;
+      overflow: visible !important;
+      max-height: none !important;
+      padding: 0.6rem !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius) !important;
+      background: var(--bg-raised) !important;
+    }
+    .flow .flow-sheet {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: min(var(--natural), 8.4in * var(--aspect)) !important;
+      margin-inline: auto !important;
+    }
+    .flow .flow-heads {
+      position: static !important;
+    }
+    .flow-legend {
+      break-after: avoid;
+    }
+
+    /* every step in the diagram is drawn as it is when all are shown */
+    .actor.is-active .actor-box {
+      stroke-width: 1.3;
+    }
+    .actor.is-active .lifeline {
+      stroke: color-mix(in srgb, var(--role) 50%, var(--bg-raised));
+      stroke-width: 1.5;
+    }
+    .phase.is-active .phase-band {
+      fill: var(--bg-sunken);
+    }
+    .phase.is-active :is(.phase-num, .phase-title) {
+      fill: var(--fg-muted);
+    }
+    .step:is(.is-todo, .is-done, .is-active) :is(.arrow-label, .note-label) {
+      fill: var(--fg);
+      font-weight: 400;
+    }
+    .step:is(.is-todo, .is-done, .is-active) .arrow {
+      stroke: var(--fg);
+      stroke-width: 1.4;
+    }
+    .step:is(.is-todo, .is-done, .is-active) .head {
+      fill: var(--fg);
+    }
+    .step:is(.is-done, .is-active) .badge {
+      fill: var(--bg-raised);
+      stroke-width: 1.6;
+    }
+    .step.is-active .badge-num {
+      fill: var(--fg);
+      font-weight: 500;
+    }
+    .step.is-active .arrow-label {
+      stroke: var(--bg-raised);
+    }
+    .step.is-active .note {
+      fill: var(--bg-sunken);
+      stroke: var(--border-strong);
+      stroke-width: 1.1;
+    }
+    .step.is-active .hit {
+      fill: transparent;
+    }
+    .step.is-active .label-bg {
+      fill: var(--bg-raised);
     }
   }
 </style>
