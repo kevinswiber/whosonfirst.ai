@@ -6,7 +6,7 @@ export const credentialBroker: Flow = {
   short: "Credential broker",
   group: "cross-cutting",
   human: "any",
-  maturity: "emerging",
+  maturity: "stable",
   tagline:
     "The agent never holds the secret. A proxy outside the sandbox adds it to outgoing requests, and only for the hosts it was meant for.",
   summary: `Every other page on this site is about getting the right credential to an agent. This one is about not giving it one at all.
@@ -169,9 +169,27 @@ key=__PLACEHOLDER_REPORTS_KEY__`,
       body: `The host is not on the allow-list. Even if it were, no credential is scoped to it, so the placeholder would have gone out as a meaningless string.`,
     },
   ],
-  standards: ["rfc9449", "spiffe", "k8s-agent-sandbox", "agentgateway"],
-  // None of these defines the pattern, so the page names no primary specification.
-  noBasis: "No standard defines this pattern",
+  standards: [
+    "rfc6750",
+    "agentgateway",
+    "k8s-agent-sandbox",
+    "spiffe",
+    "rfc9449",
+  ],
+  // No specification defines the pattern. Required here means required by the flow the diagram
+  // draws (see `illustrated`): a key carried as a bearer credential. Each implementation's proxy,
+  // vault and allow-list are its own, and none of the projects listed is the one drawn.
+  roles: {
+    rfc6750: "required", // the `Bearer` scheme that carries the key in the `Authorization` header, steps 3 and 7
+    agentgateway: "optional", // one implementation: an egress proxy with a destination allow-list, TLS termination and a key added per backend; not named, and it swaps no placeholder
+    "k8s-agent-sandbox": "optional", // no broker of its own; its execution-scoped token example is where that variation in the notes comes from
+    spiffe: "optional", // one source of the workload identity the proxy shows the vault in step 5; not named
+    rfc9449: "background", // DPoP, a related flow: another way to make a copied token useless; no step uses it
+  },
+  illustrated: {
+    steps: `No standard defines this pattern, and the products that implement it differ. **The diagram draws one arrangement:** an API that expects its key as a bearer credential in the \`Authorization\` header, a placeholder where the key would be inside the sandbox, and a proxy that swaps one for the other. Other arrangements are listed under Variations, in the notes below.`,
+    references: `This is the one specification the diagram’s flow uses: the \`Bearer\` scheme that carries the key in steps 3 and 7. It is required by the arrangement drawn, not by the pattern, since a proxy can put a key in any header or field the API reads. No standard defines the proxy, the vault, the placeholder or the allow-list: each implementation has its own. The maturity rating says only that the one specification in the diagram is a published RFC. It says nothing about any product.`,
+  },
   related: [
     "url-elicitation",
     "workload-identity-federation",
