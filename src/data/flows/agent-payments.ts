@@ -73,7 +73,9 @@ The diagram shows the second case: the human approves the boundaries, leaves, an
       kind: "front",
       label: "Sign open mandates",
       title: "The user approves constraints, not a purchase",
-      body: `“Buy these running shoes in size 43 if the price drops below €120, this month.” The user reviews and signs on a **trusted surface**, a piece of interface that the protocol requires to be non-agentic. The result is a pair of open mandates, checkout and payment, that carry the constraints and the public key of the agent allowed to act on them.`,
+      body: `“Buy these running shoes in size 43 if the price drops below €120, this month.” The user reviews and signs on a **trusted surface**, a piece of interface that the protocol requires to be non-agentic. The result is a pair of open mandates, checkout and payment, that carry the constraints and the public key of the agent allowed to act on them.
+
+Here the signature is the user’s own. The user holds a credential in a wallet, the agent sends an OpenID4VP request that carries the mandate content, and the wallet returns it signed with the key that credential is bound to.`,
       gain: [
         ["agent", "agent key"],
         ["agent", "open mandates (user-signed)"],
@@ -108,7 +110,9 @@ The diagram shows the second case: the human approves the boundaries, leaves, an
       kind: "self",
       label: "Sign closed mandates",
       title: "The agent authorizes this specific purchase",
-      body: `Using the key named in the open mandates, the agent signs closed checkout and payment mandates bound to the merchant’s signed checkout. Anyone verifying them can follow the chain: the user authorized this key within these limits, and this key authorized this purchase.`,
+      body: `Using the key named in the open mandates, the agent signs closed checkout and payment mandates bound to the merchant’s signed checkout. Anyone verifying them can follow the chain: the user authorized this key within these limits, and this key authorized this purchase.
+
+The mandates are SD-JWTs, and the chain is built as Delegate SD-JWT describes: the agent’s closed mandate stands where the proof of key possession on the user’s open mandate would be, and carries a hash of it.`,
       gain: [["agent", "closed mandates (agent-signed)"]],
     },
     {
@@ -117,7 +121,7 @@ The diagram shows the second case: the human approves the boundaries, leaves, an
       kind: "back",
       label: "Present payment mandate",
       title: "The agent asks the credential provider for a payment credential",
-      body: `The credential provider holds the user’s payment methods. It receives the payment mandate and only the details it needs.`,
+      body: `The credential provider holds the user’s payment methods. It receives the payment mandates, open and closed, and only the details it needs: an SD-JWT lets the agent leave out the parts of the user’s constraints that this check does not use.`,
     },
     {
       from: "cp",
@@ -155,13 +159,28 @@ The diagram shows the second case: the human approves the boundaries, leaves, an
   ],
   standards: [
     "ap2",
-    "verifiable-intent",
     "rfc9901",
+    "delegate-sd-jwt",
     "openid4vp",
+    "verifiable-intent",
     "acp-commerce",
     "visa-tap",
     "x402",
   ],
+  roles: {
+    ap2: "required", // the stated basis: version 0.2. Mandates, roles, receipts and the verification rules, steps 1 to 10
+    rfc9901: "required", // the mandates are SD-JWTs: key binding in step 5, selective disclosure in step 6
+    "delegate-sd-jwt": "required", // the open-to-closed chain signed in step 5 and checked in step 7; AP2 cites it normatively
+    openid4vp: "required", // how the user’s signature in step 1 is obtained when the user holds a credential; AP2 cites it normatively
+    "verifiable-intent": "background", // another effort the cautions allude to; no step uses its credential format
+    "acp-commerce": "background", // a checkout protocol with its own payment delegation; step 3 names no commerce protocol
+    "visa-tap": "background", // a card network’s agent-recognition scheme; not used on this page
+    x402: "background", // a payment method AP2 has a sample for; the drawn flow pays by card credential
+  },
+  illustrated: {
+    steps: `AP2 has two modes. In one the user is present and signs the closed mandates for a checkout they can see. **The diagram draws the other, which AP2 calls autonomous or human not present.** It also draws one of AP2’s two ways to trust the first signature: the user’s own credential signs the open mandates. In the other, the verifier trusts the agent’s provider, and the provider’s key signs.`,
+    references: `These are required by the arrangement the diagram draws: the protocol, the format of its mandates, the chaining of an open mandate to a closed one, and the request that gets the user’s signature. Where the agent’s provider signs, OpenID4VP is not needed. Every arrangement depends on AP2 itself, so none of them would be rated differently.`,
+  },
   related: ["web-bot-auth", "ciba", "step-up-authorization", "agent-to-agent"],
   notes: [
     {
