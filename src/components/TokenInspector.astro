@@ -1,7 +1,8 @@
 ---
 /**
  * Annotated token examples. Each claim line is a native <details> element, so
- * the explanations work without JavaScript. The script only adds tabs.
+ * the explanations work without JavaScript. Every example stays in the page;
+ * the links jump to an example without hiding the others.
  */
 import { tokens, CAT_LABEL, CAT_TONE } from "../data/tokens";
 import type { ClaimCat } from "../data/tokens";
@@ -26,35 +27,22 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
 ---
 
 <token-inspector class="ti">
-  <div class="ti-tabs" role="tablist" aria-label="Token type" hidden>
-    {
-      list.map((t, i) => (
-        <button
-          type="button"
-          role="tab"
-          id={`ti-tab-${t.id}`}
-          aria-controls={`ti-${t.id}`}
-          aria-selected={i === 0 ? 'true' : 'false'}
-          tabindex={i === 0 ? 0 : -1}
-        >
-          {t.name}
-        </button>
-      ))
-    }
-  </div>
+  <nav class="ti-tabs" aria-label="Token examples">
+    {list.map((t) => <a href={`#ti-${t.id}`}>{t.name}</a>)}
+  </nav>
 
   {
     list.map((t) => (
-      <section class="ti-panel" id={`ti-${t.id}`} role="tabpanel" aria-labelledby={`ti-tab-${t.id}`}>
+      <section class="ti-panel" id={`ti-${t.id}`} aria-labelledby={`ti-heading-${t.id}`}>
         <header>
-          <h3>{t.name}</h3>
+          <h3 id={`ti-heading-${t.id}`}>{t.name}</h3>
           <p class="ti-path">{t.path}</p>
           <p set:html={inline(t.intro)} />
         </header>
         <div class="ti-code">
-          {t.lines.map((l) =>
+          {t.lines.map((l, i) =>
             l.note ? (
-              <details class={`claim tone-${CAT_TONE[l.cat ?? 'meta']}`} name={`ti-${t.id}`}>
+              <details class={`claim tone-${CAT_TONE[l.cat ?? 'meta']}`} name={`ti-${t.id}`} open={i === t.lines.findIndex((line) => line.note)}>
                 <summary style={`--indent:${l.indent ?? 0}`}>
                   <code>{l.text}</code>
                 </summary>
@@ -70,7 +58,7 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
             ),
           )}
         </div>
-        <footer>
+        <p class="ti-sources">
           {t.flow && (
             <a class="btn small" href={`/flows/${t.flow}/`}>
               See the flow →
@@ -83,7 +71,7 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
               </a>
             ))}
           </span>
-        </footer>
+        </p>
       </section>
     ))
   }
@@ -100,42 +88,6 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
   </ul>
 </token-inspector>
 
-<script>
-  class TokenInspector extends HTMLElement {
-    connectedCallback() {
-      const tabs = [...this.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-      const panels = [...this.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
-      if (tabs.length < 2) return;
-      this.querySelector<HTMLElement>('.ti-tabs')!.hidden = false;
-      this.dataset.js = '';
-
-      const select = (i: number, focus = false) => {
-        tabs.forEach((t, k) => {
-          t.setAttribute('aria-selected', String(k === i));
-          t.tabIndex = k === i ? 0 : -1;
-        });
-        panels.forEach((p, k) => (p.hidden = k !== i));
-        if (focus) tabs[i].focus();
-      };
-      tabs.forEach((t, i) => {
-        t.addEventListener('click', () => select(i));
-        t.addEventListener('keydown', (e) => {
-          const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-          if (!d) return;
-          e.preventDefault();
-          select((i + d + tabs.length) % tabs.length, true);
-        });
-      });
-
-      const wanted = panels.findIndex((p) => `#${p.id}` === location.hash);
-      select(wanted >= 0 ? wanted : 0);
-      // open the first annotated claim so the interaction is discoverable
-      panels.forEach((p) => p.querySelector<HTMLDetailsElement>('details.claim:nth-of-type(2)')?.setAttribute('open', ''));
-    }
-  }
-  customElements.define('token-inspector', TokenInspector);
-</script>
-
 <style>
   .ti {
     display: block;
@@ -147,7 +99,7 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
     overflow-x: auto;
     scrollbar-width: none;
     border-bottom: 1.5px solid var(--fg);
-    /* more tabs than fit: a shadow at the edge they run off, as on a wide table */
+    /* more links than fit: a shadow at the edge they run off, as on a wide table */
     background:
       linear-gradient(to right, var(--bg) 40%, transparent) left / 2.4rem 100% no-repeat local,
       linear-gradient(to left, var(--bg) 40%, transparent) right / 2.4rem 100% no-repeat local,
@@ -156,14 +108,11 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
       linear-gradient(to left, color-mix(in srgb, var(--fg) 30%, transparent), transparent) right / 0.8rem 100%
         no-repeat scroll;
   }
-  /* the strip clips what is drawn outside a tab, so its focus ring is drawn inside */
-  .ti-tabs button:focus-visible {
+  /* the strip clips what is drawn outside a link, so its focus ring is drawn inside */
+  .ti-tabs a:focus-visible {
     outline-offset: -3px;
   }
-  .ti-tabs[hidden] {
-    display: none;
-  }
-  .ti-tabs button {
+  .ti-tabs a {
     font-family: var(--font-label);
     font-size: 0.74rem;
     font-weight: 500;
@@ -176,30 +125,18 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
     border-radius: var(--radius) var(--radius) 0 0;
     background: transparent;
     color: var(--fg-muted);
-    cursor: pointer;
+    text-decoration: none;
   }
-  .ti-tabs button:hover {
+  .ti-tabs a:hover {
     color: var(--fg);
     background: var(--bg-sunken);
   }
-  .ti-tabs button[aria-selected='true'] {
-    background: var(--fg);
-    color: var(--bg);
-  }
-
   .ti-panel {
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1.2rem 1.3rem 1.1rem;
     margin-bottom: 1rem;
-  }
-  .ti[data-js] .ti-panel {
-    border-top: 0;
-    border-radius: 0 0 var(--radius) var(--radius);
-  }
-  .ti-panel[hidden] {
-    display: none;
   }
   .ti-panel header h3 {
     margin: 0 0 0.2rem;
@@ -307,7 +244,7 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
     --tone: var(--fg-subtle);
   }
 
-  .ti-panel footer {
+  .ti-panel .ti-sources {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -315,10 +252,10 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
     margin-top: 1rem;
   }
   /* a specification's name can be longer than a phone is wide */
-  .ti-panel footer .chips {
+  .ti-panel .ti-sources .chips {
     min-width: 0;
   }
-  .ti-panel footer .chip {
+  .ti-panel .ti-sources .chip {
     min-width: 0;
     line-height: 1.4;
     white-space: normal;

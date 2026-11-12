@@ -206,12 +206,12 @@ const moved = [
                     </div>
                     <p class="sx-summary" set:html={inline(s.summary)} />
                     <p class="sx-agents">
-                      <strong>For agents</strong>
+                      <strong>For agents:</strong>{' '}
                       <span set:html={inline(s.agents)} />
                     </p>
                     {s.detail && (
                       <p class="sx-detail">
-                        <strong>Status</strong>
+                        <strong>Status:</strong>{' '}
                         <span set:html={inline(s.detail)} />
                       </p>
                     )}
@@ -240,7 +240,7 @@ const moved = [
                         </ul>
                       </div>
                     )}
-                    <footer>
+                    <p class="sx-source">
                       <a href={s.url} rel="noopener">
                         Source ↗
                       </a>
@@ -255,7 +255,7 @@ const moved = [
                           ))}
                         </span>
                       )}
-                    </footer>
+                    </p>
                   </li>
                 );
               })
@@ -671,7 +671,8 @@ const moved = [
   .sx-related li + li {
     margin-top: 0.3rem;
   }
-  .sx-item footer {
+  .sx-source {
+    margin: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem 1.4rem;

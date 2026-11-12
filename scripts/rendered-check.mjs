@@ -1497,7 +1497,7 @@ for (const theme of THEMES) {
         record(
           where,
           "review date is on the page\u2019s first line of facts",
-          !!facts && /reviewed\s*\w+ \d{4}/i.test(facts.text),
+          !!facts && /reviewed:\s*\w+ \d{4}/i.test(facts.text),
           facts ? facts.text.trim() : "no page facts",
         );
         record(
@@ -1731,9 +1731,7 @@ for (const theme of THEMES) {
               `smallest ${tiny.px.toFixed(1)}px (“${tiny.text}”)`,
             );
             const held = await page.evaluate(() => {
-              const li = [...document.querySelectorAll(".flow-step")].find(
-                (s) => !s.hidden,
-              );
+              const li = document.querySelector(".flow-step.is-current");
               return {
                 shown: document.querySelectorAll(".flow-step:not([hidden])")
                   .length,
@@ -1745,8 +1743,8 @@ for (const theme of THEMES) {
             });
             record(
               where,
-              `step ${step}: one step shown, with who is talking to whom`,
-              held.shown === 1 && !!held.route,
+              `step ${step}: every step remains readable, with the selected route marked`,
+              held.shown === count && !!held.route,
               held.route ?? "",
             );
           }
@@ -1760,7 +1758,7 @@ for (const theme of THEMES) {
               count: document.querySelector(".flow-count").textContent,
               inView: r.top < innerHeight * 0.5 && r.bottom > 0,
               phase: document
-                .querySelector(".flow-step:not([hidden]) .step-phase-n")
+                .querySelector(".flow-step.is-current .step-phase-n")
                 ?.textContent.trim(),
               active: document.querySelectorAll("svg .phase.is-active").length,
             };
@@ -1865,6 +1863,26 @@ for (const theme of THEMES) {
             "last step: focus moves from the disabled Next to Previous",
             handed.disabled && handed.onPrev,
             JSON.stringify(handed),
+          );
+          // A glossary link inside a step must not keep focus after an arrow
+          // scrolls that step out of the narrative panel.
+          await page.evaluate(() => {
+            location.hash = "#step-1";
+          });
+          await page.waitForTimeout(80);
+          await page.locator(".flow-step.is-current a").first().focus();
+          await page.keyboard.press("ArrowRight");
+          const narrativeFocus = await page.evaluate(() => ({
+            step: document.querySelector(".flow-step.is-current")?.id,
+            control: document.activeElement?.matches(
+              ".flow-controls button:not(:disabled)",
+            ),
+          }));
+          record(
+            where,
+            "arrow navigation returns focus from a scrolled-away step to a control",
+            narrativeFocus.step === "step-2" && narrativeFocus.control,
+            JSON.stringify(narrativeFocus),
           );
           const holders = await page.evaluate(
             () => document.querySelectorAll(".flow-step .held dt").length,
@@ -2421,6 +2439,83 @@ await ctx.close();
     );
     await ctx.close();
   }
+}
+// Reader extractors inspect the live DOM. Selection must never remove the
+// canonical narrative with hidden/aria-hidden or display:none. This is a
+// content-availability contract, not an emulation of any browser's Reader.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    viewport: { width: 1280, height: 900 },
+  });
+  const page = await ctx.newPage();
+  for (const path of under("flows")) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    if (javaScriptEnabled) await page.click('[data-act="next"]');
+    const seen = await page.evaluate(() => {
+      const flow = document.querySelector("flow-diagram");
+      const steps = [...flow.querySelectorAll(".flow-step")];
+      const problems = [];
+      for (const [i, step] of steps.entries()) {
+        if (step.id !== `step-${i + 1}`)
+          problems.push(`step ${i + 1}: out of order`);
+        if (!step.querySelector("h3")?.textContent.trim())
+          problems.push(`step ${i + 1}: no heading`);
+        if (!step.querySelector(".step-body")?.textContent.trim())
+          problems.push(`step ${i + 1}: no message`);
+        for (const node of [
+          step,
+          ...step.querySelectorAll(".step-body, pre, .held"),
+        ]) {
+          if (
+            node.closest('[hidden], [aria-hidden="true"]') ||
+            !node.checkVisibility({ visibilityProperty: true })
+          )
+            problems.push(
+              `step ${i + 1}: narrative removed from the reading tree`,
+            );
+        }
+      }
+      return {
+        count: Number(flow.dataset.count),
+        steps: steps.length,
+        problems,
+      };
+    });
+    record(
+      `reader content ${javaScriptEnabled ? "after stepping" : "without JavaScript"} ${path}`,
+      "all step headings, messages, examples and holdings remain available in order",
+      seen.steps === seen.count && seen.problems.length === 0,
+      seen.problems.join("; "),
+    );
+  }
+  await ctx.close();
+}
+// Comparisons explain each alternative without requiring tab selection.
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  for (const [path, selector] of [
+    ["/concepts/", ".ti-panel"],
+    ["/deployments/kubernetes/", ".km-panel"],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const seen = await page.locator(selector).evaluateAll((panels) => ({
+      total: panels.length,
+      readable: panels.filter(
+        (p) =>
+          !p.closest('[hidden], [aria-hidden="true"]') &&
+          p.checkVisibility({ visibilityProperty: true }),
+      ).length,
+    }));
+    record(
+      path,
+      "every comparison alternative remains readable without selection",
+      seen.total > 1 && seen.readable === seen.total,
+      JSON.stringify(seen),
+    );
+  }
+  await ctx.close();
 }
 // A flow page on paper: every step in order, each with its text, no control,
 // light ink whatever the reader's theme, and a diagram that fits on one sheet.

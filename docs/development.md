@@ -197,6 +197,15 @@ Two checks cover this:
 
   It checks the build, not the sources, and it does not build. If anything under `src/` or `public/` has changed since the site was built, it stops before its first check and names a file: an old build can pass where the site as it is now would fail, and the report would not say which was read.
 
+## Reading modes
+
+Keep the complete narrative in the live DOM when a reader selects a diagram step
+or comparison example. A native Reader may discard anything marked `hidden`,
+including a step that print CSS would restore. The rendered checks enforce this
+content-availability rule; they do not simulate browser-specific extraction.
+See the [reading-mode investigation](reviews/reader-mode.md) for evidence, page
+expectations, and the remaining native-browser checks.
+
 ## Other forms of a page
 
 A page is read in three places besides a browser: where a link to it is shared, by a search engine, and by a program working for someone, such as a coding agent or an assistant answering a question. Each gets a form of the page made for it. All of them are made from the page as built, so none can say what the page does not.
