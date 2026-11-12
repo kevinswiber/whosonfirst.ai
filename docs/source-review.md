@@ -88,6 +88,15 @@ A published specification pins the draft revision it was written against. The si
 
 A project entry has a maturity level only if `level` is set on it, with its evidence in a comment. If a project's own statement of stability has changed, say so: it can change a flow's rating.
 
+### Related documents on a tracker entry
+
+Every item in an entry's `related` in `src/data/standards.ts`. The list is the file; it is not repeated here, and neither are the addresses.
+
+- An item with a `url` is another document, and its `note` says one thing about it: its stage and date, or how it stands to the entry. Open the `url` and compare the `note` with what the page says today. For an IETF draft, read `doc.json` as for a draft in the tracker.
+- An item with an `entry` names another entry by its `id`. Its `note` gives the relationship ("Updates this RFC."), and the source is the entry's own.
+
+Also report a related document that has become something else: a draft published as an RFC, a working draft that became a Recommendation, a new version that makes the one named out of date.
+
 ### Things the site says will happen
 
 Statements about the future, or about a process that was unfinished at the last review. Report each as happened, not yet, or no longer expected. Whoever applies the report removes the rows that are settled and adds any the new wording creates.
@@ -110,7 +119,6 @@ Statements about the future, or about a process that was unfinished at the last 
 | AAuth (Hardt): the draft lists four implementations, each marked exploratory                                                              | `flows/aauth.ts` (cautions)                                                           |
 | Mission-bound and actor drafts: individual, not adopted                                                                                   | `standards.ts` (`mission-bound`, `actor-profile`, `txn-tokens-agents`, `scim-agents`) |
 | RFC 9700: an update draft is in progress                                                                                                  | `standards.ts` (`rfc9700`)                                                            |
-| RFC 9901: the SD-JWT VC draft is in IESG evaluation                                                                                       | `standards.ts` (`rfc9901`)                                                            |
 | RFC 8693: no revision is in progress                                                                                                      | `standards.ts` (`rfc8693`)                                                            |
 | MCP: the next release is planned for March 2027                                                                                           | `standards.ts` (`mcp-authorization`)                                                  |
 | MCP: Dynamic Client Registration may be removed from July 2027                                                                            | `standards.ts` (`rfc7591`)                                                            |
@@ -119,8 +127,6 @@ Statements about the future, or about a process that was unfinished at the last 
 | WIT-SVID is incubating; SPIRE's support is experimental, behind a flag                                                                    | `standards.ts` (`spiffe`, `spire`); `flows/wimse-workload-tokens.ts` (notes)          |
 | Agent Sandbox is at version 1.0 with a `v1beta1` API                                                                                      | `standards.ts` (`k8s-agent-sandbox`); `deployments/kubernetes.mdx`                    |
 | AP2: donated to the FIDO Alliance; no FIDO-published draft yet                                                                            | `standards.ts` (`ap2`, `verifiable-intent`)                                           |
-| Decentralized Identifiers 1.1 is at Candidate Recommendation                                                                              | `standards.ts` (`vc-data-model`)                                                      |
-| Verifiable Credentials Data Model 2.1 is a Working Draft (22 October 2026)                                                                | `standards.ts` (`vc-data-model`)                                                      |
 | An OWASP MCP Top 10 is in beta                                                                                                            | `standards.ts` (`owasp-agentic`)                                                      |
 | The NIST concept paper is a draft; NIST's site titles its agent initiative the SI Agent Standards Initiative                              | `standards.ts` (`nist-agent-identity`)                                                |
 | Google's agent identity for external workloads is in Preview                                                                              | `flows/workload-identity-federation.ts` (documented implementations)                  |
@@ -175,7 +181,7 @@ In January, April, July and October.
 
 ### RFCs
 
-Every entry with `status: "rfc"`. Source: `https://www.rfc-editor.org/rfc/rfc<number>.json`. Report anything in `updated_by` or `obsoleted_by` that the entry's `detail` does not mention, and any change of BCP number. The JSON's `see_also` is empty: read the BCP number from the first page of `https://www.rfc-editor.org/rfc/rfc<number>.txt`.
+Every entry with `status: "rfc"`. Source: `https://www.rfc-editor.org/rfc/rfc<number>.json`. Report anything in `updated_by` or `obsoleted_by` that the entry does not list in `related` or mention in `detail`, and any change of BCP number. The JSON's `see_also` is empty: read the BCP number from the first page of `https://www.rfc-editor.org/rfc/rfc<number>.txt`.
 
 An RFC being updated does not change its status or a flow's rating. It may change what a flow page should say.
 
@@ -189,7 +195,7 @@ Every entry with `status: "guidance"`. Check for a new edition and that the `url
 
 ### Links
 
-Every `url` in the tracker and every `href` in a flow's `sources` should resolve without an error and without redirecting to something else. Example hosts (`*.example`, `*.example.com`, `*.example.org`) are not links.
+Every `url` in the tracker, on an entry or on an item in its `related`, and every `href` in a flow's `sources` should resolve without an error and without redirecting to something else. Example hosts (`*.example`, `*.example.com`, `*.example.org`) are not links.
 
 ## What may be missing
 

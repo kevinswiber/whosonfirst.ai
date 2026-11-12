@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import DocMeta from "../../components/DocMeta.astro";
-import { standards } from "../../data/standards";
+import { standards, std } from "../../data/standards";
 import { flows } from "../../data/flows";
 import { REVIEWED } from "../../data/site";
 import { STATUS_LABEL, STATUS_TONE, TOPIC_LABEL } from "../../data/types";
@@ -168,6 +168,15 @@ const moved = [
             {
               standards.map((s) => {
                 const used = usedIn(s.id);
+                // A related document with its own entry links to that entry
+                // on this page. Any other links to the document itself.
+                const related = (s.related ?? []).map((r) => {
+                  if ('entry' in r) {
+                    const e = std(r.entry);
+                    return { name: `${e.name} (${e.ref})`, href: `#${e.id}`, out: false, note: r.note };
+                  }
+                  return { name: r.name, href: r.url, out: true, note: r.note };
+                });
                 return (
                   <li
                     class="sx-item"
@@ -175,7 +184,7 @@ const moved = [
                     data-status={s.status}
                     data-topics={s.topics.join(' ')}
                     data-body={s.body}
-                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
+                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${related.map((r) => `${r.name} ${r.note}`).join(' ')} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
                   >
                     <header>
                       <h3>{s.name}</h3>
@@ -200,6 +209,25 @@ const moved = [
                         <strong>Status</strong>
                         <span set:html={inline(s.detail)} />
                       </p>
+                    )}
+                    {related.length > 0 && (
+                      <div class="sx-related">
+                        <strong>Related</strong>
+                        <ul>
+                          {related.map((r) => (
+                            <li>
+                              {r.out ? (
+                                <a href={r.href} rel="noopener">
+                                  {r.name} ↗
+                                </a>
+                              ) : (
+                                <a href={r.href}>{r.name}</a>
+                              )}{' '}
+                              <span set:html={inline(r.note)} />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                     <footer>
                       <a href={s.url} rel="noopener">
@@ -595,7 +623,8 @@ const moved = [
     max-width: 50rem;
   }
   .sx-agents,
-  .sx-detail {
+  .sx-detail,
+  .sx-related {
     display: grid;
     grid-template-columns: 5.6rem minmax(0, 1fr);
     gap: 0.8rem;
@@ -606,7 +635,8 @@ const moved = [
     max-width: 50rem;
   }
   .sx-agents strong,
-  .sx-detail strong {
+  .sx-detail strong,
+  .sx-related strong {
     font-family: var(--font-label);
     font-size: 0.68rem;
     font-weight: 500;
@@ -615,8 +645,17 @@ const moved = [
     color: var(--fg-muted);
     padding-top: 0.22rem;
   }
-  .sx-detail {
+  .sx-detail,
+  .sx-related {
     color: var(--fg-muted);
+  }
+  .sx-related ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-related li + li {
+    margin-top: 0.3rem;
   }
   .sx-item footer {
     display: flex;
@@ -631,7 +670,8 @@ const moved = [
   }
   @media (max-width: 34rem) {
     .sx-agents,
-    .sx-detail {
+    .sx-detail,
+    .sx-related {
       grid-template-columns: 1fr;
       gap: 0.1rem;
     }

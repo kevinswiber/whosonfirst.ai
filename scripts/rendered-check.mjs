@@ -1543,6 +1543,35 @@ for (const theme of THEMES) {
             "history sits after the lookup",
             lookup.moved > lookup.first,
           );
+          // A fact about another document is shown with its link: to that
+          // document, or to its own entry on this page.
+          const related = await page.evaluate(() => {
+            const links = [...document.querySelectorAll(".sx-related a")];
+            const broken = links
+              .map((a) => a.getAttribute("href") ?? "")
+              .filter((h) =>
+                h.startsWith("#")
+                  ? !document
+                      .getElementById(h.slice(1))
+                      ?.classList.contains("sx-item")
+                  : !h.startsWith("https://"),
+              );
+            const unlinked = [
+              ...document.querySelectorAll(".sx-related li"),
+            ].filter(
+              (li) =>
+                !li.querySelector("a") || li.textContent.trim().length < 12,
+            ).length;
+            return { count: links.length, broken, unlinked };
+          });
+          record(
+            where,
+            "each related document is a link, to its source or to its entry here",
+            related.count > 0 &&
+              related.broken.length === 0 &&
+              related.unlinked === 0,
+            `${related.count} links${related.broken.length ? `, broken: ${related.broken.join(", ")}` : ""}${related.unlinked ? `, ${related.unlinked} without a link or a note` : ""}`,
+          );
           // Names people type, each with the fewest entries it must find. The
           // first group is what the entries' own text already gave; the second
           // is what only an entry's otherNames give.
@@ -1564,8 +1593,8 @@ for (const theme of THEMES) {
             const input = document.querySelector(".sx-search input");
             input.value = "";
             input.dispatchEvent(new Event("input", { bubbles: true }));
-            const item = document.querySelector("#rfc9396");
-            return /\bRAR\b/.test(item.innerText);
+            const item = document.querySelector("#rfc9126");
+            return /\bPAR\b/.test(item.innerText);
           });
           record(
             where,
