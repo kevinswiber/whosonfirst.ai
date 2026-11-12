@@ -200,6 +200,14 @@ WWW-Authenticate: Bearer error="insufficient_user_authentication",
     },
   ],
   standards: ["rfc9470", "rfc9396", "rfc9126", "rfc6750", "mcp-authorization"],
+  roles: {
+    rfc9470: "required", // the challenge and the stronger token: steps 3, 5 and 10
+    rfc9396: "required", // `authorization_details`: steps 5, 6, 10 and 11
+    rfc6750: "required", // the Bearer challenge and `insufficient_scope`, step 3
+    rfc9126: "optional", // step 5 recommends sending the request this way; the request drawn goes through the browser
+    "mcp-authorization": "background", // has a step-up flow of its own, for scopes; not named on this page
+  },
+  basis: ["rfc9470", "rfc9396"],
   related: [
     "ciba",
     "authorization-code-pkce",

@@ -146,6 +146,12 @@ DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7…`,
     },
   ],
   standards: ["rfc9449", "rfc8705", "rfc9700", "rfc7638"],
+  roles: {
+    rfc9449: "required", // the mechanism: every step
+    rfc7638: "required", // the thumbprint in `cnf.jkt`, steps 3 and 6
+    rfc8705: "optional", // mutual TLS, offered as the other way to bind a token to a key; no step uses it
+    rfc9700: "background", // recommends sender-constrained tokens, by this or by mutual TLS; not named on this page
+  },
   related: [
     "authorization-code-pkce",
     "spiffe-workload-identity",

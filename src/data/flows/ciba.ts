@@ -180,6 +180,12 @@ grant_type=urn:openid:params:grant-type:ciba
     },
   ],
   standards: ["ciba", "rfc9396", "rfc7523", "fapi-2"],
+  roles: {
+    ciba: "required", // the flow: steps 2 to 7
+    rfc9396: "required", // `authorization_details` in the request, the token and the API's check: steps 2, 7 and 8
+    rfc7523: "required", // the client assertion on both of the agent's requests, steps 2 and 6
+    "fapi-2": "background", // a security profile that allows for the CIBA grant; not named or used on this page
+  },
   related: [
     "step-up-authorization",
     "device-authorization",

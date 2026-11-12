@@ -1518,7 +1518,7 @@ export const standards: Standard[] = [
     ref: "OpenID FAPI 2.0",
     body: "OpenID Foundation",
     status: "final",
-    detail: "Reported final in February 2025.",
+    detail: "Final. Published on 22 February 2025.",
     topics: ["guidance", "core"],
     summary:
       "A high-security OAuth profile: pushed authorization requests, sender-constrained tokens, strong client authentication.",
