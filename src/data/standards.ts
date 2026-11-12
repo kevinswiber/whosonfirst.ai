@@ -1254,6 +1254,10 @@ export const standards: Standard[] = [
     ref: "MCP specification 2026-07-28, Elicitation",
     body: "MCP",
     status: "final",
+    // Evidence for the level: the 2026-07-28 Elicitation page says of URL mode, "Its design and
+    // implementation may change in future protocol revisions". The revision is final; this feature
+    // of it is not yet settled by its maintainers' own statement.
+    level: "emerging",
     detail:
       "Introduced in 2025-11-25 and reworked in 2026-07-28. Still marked as subject to change.",
     related: [

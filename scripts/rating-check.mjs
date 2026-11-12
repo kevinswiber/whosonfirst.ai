@@ -22,6 +22,7 @@ check("a status shows a level only when it can", () => {
   assert.equal(levelOf({ status: "project" }), undefined);
   assert.equal(levelOf({ status: "guidance" }), undefined);
   assert.equal(levelOf({ status: "project", level: "stable" }), "stable");
+  assert.equal(levelOf({ status: "final", level: "emerging" }), "emerging");
 });
 
 check("the least mature required reference decides", () => {
