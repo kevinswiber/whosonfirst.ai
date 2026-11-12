@@ -165,6 +165,14 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     "wimse-aims",
     "rfc7519",
   ],
+  roles: {
+    "txn-tokens": "required", // the stated basis, at revision -11: every step
+    rfc8693: "required", // the request is a profile of token exchange, step 2
+    "txn-tokens-agents": "optional", // an extension for agent context, named in the cautions and the note; no step uses it
+    "wimse-arch": "background", // the workload identity architecture the draft cites for its gateway; steps 2 and 7 name no mechanism from it
+    "wimse-aims": "background", // guidance that recommends transaction tokens inside a domain; not named on this page
+    rfc7519: "required", // the token in step 4 is a JWT; steps 6 and 8 check its signature, audience and expiry
+  },
   related: [
     "token-exchange",
     "identity-chaining",
