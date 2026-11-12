@@ -237,4 +237,11 @@ const { trail = [], current } = Astro.props;
       display: none;
     }
   }
+  /* the list of sections is a control, and means nothing on paper */
+  @media print {
+    .here-sec,
+    .here-menu {
+      display: none !important;
+    }
+  }
 </style>

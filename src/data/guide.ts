@@ -182,6 +182,15 @@ export const rules: Rule[] = [
     },
     why: "There is no browser where the agent runs, so the user approves on another device. Run this from the program that controls the agent, outside any sandbox, so the tokens never land where untrusted code runs. Show the user only a code your own program has just requested: a code that arrives any other way may belong to an attacker’s sign-in.",
   },
+  // Two rules for one flow. The first, for a person in the session or reachable,
+  // does not name the human question: naming it would make it match one more
+  // answer and lift it above authorization code for a person at a browser. When
+  // no one is there, the second matches one more answer and replaces it. Its
+  // weight is below the authorization code rule for no one present, which a
+  // reader who has not said who runs the thing being called should see first.
+  // The first has to stay above the second, in this list and in weight: of two
+  // rules that match as many answers, the page keeps the earlier, and the
+  // Markdown copy, which lists rules by weight, says it keeps the first listed.
   {
     flow: "cross-app-access",
     role: "start",
@@ -192,6 +201,18 @@ export const rules: Rule[] = [
       target: ["mcp", "api"],
     },
     why: "Both sides trust your company identity provider, so let it decide. Employees sign in once and administrators control which agents reach which applications.",
+  },
+  {
+    flow: "cross-app-access",
+    role: "start",
+    weight: 5,
+    when: {
+      principal: ["user"],
+      human: ["absent"],
+      boundary: ["enterprise"],
+      target: ["mcp", "api"],
+    },
+    why: "No one has to be there each time, but the employee has to have signed in first. If the agent asked for offline access at that sign-in, the identity provider may give it a refresh token. With that token the agent can get new grants without a new sign-in, for as long as the identity provider still honors the token and its policy allows each request. When the token stops working, the employee signs in again. The application’s authorization server should not issue a refresh token of its own. The identity provider’s token can reach every application the policy allows, with no one asked.",
   },
 
   // ── a person's authority, person elsewhere or absent ──

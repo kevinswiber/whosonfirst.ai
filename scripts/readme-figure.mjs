@@ -14,6 +14,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { requireCurrentBuild } from "./built-site.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -28,6 +29,12 @@ if (!existsSync(join(root, "flows", FLOW, "index.html"))) {
   console.error("dist/client/ is missing. Run `npm run build` first.");
   process.exit(1);
 }
+// The two pictures are committed, and nothing in a picture says which build it
+// was taken from. One made from a build older than the last change would put
+// the diagram as it was at the top of the README, so stop here.
+requireCurrentBuild(
+  "The pictures in the README would show the site as it was then.",
+);
 mkdirSync(out, { recursive: true });
 
 const TYPES = {

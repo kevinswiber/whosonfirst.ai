@@ -19,6 +19,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { requireCurrentBuild } from "./built-site.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -29,6 +30,10 @@ if (!existsSync(join(root, "index.html"))) {
   console.error("dist/client/ is missing. Run `npm run build` first.");
   process.exit(1);
 }
+// What is checked is the build, not the sources. A build made before the last
+// change is the site as it was: it can pass where the site as it is now would
+// fail, and the report would not say which of the two was read. So stop here.
+requireCurrentBuild("The checks would report on the site as it was then.");
 const verbose = process.argv.includes("--verbose");
 
 /* ---------- thresholds ---------- */
@@ -127,6 +132,22 @@ const NARROW_PAGES = [
     ...under("flows"),
     ...LESSONS,
   ]),
+];
+
+/** What people type into the tracker's lookup, and how many entries it must show at least. */
+const TYPED_NAMES = [
+  ["mutual TLS", 5],
+  ["RFC9728", 1],
+  ["OAuth2.1", 4],
+  ["CIMD", 1],
+  ["DPoP", 4],
+  ["mTLS", 3],
+  ["JAR", 1],
+  ["PRM", 1],
+  ["DCR", 1],
+  ["PAR", 1],
+  ["RAR", 1],
+  ["device flow", 1],
 ];
 
 const results = []; // { where, check, ok, detail }
@@ -690,6 +711,50 @@ record(
       "readme",
       "README.md lists every lesson, flow and deployment guide, counts them right, and gives no address the site lacks",
       given.length > 0 && wrong.length === 0,
+      wrong.slice(0, 8).join("; "),
+    );
+  }
+
+  // A deployment guide ends with a way on: the flows it names, the other
+  // guides and the decision guide. The index page lists every guide.
+  {
+    const guides = built.filter((p) => /^\/deployments\/[^/]+\/$/.test(p.path));
+    const index = built.find((p) => p.path === "/deployments/");
+    const wrong = [];
+    for (const g of guides) {
+      const m = /<nav class="way-on[^"]*"[\s\S]*?<\/nav>/.exec(g.html);
+      if (!m) {
+        wrong.push(`${g.path} has no way on at its end`);
+        continue;
+      }
+      const hrefs = [...m[0].matchAll(/href="([^"#]+)"/g)].map((x) => x[1]);
+      if (!hrefs.includes("/guide/"))
+        wrong.push(`${g.path} does not link to the decision guide`);
+      if (!hrefs.some((h) => h.startsWith("/flows/")))
+        wrong.push(`${g.path} names no flow`);
+      if (
+        !hrefs.some((h) =>
+          guides.some((o) => o.path === h && o.path !== g.path),
+        )
+      )
+        wrong.push(`${g.path} links to no other guide`);
+      if (hrefs.includes(g.path)) wrong.push(`${g.path} links to itself`);
+      if (g.html.lastIndexOf('class="article"') > g.html.indexOf(m[0]))
+        wrong.push(`${g.path} puts the way on before its text`);
+      const text = g.html.slice(
+        g.html.indexOf('class="article"'),
+        g.html.indexOf(m[0]),
+      );
+      for (const h of hrefs.filter((h) => h.startsWith("/flows/")))
+        if (!text.includes(`href="${h}`))
+          wrong.push(`${g.path} points to ${h}, which it does not name`);
+      if (index && !index.html.includes(`href="${g.path}"`))
+        wrong.push(`${g.path} is not on the index page`);
+    }
+    record(
+      "deployment-way-on",
+      "every deployment guide ends with a way on, drawn from the flows it names and the other guides",
+      guides.length > 0 && wrong.length === 0,
       wrong.slice(0, 8).join("; "),
     );
   }
@@ -1478,6 +1543,35 @@ for (const theme of THEMES) {
             "history sits after the lookup",
             lookup.moved > lookup.first,
           );
+          // Names people type, each with the fewest entries it must find. The
+          // first group is what the entries' own text already gave; the second
+          // is what only an entry's otherNames give.
+          for (const [typed, atLeast] of TYPED_NAMES) {
+            const found = await page.evaluate((q) => {
+              const input = document.querySelector(".sx-search input");
+              input.value = q;
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              return document.querySelectorAll(".sx-item:not([hidden])").length;
+            }, typed);
+            record(
+              where,
+              `lookup finds an entry for "${typed}"`,
+              found >= atLeast,
+              `${found} shown, at least ${atLeast} expected`,
+            );
+          }
+          const leaked = await page.evaluate(() => {
+            const input = document.querySelector(".sx-search input");
+            input.value = "";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            const item = document.querySelector("#rfc9396");
+            return /\bRAR\b/.test(item.innerText);
+          });
+          record(
+            where,
+            "an entry's other names are not shown in its text",
+            !leaked,
+          );
         }
       }
 
@@ -1685,6 +1779,34 @@ for (const theme of THEMES) {
             location.hash = `#step-${n}`;
           }, count);
           await page.waitForTimeout(80);
+          // an address that names a late step is a link people paste: opened fresh,
+          // it has to leave that step's row in view, as pressing the step does
+          // (leave the page first: a reload would restore the scroll position it had)
+          const flowUrl = page.url();
+          await page.goto("about:blank");
+          await page.goto(flowUrl, { waitUntil: "networkidle" });
+          await page.waitForTimeout(300);
+          const addressed = await page.evaluate(() => {
+            const row = document
+              .querySelector("svg .step.is-active .hit")
+              .getBoundingClientRect();
+            const header = document
+              .querySelector(".site-header")
+              .getBoundingClientRect().bottom;
+            return {
+              count: document.querySelector(".flow-count").textContent,
+              hash: location.hash,
+              inView: row.top >= header - 1 && row.bottom <= innerHeight + 1,
+              row: [Math.round(row.top), Math.round(row.bottom)],
+              window: [Math.round(header), innerHeight],
+            };
+          });
+          record(
+            where,
+            "an address that names a late step opens with that step’s row in view in the diagram",
+            addressed.inView && addressed.count.startsWith(`Step ${count} `),
+            JSON.stringify(addressed),
+          );
           // keyboard: Left and Right step, Down is left to scrolling, and focus is never stranded
           // (the loop above ends on the last step, where Next is disabled and Previous is not)
           await page.focus('[data-act="prev"]');
@@ -2268,6 +2390,114 @@ await ctx.close();
       problems.length === 0,
       problems.join("; "),
     );
+    await ctx.close();
+  }
+}
+// A flow page on paper: every step in order, each with its text, no control,
+// light ink whatever the reader's theme, and a diagram that fits on one sheet.
+// A drawing is not split between pages, and a browser cuts off what does not
+// fit. Printed from a desktop, the page has been stepping through; printed from
+// a phone, it reads as a narrative with the diagram closed.
+{
+  const SHEET = { width: 718, height: 979 }; // px at 96 to the inch
+  const look = () => {
+    // a closed disclosure keeps its content laid out, only not drawn
+    const shown = (e) => e.checkVisibility({ visibilityProperty: true });
+    const flow = document.querySelector("flow-diagram");
+    const count = Number(flow.dataset.count);
+    const steps = [...flow.querySelectorAll(".flow-step")];
+    const tops = steps.map((li) => li.getBoundingClientRect().top);
+    const sheet = flow.querySelector(".flow-sheet").getBoundingClientRect();
+    const ink = (sel) =>
+      new Set(
+        [...flow.querySelectorAll(sel)].map(
+          (e) =>
+            `${getComputedStyle(e).fill} ${getComputedStyle(e).fontWeight}`,
+        ),
+      ).size;
+    const rgb = (c) =>
+      c
+        .match(/[\d.]+/g)
+        .slice(0, 3)
+        .map(Number);
+    const sum = (c) => rgb(c).reduce((a, b) => a + b, 0);
+    return {
+      count,
+      steps: steps.length,
+      shown: steps.filter(shown).length,
+      ordered: tops.every((t, i) => i === 0 || t > tops[i - 1]),
+      untitled: steps.filter(
+        (li) =>
+          !shown(li.querySelector("h3")) ||
+          !li.querySelector("h3").textContent.trim(),
+      ).length,
+      buttons: [...document.querySelectorAll("button")]
+        .filter(shown)
+        .map((b) => b.textContent.trim() || b.className),
+      paper: sum(getComputedStyle(document.body).backgroundColor),
+      text: sum(getComputedStyle(document.body).color),
+      diagram: shown(flow.querySelector(".flow-lines")),
+      arrows: flow.querySelectorAll("svg .step").length,
+      labelInks: ink("svg .step :is(.arrow-label, .note-label)"),
+      sheet: { width: sheet.width, height: sheet.height },
+    };
+  };
+  for (const vp of VIEWPORTS) {
+    const ctx = await browser.newContext({
+      viewport: { width: vp.width, height: vp.height },
+      isMobile: vp.isMobile,
+      hasTouch: vp.hasTouch,
+      colorScheme: "dark",
+      reducedMotion: "reduce",
+    });
+    const page = await ctx.newPage();
+    for (const path of under("flows")) {
+      await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+      await page.evaluate(() => document.fonts.ready);
+      // a reader on the second step, in the dark theme picked by hand
+      if (!vp.isMobile) await page.click('flow-diagram [data-act="next"]');
+      await page.evaluate(() => {
+        document.documentElement.dataset.theme = "dark";
+      });
+      await page.emulateMedia({ media: "print", colorScheme: "dark" });
+      // first as the page stands when the reader prints it, then at the width
+      // a Letter or A4 page leaves inside its default margins
+      const problems = [];
+      for (const size of [null, SHEET]) {
+        if (size) await page.setViewportSize(size);
+        const seen = await page.evaluate(look);
+        problems.push(
+          ...[
+            seen.steps !== seen.count &&
+              `${seen.steps} steps listed of ${seen.count}`,
+            seen.shown !== seen.count &&
+              `${seen.shown} of ${seen.count} steps printed`,
+            !seen.ordered && "steps out of order",
+            seen.untitled && `${seen.untitled} steps without a heading`,
+            seen.buttons.length &&
+              `buttons printed: ${seen.buttons.join(", ")}`,
+            (seen.paper < 700 || seen.text > 300) && "prints in the dark theme",
+            !seen.diagram && "diagram left out",
+            seen.arrows !== seen.count &&
+              `${seen.arrows} steps drawn of ${seen.count}`,
+            seen.labelInks !== 1 &&
+              "one step in the diagram is drawn apart from the rest",
+            seen.sheet.width > SHEET.width &&
+              `diagram ${Math.round(seen.sheet.width)}px wide`,
+            seen.sheet.height > SHEET.height &&
+              `diagram ${Math.round(seen.sheet.height)}px tall`,
+          ].filter(Boolean),
+        );
+      }
+      record(
+        `print from ${vp.name} ${path}`,
+        "print: every step in order with its text, no controls, light, the diagram on one sheet",
+        problems.length === 0,
+        [...new Set(problems)].join("; "),
+      );
+      await page.emulateMedia({ media: "screen", colorScheme: "dark" });
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+    }
     await ctx.close();
   }
 }

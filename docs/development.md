@@ -34,7 +34,7 @@ npm test
 npm run check:rendered
 ```
 
-`npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule and the color contrast audit. `npm run check:rendered` reads the built site, then opens it in a browser.
+`npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule and the color contrast audit. `npm run check:rendered` reads the built site, then opens it in a browser. It does not build the site: run `npm run build` first, and again after a change, or it stops and names a file that is newer than the build.
 
 `npm run build` writes a fully static site to `dist/client/`. There is no server component and no client-side framework: interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
 
@@ -87,6 +87,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `README.md`                           | What a visitor to the repository reads first: what the site is and where to start in it            |
 | `scripts/readme-figure.mjs`           | Draws the picture at the top of the README from the built site, in each theme                      |
 | `scripts/social-assets.mjs`           | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
+| `scripts/built-site.mjs`              | Stops a script that reads the built site when the build is older than its sources                  |
 | `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
 
 ## Editing content
@@ -123,6 +124,8 @@ They restate the flow's own page. Do not put a fact in an overview that the page
 
 **Add or update a standard.** Edit `src/data/standards.ts`. Flows refer to standards by `id`. The first standard a flow lists is shown at the top of its page as the primary specification, with its status and revision, so list the one the flow follows most closely first. A pattern that no specification defines sets `noBasis` to a few words saying so, and its page names no primary specification.
 
+The lookup on the tracker searches an entry's name, reference, summary, notes and `otherNames`. Give an entry `otherNames`, a list of strings, for a name people type that its text does not contain: an abbreviation such as “mTLS”, or a common short form such as “device flow”. Case, spaces and hyphens do not matter, so give each name once. The names are searched and not shown, and are data on the entry for any later search to read. Add only a name that is really used for that thing, and not one the text already has. `npm run check:rendered` types a list of names into the lookup (`TYPED_NAMES` in `scripts/rendered-check.mjs`), each of which must find an entry: add a name there when you add one here.
+
 **Classify a flow's references.** A flow can give each standard it lists a role in `roles`: `required`, `optional`, `background` or `unresolved`. Its rating is then that of its least mature required reference; the rule is on the About page under "How flows are rated" and in `src/data/rating.ts`. If the flow implements more than one specification, name them in `basis`. The build fails if a flow with `roles` leaves a listed standard unclassified, has a basis that is not required, or declares a `maturity` other than the one its required references give it.
 
 A reference marked `unresolved` is not counted and is not assumed to be optional. If it is less mature than the rating, or has no recorded level, the flow is shown as provisional (for example "Stable standards (provisional)") until it is classified. A project, platform or guidance entry has no level from its status alone: state one in `level` on its tracker entry, with the evidence, or the build refuses to rate a flow that requires it. `npm run check:rating` exercises these cases.
@@ -140,6 +143,8 @@ npm run build
 ```bash
 npm run readme:figure
 ```
+
+The script reads the build and does not make it. If anything under `src/` or `public/` has changed since the site was built, it stops, names a file and draws nothing: the two pictures are committed, and one taken from an old build would put the diagram as it was at the top of the README.
 
 **When you re-verify the standards**, follow `docs/source-review.md`. It lists what to check and how often, and every place the review date and a changed fact have to be updated, starting with `REVIEWED` in `src/data/site.ts`.
 
@@ -182,8 +187,11 @@ Two checks cover this:
   - a lesson's figure shows one complete variation, the table beneath covers them all, a choice changes what is shown, no explanation appears before an answer is chosen, each question has one right answer, and the page runs in the order every lesson shares
   - a flow's overview comes before its diagram and agrees with it, a part's link brings the diagram into view at its first step, and a glossary term shows its definition inside the window and puts it away again
   - each page's review date and specification are on its first line of facts with the rest behind a disclosure, the standards lookup precedes its history, the phone menu opens from the keyboard and shows every destination, the phone flow page reads as a narrative with the diagram on demand and easy to leave, opening the diagram adds one entry to the history and Back closes it at the step reached, stepping at a desk adds none, and the stepper keeps keyboard focus usable (Left and Right step, Down scrolls, focus moves off a disabled button)
+  - every flow printed, from a desktop part way through its steps and from a phone, in the dark theme: every step is there in order with its heading, no button is, the ink is the light theme's, and the diagram is drawn whole, with no step singled out, inside the width of a sheet and no taller than one
 
   It needs Chromium: `npx playwright install chromium`.
+
+  It checks the build, not the sources, and it does not build. If anything under `src/` or `public/` has changed since the site was built, it stops before its first check and names a file: an old build can pass where the site as it is now would fail, and the report would not say which was read.
 
 ## Other forms of a page
 
@@ -245,7 +253,7 @@ It writes to `social/`, which is not committed:
 
 The pictures are read on a phone, where a page 1080 pixels wide is shown at about a third of its size. So nothing on one is set smaller than 23 pixels, and most labels are 26. Keep to that when a page is changed: type that looks comfortable at full size is too small to read in a feed.
 
-Every word in these pictures is read from the pages as built: the home page's question and its ways in, the first lesson's figure, the groups and ratings on the flows page, the tracker's counts, a flow's steps and its diagram as drawn. The script holds the layout and none of the content, so a picture cannot say what the site does not. If a page it reads has changed shape, it stops and names what it could not find, and if a picture has outgrown its frame it says which. It also stops if anything under `src/` or `public/` has changed since the site was built, and names a file: the pictures are read from the build, so an old build draws an old site, with the old count of flows and the old list. Make the pictures again after the content changes. Do not edit them by hand.
+Every word in these pictures is read from the pages as built: the home page's question and its ways in, the first lesson's figure, the groups and ratings on the flows page, the tracker's counts, a flow's steps and its diagram as drawn. The script holds the layout and none of the content, so a picture cannot say what the site does not. If a page it reads has changed shape, it stops and names what it could not find, and if a picture has outgrown its frame it says which. It also stops if anything under `src/` or `public/` has changed since the site was built, and names a file: the pictures are read from the build, so an old build draws an old site, with the old count of flows and the old list. The rendered checks and the script for the README's picture stop for the same reason. The three share one test, in `scripts/built-site.mjs`. Make the pictures again after the content changes. Do not edit them by hand.
 
 The PDF is made to be read without being seen. LinkedIn lets anyone who can see a document post download the document, and gives accessibility as the reason, so the file a reader downloads is the accessible form of the carousel. It is tagged: its headings, tables and lists are marked as such, in reading order, its language is set, and the one picture in it, the diagram, has a description. Its title is the home page's question. The pages of the carousel are written with the elements that say what they are, a heading as a heading and a table as a table, and the tags come from those, so keep them that way.
 

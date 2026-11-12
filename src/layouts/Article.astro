@@ -5,6 +5,7 @@
  */
 import Base from "./Base.astro";
 import DocMeta from "../components/DocMeta.astro";
+import WayOn from "../components/WayOn.astro";
 import { REVIEWED } from "../data/site";
 import { gloss, markHtml } from "../lib/gloss";
 
@@ -96,7 +97,10 @@ const here = fm.section
         </nav>
       )
     }
-    <article class="article" set:html={article} />
+    <div class="article-main">
+      <article class="article" set:html={article} />
+      {kind && <WayOn html={body} path={Astro.url.pathname} />}
+    </div>
   </div>
 </Base>
 

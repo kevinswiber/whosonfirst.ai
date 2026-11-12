@@ -12,16 +12,16 @@ The source of [whosonfirst.ai](https://whosonfirst.ai), a field guide to agent a
 
 Node 22 or later. Install with `npm ci`.
 
-| Command                  | What it does                                                                |
-| ------------------------ | --------------------------------------------------------------------------- |
-| `npm run dev`            | The site, locally, rebuilt as files change                                  |
-| `npm run fmt`            | Biome, writing its fixes: formatting, lint and import order                 |
-| `npm run check`          | Biome, changing nothing                                                     |
-| `npm test`               | Types (`astro check`), the rating rule and the color contrast audit         |
-| `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name |
-| `npm run check:rendered` | Reads the built site, then opens it in a browser. Run the build first       |
+| Command                  | What it does                                                                             |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `npm run dev`            | The site, locally, rebuilt as files change                                               |
+| `npm run fmt`            | Biome, writing its fixes: formatting, lint and import order                              |
+| `npm run check`          | Biome, changing nothing                                                                  |
+| `npm test`               | Types (`astro check`), the rating rule and the color contrast audit                      |
+| `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name              |
+| `npm run check:rendered` | Reads the built site, then opens it in a browser. Refuses a build older than its sources |
 
-`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes about two minutes.
+`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes about two minutes. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
 
 ## Before you say a change is done
 

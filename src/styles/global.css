@@ -28,6 +28,14 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 }
+/* Paper is white whatever the reader's setting: a page read in the dark theme
+   prints in the light one. */
+@media print {
+  :root,
+  :root[data-theme] {
+    color-scheme: light;
+  }
+}
 
 *,
 *::before,
