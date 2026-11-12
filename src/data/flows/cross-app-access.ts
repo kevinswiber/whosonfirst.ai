@@ -13,7 +13,7 @@ export const crossAppAccess: Flow = {
 
 The Identity Assertion JWT Authorization Grant, or ID-JAG, moves the decision to the identity provider (IdP) the company already uses for single sign-on. The agent signs the user in once. When it needs access to another application, it asks the identity provider for a short-lived assertion aimed at that application’s authorization server, which the draft calls the resource authorization server (resource AS). The identity provider applies administrator policy and either issues it or refuses. The agent trades the assertion for an ordinary access token.
 
-No browser redirect, no consent prompt, and one place where access is granted and logged, and where new access is cut off. Vendors market this as Cross App Access. In MCP it is the official **Enterprise-Managed Authorization** extension.`,
+No browser redirect, no consent prompt, and one place where access is granted and logged, and where new access is cut off. The draft calls the pattern Cross-App Access (XAA), the name it goes by among vendors. In MCP it is the official **Enterprise-Managed Authorization** extension.`,
   fits: [
     "Workforce use: employees using an agent with company applications.",
     "The agent and the target application both trust the same enterprise identity provider.",
