@@ -1,7 +1,8 @@
 ---
 /**
  * "What does the last hop know?" — compares five ways of carrying authority
- * down a call chain. Radio inputs + :has(), so it needs no JavaScript.
+ * down a call chain. Every comparison stays readable; the links jump to one
+ * without hiding the others.
  */
 import { inline } from "../lib/md";
 
@@ -87,32 +88,22 @@ const MARK_TEXT: Record<Mark, string> = {
   no: "No",
   partial: "Partly",
 };
-const uid = "lh";
 ---
 
 <div class="lh">
-  <fieldset>
-    <legend>How is authority passed down the chain?</legend>
-    <div class="lh-modes">
-      {
-        modes.map((m, i) => (
-          <label>
-            <input type="radio" name={uid} value={m.id} checked={i === 3} />
-            <span>{m.name}</span>
-          </label>
-        ))
-      }
-    </div>
-  </fieldset>
+  <nav class="lh-modes" aria-label="Ways of passing authority down the chain">
+    {modes.map((m) => <a href={`#lh-${m.id}`}>{m.name}</a>)}
+  </nav>
 
   {
     modes.map((m) => (
-      <div class="lh-panel" data-mode={m.id}>
-        <div class="lh-chain" role="img" aria-label={`Chain with ${m.name}: ${m.hops.join(', then ')}`}>
+      <section class="lh-panel" data-mode={m.id} id={`lh-${m.id}`} aria-labelledby={`lh-heading-${m.id}`}>
+        <h3 id={`lh-heading-${m.id}`}>{m.name}</h3>
+        <aside class="lh-chain" aria-hidden="true">
           {nodes.map((n, i) => (
             <>
               <div class={`lh-node role-${n.role}`}>
-                <strong>{n.label}</strong>
+                <strong>{n.label}</strong>{' '}
                 <span>{n.sub}</span>
               </div>
               {i < 3 && (
@@ -123,7 +114,14 @@ const uid = "lh";
               )}
             </>
           ))}
-        </div>
+        </aside>
+
+        <h4>Credentials at each hop</h4>
+        <ol class="lh-path">
+          {m.hops.map((credential, i) => (
+            <li>{`${nodes[i].label} (${nodes[i].sub}) to ${nodes[i + 1].label} (${nodes[i + 1].sub}): ${credential}.`}</li>
+          ))}
+        </ol>
 
         <div class="lh-result">
           <table>
@@ -148,7 +146,7 @@ const uid = "lh";
             )}
           </div>
         </div>
-      </div>
+      </section>
     ))
   }
 </div>
@@ -160,67 +158,57 @@ const uid = "lh";
     border-radius: var(--radius);
     padding: 1.2rem 1.3rem 1.3rem;
   }
-  fieldset {
-    border: 0;
-    padding: 0;
-    margin: 0 0 1.2rem;
-  }
-  legend {
-    font-family: var(--font-label);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    padding: 0;
-    margin-bottom: 0.6rem;
-  }
   .lh-modes {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
+    margin-bottom: 1.5rem;
   }
-  .lh-modes label {
-    cursor: pointer;
-  }
-  .lh-modes input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .lh-modes span {
+  .lh-modes a {
     display: block;
     font-size: 0.9rem;
     font-weight: 500;
     padding: 0.45rem 0.8rem;
     border: 1.5px solid var(--border-strong);
     border-radius: var(--radius-pill);
+    color: var(--fg);
+    text-decoration: none;
     transition:
       background 0.12s,
       border-color 0.12s;
   }
-  .lh-modes label:hover span {
+  .lh-modes a:hover {
     border-color: var(--fg);
   }
-  .lh-modes input:checked + span {
-    background: var(--fg);
-    border-color: var(--fg);
-    color: var(--bg);
-  }
-  .lh-modes input:focus-visible + span {
+  .lh-modes a:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 
   .lh-panel {
-    display: none;
-  }
-  .lh:has(input[value='key']:checked) [data-mode='key'],
-  .lh:has(input[value='passthrough']:checked) [data-mode='passthrough'],
-  .lh:has(input[value='impersonation']:checked) [data-mode='impersonation'],
-  .lh:has(input[value='delegation']:checked) [data-mode='delegation'],
-  .lh:has(input[value='bound']:checked) [data-mode='bound'] {
     display: block;
+  }
+  .lh-panel + .lh-panel {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-strong);
+  }
+  .lh-panel h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+  }
+  .lh-panel h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .lh-path {
+    max-width: 75ch;
+    margin: 0 0 1.4rem;
+    padding-left: 1.5rem;
+    font-size: 1rem;
+  }
+  .lh-path li + li {
+    margin-top: 0.3rem;
   }
 
   .lh-chain {

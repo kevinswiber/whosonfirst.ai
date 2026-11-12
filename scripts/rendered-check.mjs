@@ -488,6 +488,8 @@ record(
 
   // Markdown: the page's own title and sections, and none of its markup.
   const copies = [];
+  const metadata = [];
+  let standardCards = 0;
   const withCopy = built.filter((p) =>
     attr(p, /type="text\/markdown"/, "href"),
   );
@@ -511,9 +513,29 @@ record(
       p.html.indexOf("<main"),
       p.html.indexOf("</main>"),
     );
+    // Reader modes discard CSS gaps. The status and reference need punctuation
+    // in the HTML itself, and Markdown must preserve it without adding another.
+    for (const card of main.matchAll(
+      /<article\b[^>]*class="std(?: compact)?"[^>]*>\s*<header\b[^>]*>([\s\S]*?)<\/header>/g,
+    )) {
+      standardCards++;
+      const row = plain(card[1]);
+      if (!/\S\s+·\s+\S/.test(row) || /·\s*·/.test(row) || !md.includes(row))
+        metadata.push(`${p.path}: ${row}`);
+    }
     const h1 = plain(/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main)?.[1] ?? "");
     if (!md.startsWith(`# ${h1}\n`))
       copies.push(`${p.path} (does not open with the page's title)`);
+    if (main.includes('class="flow-steps"')) {
+      const count = [...main.matchAll(/class="flow-step\s/g)].length;
+      const numbered = [...md.matchAll(/^### (\d+)\. /gm)].map((m) =>
+        Number(m[1]),
+      );
+      if (numbered.length !== count || numbered.some((n, i) => n !== i + 1))
+        copies.push(
+          `${p.path} (flow step numbering is not complete and sequential)`,
+        );
+    }
     // outside code samples, nothing of the page's markup comes through
     const prose = md
       .replace(/^\s*```[\s\S]*?^\s*```/gm, "")
@@ -564,6 +586,12 @@ record(
     withCopy.length > 0 && copies.length === 0,
     copies.slice(0, 8).join("; ") +
       (copies.length > 8 ? `; and ${copies.length - 8} more` : ""),
+  );
+  record(
+    "reader metadata",
+    "standard status and reference have a literal separator in HTML and Markdown",
+    standardCards > 0 && metadata.length === 0,
+    `${standardCards} cards; ${metadata.slice(0, 8).join("; ")}`,
   );
 
   // After each step a flow says who holds what, and flags a credential as "new"
@@ -1482,8 +1510,8 @@ for (const theme of THEMES) {
 
       if (pg.name === "flow" || pg.name === "standards") {
         const facts = await page.evaluate(() => {
-          const line = document.querySelector(".page-head .doc-line");
-          const more = document.querySelector(".page-head .doc-details");
+          const line = document.querySelector("main .doc-line");
+          const more = document.querySelector("main .doc-details");
           return line
             ? {
                 text: line.textContent.replace(/\s+/g, " "),
@@ -1497,7 +1525,7 @@ for (const theme of THEMES) {
         record(
           where,
           "review date is on the page\u2019s first line of facts",
-          !!facts && /reviewed\s*\w+ \d{4}/i.test(facts.text),
+          !!facts && /reviewed:\s*\w+ \d{4}/i.test(facts.text),
           facts ? facts.text.trim() : "no page facts",
         );
         record(
@@ -1506,10 +1534,28 @@ for (const theme of THEMES) {
           !!facts &&
             facts.closed === true &&
             (await page.evaluate(() => {
-              const d = document.querySelector(".page-head .doc-details");
+              const d = document.querySelector("main .doc-details");
               d.querySelector("summary").click();
               return d.open && d.querySelector("dl").offsetParent !== null;
             })),
+        );
+        record(
+          where,
+          "review values and notes remain separate paragraphs with literal spacing",
+          await page.locator("main .doc-details dd").evaluateAll((items) =>
+            items.every((dd) => {
+              const value = dd.querySelector(".doc-value");
+              const note = dd.querySelector(".doc-note");
+              return (
+                !note ||
+                (value?.tagName === "P" &&
+                  note.tagName === "P" &&
+                  dd.textContent.includes(
+                    `${value.textContent} ${note.textContent}`,
+                  ))
+              );
+            }),
+          ),
         );
         if (pg.name === "flow")
           record(
@@ -1661,13 +1707,29 @@ for (const theme of THEMES) {
           ov.bands.map((b) => b.join("–")).join(" "),
         );
         // A glossary term in the text shows its definition in place, and goes away again.
+        const glossaryLinks = page.locator("main a.term");
+        record(
+          where,
+          "enhanced glossary terms retain link semantics and definition destinations",
+          (await glossaryLinks.count()) > 0 &&
+            (await page
+              .locator("main")
+              .getByRole("link")
+              .and(glossaryLinks)
+              .count()) === (await glossaryLinks.count()) &&
+            (await glossaryLinks.evaluateAll((links) =>
+              links.every((a) =>
+                a.getAttribute("href")?.startsWith("/glossary/#"),
+              ),
+            )),
+        );
         const term = await page.evaluate(async () => {
           const settle = () => new Promise((r) => setTimeout(r, 60));
           const a = document.querySelector(".intro a.term");
           if (!a) return null;
           a.scrollIntoView({ block: "center" });
           await settle();
-          a.click();
+          a.focus({ preventScroll: true });
           await settle();
           const tip = document.querySelector("#term-tip");
           const r = tip.getBoundingClientRect();
@@ -1683,18 +1745,14 @@ for (const theme of THEMES) {
             more: tip.querySelector("a")?.getAttribute("href"),
             href: a.getAttribute("href"),
           };
-          a.click();
-          await settle();
           return {
             ...open,
             terms: document.querySelectorAll("main a.term").length,
-            closed: !tip.matches(":popover-open"),
-            collapsed: a.getAttribute("aria-expanded"),
           };
         });
         record(
           where,
-          "a glossary term shows its definition in place, inside the window",
+          "focusing a glossary term previews its definition inside the window",
           !!term &&
             term.shown &&
             term.says > 20 &&
@@ -1703,10 +1761,25 @@ for (const theme of THEMES) {
             term.more === term.href,
           term ? `${term.terms} terms marked on the page` : "no term marked",
         );
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(80);
+        const dismissed = await page.evaluate(() => ({
+          closed: !document
+            .querySelector("#term-tip")
+            ?.matches(":popover-open"),
+          collapsed: document
+            .querySelector(".intro a.term")
+            ?.getAttribute("aria-expanded"),
+          focused:
+            document.activeElement === document.querySelector(".intro a.term"),
+        }));
         record(
           where,
-          "the definition goes away when its term is pressed again",
-          !!term && term.closed && term.collapsed === "false",
+          "Escape dismisses the definition without moving focus",
+          !!term &&
+            dismissed.closed &&
+            dismissed.collapsed === "false" &&
+            dismissed.focused,
         );
         if (vp.name === "desktop") {
           // the stepper: measure the diagram at its first, a middle and its last step
@@ -1731,9 +1804,7 @@ for (const theme of THEMES) {
               `smallest ${tiny.px.toFixed(1)}px (“${tiny.text}”)`,
             );
             const held = await page.evaluate(() => {
-              const li = [...document.querySelectorAll(".flow-step")].find(
-                (s) => !s.hidden,
-              );
+              const li = document.querySelector(".flow-step.is-current");
               return {
                 shown: document.querySelectorAll(".flow-step:not([hidden])")
                   .length,
@@ -1745,8 +1816,8 @@ for (const theme of THEMES) {
             });
             record(
               where,
-              `step ${step}: one step shown, with who is talking to whom`,
-              held.shown === 1 && !!held.route,
+              `step ${step}: every step remains readable, with the selected route marked`,
+              held.shown === count && !!held.route,
               held.route ?? "",
             );
           }
@@ -1760,7 +1831,7 @@ for (const theme of THEMES) {
               count: document.querySelector(".flow-count").textContent,
               inView: r.top < innerHeight * 0.5 && r.bottom > 0,
               phase: document
-                .querySelector(".flow-step:not([hidden]) .step-phase-n")
+                .querySelector(".flow-step.is-current .step-phase-n")
                 ?.textContent.trim(),
               active: document.querySelectorAll("svg .phase.is-active").length,
             };
@@ -1866,6 +1937,26 @@ for (const theme of THEMES) {
             handed.disabled && handed.onPrev,
             JSON.stringify(handed),
           );
+          // A glossary link inside a step must not keep focus after an arrow
+          // scrolls that step out of the narrative panel.
+          await page.evaluate(() => {
+            location.hash = "#step-1";
+          });
+          await page.waitForTimeout(80);
+          await page.locator(".flow-step.is-current a").first().focus();
+          await page.keyboard.press("ArrowRight");
+          const narrativeFocus = await page.evaluate(() => ({
+            step: document.querySelector(".flow-step.is-current")?.id,
+            control: document.activeElement?.matches(
+              ".flow-controls button:not(:disabled)",
+            ),
+          }));
+          record(
+            where,
+            "arrow navigation returns focus from a scrolled-away step to a control",
+            narrativeFocus.step === "step-2" && narrativeFocus.control,
+            JSON.stringify(narrativeFocus),
+          );
           const holders = await page.evaluate(
             () => document.querySelectorAll(".flow-step .held dt").length,
           );
@@ -1946,6 +2037,115 @@ for (const theme of THEMES) {
     await ctx.close();
   }
 }
+// Reader may activate the original page's link. No activation path should be
+// intercepted to open a preview that is invisible in the extracted article.
+for (const activation of ["click", "Enter", "touch", "programmatic click"]) {
+  const ctx = await browser.newContext({
+    hasTouch: activation === "touch",
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/flows/mcp-authorization/`, {
+    waitUntil: "networkidle",
+  });
+  const term = page.locator(".intro a.term").first();
+  const href = await term.getAttribute("href");
+  if (activation === "click") {
+    await term.hover();
+    const tip = page.locator("#term-tip");
+    await tip.hover();
+    record(
+      "glossary",
+      "a hover preview stays available while the pointer moves onto it",
+      await tip.evaluate((el) => el.matches(":popover-open")),
+    );
+  }
+  await Promise.all([
+    page.waitForURL(`${origin}${href}`),
+    activation === "Enter"
+      ? term.press("Enter")
+      : activation === "touch"
+        ? term.tap()
+        : activation === "programmatic click"
+          ? term.evaluate((a) => {
+              if (a instanceof HTMLAnchorElement) a.click();
+            })
+          : term.click(),
+  ]);
+  record(
+    "glossary",
+    `${activation} follows a term to its glossary definition`,
+    await page.evaluate(
+      () =>
+        !!document.getElementById(decodeURIComponent(location.hash.slice(1))),
+    ),
+    href,
+  );
+  await ctx.close();
+}
+// Authored glossary links use the same preview as automatic terms, in both
+// data-file Markdown and MDX prose. Activation must still work without scripts.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  for (const [path, selector] of [
+    ["/flows/aauth/", '.credentials > p a[href="/glossary/#claim"]'],
+    ["/deployments/local/", 'main p a[href="/glossary/#claim"]'],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const term = page.locator(selector).first();
+    const definition = await term.getAttribute("data-def");
+    record(
+      path,
+      "explicit claims links retain their label and glossary treatment with or without scripts",
+      (await term.textContent()) === "claims" &&
+        (await term.getAttribute("data-term")) === "Claim" &&
+        !!definition?.startsWith("One named statement inside a token") &&
+        (await term.evaluate((el) => el.classList.contains("term"))),
+    );
+    if (javaScriptEnabled) {
+      // Scrolling intentionally dismisses a preview. Bring this deep link into
+      // view and let scroll events finish before testing a pointer entering it.
+      await term.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      );
+      await term.hover();
+      const tip = page.locator("#term-tip");
+      record(
+        path,
+        "hovering an explicit glossary link previews its definition",
+        (await tip.evaluate((el) => el.matches(":popover-open"))) &&
+          (await tip.locator(".term-tip-def").textContent()) === definition,
+      );
+      await page.keyboard.press("Escape");
+      await term.focus();
+      record(
+        path,
+        "focusing an explicit glossary link previews its definition",
+        (await tip.evaluate((el) => el.matches(":popover-open"))) &&
+          (await tip.locator(".term-tip-def").textContent()) === definition,
+      );
+    }
+    await Promise.all([
+      page.waitForURL(`${origin}/glossary/#claim`),
+      term.press("Enter"),
+    ]);
+    record(
+      path,
+      "activating an explicit glossary term reaches its definition with or without scripts",
+      (await page.locator("#claim").count()) === 1,
+    );
+  }
+  await ctx.close();
+}
 // the narrowest window: nothing scrolls sideways, on the pages above or on any flow
 const ctx = await browser.newContext({
   viewport: NARROW,
@@ -1986,6 +2186,16 @@ await ctx.close();
         .locator(".flow-stage:not([open]) > summary")
         .all())
         await closed.click();
+      // A wider cast can shrink text even when its arrows never overlap.
+      // Measure every diagram already visited here, not just the representative flow.
+      const labels = await page.evaluate(diagramLabels);
+      const smallest = Math.min(...labels.map((label) => label.px));
+      record(
+        `${vp.name} ${path}`,
+        `every diagram keeps labels at ${MIN_LABEL}px or more`,
+        labels.length > 0 && smallest >= MIN_LABEL - 0.05,
+        `smallest ${smallest.toFixed(1)}px`,
+      );
       const seen = await page.evaluate(labelsOnHeadings);
       headed += seen.headings;
       record(
@@ -2421,6 +2631,455 @@ await ctx.close();
     );
     await ctx.close();
   }
+}
+// The stacked tablet layout must keep its controls reachable as the complete
+// narrative advances, including at either edge of its breakpoint.
+for (const width of [768, 900, 1087]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+  const page = await ctx.newPage();
+  for (const path of ["/flows/dpop/", FLOW]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      window.scrollBy(0, panel.getBoundingClientRect().top - 120);
+    });
+    const initialY = await page.evaluate(() => scrollY);
+    const count = await page.locator(".flow-step").count();
+    for (let i = 1; i < count; i++) {
+      await page.locator('[data-act="next"]').click();
+    }
+    const seen = await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const heading = document
+        .querySelector(".flow-step.is-current h3")
+        .getBoundingClientRect();
+      return {
+        y: scrollY,
+        scrolled: panel.scrollTop > 0,
+        bounded: panel.clientHeight < panel.scrollHeight,
+        controlsVisible: bar.top >= 100 && bar.bottom < innerHeight,
+        headingVisible:
+          heading.top >= bar.bottom && heading.bottom < innerHeight,
+        readable: [...document.querySelectorAll(".flow-step")].every((step) =>
+          step.checkVisibility({ visibilityProperty: true }),
+        ),
+      };
+    });
+    record(
+      `tablet ${width}px ${path}`,
+      "Next reaches the last step without scrolling controls off the page",
+      Math.abs(seen.y - initialY) <= 1 &&
+        seen.scrolled &&
+        seen.bounded &&
+        seen.controlsVisible &&
+        seen.headingVisible &&
+        seen.readable,
+      JSON.stringify({ initialY, ...seen }),
+    );
+    // A diagram selection uses the same bounded narrative panel.
+    await page.locator('svg .step[data-step="1"]').first().click();
+    const selected = await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const heading = document
+        .querySelector(".flow-step.is-current h3")
+        .getBoundingClientRect();
+      return {
+        id: document.querySelector(".flow-step.is-current").id,
+        scrolled: panel.scrollTop > 0,
+        headingBelowControls: heading.top >= bar.bottom,
+        headingInPanel: heading.bottom <= panel.getBoundingClientRect().bottom,
+      };
+    });
+    record(
+      `tablet ${width}px ${path}`,
+      "diagram selection aligns its explanation inside the scrolling panel",
+      selected.id === "step-2" &&
+        selected.scrolled &&
+        selected.headingBelowControls &&
+        selected.headingInPanel,
+      JSON.stringify(selected),
+    );
+  }
+  await ctx.close();
+}
+// Expanding removes the scroll constraint. Collapsing must restore the selected
+// explanation, not leave the narrative at step 1 beside a later diagram step.
+for (const width of [900, 1280]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+  const page = await ctx.newPage();
+  for (const path of ["/flows/dpop/", FLOW]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const count = await page.locator(".flow-step").count();
+    const step = count - 1;
+    await page.goto(`${origin}${path}#step-${step}`, {
+      waitUntil: "networkidle",
+    });
+    const toggle = page.locator('[data-act="all"]');
+    for (const interaction of ["pointer", "keyboard", "reflow"]) {
+      await toggle.click();
+      // Let the expanded layout paint before collapsing, as a reader sees it.
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      );
+      const expanded = await page
+        .locator(".flow-panel")
+        .evaluate((panel) => panel.scrollHeight <= panel.clientHeight + 1);
+      if (interaction === "reflow") {
+        await page.setViewportSize({
+          width: width === 900 ? 1280 : 900,
+          height: 900,
+        });
+        await page.evaluate(
+          () =>
+            new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve)),
+            ),
+        );
+      }
+      if (interaction === "keyboard") {
+        await toggle.focus();
+        await page.keyboard.press("Enter");
+      } else {
+        await toggle.click();
+      }
+      const seen = await page.evaluate(() => {
+        const panel = document.querySelector(".flow-panel");
+        const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+        const heading = document
+          .querySelector(".flow-step.is-current h3")
+          .getBoundingClientRect();
+        return {
+          step: document.querySelector(".flow-step.is-current").id,
+          diagramStep:
+            Number(document.querySelector("svg .step.is-active").dataset.step) +
+            1,
+          count: document.querySelector(".flow-count").textContent,
+          hash: location.hash,
+          headingInPanel:
+            heading.top >= bar.bottom &&
+            heading.bottom <= panel.getBoundingClientRect().bottom,
+          readable: [...document.querySelectorAll(".flow-step")].every((li) =>
+            li.checkVisibility({ visibilityProperty: true }),
+          ),
+        };
+      });
+      record(
+        `collapse ${width}px ${path} ${interaction}`,
+        "collapsing expanded steps restores the selected explanation without changing selection",
+        expanded &&
+          seen.step === `step-${step}` &&
+          seen.diagramStep === step &&
+          seen.count === `Step ${step} of ${count}` &&
+          seen.hash === `#step-${step}` &&
+          seen.headingInPanel &&
+          seen.readable,
+        JSON.stringify({ expanded, ...seen }),
+      );
+    }
+    // Returning from a phone also changes line wrapping and the step’s offset.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+    await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+    const restored = await page.evaluate(() => {
+      const panel = document
+        .querySelector(".flow-panel")
+        .getBoundingClientRect();
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const current = document.querySelector(".flow-step.is-current");
+      const heading = current.querySelector("h3").getBoundingClientRect();
+      return {
+        id: current.id,
+        inPanel: heading.top >= bar.bottom && heading.bottom <= panel.bottom,
+      };
+    });
+    record(
+      `reflow ${width}px ${path}`,
+      "returning from phone layout restores the selected explanation",
+      restored.id === `step-${step}` && restored.inPanel,
+      JSON.stringify(restored),
+    );
+  }
+  await ctx.close();
+}
+// Reader extractors inspect the live DOM. Selection must never remove the
+// canonical narrative with hidden/aria-hidden or display:none. This is a
+// content-availability contract, not an emulation of any browser's Reader.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    viewport: { width: 1280, height: 900 },
+  });
+  const page = await ctx.newPage();
+  for (const path of under("flows")) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    if (javaScriptEnabled) await page.click('[data-act="next"]');
+    const seen = await page.evaluate(() => {
+      const flow = document.querySelector("flow-diagram");
+      const steps = [...flow.querySelectorAll(".flow-step")];
+      const problems = [];
+      if (
+        flow.querySelectorAll(".step-phase").length !==
+        flow.querySelectorAll(".phase-start").length
+      )
+        problems.push("phase introductions are repeated or missing");
+      if (flow.querySelector(".flow-step:not(.phase-start) .step-phase"))
+        problems.push("a phase introduction repeats inside the phase");
+      if (
+        [...document.querySelectorAll(".ov-n, .step-num")].some(
+          (n) => n.getAttribute("aria-hidden") !== "true",
+        )
+      )
+        problems.push(
+          "a visual badge duplicates ordered-list numbering for assistive technology",
+        );
+      const article = document.querySelector("main > article");
+      if (
+        !article?.contains(flow) ||
+        !article?.querySelector(".intro .doc-line")
+      )
+        problems.push("flow provenance is outside its article narrative");
+      for (const [i, step] of steps.entries()) {
+        if (step.id !== `step-${i + 1}`)
+          problems.push(`step ${i + 1}: out of order`);
+        if (!step.querySelector("h3")?.textContent.trim())
+          problems.push(`step ${i + 1}: no heading`);
+        if (!step.querySelector(".step-body")?.textContent.trim())
+          problems.push(`step ${i + 1}: no message`);
+        for (const node of [
+          step,
+          ...step.querySelectorAll(".step-body, pre, .held"),
+        ]) {
+          if (
+            node.closest('[hidden], [aria-hidden="true"]') ||
+            !node.checkVisibility({ visibilityProperty: true })
+          )
+            problems.push(
+              `step ${i + 1}: narrative removed from the reading tree`,
+            );
+        }
+      }
+      return {
+        count: Number(flow.dataset.count),
+        steps: steps.length,
+        problems,
+      };
+    });
+    record(
+      `reader content ${javaScriptEnabled ? "after stepping" : "without JavaScript"} ${path}`,
+      "all step headings, messages, examples and holdings remain available in order",
+      seen.steps === seen.count && seen.problems.length === 0,
+      seen.problems.join("; "),
+    );
+  }
+  await ctx.close();
+}
+// Comparisons and their annotations explain each alternative without interaction.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  for (const [path, selector] of [
+    ["/concepts/", ".ti-panel"],
+    ["/deployments/kubernetes/", ".km-panel"],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const seen = await page.locator(selector).evaluateAll((panels) => ({
+      total: panels.length,
+      readable: panels.filter(
+        (p) =>
+          !p.closest('[hidden], [aria-hidden="true"]') &&
+          p.checkVisibility({ visibilityProperty: true }),
+      ).length,
+    }));
+    record(
+      path,
+      "every comparison alternative remains readable without selection",
+      seen.total > 1 && seen.readable === seen.total,
+      JSON.stringify(seen),
+    );
+    if (path === "/concepts/") {
+      const structure = await page.evaluate(() => {
+        const article = document.querySelector("main > article");
+        const heading = article?.querySelector("h1");
+        const intro = article?.querySelector(".page-head .lede");
+        const facts = article?.querySelector(".page-facts");
+        const comparisons = [...document.querySelectorAll(".lh-panel")];
+        const modes = [...document.querySelectorAll("#human .modes .card")];
+        return {
+          opening:
+            !!heading &&
+            !!intro &&
+            !!facts &&
+            !!(
+              intro.compareDocumentPosition(facts) &
+              Node.DOCUMENT_POSITION_FOLLOWING
+            ),
+          comparisons: comparisons.length,
+          modes: modes.length,
+          complete: [...comparisons, ...modes].every(
+            (p) =>
+              p.querySelector("h3")?.textContent.trim() &&
+              p.checkVisibility({ visibilityProperty: true }) &&
+              [...p.querySelectorAll("h3, p, table")].every((el) =>
+                el.checkVisibility({ visibilityProperty: true }),
+              ),
+          ),
+        };
+      });
+      record(
+        path,
+        "the article opens with its heading and introduction before review facts",
+        structure.opening,
+      );
+      record(
+        path,
+        "all five delegation and three human-involvement comparisons have readable headings and explanations",
+        structure.comparisons === 5 &&
+          structure.modes === 3 &&
+          structure.complete,
+        JSON.stringify(structure),
+      );
+      const chains = await page.locator(".lh-panel").evaluateAll((panels) =>
+        panels.map((panel) => {
+          const nodes = [...panel.querySelectorAll(".lh-node")].map(
+            (node) =>
+              `${node.querySelector("strong").textContent} (${node.querySelector("span").textContent})`,
+          );
+          const credentials = [...panel.querySelectorAll(".lh-cred")].map(
+            (el) => el.textContent,
+          );
+          const items = [...panel.querySelectorAll(".lh-path li")];
+          return {
+            expected: credentials.map(
+              (credential, i) =>
+                `${nodes[i]} to ${nodes[i + 1]}: ${credential}.`,
+            ),
+            actual: items.map((el) => el.textContent),
+            visible: items.every((el) =>
+              el.checkVisibility({ visibilityProperty: true }),
+            ),
+          };
+        }),
+      );
+      const chainText = await page.locator(".lh").ariaSnapshot();
+      record(
+        path,
+        "each chain exposes all three ordered hops with both endpoints and the credential",
+        chains.length === 5 &&
+          chains.every(
+            ({ expected, actual, visible }) =>
+              visible &&
+              expected.length === 3 &&
+              JSON.stringify(actual) === JSON.stringify(expected) &&
+              expected.every((text) => chainText.includes(text)),
+          ),
+      );
+      const diagrams = await Promise.all(
+        (await page.locator(".lh-chain").all()).map((el) => el.ariaSnapshot()),
+      );
+      record(
+        path,
+        "decorative chain boxes do not duplicate the accessible hop narrative",
+        diagrams.length === 5 && diagrams.every((text) => !text.trim()),
+      );
+      await page.locator('.lh-modes a[href="#lh-bound"]').click();
+      const target = await page.locator("#lh-bound h3").boundingBox();
+      record(
+        path,
+        "a delegation navigation link reaches its visible section heading",
+        new URL(page.url()).hash === "#lh-bound" &&
+          !!target &&
+          target.y >= 90 &&
+          target.y + target.height < 720,
+      );
+      const notes = page.locator(".claim-note");
+      const visible = await notes.evaluateAll((items) =>
+        items.every(
+          (n) =>
+            !n.closest('[hidden], [aria-hidden="true"]') &&
+            n.checkVisibility({ visibilityProperty: true }),
+        ),
+      );
+      const snapshots = await Promise.all(
+        (await notes.all()).map((n) => n.ariaSnapshot()),
+      );
+      record(
+        `token annotations ${javaScriptEnabled ? "with" : "without"} JavaScript`,
+        "every claim explanation is visible and exposed without opening a disclosure",
+        snapshots.length > 0 &&
+          visible &&
+          snapshots.every((s) => s.trim().length > 0),
+        `${snapshots.length} claim explanations`,
+      );
+    }
+  }
+  await ctx.close();
+}
+// Ambiguous words need an author's link, not a vocabulary match. Ordinary
+// claims and task states must not send readers to JWT or OAuth definitions.
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  for (const [path, selector, expected] of [
+    [
+      "/flows/mcp-authorization/",
+      '#step-8 a[href="/glossary/#claim"], #step-13 a[href="/glossary/#state"]',
+      false,
+    ],
+    ["/flows/agent-to-agent/", 'a[href="/glossary/#state"]', false],
+    ["/deployments/kubernetes/", 'a[href="/glossary/#claim"]', false],
+    ["/flows/token-exchange/", 'a[href="/glossary/#claim"]', true],
+    [
+      "/flows/authorization-code-pkce/",
+      'a.term[href="/glossary/#state"] code',
+      true,
+    ],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    record(
+      path,
+      "claim and state links refer to their technical meanings",
+      (await page.locator(selector).count()) > 0 === expected,
+    );
+  }
+  for (const [path, selector] of [
+    ["/standards/", ".sx-item > .chips"],
+    ["/concepts/", ".ti-sources .chips"],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const rows = await page.locator(selector).evaluateAll((items) =>
+      items.map((row) => ({
+        fields: row.children.length,
+        separators: row.textContent.match(/ · /g)?.length ?? 0,
+      })),
+    );
+    record(
+      path,
+      "adjacent metadata and source references have literal separators",
+      rows.length > 0 &&
+        rows.every((r) => r.separators === Math.max(0, r.fields - 1)),
+    );
+  }
+  await ctx.close();
 }
 // A flow page on paper: every step in order, each with its text, no control,
 // light ink whatever the reader's theme, and a diagram that fits on one sheet.

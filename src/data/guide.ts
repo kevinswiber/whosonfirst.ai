@@ -252,7 +252,7 @@ export const rules: Rule[] = [
       target: ["api"],
       boundary: ["cross"],
     },
-    why: "A separate protocol written for this case: an API meets an agent nobody registered, acting for a person it has not seen before. The agent signs every request with its own key, and a server the user chose vouches for them. It is an individual draft. Prototype with it; do not depend on it.",
+    why: "A separate draft protocol for agents that were not registered as clients at each API. A user-chosen person server asserts identity and consent; the API still maps the person to an account and enforces access. The walkthrough shows one calendar-read scenario. Treat it as experimental.",
   },
 
   // ── approvals ──

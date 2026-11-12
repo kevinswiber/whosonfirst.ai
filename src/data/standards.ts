@@ -713,13 +713,21 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "draft",
     detail:
-      "Revision -11, September 2026. Individual draft with several companions. That revision added the person token and arranged access into five modes. Its author’s repository says AAuth has been adopted as a working group at the OpenID Foundation, and that specification work will move there.",
+      "Revision -11, September 2026. Individual draft. That revision added the person token and arranged resource access into five modes.",
     topics: ["proof-of-possession", "delegation", "agent-protocol"],
     summary:
-      "Not an OAuth extension. Every agent has its own key and signs every request with HTTP Message Signatures; there are no bearer tokens and no pre-registration.",
+      "Not an OAuth extension. Agents sign requests with their own keys and use key-bound tokens, without client registration at each resource.",
     agents:
       "A clean-slate design for agent identity and authorization. One of two unrelated proposals called AAuth. This one does not extend OAuth.",
     url: draft("draft-hardt-oauth-aauth-protocol"),
+    related: [
+      {
+        kind: "source",
+        name: "Author’s repository",
+        url: "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md",
+        note: "Reports adoption as an OpenID Foundation working group and a planned migration of specification work; checked 12 November 2026.",
+      },
+    ],
   },
 
   /* ───────────── Proof of possession ───────────── */
