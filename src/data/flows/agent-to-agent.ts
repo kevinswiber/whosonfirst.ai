@@ -168,7 +168,17 @@ Two parts of version 1.0 matter for trust. Agent Cards can be signed, so a calle
       body: `The remote agent resumes and returns its results. The client agent never held the airline credential.`,
     },
   ],
-  standards: ["a2a", "oauth-2-1", "rfc8693", "rfc8705", "oidc-discovery"],
+  standards: [
+    "a2a",
+    "oidc-discovery",
+    "rfc7515",
+    "rfc8785",
+    "rfc6749",
+    "rfc6750",
+    "rfc8693",
+    "rfc8705",
+    "oauth-2-1",
+  ],
   related: [
     "token-exchange",
     "client-credentials",

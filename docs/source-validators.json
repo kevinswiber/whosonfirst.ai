@@ -216,6 +216,9 @@
   "https://www.rfc-editor.org/rfc/rfc7009.json": {
     "etag": "\"811fb6c40b086412e91d58da66472e8f\""
   },
+  "https://www.rfc-editor.org/rfc/rfc7515.json": {
+    "etag": "\"3876ba9f806cd6d1898cb6c6f388a148\""
+  },
   "https://www.rfc-editor.org/rfc/rfc7519.json": {
     "etag": "\"77d3a837744df1a380e85fabe059c42f\""
   },
@@ -257,6 +260,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc8725.json": {
     "etag": "\"f06686081761f0de4358043b2a85382b\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8785.json": {
+    "etag": "\"e0aa47c0fc88580e86d63959d6535cd9\""
   },
   "https://www.rfc-editor.org/rfc/rfc8996.json": {
     "etag": "\"e9e03cd48501408d6af6e357392876c5\""
