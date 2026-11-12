@@ -1329,6 +1329,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     /* the frames that suit a screen of one width or another do not apply */
     .flow .flow-canvas {
       break-inside: avoid;
+      text-align: center;
       overflow: visible !important;
       max-height: none !important;
       padding: 0.6rem !important;
@@ -1336,11 +1337,17 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       border-radius: var(--radius) !important;
       background: var(--bg-raised) !important;
     }
+    /* The participants and their lifelines are two drawings. Safari breaks the
+       page between them, whatever break-inside says, so the sheet that holds both
+       is an inline block: no browser divides one between pages. */
     .flow .flow-sheet {
-      width: 100% !important;
+      display: inline-block !important;
+      vertical-align: top;
+      width: min(100%, var(--natural), 8.4in * var(--aspect)) !important;
       min-width: 0 !important;
-      max-width: min(var(--natural), 8.4in * var(--aspect)) !important;
-      margin-inline: auto !important;
+      max-width: none !important;
+      margin-inline: 0 !important;
+      text-align: start;
     }
     .flow .flow-heads {
       position: static !important;
