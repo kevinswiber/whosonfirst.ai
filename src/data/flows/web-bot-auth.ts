@@ -91,7 +91,7 @@ Content-Type: application/http-message-signatures-directory+json
       kind: "self",
       label: "Sign the request",
       title: "The agent signs each outgoing request",
-      body: `An RFC 9421 signature over, at minimum, the target authority and the agent’s entry in the \`Signature-Agent\` header. The signature parameters carry a creation time, a short expiry, the key ID, and a \`tag\` that marks the signature’s purpose.`,
+      body: `An RFC 9421 signature over, at minimum, the target authority or the whole target URI, and the agent’s entry in the \`Signature-Agent\` header. The signature parameters carry a creation time, a short expiry, the key ID, and a \`tag\` that marks the signature’s purpose. The key ID is not a name the operator chooses: it is the JWK thumbprint of the signing key, as RFC 7638 computes it.`,
     },
     {
       from: "agent",
@@ -126,7 +126,7 @@ Signature: sig1=:tQjDZHcVQ+BJ29HnzMuNjWJr4UC8yyFlTJnPli1pWH6QpLOGt9uDi/hgBwEsoJl
       kind: "back",
       label: "Fetch key directory",
       title: "The verifier looks up the operator’s keys",
-      body: `The verifier fetches the URL in \`Signature-Agent\` directly, and caches the key directory according to HTTP caching headers. A verifier may also keep its own registry of operators it recognizes. If you write the verifier yourself, treat that URL as hostile input: any visitor can put any address in the header. Fetch over HTTPS only, refuse private, loopback and link-local addresses, set a size and time limit, and cache. Or fetch only for operators you already recognize.`,
+      body: `The verifier fetches the URL in \`Signature-Agent\` directly, and caches the key directory according to HTTP caching headers. A verifier may also keep its own registry of operators it recognizes. If you write the verifier yourself, treat that URL as hostile input: any visitor can put any address in the header. Fetch over HTTPS only, do not follow redirects, refuse private, loopback and link-local addresses, set a size and time limit, and cache. Or fetch only for operators you already recognize.`,
     },
     {
       from: "edge",
