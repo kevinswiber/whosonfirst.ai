@@ -86,9 +86,24 @@ Native browser follow-up is tracked in [issue #59](https://github.com/kevinswibe
 Native Safari and Firefox were not available on this Linux executor. Direct
 navigation to Chromium's reading side-panel internal URLs returned
 `ERR_INVALID_URL`; that does not establish whether its UI can open Reading mode.
-Native Chromium Reading mode has not been validated. These remain manual checks,
+Native Chromium Reading mode has not been validated on this executor. These remain manual checks,
 including entering Reader after Next, after opening a diagram, and after using
 lookup or filters. Browser-specific extraction is not a stable web API.
+
+The user's Chrome Reading Mode review of the MCP preview on November 12, 2026
+reported concatenated standard labels (`RFCRFC 7591`) and glossary terms whose
+popovers did not transfer. The supplied screenshot shows readable introductory
+prose; copied text is not a reliable record of the browser's formatting.
+Standard cards now put `·` in the HTML, rather than relying on a CSS gap.
+Glossary terms remain links and always navigate when activated; optional
+definitions preview on hover or keyboard focus on the normal page. This also
+avoids intercepting Chrome's action on the original link:
+[Chromium's Reading Mode handler](https://github.com/chromium/chromium/blob/main/chrome/browser/ui/webui/side_panel/read_anything/read_anything_untrusted_page_handler.cc)
+implements `OnLinkClicked` with the target node's default accessibility action.
+The regression checks cover link semantics, pointer, keyboard, touch and
+programmatic activation, preview dismissal and literal metadata separators.
+The updated preview still needs a native Chrome recheck; these checks do not
+simulate Reading Mode itself.
 
 ## What belongs in each mode
 

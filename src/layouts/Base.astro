@@ -425,9 +425,10 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       dark.addEventListener('change', follow);
 
       // Glossary terms in running text. Each is a link to its entry that carries the
-      // definition with it. Where the browser can show a popover, activating one
-      // shows the definition in place; otherwise it stays a link. Click, tap, Enter
-      // or Space: a definition that needs a hover is no use on a phone.
+      // definition with it. Hover or keyboard focus previews the definition where
+      // popovers are available. Activation always follows the link, including when
+      // a reading mode sends that action back to this page. Touch needs no preview
+      // to reach the definition, and the link also works without JavaScript.
       const tip = document.createElement('span');
       if ('showPopover' in tip) {
         tip.className = 'term-tip';
@@ -435,8 +436,6 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
         tip.setAttribute('popover', 'auto');
         tip.setAttribute('role', 'note');
         let from: HTMLElement | null = null;
-        // the term that was showing its definition when a press on it began
-        let pressed: HTMLElement | null = null;
         // the term whose definition is showing now, if any
         const showing = () => (tip.matches(':popover-open') ? from : null);
         const shut = () => {
@@ -444,9 +443,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
           if (tip.matches(':popover-open')) tip.hidePopover();
           from = null;
         };
-        // it now opens something in place, which is what a button does
         document.querySelectorAll<HTMLElement>('a.term').forEach((a) => {
-          a.setAttribute('role', 'button');
           a.setAttribute('aria-expanded', 'false');
         });
         // closed by Escape or by a press elsewhere: the browser does that, and says so here
@@ -483,33 +480,16 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
           a.setAttribute('aria-expanded', 'true');
           place(a);
         };
-        // A press outside an open definition closes it, and the term itself is outside.
-        // Note whether this press began on the term whose definition was open, so
-        // that the click it ends in is taken as closing it and does not open it again.
-        document.addEventListener(
-          'pointerdown',
-          (e) => {
-            const a = (e.target as Element).closest<HTMLElement>('a.term');
-            pressed = a && a === showing() ? a : null;
-          },
-          true,
-        );
-        document.addEventListener('click', (e) => {
+        document.addEventListener('pointerover', (e) => {
           const a = (e.target as Element).closest<HTMLElement>('a.term');
-          // a modified click is a request to open the glossary itself
-          if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          e.preventDefault();
-          const closing = pressed === a || showing() === a;
-          pressed = null;
-          if (closing) shut();
-          else open(a);
+          // Do not replace a preview while someone is using its link with the keyboard.
+          if (e.pointerType === 'mouse' && a && showing() !== a && !tip.contains(document.activeElement)) open(a);
         });
-        document.addEventListener('keydown', (e) => {
-          const a = (e.target as Element).closest?.<HTMLElement>('a.term');
-          if (a && e.key === ' ') {
-            e.preventDefault();
-            a.click();
-          }
+        document.addEventListener('focusin', (e) => {
+          const target = e.target as Element;
+          const a = target.closest<HTMLElement>('a.term');
+          if (a && showing() !== a) open(a);
+          else if (!a && !tip.contains(target)) shut();
         });
         // it is placed against the term once; if the page moves, it goes
         const away = () => {

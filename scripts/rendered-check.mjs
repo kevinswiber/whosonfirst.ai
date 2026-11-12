@@ -488,6 +488,8 @@ record(
 
   // Markdown: the page's own title and sections, and none of its markup.
   const copies = [];
+  const metadata = [];
+  let standardCards = 0;
   const withCopy = built.filter((p) =>
     attr(p, /type="text\/markdown"/, "href"),
   );
@@ -511,6 +513,16 @@ record(
       p.html.indexOf("<main"),
       p.html.indexOf("</main>"),
     );
+    // Reader modes discard CSS gaps. The status and reference need punctuation
+    // in the HTML itself, and Markdown must preserve it without adding another.
+    for (const card of main.matchAll(
+      /<article\b[^>]*class="std(?: compact)?"[^>]*>\s*<header\b[^>]*>([\s\S]*?)<\/header>/g,
+    )) {
+      standardCards++;
+      const row = plain(card[1]);
+      if (!/\S\s+·\s+\S/.test(row) || /·\s*·/.test(row) || !md.includes(row))
+        metadata.push(`${p.path}: ${row}`);
+    }
     const h1 = plain(/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main)?.[1] ?? "");
     if (!md.startsWith(`# ${h1}\n`))
       copies.push(`${p.path} (does not open with the page's title)`);
@@ -564,6 +576,12 @@ record(
     withCopy.length > 0 && copies.length === 0,
     copies.slice(0, 8).join("; ") +
       (copies.length > 8 ? `; and ${copies.length - 8} more` : ""),
+  );
+  record(
+    "reader metadata",
+    "standard status and reference have a literal separator in HTML and Markdown",
+    standardCards > 0 && metadata.length === 0,
+    `${standardCards} cards; ${metadata.slice(0, 8).join("; ")}`,
   );
 
   // After each step a flow says who holds what, and flags a credential as "new"
@@ -1661,13 +1679,29 @@ for (const theme of THEMES) {
           ov.bands.map((b) => b.join("–")).join(" "),
         );
         // A glossary term in the text shows its definition in place, and goes away again.
+        const glossaryLinks = page.locator("main a.term");
+        record(
+          where,
+          "enhanced glossary terms retain link semantics and definition destinations",
+          (await glossaryLinks.count()) > 0 &&
+            (await page
+              .locator("main")
+              .getByRole("link")
+              .and(glossaryLinks)
+              .count()) === (await glossaryLinks.count()) &&
+            (await glossaryLinks.evaluateAll((links) =>
+              links.every((a) =>
+                a.getAttribute("href")?.startsWith("/glossary/#"),
+              ),
+            )),
+        );
         const term = await page.evaluate(async () => {
           const settle = () => new Promise((r) => setTimeout(r, 60));
           const a = document.querySelector(".intro a.term");
           if (!a) return null;
           a.scrollIntoView({ block: "center" });
           await settle();
-          a.click();
+          a.focus({ preventScroll: true });
           await settle();
           const tip = document.querySelector("#term-tip");
           const r = tip.getBoundingClientRect();
@@ -1683,18 +1717,14 @@ for (const theme of THEMES) {
             more: tip.querySelector("a")?.getAttribute("href"),
             href: a.getAttribute("href"),
           };
-          a.click();
-          await settle();
           return {
             ...open,
             terms: document.querySelectorAll("main a.term").length,
-            closed: !tip.matches(":popover-open"),
-            collapsed: a.getAttribute("aria-expanded"),
           };
         });
         record(
           where,
-          "a glossary term shows its definition in place, inside the window",
+          "focusing a glossary term previews its definition inside the window",
           !!term &&
             term.shown &&
             term.says > 20 &&
@@ -1703,10 +1733,25 @@ for (const theme of THEMES) {
             term.more === term.href,
           term ? `${term.terms} terms marked on the page` : "no term marked",
         );
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(80);
+        const dismissed = await page.evaluate(() => ({
+          closed: !document
+            .querySelector("#term-tip")
+            ?.matches(":popover-open"),
+          collapsed: document
+            .querySelector(".intro a.term")
+            ?.getAttribute("aria-expanded"),
+          focused:
+            document.activeElement === document.querySelector(".intro a.term"),
+        }));
         record(
           where,
-          "the definition goes away when its term is pressed again",
-          !!term && term.closed && term.collapsed === "false",
+          "Escape dismisses the definition without moving focus",
+          !!term &&
+            dismissed.closed &&
+            dismissed.collapsed === "false" &&
+            dismissed.focused,
         );
         if (vp.name === "desktop") {
           // the stepper: measure the diagram at its first, a middle and its last step
@@ -1963,6 +2008,52 @@ for (const theme of THEMES) {
     }
     await ctx.close();
   }
+}
+// Reader may activate the original page's link. No activation path should be
+// intercepted to open a preview that is invisible in the extracted article.
+for (const activation of ["click", "Enter", "touch", "programmatic click"]) {
+  const ctx = await browser.newContext({
+    hasTouch: activation === "touch",
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/flows/mcp-authorization/`, {
+    waitUntil: "networkidle",
+  });
+  const term = page.locator(".intro a.term").first();
+  const href = await term.getAttribute("href");
+  if (activation === "click") {
+    await term.hover();
+    const tip = page.locator("#term-tip");
+    await tip.hover();
+    record(
+      "glossary",
+      "a hover preview stays available while the pointer moves onto it",
+      await tip.evaluate((el) => el.matches(":popover-open")),
+    );
+  }
+  await Promise.all([
+    page.waitForURL(`${origin}${href}`),
+    activation === "Enter"
+      ? term.press("Enter")
+      : activation === "touch"
+        ? term.tap()
+        : activation === "programmatic click"
+          ? term.evaluate((a) => {
+              if (a instanceof HTMLAnchorElement) a.click();
+            })
+          : term.click(),
+  ]);
+  record(
+    "glossary",
+    `${activation} follows a term to its glossary definition`,
+    await page.evaluate(
+      () =>
+        !!document.getElementById(decodeURIComponent(location.hash.slice(1))),
+    ),
+    href,
+  );
+  await ctx.close();
 }
 // the narrowest window: nothing scrolls sideways, on the pages above or on any flow
 const ctx = await browser.newContext({

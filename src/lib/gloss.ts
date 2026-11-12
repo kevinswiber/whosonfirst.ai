@@ -4,8 +4,8 @@
  * `inline()` and `block()` in md.ts take a Gloss. With one, the first time a
  * glossary term appears in the text they are given, it becomes a link to its
  * entry that carries the definition with it. A script in the base layout shows
- * that definition in place when the link is activated; without the script it is
- * an ordinary link to the glossary.
+ * that definition in place on hover or focus. Activating the link always goes
+ * to the glossary, with or without the script.
  *
  * "The first time" is counted by the Gloss, so whoever renders a piece of the
  * page decides what one reading of it is: a flow page's own text shares one, and

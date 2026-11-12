@@ -154,9 +154,8 @@ main
   text-decoration-thickness: 2px;
 }
 
-/* A glossary term where it is used. It is a link to its entry; with the script
-   running it shows the definition in place instead. The dotted line says "there
-   is a definition here" without claiming to be a link to somewhere else. */
+/* A glossary term links to its entry and previews the definition on hover or
+   focus. The dotted underline distinguishes definitions from other links. */
 a.term {
   color: inherit;
   text-decoration-line: underline;
@@ -164,7 +163,6 @@ a.term {
   text-decoration-color: var(--fg-muted);
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.22em;
-  cursor: help;
 }
 a.term:hover,
 a.term[aria-expanded="true"] {
