@@ -876,6 +876,20 @@ export const standards: Standard[] = [
     url: draft("draft-ietf-wimse-workload-creds"),
   },
   {
+    id: "wimse-id",
+    name: "WIMSE Workload Identifier",
+    ref: "draft-ietf-wimse-identifier",
+    body: "IETF",
+    status: "wg-draft",
+    detail: "Revision -04, October 2026.",
+    topics: ["workload"],
+    summary:
+      "Defines the identifier a workload credential carries: an absolute URI whose authority names a trust domain and whose path names the workload within it. Allows more than one scheme, `spiffe` among them, and defines a `wimse` scheme.",
+    agents:
+      "The name an agent’s workload credential gives it. A receiver compares the whole URI, trust domain included, not the path alone.",
+    url: draft("draft-ietf-wimse-identifier"),
+  },
+  {
     id: "wimse-wpt",
     name: "Workload Proof Token",
     ref: "draft-ietf-wimse-wpt",
@@ -902,6 +916,20 @@ export const standards: Standard[] = [
     agents:
       "End-to-end caller authentication through TLS-terminating gateways.",
     url: draft("draft-ietf-wimse-http-signature"),
+  },
+  {
+    id: "wimse-mtls",
+    name: "WIMSE Mutual TLS",
+    ref: "draft-ietf-wimse-mutual-tls",
+    body: "IETF",
+    status: "wg-draft",
+    detail: "Revision -03, October 2026.",
+    topics: ["workload", "proof-of-possession"],
+    summary:
+      "Workload-to-workload authentication at the transport layer: mutual TLS with the X.509 Workload Identity Certificate.",
+    agents:
+      "The choice where nothing between two workloads ends the TLS session. Where a gateway or a mesh does, the certificate it sees may be an intermediary’s.",
+    url: draft("draft-ietf-wimse-mutual-tls"),
   },
   {
     id: "wimse-practices",

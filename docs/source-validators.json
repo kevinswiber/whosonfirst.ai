@@ -74,6 +74,12 @@
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-http-signature/doc.json": {
     "etag": "W/\"93c99516011fbd7657aa16c8e857b8cf\""
   },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-identifier/doc.json": {
+    "etag": "W/\"5a3fee4a423e0980d6be2eac0cf89d9a\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-mutual-tls/doc.json": {
+    "etag": "W/\"01cb9d14f1ab83e5966228723aa4cb47\""
+  },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-workload-creds/doc.json": {
     "etag": "W/\"e7fdb594baae693c1b0d2728b0fd2988\""
   },
