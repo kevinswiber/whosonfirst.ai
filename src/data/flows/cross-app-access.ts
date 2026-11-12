@@ -189,6 +189,9 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc7523",
     "identity-chaining",
     "cimd",
+    "rfc7519",
+    "rfc8707",
+    "rfc6750",
   ],
   related: [
     "mcp-authorization",
