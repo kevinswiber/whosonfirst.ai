@@ -174,7 +174,19 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc10070",
     "id-jag",
     "wimse-aims",
+    "rfc7519",
+    "rfc8707",
   ],
+  roles: {
+    "identity-chaining": "required", // the stated basis, at revision -17: every step
+    rfc8693: "required", // the token exchange request and response, steps 2 and 4
+    rfc7523: "required", // the JWT bearer grant, step 5, and how domain B validates it, step 6
+    rfc10070: "required", // replaces item 3 of RFC 7523 section 3, the audience rule that step 6 checks. The draft does not cite it, but points at that item (section 2.3.3), and its own rule (section 2.4.2) agrees with the new text
+    "id-jag": "optional", // a profile of this pattern for one case, named in the note; the flow drawn does not use it
+    "wimse-aims": "background", // guidance that recommends this pattern to agents; named in the note
+    rfc7519: "required", // the grant in step 4 is a JWT; step 6 checks its signature and audience
+    rfc8707: "required", // `resource` on the token request, step 5
+  },
   related: [
     "cross-app-access",
     "token-exchange",
@@ -184,7 +196,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
   notes: [
     {
       title: "Relation to ID-JAG",
-      body: `[ID-JAG](/flows/cross-app-access/) is a profile of this pattern for one common case: the first authorization server is an enterprise identity provider and the input is the user’s single sign-on assertion. The WIMSE working group’s agent architecture document recommends identity chaining or ID-JAG whenever an agent crosses a trust domain.`,
+      body: `[ID-JAG](/flows/cross-app-access/) is a profile of this pattern for one common case: the first authorization server is an enterprise identity provider and the input is the user’s single sign-on assertion. The WIMSE working group’s document on agent identity, AIMS, says an agent should use identity chaining, or a specification derived from it such as ID-JAG, when what it calls is protected by a different authorization server.`,
     },
   ],
 };

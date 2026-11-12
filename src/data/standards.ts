@@ -341,6 +341,22 @@ export const standards: Standard[] = [
     url: rfc(8414),
   },
   {
+    id: "oidc-core",
+    name: "OpenID Connect Core",
+    ref: "OpenID Connect Core 1.0",
+    body: "OpenID Foundation",
+    status: "final",
+    // The published page titles itself "Final: OpenID Connect Core 1.0 incorporating errata set 2".
+    detail:
+      "Final specification, incorporating errata set 2, December 15, 2023.",
+    topics: ["core"],
+    summary:
+      "Sign-in on top of OAuth 2.0: the ID token, a signed JWT that tells a client who the user is and how they were authenticated.",
+    agents:
+      "The workplace sign-in an agent starts from. In Cross-App Access, the ID token it yields is what the agent exchanges at the identity provider for a grant.",
+    url: "https://openid.net/specs/openid-connect-core-1_0.html",
+  },
+  {
     id: "oidc-discovery",
     name: "OpenID Connect Discovery",
     ref: "OpenID Connect Discovery 1.0",
@@ -485,7 +501,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -17, July 2026. Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
+      "Revision -17, July 2026. Approved by the IESG and in the RFC Editor queue since June 2026, where its status became “Final Approval Pending” in November 2026; no RFC number yet.",
     topics: ["delegation"],
     summary:
       "Token exchange in one domain yields a JWT grant that is redeemed at another domain’s authorization server.",

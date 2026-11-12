@@ -149,7 +149,7 @@ export const glossary: Term[] = [
   {
     term: "Cross App Access",
     aka: ["XAA"],
-    def: "A product and industry name for the ID-JAG pattern.",
+    def: "The name vendors use for the ID-JAG pattern. The draft uses it too, as Cross-App Access.",
     see: {
       href: "/flows/cross-app-access/",
       label: "Enterprise-managed authorization",

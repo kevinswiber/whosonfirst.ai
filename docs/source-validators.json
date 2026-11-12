@@ -187,6 +187,10 @@
     "etag": "\"1b12d-5caf39dbfa700-gzip\"",
     "lastModified": "Wed, 01 Sep 2021 18:55:56 GMT"
   },
+  "https://openid.net/specs/openid-connect-core-1_0.html": {
+    "etag": "\"6ad04-60c9a2f5720c0-gzip\"",
+    "lastModified": "Sat, 16 Dec 2023 05:56:59 GMT"
+  },
   "https://openid.net/specs/openid-connect-discovery-1_0.html": {
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"

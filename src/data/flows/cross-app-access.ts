@@ -13,7 +13,7 @@ export const crossAppAccess: Flow = {
 
 The Identity Assertion JWT Authorization Grant, or ID-JAG, moves the decision to the identity provider (IdP) the company already uses for single sign-on. The agent signs the user in once. When it needs access to another application, it asks the identity provider for a short-lived assertion aimed at that application’s authorization server, which the draft calls the resource authorization server (resource AS). The identity provider applies administrator policy and either issues it or refuses. The agent trades the assertion for an ordinary access token.
 
-No browser redirect, no consent prompt, and one place where access is granted and logged, and where new access is cut off. Vendors market this as Cross App Access. In MCP it is the official **Enterprise-Managed Authorization** extension.`,
+No browser redirect, no consent prompt, and one place where access is granted and logged, and where new access is cut off. The draft calls the pattern Cross-App Access (XAA), the name it goes by among vendors. In MCP it is the official **Enterprise-Managed Authorization** extension.`,
   fits: [
     "Workforce use: employees using an agent with company applications.",
     "The agent and the target application both trust the same enterprise identity provider.",
@@ -189,7 +189,24 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc7523",
     "identity-chaining",
     "cimd",
+    "rfc7519",
+    "rfc8707",
+    "rfc6750",
+    "oidc-core",
   ],
+  basis: ["id-jag", "mcp-ema"],
+  roles: {
+    "id-jag": "required", // the grant, at revision -06: steps 2 to 7
+    "mcp-ema": "required", // the MCP application of it: `audience` and `resource` in step 2, and the token restricted to the MCP server in step 7
+    rfc8693: "required", // the token exchange request, step 2
+    rfc7523: "required", // the JWT bearer grant and the client assertion, step 5
+    "identity-chaining": "required", // ID-JAG is a profile of it and cites it normatively; the rule against refresh tokens in step 9 is its section 5.4
+    cimd: "required", // the URL as `client_id` and the key its document publishes, steps 4 and 5 as drawn
+    rfc7519: "required", // the grant in step 4 is a JWT; step 6 checks its audience and expiry
+    rfc8707: "required", // `resource`, steps 2, 4 and 7
+    rfc6750: "required", // the Bearer token on the MCP request, step 8
+    "oidc-core": "required", // the login in step 1, and the ID token that is the subject of the exchange in step 2
+  },
   related: [
     "mcp-authorization",
     "token-exchange",
