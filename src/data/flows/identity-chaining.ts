@@ -174,6 +174,8 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc10070",
     "id-jag",
     "wimse-aims",
+    "rfc7519",
+    "rfc8707",
   ],
   related: [
     "cross-app-access",
