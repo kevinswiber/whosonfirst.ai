@@ -1385,7 +1385,7 @@ export const standards: Standard[] = [
     ref: "OpenID4VP 1.0",
     body: "OpenID Foundation",
     status: "final",
-    detail: "Reported final in July 2025.",
+    detail: "Final, published 9 July 2025.",
     related: [
       {
         name: "OpenID for Verifiable Credential Issuance 1.0",
@@ -1456,7 +1456,8 @@ export const standards: Standard[] = [
     topics: ["commerce", "credentials"],
     summary:
       "A layered SD-JWT delegation chain from credential provider to user to agent, with constraints on amount, payee and items.",
-    agents: "A card network’s take on the same problem AP2 addresses.",
+    agents:
+      "A card network’s take on the same problem AP2 addresses, written to work with it: its documentation offers its credentials as one concrete format for AP2’s mandates.",
     url: "https://verifiableintent.dev",
   },
   {
