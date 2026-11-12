@@ -239,6 +239,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       <span class="flow-stage-title">Sequence diagram</span>
       <span class="flow-stage-count">{n} participants, {steps.length} steps</span>
     </summary>
+    <div class="flow-figure">
     <ul class="flow-legend" aria-label="Legend">
       {
         (['back', 'front', 'resp', 'oob', 'self'] as StepKind[])
@@ -362,6 +363,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
         }
       </svg>
       </div>
+    </div>
     </div>
     <p class="flow-back">
       <button class="btn small" type="button" data-act="close">Back to the steps</button>
@@ -1352,8 +1354,11 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     .flow .flow-heads {
       position: static !important;
     }
-    .flow-legend {
-      break-after: avoid;
+    /* the legend goes with the diagram it explains, onto the next page if need be */
+    .flow-figure {
+      display: inline-block;
+      width: 100%;
+      vertical-align: top;
     }
 
     /* every step in the diagram is drawn as it is when all are shown */
