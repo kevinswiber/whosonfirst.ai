@@ -192,6 +192,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc7519",
     "rfc8707",
     "rfc6750",
+    "oidc-core",
   ],
   basis: ["id-jag", "mcp-ema"],
   roles: {
@@ -204,6 +205,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     rfc7519: "required", // the grant in step 4 is a JWT; step 6 checks its audience and expiry
     rfc8707: "required", // `resource`, steps 2, 4 and 7
     rfc6750: "required", // the Bearer token on the MCP request, step 8
+    "oidc-core": "required", // the login in step 1, and the ID token that is the subject of the exchange in step 2
   },
   related: [
     "mcp-authorization",

@@ -341,6 +341,22 @@ export const standards: Standard[] = [
     url: rfc(8414),
   },
   {
+    id: "oidc-core",
+    name: "OpenID Connect Core",
+    ref: "OpenID Connect Core 1.0",
+    body: "OpenID Foundation",
+    status: "final",
+    // The published page titles itself "Final: OpenID Connect Core 1.0 incorporating errata set 2".
+    detail:
+      "Final specification, incorporating errata set 2, December 15, 2023.",
+    topics: ["core"],
+    summary:
+      "Sign-in on top of OAuth 2.0: the ID token, a signed JWT that tells a client who the user is and how they were authenticated.",
+    agents:
+      "The workplace sign-in an agent starts from. In Cross-App Access, the ID token it yields is what the agent exchanges at the identity provider for a grant.",
+    url: "https://openid.net/specs/openid-connect-core-1_0.html",
+  },
+  {
     id: "oidc-discovery",
     name: "OpenID Connect Discovery",
     ref: "OpenID Connect Discovery 1.0",
