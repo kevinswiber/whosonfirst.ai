@@ -4,7 +4,12 @@ import DocMeta from "../../components/DocMeta.astro";
 import { standards, std } from "../../data/standards";
 import { flows } from "../../data/flows";
 import { REVIEWED } from "../../data/site";
-import { STATUS_LABEL, STATUS_TONE, TOPIC_LABEL } from "../../data/types";
+import {
+  RELATED_LABEL,
+  STATUS_LABEL,
+  STATUS_TONE,
+  TOPIC_LABEL,
+} from "../../data/types";
 import type { StdStatus, StdTopic } from "../../data/types";
 import { inline } from "../../lib/md";
 
@@ -173,9 +178,9 @@ const moved = [
                 const related = (s.related ?? []).map((r) => {
                   if ('entry' in r) {
                     const e = std(r.entry);
-                    return { name: `${e.name} (${e.ref})`, href: `#${e.id}`, out: false, note: r.note };
+                    return { kind: RELATED_LABEL[r.kind], name: `${e.name} (${e.ref})`, href: `#${e.id}`, out: false, note: r.note ?? '' };
                   }
-                  return { name: r.name, href: r.url, out: true, note: r.note };
+                  return { kind: RELATED_LABEL[r.kind], name: r.name, href: r.url, out: true, note: r.note ?? '' };
                 });
                 return (
                   <li
@@ -184,7 +189,7 @@ const moved = [
                     data-status={s.status}
                     data-topics={s.topics.join(' ')}
                     data-body={s.body}
-                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${related.map((r) => `${r.name} ${r.note}`).join(' ')} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
+                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${related.map((r) => `${r.kind} ${r.name} ${r.note}`).join(' ')} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
                   >
                     <header>
                       <h3>{s.name}</h3>
@@ -216,14 +221,20 @@ const moved = [
                         <ul>
                           {related.map((r) => (
                             <li>
+                              <span class="sx-kind">{r.kind}</span>{' '}
                               {r.out ? (
                                 <a href={r.href} rel="noopener">
                                   {r.name} ↗
                                 </a>
                               ) : (
                                 <a href={r.href}>{r.name}</a>
-                              )}{' '}
-                              <span set:html={inline(r.note)} />
+                              )}
+                              {r.note && (
+                                <>
+                                  {' '}
+                                  <span set:html={inline(r.note)} />
+                                </>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -653,6 +664,9 @@ const moved = [
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+  .sx-kind::after {
+    content: ':';
   }
   .sx-related li + li {
     margin-top: 0.3rem;

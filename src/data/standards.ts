@@ -39,13 +39,13 @@ export const standards: Standard[] = [
     detail:
       "October 2012. Still the current standard until OAuth 2.1 is published.",
     related: [
-      { entry: "rfc8252", note: "Updates this RFC." },
+      { entry: "rfc8252", kind: "updated-by" },
       {
         name: "RFC 8996, Deprecating TLS 1.0 and TLS 1.1",
         url: rfc(8996),
-        note: "Updates this RFC.",
+        kind: "updated-by",
       },
-      { entry: "rfc9700", note: "Updates this RFC." },
+      { entry: "rfc9700", kind: "updated-by" },
     ],
     topics: ["core"],
     summary:
@@ -65,9 +65,9 @@ export const standards: Standard[] = [
       {
         name: "RFC 8996, Deprecating TLS 1.0 and TLS 1.1",
         url: rfc(8996),
-        note: "Updates this RFC.",
+        kind: "updated-by",
       },
-      { entry: "rfc9700", note: "Updates this RFC." },
+      { entry: "rfc9700", kind: "updated-by" },
     ],
     topics: ["core"],
     summary:
@@ -185,12 +185,12 @@ export const standards: Standard[] = [
       {
         name: "RFC 7797, JSON Web Signature (JWS) Unencoded Payload Option",
         url: rfc(7797),
-        note: "Updates this RFC.",
+        kind: "updated-by",
       },
       {
         name: "RFC 8725, JSON Web Token Best Current Practices",
         url: rfc(8725),
-        note: "Updates this RFC.",
+        kind: "updated-by",
       },
     ],
     topics: ["core"],
@@ -263,7 +263,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "rfc",
     detail: "September 2021.",
-    related: [{ entry: "rfc10070", note: "Updates this RFC." }],
+    related: [{ entry: "rfc10070", kind: "updated-by" }],
     topics: ["core"],
     otherNames: ["PAR"],
     summary:
@@ -298,7 +298,8 @@ export const standards: Standard[] = [
       {
         name: "RFC 9767, GNAP Resource Server Connections",
         url: rfc(9767),
-        note: "The companion for resource servers. April 2025.",
+        kind: "companion",
+        note: "For resource servers. April 2025.",
       },
     ],
     topics: ["core", "delegation"],
@@ -423,7 +424,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "rfc",
     detail: "May 2015.",
-    related: [{ entry: "rfc10070", note: "Updates this RFC." }],
+    related: [{ entry: "rfc10070", kind: "updated-by" }],
     topics: ["core", "registration", "delegation"],
     summary:
       "Two uses of a signed JWT at the token endpoint: authenticating a client (`private_key_jwt`) and as an authorization grant (`jwt-bearer`).",
@@ -635,7 +636,8 @@ export const standards: Standard[] = [
       {
         name: "OAuth 2.0 RAR Metadata and Error Remediation",
         url: draft("draft-ietf-oauth-rar-metadata-remediation"),
-        note: "A companion draft, adopted by the OAuth working group in August 2026.",
+        kind: "companion",
+        note: "A draft, adopted by the OAuth working group in August 2026.",
       },
     ],
     topics: ["human-in-the-loop", "authorization"],
@@ -823,7 +825,8 @@ export const standards: Standard[] = [
       {
         name: "draft-klrc-aiagent-auth",
         url: draft("draft-klrc-aiagent-auth"),
-        note: "The individual draft this replaced when it was adopted.",
+        kind: "replaces",
+        note: "The individual draft, before adoption.",
       },
     ],
     topics: ["workload", "delegation", "guidance"],
@@ -948,7 +951,8 @@ export const standards: Standard[] = [
       {
         name: "KEP-3221, Structured Authorization Configuration",
         url: "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration",
-        note: "The counterpart for authorization. GA since v1.32.",
+        kind: "companion",
+        note: "For authorization. GA since v1.32.",
       },
     ],
     topics: ["kubernetes"],
@@ -1072,7 +1076,7 @@ export const standards: Standard[] = [
     status: "project",
     detail: "Platform documentation.",
     related: [
-      { entry: "rfc8693", note: "The token exchange follows this RFC." },
+      { entry: "rfc8693", kind: "builds-on", note: "For the token exchange." },
     ],
     topics: ["workload"],
     summary:
@@ -1118,7 +1122,15 @@ export const standards: Standard[] = [
     body: "Microsoft",
     status: "project",
     detail:
-      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly; wildcards are not supported. The one exception is in preview: a [flexible federated identity credential](https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials) can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards.",
+      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards.",
+    related: [
+      {
+        name: "Flexible federated identity credentials",
+        url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials",
+        kind: "source",
+        note: "The exception, in preview.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "An app registration or a user-assigned managed identity is configured, through a federated identity credential, to trust tokens from an outside issuer. The workload sends that token as the client assertion on a client credentials request and receives a Microsoft Entra access token.",
@@ -1179,7 +1191,13 @@ export const standards: Standard[] = [
     body: "MCP",
     status: "final",
     detail: "Official extension, stable at revision 2026-07-28.",
-    related: [{ entry: "id-jag", note: "The grant this extension applies." }],
+    related: [
+      {
+        entry: "id-jag",
+        kind: "builds-on",
+        note: "The grant this extension applies.",
+      },
+    ],
     topics: ["agent-protocol", "delegation"],
     summary:
       "An MCP client exchanges the user’s single sign-on token at the enterprise identity provider for an ID-JAG, then redeems it at the MCP server’s authorization server.",
@@ -1350,7 +1368,8 @@ export const standards: Standard[] = [
       {
         name: "SD-JWT-based Verifiable Digital Credentials (SD-JWT VC)",
         url: draft("draft-ietf-oauth-sd-jwt-vc"),
-        note: "A companion draft, in IESG evaluation.",
+        kind: "companion",
+        note: "A draft, in IESG evaluation.",
       },
     ],
     topics: ["credentials"],
@@ -1371,7 +1390,8 @@ export const standards: Standard[] = [
       {
         name: "OpenID for Verifiable Credential Issuance 1.0",
         url: "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html",
-        note: "The issuance counterpart, which followed in September 2025.",
+        kind: "companion",
+        note: "For issuance. Final in September 2025.",
       },
     ],
     topics: ["credentials"],
@@ -1391,11 +1411,13 @@ export const standards: Standard[] = [
       {
         name: "Verifiable Credentials Data Model 2.1",
         url: "https://www.w3.org/TR/vc-data-model-2.1/",
+        kind: "version",
         note: "W3C Working Draft, 22 October 2026.",
       },
       {
         name: "Decentralized Identifiers (DIDs) 1.1",
         url: "https://www.w3.org/TR/did-1.1/",
+        kind: "companion",
         note: "W3C Candidate Recommendation Snapshot, 5 March 2026.",
       },
     ],

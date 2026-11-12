@@ -9,36 +9,20 @@
 // `--record` writes the values the sources give today to
 // docs/source-validators.json. Run it at the end of a review, once every source
 // listed as changed has been read: recording says "checked as of now".
+// `--add` does the same for sources the file does not have yet, and leaves the
+// rest alone. Every source has an entry, empty where its server gives nothing
+// to ask with: `npm test` fails on a link that has none.
 //
 // Node strips the types from standards.ts as it loads it.
 import { readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { standards } from "../src/data/standards.ts";
+import { RECORDED as FILE, sources as readSources } from "./sources.mjs";
 
-const FILE = fileURLToPath(
-  new URL("../docs/source-validators.json", import.meta.url),
-);
 const record = process.argv.includes("--record");
+// `--add` records only the sources the file does not have yet: for a link
+// added between reviews, whose source has just been read.
+const addNew = process.argv.includes("--add");
 
-/** Where the review reads a link: the record behind an RFC or a draft, or the page itself. */
-const sourceOf = (url) => {
-  const rfc = url.match(/^https:\/\/www\.rfc-editor\.org\/rfc\/rfc(\d+)$/);
-  if (rfc) return `https://www.rfc-editor.org/rfc/rfc${rfc[1]}.json`;
-  const draft = url.match(/^https:\/\/datatracker\.ietf\.org\/doc\/([^/]+)\/$/);
-  if (draft) return `https://datatracker.ietf.org/doc/${draft[1]}/doc.json`;
-  return url.split("#")[0];
-};
-
-// source address -> the entries that rest on it
-const sources = new Map();
-const add = (url, id) => {
-  const s = sourceOf(url);
-  sources.set(s, [...(sources.get(s) ?? []), id]);
-};
-for (const s of standards) {
-  add(s.url, s.id);
-  for (const r of s.related ?? []) if ("url" in r) add(r.url, s.id);
-}
+const sources = await readSources();
 
 const known = (() => {
   try {
@@ -68,7 +52,13 @@ const result = { same: [], look: [], unknown: [], failed: [] };
 const next = {};
 
 const check = async (url) => {
-  const had = NEVER_THE_SAME.has(new URL(url).host) ? undefined : known[url];
+  const listed = url in known;
+  const usable = known[url] && Object.keys(known[url]).length > 0;
+  const had =
+    usable && !NEVER_THE_SAME.has(new URL(url).host) ? known[url] : undefined;
+  const writing = record || (addNew && !listed);
+  // Every source keeps an entry, empty until a value is found for it.
+  next[url] = known[url] ?? {};
   try {
     let res = await get(url, had ? conditions(had) : {});
     await res.arrayBuffer();
@@ -80,19 +70,15 @@ const check = async (url) => {
     }
     if (res.status === 304) {
       result.same.push(url);
-      next[url] = had;
       return;
     }
     if (!res.ok) {
       result.failed.push([url, `HTTP ${res.status}`]);
-      if (had) next[url] = had;
       return;
     }
     (had ? result.look : result.unknown).push(url);
-    if (!record) {
-      if (had) next[url] = had;
-      return;
-    }
+    if (!writing) return;
+    next[url] = {};
     const v = {};
     const etag = res.headers.get("etag");
     const lastModified = res.headers.get("last-modified");
@@ -147,7 +133,7 @@ list(
 );
 list("Not reached: not checked", result.failed);
 
-if (record) {
+if (record || addNew) {
   const sorted = Object.fromEntries(
     Object.keys(next)
       .filter((u) => sources.has(u))
@@ -155,7 +141,10 @@ if (record) {
       .map((u) => [u, next[u]]),
   );
   writeFileSync(FILE, `${JSON.stringify(sorted, null, 2)}\n`);
+  const withValue = Object.values(sorted).filter(
+    (v) => Object.keys(v).length > 0,
+  ).length;
   console.log(
-    `\nRecorded ${Object.keys(sorted).length} of ${sources.size} in docs/source-validators.json.`,
+    `\nWrote docs/source-validators.json: ${Object.keys(sorted).length} sources, ${withValue} with a value to ask with.`,
   );
 }

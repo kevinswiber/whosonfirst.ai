@@ -18,12 +18,12 @@ A run can start by asking which sources have changed at all:
 npm run sources:changed
 ```
 
-This asks each source the tracker links to, on an entry or in its `related`, whether it has changed since the last review, using the `ETag` or `Last-Modified` value recorded then in `docs/source-validators.json`. It reads nothing and changes nothing. How to read its answer:
+This asks each source the data links to, on a tracker entry, in its `related` or in a flow's `sources`, whether it has changed since the last review, using the `ETag` or `Last-Modified` value recorded then in `docs/source-validators.json`. It reads nothing and changes nothing. How to read its answer:
 
 - **Not modified** is a finding from the source itself: the page is as it was when it was last checked, and its items are unchanged.
 - **Changed since recorded** means only “read this one”. A page can change without the fact on the site changing: the datatracker's record changes whenever a document's metadata does.
 - **Nothing recorded** is read as before. About a fifth of the sources give no value, or give one that cannot be asked with: pages on GitHub, Google Cloud's documentation, a few others.
-- It covers the tracker's links. A flow's `sources` and the vendor claims are not covered, and neither is a fact that is not on the linked page, such as a release list. Those are checked as written below.
+- It covers the links in the data files. The vendor claims in the deployment guides are not covered, and neither is a fact that is not on the linked page, such as a release list. Those are checked as written below.
 
 Rules for a run:
 
@@ -105,8 +105,8 @@ A project entry has a maturity level only if `level` is set on it, with its evid
 
 Every item in an entry's `related` in `src/data/standards.ts`. The list is the file; it is not repeated here, and neither are the addresses.
 
-- An item with a `url` is another document, and its `note` says one thing about it: its stage and date, or how it stands to the entry. Open the `url` and compare the `note` with what the page says today. For an IETF draft, read `doc.json` as for a draft in the tracker.
-- An item with an `entry` names another entry by its `id`. Its `note` gives the relationship ("Updates this RFC."), and the source is the entry's own.
+- An item with a `url` is another document. Its `kind` says how it stands to the entry (it updates it, is a later version of it, is a companion to it, was replaced by it, is built on by it, or is a second page one of the entry's facts is read from), and its `note` says what the kind does not: its stage and date. Open the `url` and compare the `note` with what the page says today. For an IETF draft, read `doc.json` as for a draft in the tracker.
+- An item with an `entry` names another entry by its `id`, and the source is that entry's own. Its `kind` is checked as above: for `updated-by`, against `updated_by` in the RFC Editor's record.
 
 Also report a related document that has become something else: a draft published as an RFC, a working draft that became a Recommendation, a new version that makes the one named out of date.
 
@@ -250,6 +250,22 @@ npm run sources:changed -- --record
 ```
 
 Commit `docs/source-validators.json` with the changes. Recording says “checked as of now”, so do not record after a partial review: a source recorded without being read would answer “not modified” next time, and whatever changed on it would be missed.
+
+### What keeps this document and the data together
+
+This document names sources by where they are in the data, and does not repeat their addresses. `npm test` runs `scripts/source-check.mjs`, which fails when the two have come apart:
+
+- a source the data links to has no entry in `docs/source-validators.json`, or the file has one that nothing links to
+- a host the data links to is not in the list under [Domains a run needs](#domains-a-run-needs)
+- this document names a tracker entry or a file that does not exist. It reads an entry's `id` from the brackets after `standards.ts` in the tables above
+
+So a link added between reviews needs its entry. Read the source, then:
+
+```bash
+npm run sources:changed -- --add
+```
+
+This records the sources the file does not have yet and leaves the others as they were. An entry is empty where the server gives nothing to ask with.
 
 ## Domains a run needs
 

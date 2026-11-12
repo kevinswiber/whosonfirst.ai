@@ -339,15 +339,40 @@ export const TOPIC_LABEL: Record<StdTopic, string> = {
 };
 
 /**
- * Another document a tracker entry says something about: one that updates it,
- * a companion, a newer version still in draft. One that has its own entry is
- * named by that entry's `id` and links to it, so its address is kept in one
- * place. Any other is named with the address of the document itself, which is
- * the source for what `note` says.
+ * How a related document stands to the entry that lists it. The tracker shows
+ * the label, and a check can ask for one kind: every RFC that updates an RFC.
  */
-export type RelatedDoc =
-  | { entry: string; note: string }
-  | { name: string; url: string; note: string };
+export type RelatedKind =
+  | "updated-by"
+  | "version"
+  | "companion"
+  | "replaces"
+  | "builds-on"
+  | "source";
+
+export const RELATED_LABEL: Record<RelatedKind, string> = {
+  "updated-by": "Updated by",
+  version: "Later version",
+  companion: "Companion",
+  replaces: "Replaces",
+  "builds-on": "Builds on",
+  source: "See also",
+};
+
+/**
+ * Another document a tracker entry says something about: one that updates it,
+ * a later version still in draft, a companion, the draft it replaced, the
+ * document it builds on, or a second page one of its facts is read from.
+ *
+ * One that has its own entry is named by that entry's `id` and links to it, so
+ * its address is kept in one place. Any other is named with the address of the
+ * document itself, which is the source for what `note` says. `note` is for
+ * what `kind` does not say: the document's stage and date, or which part.
+ */
+export type RelatedDoc = ({ entry: string } | { name: string; url: string }) & {
+  kind: RelatedKind;
+  note?: string;
+};
 
 export interface Standard {
   id: string;

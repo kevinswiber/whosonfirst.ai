@@ -3,9 +3,14 @@
     "etag": "W/\"6af433d9-936ef\"",
     "lastModified": "Wed, 11 Nov 2026 09:22:33 GMT"
   },
+  "https://agenticcommerce.dev": {},
   "https://ap2-protocol.org": {
     "lastModified": "Tue, 28 Apr 2026 12:33:34 GMT"
   },
+  "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/": {
+    "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
+  },
+  "https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd": {},
   "https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/doc.json": {
     "etag": "W/\"ee61fffff3b11b238faf42befba1ae03\""
   },
@@ -109,6 +114,23 @@
     "etag": "\"TEtdXWBsgrNeH7N/goRFY6WFAWw=-gzip\"",
     "lastModified": "Wed, 11 Nov 2026 10:48:04 GMT"
   },
+  "https://docs.cloud.google.com/docs/authentication": {},
+  "https://docs.cloud.google.com/iam/docs/auth-agent-own-identity-external": {},
+  "https://docs.cloud.google.com/iam/docs/workload-identity-federation": {},
+  "https://docs.cloud.google.com/iam/docs/workload-identity-federation-with-x509-certificates": {},
+  "https://docs.github.com/en/actions/concepts/security/openid-connect": {},
+  "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/": {},
+  "https://github.com/agentgateway/agentgateway": {},
+  "https://github.com/agntcy/identity": {},
+  "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
+  "https://github.com/kubernetes-sigs/agent-sandbox": {},
+  "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
+  "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
+  "https://github.com/modelcontextprotocol/ext-auth": {},
+  "https://github.com/openid/authzen": {},
+  "https://github.com/spiffe/spire": {},
+  "https://github.com/visa/trusted-agent-protocol": {},
+  "https://github.com/x402-foundation/x402": {},
   "https://kubernetes.io/docs/reference/access-authn-authz/authentication/": {
     "etag": "W/\"e0b8312102c3511c6e3b8a7ab7138b96-ssl\""
   },
@@ -118,9 +140,17 @@
   "https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/": {
     "etag": "W/\"5461c606919461f81c038afe2586fb8c-ssl\""
   },
+  "https://learn.microsoft.com/en-us/entra/architecture/authorize-applications-resources-workloads": {
+    "etag": "\"OaQhBND+P5wJ+GSy9dMBrhwQ9Kg=\"",
+    "lastModified": "Mon, 24 Aug 2026 12:32:48 GMT"
+  },
   "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview": {
     "etag": "\"eUSfNWFhp4PFzagTO9w6zSo2wbM=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:49 GMT"
+  },
+  "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials": {
+    "etag": "\"XkC4aPvvkF+KrX4SkE9Iyx6MHGo=\"",
+    "lastModified": "Wed, 30 Sep 2026 17:44:00 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation": {
     "etag": "\"5HYue5c2JaJIA+9zEQGZIjsulEE=\"",
@@ -156,6 +186,9 @@
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
   },
+  "https://openid.net/wg/sharedsignals/": {},
+  "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
+  "https://owasp.org/projects/non-human-identities-top-10": {},
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },

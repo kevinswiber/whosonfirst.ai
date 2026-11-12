@@ -17,7 +17,7 @@ Node 22 or later. Install with `npm ci`.
 | `npm run dev`            | The site, locally, rebuilt as files change                                               |
 | `npm run fmt`            | Biome, writing its fixes: formatting, lint and import order                              |
 | `npm run check`          | Biome, changing nothing                                                                  |
-| `npm test`               | Types (`astro check`), the rating rule and the color contrast audit                      |
+| `npm test`               | Types (`astro check`), the rating rule, the color contrast audit and the list of sources |
 | `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name              |
 | `npm run check:rendered` | Reads the built site, then opens it in a browser. Refuses a build older than its sources |
 
@@ -63,7 +63,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Nothing loads from another origin.** The content security policy in `public/_headers` allows this origin only. Do not add analytics, an embed, a hosted font or a CDN script.
 - **No client-side framework, and no new dependency without asking.** Interactive pieces are small custom elements over HTML rendered at build time, and every page reads correctly with JavaScript off.
 - **Biome does not format `.mdx`.** Keep those files tidy by hand.
-- **Generated files are not edited.** `dist/` is not committed. The two pictures in `docs/images/` come from `npm run readme:figure`. The pictures for a post come from `npm run social:assets`, into `social/`, which is not committed either. `docs/source-validators.json` is written by `npm run sources:changed -- --record` at the end of a source review.
+- **Generated files are not edited.** `dist/` is not committed. The two pictures in `docs/images/` come from `npm run readme:figure`. The pictures for a post come from `npm run social:assets`, into `social/`, which is not committed either. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
 
 ## Branches, commits and pull requests
 
