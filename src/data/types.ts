@@ -416,6 +416,10 @@ export interface Standard {
    * For a project, a platform or a guidance document, whose status alone shows no
    * maturity: the level its maintainers' own statements support, with the evidence
    * in a comment beside it. Leave unset when that evidence has not been found.
+   *
+   * Also for a specification whose status would show a level, where its maintainers
+   * say that the part an entry covers may still change: the level that statement
+   * supports, with the evidence. It only ever lowers what the status shows.
    */
   level?: Maturity;
   topics: StdTopic[];

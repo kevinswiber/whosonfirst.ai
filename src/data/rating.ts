@@ -17,7 +17,9 @@ const ORDER: Maturity[] = ["experimental", "emerging", "stable"];
 /**
  * The level a reference's status shows by itself. A project, a platform or a
  * guidance document shows none: its tracker entry states a level, from what its
- * maintainers publish, or it stays unknown.
+ * maintainers publish, or it stays unknown. A level stated on an entry of any
+ * status is used in place of what the status shows: a published specification
+ * can mark one of its features as still subject to change.
  */
 export function levelOf(ref: {
   status: StdStatus;

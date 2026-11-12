@@ -201,6 +201,36 @@ export const standards: Standard[] = [
     url: rfc(7519),
   },
   {
+    id: "rfc7515",
+    name: "JSON Web Signature (JWS)",
+    ref: "RFC 7515",
+    body: "IETF",
+    status: "rfc",
+    detail: "May 2015. Proposed Standard.",
+    topics: ["core"],
+    summary:
+      "A signature or message authentication code over any content, with a header that names the algorithm and the key. It has a compact form, used by JWTs, and a JSON form with `protected`, `header` and `signature` members.",
+    agents:
+      "The signature on a JWT, and the format an A2A Agent Card’s signatures take.",
+    url: rfc(7515),
+  },
+  {
+    id: "rfc8785",
+    name: "JSON Canonicalization Scheme (JCS)",
+    ref: "RFC 8785",
+    body: "RFC Editor",
+    status: "rfc",
+    // The RFC's first page reads "Independent Submission" and "Category: Informational".
+    detail:
+      "June 2020. Informational, published as an independent submission: an RFC, but not a product of an IETF working group.",
+    topics: ["core"],
+    summary:
+      "One byte-for-byte representation of a JSON value: properties sorted, numbers and strings serialized as ECMAScript does, no insignificant whitespace. Two parties that canonicalize the same data sign and verify the same bytes.",
+    agents:
+      "An A2A Agent Card is canonicalized this way before it is signed and before its signature is verified.",
+    url: rfc(8785),
+  },
+  {
     id: "rfc9068",
     name: "JWT Profile for Access Tokens",
     ref: "RFC 9068",
@@ -1276,8 +1306,20 @@ export const standards: Standard[] = [
     ref: "MCP specification 2026-07-28, Elicitation",
     body: "MCP",
     status: "final",
+    // Evidence for the level: the 2026-07-28 Elicitation page says of URL mode, "Its design and
+    // implementation may change in future protocol revisions". The revision is final; this feature
+    // of it is not yet settled by its maintainers' own statement.
+    level: "emerging",
     detail:
       "Introduced in 2025-11-25 and reworked in 2026-07-28. Still marked as subject to change.",
+    related: [
+      {
+        name: "MCP specification 2026-07-28, Multi Round-Trip Requests",
+        url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr",
+        kind: "companion",
+        note: "Defines `InputRequiredResult`, `inputRequests`, `inputResponses` and `requestState`, which carry an elicitation and the retry that answers it.",
+      },
+    ],
     topics: ["agent-protocol", "human-in-the-loop"],
     summary:
       "A server asks the client to send the user to a URL for an interaction that must not pass through the client: third-party sign-in, entering a secret, a payment.",

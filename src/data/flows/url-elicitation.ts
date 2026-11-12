@@ -185,7 +185,20 @@ The same mechanism covers anything sensitive that should bypass the agent: enter
       body: `From the agent’s point of view a tool call took a detour through the user. It holds exactly what it held before.`,
     },
   ],
-  standards: ["mcp-elicitation", "mcp-authorization", "oauth-2-1"],
+  standards: [
+    "mcp-elicitation",
+    "mcp-authorization",
+    "oauth-2-1",
+    "rfc6749",
+    "rfc7636",
+  ],
+  roles: {
+    "mcp-elicitation": "required", // the stated basis: the elicitation in step 3, the client's handling of the link in step 4, the user check in step 5, the retry in step 10
+    "mcp-authorization": "required", // the token on the tool call in step 1, and the user it names in steps 2 and 5; the elicitation page says to identify the user from it
+    "oauth-2-1": "background", // what MCP authorization builds on; step 1 says the client is already authorized, and no step draws how
+    rfc6749: "required", // the server's own authorization code flow with the third party, steps 6 to 8
+    rfc7636: "required", // PKCE on that flow, step 6
+  },
   related: [
     "mcp-authorization",
     "credential-broker",
