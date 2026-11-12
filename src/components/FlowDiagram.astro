@@ -233,7 +233,7 @@ const rows = steps.map((s, i) => {
 const usedKinds = [...new Set(steps.map((s) => s.kind))];
 ---
 
-<flow-diagram class="flow" data-count={steps.length}>
+<flow-diagram class:list={["flow", { "flow-wide": n >= 5 }]} data-count={steps.length}>
   <aside class="flow-visual" aria-label="Sequence diagram">
   <details class="flow-stage" open>
     <summary>
@@ -445,7 +445,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
                     </div>
                   ))}
                 </dl>
-                <p class="held-note">Parties not listed hold none of this flow’s credentials at this point.</p>
+                <p class="held-note">Lists credentials introduced in the walkthrough so far.</p>
               </div>
             )}
           </li>
@@ -891,6 +891,35 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     }
     .flow[data-js]:not([data-all]) .flow-heads {
       top: -0.6rem;
+    }
+  }
+
+  /* Five lanes need more room than the usual diagram column. Keep their
+     labels at least 12px (the smallest source label is 12.5px), panning inside
+     the frame where necessary. Stack until both diagram and text fit. */
+  .flow-wide .flow-sheet {
+    min-width: calc(var(--natural) * 0.96);
+  }
+  @media screen and (min-width: 48rem) and (max-width: 87.99rem) {
+    .flow-wide {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .flow-wide .flow-panel {
+      position: static;
+    }
+    .flow-wide .flow-canvas {
+      overflow: auto;
+    }
+    .flow-wide[data-js]:not([data-all]) .flow-canvas {
+      max-height: 62vh;
+    }
+    .flow-wide .flow-heads {
+      top: -0.6rem;
+    }
+  }
+  @media screen and (min-width: 88rem) {
+    .flow-wide {
+      grid-template-columns: minmax(0, 2fr) minmax(22rem, 1fr);
     }
   }
 

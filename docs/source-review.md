@@ -129,7 +129,7 @@ Statements about the future, or about a process that was unfinished at the last 
 | No WIMSE document is an RFC yet                                                                                                           | `standards.ts` (`wimse-arch`)                                                         |
 | HTTP Signature-Key: an individual draft; the HTTP working group had no consensus to adopt it "at this time" (September 2026)              | `standards.ts` (`signature-key`); `flows/aauth.ts` (notes)                            |
 | AAuth (Hardt): adopted as a working group at the OpenID Foundation, by its author's account; the specification work has yet to move there | `standards.ts` (`aauth-hardt`); `flows/aauth.ts` (notes)                              |
-| AAuth (Hardt): the draft lists four implementations, each marked exploratory                                                              | `flows/aauth.ts` (cautions)                                                           |
+| AAuth (Hardt): draft implementations are exploratory; the explorer and SDK must be checked separately against the pinned protocol         | `flows/aauth.ts` (cautions and source review); `docs/reviews/aauth-2026-11-12.md`     |
 | Mission-bound and actor drafts: individual, not adopted                                                                                   | `standards.ts` (`mission-bound`, `actor-profile`, `txn-tokens-agents`, `scim-agents`) |
 | RFC 9700: an update draft is in progress                                                                                                  | `standards.ts` (`rfc9700`)                                                            |
 | RFC 8693: no revision is in progress                                                                                                      | `standards.ts` (`rfc8693`)                                                            |
@@ -313,3 +313,7 @@ Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the
 When a link is added to the tracker, to a flow's `sources` or to a deployment guide, add its host here.
 
 Being on the list does not mean a host answers. If one refuses the run, list the items that depend on it as not checked, with what was tried.
+
+### AAuth deep dive, 12 November 2026
+
+See [the source and validation record](reviews/aauth-2026-11-12.md) for the exact draft, explorer and SDK commits, the chosen PS authorization scenario, and the step-to-source map. Recheck protocol examples against the draft before adopting a change from either supporting project.

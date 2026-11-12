@@ -3,6 +3,7 @@ import { Code } from "astro:components";
 import Base from "../../layouts/Base.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
 import FlowOverview from "../../components/FlowOverview.astro";
+import FlowCredentials from "../../components/FlowCredentials.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
@@ -266,6 +267,8 @@ const details = [
         </ul>
       </section>
     </div>
+
+    {flow.credentials && <FlowCredentials credentials={flow.credentials} gloss={g} />}
 
     {
       (flow.phases || flow.parts) && (

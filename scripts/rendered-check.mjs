@@ -2123,6 +2123,16 @@ await ctx.close();
         .locator(".flow-stage:not([open]) > summary")
         .all())
         await closed.click();
+      // A wider cast can shrink text even when its arrows never overlap.
+      // Measure every diagram already visited here, not just the representative flow.
+      const labels = await page.evaluate(diagramLabels);
+      const smallest = Math.min(...labels.map((label) => label.px));
+      record(
+        `${vp.name} ${path}`,
+        `every diagram keeps labels at ${MIN_LABEL}px or more`,
+        labels.length > 0 && smallest >= MIN_LABEL - 0.05,
+        `smallest ${smallest.toFixed(1)}px`,
+      );
       const seen = await page.evaluate(labelsOnHeadings);
       headed += seen.headings;
       record(

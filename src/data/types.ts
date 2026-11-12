@@ -147,6 +147,19 @@ export interface Flow {
    * what is different, completing "the same, except that …". md-lite.
    */
   like?: { flow: string; except: string };
+  /** A compact credential map before the walkthrough, available without scripts. */
+  credentials?: {
+    title: string;
+    intro: string;
+    items: {
+      name: string;
+      type: string;
+      issuer: string;
+      recipient: string;
+      meaning: string;
+      binding: string;
+    }[];
+  };
   /** Optional closing notes rendered after the diagram, md-lite blocks. */
   notes?: { title: string; body: string }[];
   /**

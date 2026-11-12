@@ -310,6 +310,10 @@ const term = (name: string) =>
   .lesson :global(.wide) {
     max-width: 60rem;
   }
+  /* A sequence and its explanation need the same room as a full flow page. */
+  .lesson :global(.wide:has(flow-diagram)) {
+    max-width: var(--wide);
+  }
 
   .keep ul {
     list-style: none;

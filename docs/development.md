@@ -102,6 +102,8 @@ Further sections of the same form go in `sections`, after the example: for insta
 
 If such a flow's diagram draws one arrangement among several, say so in `illustrated`: `steps` is shown above the diagram, and `references` beside the required references. The page then labels its basis, its required references and its rating as those of the flow the diagram draws.
 
+A flow can also supply `credentials`: a short introduction and a list of tokens with their type, issuer, recipient, meaning and key binding. `FlowCredentials.astro` renders these before the overview, as a two-column reference on wide screens and one column on narrow screens. Keep the same facts in the steps; this is a reading aid, not a second source of protocol rules.
+
 **Every flow has an overview.** Four fields say what a reader needs before the diagram, and the build refuses a flow without the first three:
 
 - `phases`: the steps in three to five plain parts, each with the number of the step it starts at. They are listed as "In short", drawn as headed bands in the diagram, and named above each step.
