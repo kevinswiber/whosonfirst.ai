@@ -102,6 +102,21 @@ export const standards: Standard[] = [
     url: rfc(10017),
   },
   {
+    id: "first-party-apps",
+    name: "OAuth for First-Party Applications",
+    ref: "draft-ietf-oauth-first-party-apps",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -04, July 2026. A working group last call opened in June 2026; since July the draft has working group consensus and is waiting for its write-up.",
+    topics: ["core"],
+    summary:
+      "An Authorization Challenge Endpoint, so that an app can sign a user in without a browser. The app collects what the user enters, such as a username, a one-time code or a passkey response, and posts it to the authorization server until it gets an authorization code. The server can send the user to a browser at any step.",
+    agents:
+      "Only for first-party apps: native apps run by the same organization as the authorization server, which users recognize as that organization’s, and which the server must verify as such. It is not a way for an agent to collect a person’s credentials for someone else’s service. The draft says other uses “may lead to unintended security and privacy problems,” and that a profile for other clients must say how it avoids them.",
+    url: draft("draft-ietf-oauth-first-party-apps"),
+  },
+  {
     id: "rfc9700",
     name: "OAuth 2.0 Security Best Current Practice",
     ref: "RFC 9700",
@@ -196,6 +211,21 @@ export const standards: Standard[] = [
     agents:
       "Revocation happens at the authorization server. An API that validates self-contained tokens on its own needs something more to learn of it; the RFC names short token lifetimes and communication between the two servers as options.",
     url: rfc(7009),
+  },
+  {
+    id: "refresh-token-expiration",
+    name: "Refresh Token and Authorization Expiration",
+    ref: "draft-ietf-oauth-refresh-token-expiration",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -03, July 2026. OAuth working group document, adopted in December 2025.",
+    topics: ["core"],
+    summary:
+      "Two fields in the token response: `refresh_token_timeout`, how long the client may hold a refresh token without using it, and `authorization_expires_in`, when the user’s approval for those scopes ends. A refresh token must not outlive the approval behind it.",
+    agents:
+      "Tells an agent that runs unattended on a refresh token when it will stop working, so it can ask the person to approve again while they are there. The draft names clients that run in the background as the ones an expiry interrupts. A response without the fields promises nothing: the client must still expect the token to be revoked at any time.",
+    url: draft("draft-ietf-oauth-refresh-token-expiration"),
   },
   {
     id: "rfc9126",
@@ -1223,6 +1253,21 @@ export const standards: Standard[] = [
     agents:
       "The mechanism for telling everything an agent has touched that its access just ended, without waiting for tokens to expire.",
     url: "https://openid.net/wg/sharedsignals/",
+  },
+  {
+    id: "status-list",
+    name: "Token Status List",
+    ref: "draft-ietf-oauth-status-list",
+    body: "IETF",
+    status: "wg-draft",
+    detail:
+      "Revision -21, June 2026. Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
+    topics: ["signals", "credentials"],
+    summary:
+      "A signed, compressed list of statuses, one for each token, published by or for the token’s issuer. A token names its place in a list, and whoever relies on it fetches the list to see whether the token is valid, revoked or suspended. Defined for JWT, SD-JWT, CWT and ISO mdoc, among others; the draft names access tokens and verifiable credentials as uses.",
+    agents:
+      "Lets an API that checks self-contained tokens on its own learn that one has been revoked, without asking the issuer about each token. It learns only as fast as it fetches the list again, and a token past its expiry stays expired whatever the list says.",
+    url: draft("draft-ietf-oauth-status-list"),
   },
 
   /* ───────────── Verifiable credentials ───────────── */
