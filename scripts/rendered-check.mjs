@@ -19,6 +19,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { requireCurrentBuild } from "./built-site.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -29,6 +30,10 @@ if (!existsSync(join(root, "index.html"))) {
   console.error("dist/client/ is missing. Run `npm run build` first.");
   process.exit(1);
 }
+// What is checked is the build, not the sources. A build made before the last
+// change is the site as it was: it can pass where the site as it is now would
+// fail, and the report would not say which of the two was read. So stop here.
+requireCurrentBuild("The checks would report on the site as it was then.");
 const verbose = process.argv.includes("--verbose");
 
 /* ---------- thresholds ---------- */
