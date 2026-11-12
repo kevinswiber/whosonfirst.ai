@@ -235,6 +235,7 @@ export const standards: Standard[] = [
     status: "rfc",
     detail: "September 2021. Updated by RFC 10070.",
     topics: ["core"],
+    otherNames: ["PAR"],
     summary:
       "The client sends its authorization request directly to the server first and gets back a reference to use in the browser.",
     agents:
@@ -249,6 +250,7 @@ export const standards: Standard[] = [
     status: "rfc",
     detail: "August 2021.",
     topics: ["core"],
+    otherNames: ["JAR"],
     summary:
       "Authorization request parameters packaged as a signed, optionally encrypted JWT.",
     agents:
@@ -279,6 +281,7 @@ export const standards: Standard[] = [
     status: "rfc",
     detail: "April 2025.",
     topics: ["discovery"],
+    otherNames: ["PRM"],
     summary:
       "A well-known document where a resource server names the authorization servers that protect it, plus a `resource_metadata` pointer in `WWW-Authenticate`.",
     agents:
@@ -339,6 +342,7 @@ export const standards: Standard[] = [
     detail:
       "July 2015. Deprecated within MCP as of 2026-07-28, with removal possible from July 2027.",
     topics: ["registration"],
+    otherNames: ["DCR"],
     summary:
       "A client posts its metadata to a registration endpoint and receives a client ID.",
     agents:
@@ -533,6 +537,7 @@ export const standards: Standard[] = [
     status: "rfc",
     detail: "August 2019.",
     topics: ["human-in-the-loop", "core"],
+    otherNames: ["device flow"],
     summary:
       "The user approves on a second device by entering a short code while the client polls.",
     agents:
@@ -590,6 +595,7 @@ export const standards: Standard[] = [
     detail:
       "May 2023. A companion draft on metadata and error remediation was adopted by the OAuth working group in August 2026.",
     topics: ["human-in-the-loop", "authorization"],
+    otherNames: ["RAR"],
     summary:
       "`authorization_details`: a structured JSON description of exactly what is being authorized, in place of coarse scope strings.",
     agents:
@@ -664,6 +670,7 @@ export const standards: Standard[] = [
     status: "rfc",
     detail: "February 2020.",
     topics: ["proof-of-possession", "workload"],
+    otherNames: ["mTLS"],
     summary:
       "Client authentication with a TLS certificate, and access tokens bound to that certificate.",
     agents:
@@ -860,6 +867,7 @@ export const standards: Standard[] = [
     detail:
       "GA in v1.37 (August 2026) in `certificates.k8s.io/v1`. No signer ships with Kubernetes; you install one.",
     topics: ["kubernetes", "workload", "proof-of-possession"],
+    otherNames: ["mTLS"],
     summary:
       "The kubelet generates a key, requests a certificate for the pod from a named signer, writes it into a projected volume and rotates it.",
     agents:
@@ -1023,6 +1031,7 @@ export const standards: Standard[] = [
     detail:
       "Platform documentation. The workload authenticates over mutual TLS with a certificate that chains to a registered trust anchor.",
     topics: ["workload"],
+    otherNames: ["mTLS"],
     summary:
       "Workload Identity Federation with a client certificate in place of a token. An administrator registers certificate authorities as trust anchors, and a workload holding a certificate that chains to one obtains short-lived Google Cloud credentials over a mutual TLS connection.",
     agents:

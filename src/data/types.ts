@@ -355,6 +355,14 @@ export interface Standard {
    */
   level?: Maturity;
   topics: StdTopic[];
+  /**
+   * Other names people type for this thing, which its text does not already
+   * contain: an abbreviation ("mTLS"), a common short form ("device flow").
+   * The lookup on the tracker searches them and no page shows them. Spaces and
+   * hyphens do not matter, and case does not matter, so give each name once.
+   * Add only a name that is really used for this thing.
+   */
+  otherNames?: string[];
   /** What it defines. */
   summary: string;
   /** Why it matters for agents. */

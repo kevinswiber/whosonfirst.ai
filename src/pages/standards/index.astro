@@ -175,7 +175,7 @@ const moved = [
                     data-status={s.status}
                     data-topics={s.topics.join(' ')}
                     data-body={s.body}
-                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''}`.toLowerCase()}
+                    data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
                   >
                     <header>
                       <h3>{s.name}</h3>
