@@ -13,7 +13,7 @@ const { standard: s, compact = false } = Astro.props;
 <article class:list={['std', { compact }]}>
   <header>
     <span class="chip" data-tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</span>
-    <span class="ref">{s.ref}</span>
+    <span class="ref">{' · '}{s.ref}</span>
   </header>
   <h4><a href={`/standards/#${s.id}`}>{s.name}</a></h4>
   <p set:html={inline(compact ? s.agents : s.summary)} />

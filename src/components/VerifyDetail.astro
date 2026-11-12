@@ -31,14 +31,14 @@ import { inline } from "../lib/md";
           checks.map((q) => (
             <tr>
               <th scope="row">
-                <span class="vd-clause">{q.clause}</span>
+                <span class="vd-clause">{q.clause}</span>{' '}
                 {q.question}
               </th>
               {credentials.map((c) => {
                 const r = c.results[q.id];
                 return (
                   <td>
-                    <span class={`vd-mark is-${r.verdict}`}>{VERDICT_LABEL[r.verdict]}</span>
+                    <span class={`vd-mark is-${r.verdict}`}>{VERDICT_LABEL[r.verdict]}</span>{' '}
                     <span set:html={inline(r.detail)} />
                   </td>
                 );

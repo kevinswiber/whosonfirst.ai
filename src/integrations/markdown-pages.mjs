@@ -141,14 +141,16 @@ const say = (value) => ({ type: "text", value });
 /** A flow's steps are a list on the page. As text each is a section: its number and title, then who calls whom. */
 function steps(list) {
   list.tagName = "div";
-  for (const step of list.children.filter((c) => is(c, "li"))) {
+  for (const [index, step] of list.children
+    .filter((c) => is(c, "li"))
+    .entries()) {
     step.tagName = "div";
     const meta = step.children.find((c) => has(c, "step-meta"));
     const title = step.children.find((c) => is(c, "h3"));
     if (!meta || !title) continue;
-    const number = meta.children.find((c) => has(c, "step-num"));
-    title.children.unshift(say(`${text(number).trim()}. `));
-    meta.children = meta.children.filter((c) => c !== number);
+    // Visual number badges are aria-hidden and have already been removed.
+    // The ordered list supplies the sequence in HTML; use that order here too.
+    title.children.unshift(say(`${index + 1}. `));
     // the arrow is drawn for the eye and "to" is said for a screen reader: text gets the arrow
     visit(meta, "element", (node) => {
       if (has(node, "step-route"))

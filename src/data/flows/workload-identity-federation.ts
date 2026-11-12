@@ -335,7 +335,7 @@ Short lifetimes on both credentials keep the gaps small. Deleting a pod, a servi
   },
   example: {
     title: "Worked example: a Kubernetes pod",
-    intro: `One concrete case of the steps above: an agent in a pod federates from its cluster to a token service outside it. The details are specific to Kubernetes. Other environments may deliver credentials differently, and their tokens carry different claims.`,
+    intro: `One concrete case of the steps above: an agent in a pod federates from its cluster to a token service outside it. The details are specific to Kubernetes. Other environments may deliver credentials differently, and their tokens carry different [claims](/glossary/#claim).`,
     parts: [
       {
         title: "The pod asks for a projected token",

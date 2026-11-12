@@ -60,7 +60,7 @@ If an agent acts for a person and that person is at the keyboard, start here.`,
       kind: "self",
       label: "Create PKCE pair + state",
       title: "The agent prepares a one-time secret",
-      body: `The agent generates a random \`code_verifier\`, hashes it into a \`code_challenge\`, and creates a \`state\` value. The verifier stays with the agent. Only the hash travels through the browser, so an authorization code stolen in transit is useless without it.`,
+      body: `The agent generates a random \`code_verifier\`, hashes it into a \`code_challenge\`, and creates a [\`state\`](/glossary/#state) value. The verifier stays with the agent. Only the hash travels through the browser, so an authorization code stolen in transit is useless without it.`,
       code: {
         lang: "text",
         text: `code_verifier  = random(43–128 chars)

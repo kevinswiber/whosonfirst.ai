@@ -20,7 +20,7 @@ The specification is through IETF approval and waiting in the RFC Editor’s que
     "Federations where the two authorization servers have an agreed trust relationship.",
   ],
   watchOut: [
-    "Trust between the two authorization servers is set up in advance: keys, issuer names, and which claims are honored. The specification does not create that trust for you.",
+    "Trust between the two authorization servers is set up in advance: keys, issuer names, and which [claims](/glossary/#claim) are honored. The specification does not create that trust for you.",
     "Identifiers rarely match across domains. Decide how subjects are mapped, and what happens when a mapping does not exist.",
     "Each hop can add or drop claims. Make sure the receiving side does not treat a claim as verified merely because it arrived.",
     "Keep the grant short-lived and single-audience. It is a bearer credential for obtaining tokens.",
@@ -93,7 +93,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "self",
       label: "Policy: may this leave?",
       title: "Domain A decides what crosses its boundary",
-      body: `The home authorization server controls outbound trust: which clients may obtain grants for which external domains, and which claims about the user are released.`,
+      body: `The home authorization server controls outbound trust: which clients may obtain grants for which external domains, and which [claims](/glossary/#claim) about the user are released.`,
     },
     {
       from: "asa",
@@ -139,7 +139,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
       kind: "self",
       label: "Trust A’s key; map claims",
       title: "Domain B applies its own policy",
-      body: `Domain B verifies the signature against keys it has agreed to trust for domain A, checks it is the audience, and maps the incoming subject and claims to its own. It is free to grant less than was asked. Whether a grant can be used twice is also domain B’s choice: the draft lets a client present the same grant again when its access token expires, if the grant has not expired, and lists accepting each grant only once among its defenses against a copied one.`,
+      body: `Domain B verifies the signature against keys it has agreed to trust for domain A, checks it is the audience, and maps the incoming subject and [claims](/glossary/#claim) to its own. It is free to grant less than was asked. Whether a grant can be used twice is also domain B’s choice: the draft lets a client present the same grant again when its access token expires, if the grant has not expired, and lists accepting each grant only once among its defenses against a copied one.`,
     },
     {
       from: "asb",
