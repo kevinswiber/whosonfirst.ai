@@ -151,6 +151,14 @@ grant_type=client_credentials
     "rfc9068",
     "mcp-client-credentials",
   ],
+  roles: {
+    rfc6749: "required", // the grant: steps 2 to 4 (section 4.4)
+    rfc7523: "required", // the client assertion, steps 1 to 3 (sections 2.2 and 3)
+    rfc10070: "required", // step 1 teaches its `typ` value, and the audience drawn is the issuer identifier it requires
+    rfc8707: "required", // `resource` on the token request, step 2
+    rfc9068: "required", // the token in step 4: its claims, and a subject that is the client when no user is involved (section 2.2)
+    "mcp-client-credentials": "background", // MCP's profile of this grant; not named or used on this page
+  },
   related: [
     "workload-identity-federation",
     "spiffe-workload-identity",
