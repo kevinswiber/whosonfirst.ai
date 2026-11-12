@@ -2512,6 +2512,120 @@ for (const width of [768, 900, 1087]) {
   }
   await ctx.close();
 }
+// Expanding removes the scroll constraint. Collapsing must restore the selected
+// explanation, not leave the narrative at step 1 beside a later diagram step.
+for (const width of [900, 1280]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+  const page = await ctx.newPage();
+  for (const path of ["/flows/dpop/", FLOW]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const count = await page.locator(".flow-step").count();
+    const step = count - 1;
+    await page.goto(`${origin}${path}#step-${step}`, {
+      waitUntil: "networkidle",
+    });
+    const toggle = page.locator('[data-act="all"]');
+    for (const interaction of ["pointer", "keyboard", "reflow"]) {
+      await toggle.click();
+      // Let the expanded layout paint before collapsing, as a reader sees it.
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      );
+      const expanded = await page
+        .locator(".flow-panel")
+        .evaluate((panel) => panel.scrollHeight <= panel.clientHeight + 1);
+      if (interaction === "reflow") {
+        await page.setViewportSize({
+          width: width === 900 ? 1280 : 900,
+          height: 900,
+        });
+        await page.evaluate(
+          () =>
+            new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve)),
+            ),
+        );
+      }
+      if (interaction === "keyboard") {
+        await toggle.focus();
+        await page.keyboard.press("Enter");
+      } else {
+        await toggle.click();
+      }
+      const seen = await page.evaluate(() => {
+        const panel = document.querySelector(".flow-panel");
+        const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+        const heading = document
+          .querySelector(".flow-step.is-current h3")
+          .getBoundingClientRect();
+        return {
+          step: document.querySelector(".flow-step.is-current").id,
+          diagramStep:
+            Number(document.querySelector("svg .step.is-active").dataset.step) +
+            1,
+          count: document.querySelector(".flow-count").textContent,
+          hash: location.hash,
+          headingInPanel:
+            heading.top >= bar.bottom &&
+            heading.bottom <= panel.getBoundingClientRect().bottom,
+          readable: [...document.querySelectorAll(".flow-step")].every((li) =>
+            li.checkVisibility({ visibilityProperty: true }),
+          ),
+        };
+      });
+      record(
+        `collapse ${width}px ${path} ${interaction}`,
+        "collapsing expanded steps restores the selected explanation without changing selection",
+        expanded &&
+          seen.step === `step-${step}` &&
+          seen.diagramStep === step &&
+          seen.count === `Step ${step} of ${count}` &&
+          seen.hash === `#step-${step}` &&
+          seen.headingInPanel &&
+          seen.readable,
+        JSON.stringify({ expanded, ...seen }),
+      );
+    }
+    // Returning from a phone also changes line wrapping and the step’s offset.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+    await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+    const restored = await page.evaluate(() => {
+      const panel = document
+        .querySelector(".flow-panel")
+        .getBoundingClientRect();
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const current = document.querySelector(".flow-step.is-current");
+      const heading = current.querySelector("h3").getBoundingClientRect();
+      return {
+        id: current.id,
+        inPanel: heading.top >= bar.bottom && heading.bottom <= panel.bottom,
+      };
+    });
+    record(
+      `reflow ${width}px ${path}`,
+      "returning from phone layout restores the selected explanation",
+      restored.id === `step-${step}` && restored.inPanel,
+      JSON.stringify(restored),
+    );
+  }
+  await ctx.close();
+}
 // Reader extractors inspect the live DOM. Selection must never remove the
 // canonical narrative with hidden/aria-hidden or display:none. This is a
 // content-availability contract, not an emulation of any browser's Reader.

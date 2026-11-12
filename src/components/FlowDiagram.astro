@@ -463,6 +463,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     /** On a phone the steps read as one narrative and the diagram opens on demand. */
     narrative = false;
     timer: number | undefined;
+    panelResize: ResizeObserver | undefined;
     narrow = window.matchMedia('(max-width: 47.99rem)');
 
     connectedCallback() {
@@ -544,6 +545,16 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       this.go(0, false);
       fromHash();
       this.keepHistory();
+      // Reflow changes the selected step’s offset. Restore the internal scroll
+      // after a width change, without jumping the page on initial load.
+      const panel = this.querySelector<HTMLElement>('.flow-panel')!;
+      let width: number | undefined;
+      this.panelResize = new ResizeObserver(([entry]) => {
+        const next = entry.contentRect.width;
+        if (width !== undefined && next !== width && panel.scrollHeight > panel.clientHeight + 1) this.revealText();
+        width = next;
+      });
+      this.panelResize.observe(panel);
     }
 
     /** Set while the diagram, opened on a phone, has an entry of its own in the history. */
@@ -748,6 +759,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
       this.querySelector('[data-act="all"]')!.setAttribute('aria-pressed', String(this.all));
       this.toggleAttribute('data-all', this.all);
       this.render();
+      if (!this.all) this.revealText();
     }
 
     togglePlay() {
@@ -778,6 +790,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
 
     disconnectedCallback() {
       this.stop();
+      this.panelResize?.disconnect();
       this.narrow.removeEventListener('change', this.setMode);
       window.removeEventListener('popstate', this.popped);
     }
