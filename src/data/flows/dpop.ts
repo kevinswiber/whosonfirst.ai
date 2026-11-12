@@ -78,7 +78,7 @@ grant_type=authorization_code&code=…&code_verifier=…`,
       kind: "resp",
       label: "Token bound to key (cnf.jkt)",
       title: "The server binds the token to the key",
-      body: `The access token contains a confirmation claim with the thumbprint of the agent’s public key. The response says \`token_type: DPoP\` instead of \`Bearer\`.`,
+      body: `The access token contains a confirmation [claim](/glossary/#claim) with the thumbprint of the agent’s public key. The response says \`token_type: DPoP\` instead of \`Bearer\`.`,
       code: {
         lang: "json",
         text: `{

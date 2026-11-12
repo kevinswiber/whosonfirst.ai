@@ -3,6 +3,7 @@ import { Code } from "astro:components";
 import Base from "../../layouts/Base.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
 import FlowOverview from "../../components/FlowOverview.astro";
+import FlowCredentials from "../../components/FlowCredentials.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
@@ -224,11 +225,11 @@ const details = [
   article
   here={{ trail: [{ label: 'Flows', href: '/flows/' }, { label: group.title }], current: flow.short }}
 >
+  <article>
   <div class="page-head">
     <div class="wrap">
       <h1>{flow.title}</h1>
       <p class="lede">{flow.tagline}</p>
-      <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
     </div>
   </div>
 
@@ -236,6 +237,7 @@ const details = [
     <div class="intro">
       <div class="prose">
         <Fragment set:html={block(flow.summary, g)} />
+        <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
         {
           (taught || likened) && (
             <ul class="ways-in">
@@ -258,13 +260,15 @@ const details = [
           )
         }
       </div>
-      <aside class="fit">
+      <section class="fit">
         <h2>Use it when</h2>
         <ul>
           {flow.fits.map((x) => <li set:html={inline(x, g)} />)}
         </ul>
-      </aside>
+      </section>
     </div>
+
+    {flow.credentials && <FlowCredentials credentials={flow.credentials} gloss={g} />}
 
     {
       (flow.phases || flow.parts) && (
@@ -279,11 +283,28 @@ const details = [
         <h2 id="walkthrough">Step by step</h2>
         <p>
           {flow.steps.length} steps between {flow.participants.length} parties. Each step shows the message and
-          who holds which credential afterward. <span class="keys">Use <kbd>←</kbd>
-          <kbd>→</kbd> or select any arrow.</span>
+          who holds which credential afterward.
         </p>
+        <aside class="keys" aria-label="Using the diagram">
+          <p>Use <kbd>←</kbd> <kbd>→</kbd> or select any arrow to follow a step. Every step stays in the list.</p>
+        </aside>
       </div>
-      {flow.illustrated && <div class="prose drawn" set:html={block(flow.illustrated.steps, g)} />}
+      {flow.illustrated && (
+        <div class="prose drawn">
+          <div set:html={block(flow.illustrated.steps, g)} />
+          {flow.illustrated.preconditions && (
+            <>
+              <p class="setup-title"><strong>Already true before step 1</strong></p>
+              <ul>
+                {flow.illustrated.preconditions.map((condition) => (
+                  <li set:html={inline(condition, g)} />
+                ))}
+              </ul>
+            </>
+          )}
+          {flow.illustrated.examples && <p set:html={inline(flow.illustrated.examples, g)} />}
+        </div>
+      )}
       <FlowDiagram flow={flow} />
     </section>
 
@@ -343,83 +364,89 @@ const details = [
       )
     }
 
+    {/* Most sections explain the flow before the cautions; source reviews close it. */}
     {
-      sections.map((sec) => (
-        <section aria-labelledby={sec.id}>
-          <div class="section-head">
-            <h2 id={sec.id}>{sec.title}</h2>
-          </div>
-          <div class="prose" set:html={block(sec.intro, g)} />
-          <div class="worked">
-            {sec.parts.map((part) => (
-              <div class="part">
-                <h3>{part.title}</h3>
-                {part.tags && (
-                  <p class="chips part-tags">
-                    {part.tags.map((tag) => (
-                      <span class="chip" data-tone={tag.tone}>
-                        {tag.text}
-                      </span>
-                    ))}
-                  </p>
-                )}
-                <div class="prose" set:html={block(part.body, g)} />
-                {part.code && (
-                  <Code
-                    code={part.code.text}
-                    lang={part.code.lang as any}
-                    themes={codeThemes as any}
-                    defaultColor={false}
-                  />
-                )}
-                {part.sources && (
-                  <div class="sources">
-                    <p>{part.sources.length === 1 ? 'Source' : 'Sources'}</p>
-                    <ul>
-                      {part.sources.map((src) => (
-                        <li>
-                          <a href={src.href} rel="noopener">
-                            {src.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+      [false, true].map((afterNotes) => (
+        <>
+          {afterNotes && (
+            <section class="cols" aria-label="Cautions and notes">
+              <div>
+                <h2>Watch out for</h2>
+                <ul class="watch">
+                  {flow.watchOut.map((x) => <li set:html={inline(x, g)} />)}
+                </ul>
               </div>
-            ))}
-          </div>
-          {sec.after && <div class="prose section-after" set:html={block(sec.after)} />}
-        </section>
+              {
+                flow.notes && (
+                  <div class="notes">
+                    {flow.notes.map((note) => (
+                      <>
+                        <h2>{note.title}</h2>
+                        <div set:html={block(note.body, g)} />
+                      </>
+                    ))}
+                  </div>
+                )
+              }
+            </section>
+          )}
+          {
+            sections.filter((sec) => Boolean(sec.afterNotes) === afterNotes).map((sec) => (
+              <section aria-labelledby={sec.id}>
+                <div class="section-head">
+                  <h2 id={sec.id}>{sec.title}</h2>
+                </div>
+                <div class="prose" set:html={block(sec.intro, g)} />
+                <div class="worked">
+                  {sec.parts.map((part) => (
+                    <div class="part">
+                      <h3>{part.title}</h3>
+                      {part.tags && (
+                        <p class="chips part-tags">
+                          {part.tags.map((tag) => (
+                            <span class="chip" data-tone={tag.tone}>
+                              {tag.text}
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                      <div class="prose" set:html={block(part.body, g)} />
+                      {part.code && (
+                        <Code
+                          code={part.code.text}
+                          lang={part.code.lang as any}
+                          themes={codeThemes as any}
+                          defaultColor={false}
+                        />
+                      )}
+                      {part.sources && (
+                        <div class="sources">
+                          <p>{part.sources.length === 1 ? 'Source' : 'Sources'}</p>
+                          <ul>
+                            {part.sources.map((src) => (
+                              <li>
+                                <a href={src.href} rel="noopener">
+                                  {src.label}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {sec.after && <div class="prose section-after" set:html={block(sec.after)} />}
+              </section>
+            ))
+          }
+        </>
       ))
     }
 
-    <section class="cols" aria-label="Cautions and notes">
-      <div>
-        <h2>Watch out for</h2>
-        <ul class="watch">
-          {flow.watchOut.map((x) => <li set:html={inline(x, g)} />)}
-        </ul>
-      </div>
-      {
-        flow.notes && (
-          <div class="notes">
-            {flow.notes.map((note) => (
-              <>
-                <h2>{note.title}</h2>
-                <div set:html={block(note.body, g)} />
-              </>
-            ))}
-          </div>
-        )
-      }
-    </section>
-
     <section aria-labelledby="standards">
-      <div class="section-head">
-        <h2 id="standards">Standards in play</h2>
-        <p><a href="/standards/">See the full tracker</a> for status and links.</p>
-      </div>
+      <h2 id="standards">Standards in play</h2>
+      <p><a href="/standards/">See the full tracker</a> for status and links.</p>
       {
         byRole.length > 0 ? (
           byRole.map((g) => (
@@ -483,6 +510,7 @@ const details = [
       }
     </nav>
   </div>
+  </article>
 </Base>
 
 <style>
@@ -576,6 +604,17 @@ const details = [
   }
   .drawn :global(p) {
     margin: 0;
+  }
+  .drawn :global(p + p),
+  .drawn .setup-title {
+    margin-top: 0.9rem;
+  }
+  .drawn ul {
+    margin: 0.5rem 0 0.9rem;
+    padding-left: 1.2em;
+  }
+  .drawn li + li {
+    margin-top: 0.25rem;
   }
   /* the scope of "required", in the body color so that it is not read as part of the gloss above it */
   .refs > .scope {

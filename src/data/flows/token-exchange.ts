@@ -11,7 +11,7 @@ export const tokenExchange: Flow = {
     "Trade the token you were given for a new one that names both the user and the service now acting for them.",
   summary: `An agent calls a tool. The tool needs to call something else to do its job. What credential does it use? Forwarding the token it received is the tempting answer and the wrong one: that token was issued for the tool, not for the downstream API, and passing it along makes every hop a place where it can be stolen and replayed.
 
-Token exchange is the standard alternative. The middle service presents the token it received and asks the authorization server for a new token aimed at the next hop. The new token can keep the user as its subject while adding an \`act\` claim that names the service acting for them. Downstream, the API can see the whole story: who this is for, and who is doing it.`,
+Token exchange is the standard alternative. The middle service presents the token it received and asks the authorization server for a new token aimed at the next hop. The new token can keep the user as its subject while adding an \`act\` [claim](/glossary/#claim) that names the service acting for them. Downstream, the API can see the whole story: who this is for, and who is doing it.`,
   fits: [
     "A tool, MCP server or sub-agent must call another API **for the same user**.",
     "All hops trust the same authorization server (or servers that trust each other).",
@@ -110,7 +110,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       kind: "resp",
       label: "Token B: sub=user, act=tool",
       title: "A new token that records the delegation",
-      body: `Token B is addressed to the warehouse. Its subject is still Alice. The \`act\` claim names the tool server as the party now acting for her. If the tool calls yet another service and exchanges again, the previous actor is nested inside the new one, so the chain is preserved.`,
+      body: `Token B is addressed to the warehouse. Its subject is still Alice. The \`act\` [claim](/glossary/#claim) names the tool server as the party now acting for her. If the tool calls yet another service and exchanges again, the previous actor is nested inside the new one, so the chain is preserved.`,
       code: {
         lang: "json",
         text: `{

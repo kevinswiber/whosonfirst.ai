@@ -77,7 +77,7 @@ jobs:
       # short-lived credentials. No key is stored in repository secrets.
 ```
 
-The token's claims describe the job: repository, branch or tag, environment, workflow. The trust rule on the receiving side decides which of those are required.
+The token's [claims](/glossary/#claim) describe the job: repository, branch or tag, environment, workflow. The trust rule on the receiving side decides which of those are required.
 
 **Be specific in the trust rule.** A rule that accepts any token from the CI provider's issuer accepts every repository on that provider. Pin the repository and, for anything sensitive, the branch or environment.
 
