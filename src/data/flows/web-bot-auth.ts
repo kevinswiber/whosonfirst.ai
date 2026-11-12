@@ -91,7 +91,7 @@ Content-Type: application/http-message-signatures-directory+json
       kind: "self",
       label: "Sign the request",
       title: "The agent signs each outgoing request",
-      body: `An RFC 9421 signature over, at minimum, the target authority and the agent’s entry in the \`Signature-Agent\` header. The signature parameters carry a creation time, a short expiry, the key ID, and a \`tag\` that marks the signature’s purpose.`,
+      body: `An RFC 9421 signature over, at minimum, the target authority or the whole target URI, and the agent’s entry in the \`Signature-Agent\` header. The signature parameters carry a creation time, a short expiry, the key ID, and a \`tag\` that marks the signature’s purpose. The key ID is not a name the operator chooses: it is the JWK thumbprint of the signing key, as RFC 7638 computes it.`,
     },
     {
       from: "agent",
@@ -126,7 +126,7 @@ Signature: sig1=:tQjDZHcVQ+BJ29HnzMuNjWJr4UC8yyFlTJnPli1pWH6QpLOGt9uDi/hgBwEsoJl
       kind: "back",
       label: "Fetch key directory",
       title: "The verifier looks up the operator’s keys",
-      body: `The verifier fetches the URL in \`Signature-Agent\` directly, and caches the key directory according to HTTP caching headers. A verifier may also keep its own registry of operators it recognizes. If you write the verifier yourself, treat that URL as hostile input: any visitor can put any address in the header. Fetch over HTTPS only, refuse private, loopback and link-local addresses, set a size and time limit, and cache. Or fetch only for operators you already recognize.`,
+      body: `The verifier fetches the URL in \`Signature-Agent\` directly, and caches the key directory according to HTTP caching headers. A verifier may also keep its own registry of operators it recognizes. If you write the verifier yourself, treat that URL as hostile input: any visitor can put any address in the header. Fetch over HTTPS only, do not follow redirects, refuse private, loopback and link-local addresses, set a size and time limit, and cache. Or fetch only for operators you already recognize.`,
     },
     {
       from: "edge",
@@ -152,7 +152,20 @@ Signature: sig1=:tQjDZHcVQ+BJ29HnzMuNjWJr4UC8yyFlTJnPli1pWH6QpLOGt9uDi/hgBwEsoJl
       body: `If the site needs to know which person the agent is acting for, to show an account page or take an order, that is a separate step using the site’s own login or an OAuth token.`,
     },
   ],
-  standards: ["web-bot-auth", "rfc9421", "visa-tap", "signature-key"],
+  standards: [
+    "web-bot-auth",
+    "rfc9421",
+    "rfc7638",
+    "visa-tap",
+    "signature-key",
+  ],
+  roles: {
+    "web-bot-auth": "required", // the stated basis: revision -01. Signature-Agent and the key directory, steps 1 to 6
+    rfc9421: "required", // Signature-Input and Signature, and how the signature base is built and verified: steps 3, 4 and 6
+    rfc7638: "required", // `keyid` in step 4 is this thumbprint; the draft requires it (Section 5.2)
+    "visa-tap": "background", // one of the payment networks’ schemes the closing note points to; no step uses it
+    "signature-key": "background", // another way to convey a signer’s key; the draft’s -01 text does not use it, and the page does not
+  },
   related: [
     "agent-payments",
     "agent-to-agent",
