@@ -193,6 +193,18 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     "rfc8707",
     "rfc6750",
   ],
+  basis: ["id-jag", "mcp-ema"],
+  roles: {
+    "id-jag": "required", // the grant, at revision -06: steps 2 to 7
+    "mcp-ema": "required", // the MCP application of it: `audience` and `resource` in step 2, and the token restricted to the MCP server in step 7
+    rfc8693: "required", // the token exchange request, step 2
+    rfc7523: "required", // the JWT bearer grant and the client assertion, step 5
+    "identity-chaining": "required", // ID-JAG is a profile of it and cites it normatively; the rule against refresh tokens in step 9 is its section 5.4
+    cimd: "required", // the URL as `client_id` and the key its document publishes, steps 4 and 5 as drawn
+    rfc7519: "required", // the grant in step 4 is a JWT; step 6 checks its audience and expiry
+    rfc8707: "required", // `resource`, steps 2, 4 and 7
+    rfc6750: "required", // the Bearer token on the MCP request, step 8
+  },
   related: [
     "mcp-authorization",
     "token-exchange",
