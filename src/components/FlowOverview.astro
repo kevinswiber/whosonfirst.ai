@@ -45,11 +45,11 @@ const parts = flow.participants
     phases.length > 0 && (
       <section aria-labelledby="in-short">
         <h2 id="in-short">In short</h2>
-        <ol class="ov-phases">
+        <ol class="ov-phases" role="list">
           {phases.map((p, i) => (
             <li>
               <a href={`#step-${p.first}`}>
-                <span class="ov-n">{i + 1}</span>
+                <span class="ov-n" aria-hidden="true">{i + 1}</span>
                 <span class="ov-t">{p.title}</span>
                 <span class="ov-r">{p.range}</span>
               </a>

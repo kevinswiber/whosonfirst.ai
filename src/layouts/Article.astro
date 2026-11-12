@@ -78,7 +78,6 @@ const here = fm.section
             </p>
           )
         }
-        {kind && <DocMeta reviewed={REVIEWED} subject="Guide" details={details} more="Review details" />}
       </div>
     </div>
 
@@ -100,6 +99,7 @@ const here = fm.section
       <div class="article-main">
         <div class="article">
           {fm.lede && <p class="lede">{fm.lede}</p>}
+          {kind && <DocMeta reviewed={REVIEWED} subject="Guide" details={details} more="Review details" />}
           <Fragment set:html={article} />
         </div>
         {kind && <WayOn html={body} path={Astro.url.pathname} />}

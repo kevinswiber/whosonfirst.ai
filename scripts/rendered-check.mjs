@@ -526,6 +526,16 @@ record(
     const h1 = plain(/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main)?.[1] ?? "");
     if (!md.startsWith(`# ${h1}\n`))
       copies.push(`${p.path} (does not open with the page's title)`);
+    if (main.includes('class="flow-steps"')) {
+      const count = [...main.matchAll(/class="flow-step\s/g)].length;
+      const numbered = [...md.matchAll(/^### (\d+)\. /gm)].map((m) =>
+        Number(m[1]),
+      );
+      if (numbered.length !== count || numbered.some((n, i) => n !== i + 1))
+        copies.push(
+          `${p.path} (flow step numbering is not complete and sequential)`,
+        );
+    }
     // outside code samples, nothing of the page's markup comes through
     const prose = md
       .replace(/^\s*```[\s\S]*?^\s*```/gm, "")
@@ -1500,8 +1510,8 @@ for (const theme of THEMES) {
 
       if (pg.name === "flow" || pg.name === "standards") {
         const facts = await page.evaluate(() => {
-          const line = document.querySelector(".page-head .doc-line");
-          const more = document.querySelector(".page-head .doc-details");
+          const line = document.querySelector("main .doc-line");
+          const more = document.querySelector("main .doc-details");
           return line
             ? {
                 text: line.textContent.replace(/\s+/g, " "),
@@ -1524,7 +1534,7 @@ for (const theme of THEMES) {
           !!facts &&
             facts.closed === true &&
             (await page.evaluate(() => {
-              const d = document.querySelector(".page-head .doc-details");
+              const d = document.querySelector("main .doc-details");
               d.querySelector("summary").click();
               return d.open && d.querySelector("dl").offsetParent !== null;
             })),
@@ -2733,6 +2743,27 @@ for (const javaScriptEnabled of [false, true]) {
       const flow = document.querySelector("flow-diagram");
       const steps = [...flow.querySelectorAll(".flow-step")];
       const problems = [];
+      if (
+        flow.querySelectorAll(".step-phase").length !==
+        flow.querySelectorAll(".phase-start").length
+      )
+        problems.push("phase introductions are repeated or missing");
+      if (flow.querySelector(".flow-step:not(.phase-start) .step-phase"))
+        problems.push("a phase introduction repeats inside the phase");
+      if (
+        [...document.querySelectorAll(".ov-n, .step-num")].some(
+          (n) => n.getAttribute("aria-hidden") !== "true",
+        )
+      )
+        problems.push(
+          "a visual badge duplicates ordered-list numbering for assistive technology",
+        );
+      const article = document.querySelector("main > article");
+      if (
+        !article?.contains(flow) ||
+        !article?.querySelector(".intro .doc-line")
+      )
+        problems.push("flow provenance is outside its article narrative");
       for (const [i, step] of steps.entries()) {
         if (step.id !== `step-${i + 1}`)
           problems.push(`step ${i + 1}: out of order`);
@@ -2768,9 +2799,9 @@ for (const javaScriptEnabled of [false, true]) {
   }
   await ctx.close();
 }
-// Comparisons explain each alternative without requiring tab selection.
-{
-  const ctx = await browser.newContext();
+// Comparisons and their annotations explain each alternative without interaction.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({ javaScriptEnabled });
   const page = await ctx.newPage();
   for (const [path, selector] of [
     ["/concepts/", ".ti-panel"],
@@ -2790,6 +2821,74 @@ for (const javaScriptEnabled of [false, true]) {
       "every comparison alternative remains readable without selection",
       seen.total > 1 && seen.readable === seen.total,
       JSON.stringify(seen),
+    );
+    if (path === "/concepts/") {
+      const notes = page.locator(".claim-note");
+      const visible = await notes.evaluateAll((items) =>
+        items.every(
+          (n) =>
+            !n.closest('[hidden], [aria-hidden="true"]') &&
+            n.checkVisibility({ visibilityProperty: true }),
+        ),
+      );
+      const snapshots = await Promise.all(
+        (await notes.all()).map((n) => n.ariaSnapshot()),
+      );
+      record(
+        `token annotations ${javaScriptEnabled ? "with" : "without"} JavaScript`,
+        "every claim explanation is visible and exposed without opening a disclosure",
+        snapshots.length > 0 &&
+          visible &&
+          snapshots.every((s) => s.trim().length > 0),
+        `${snapshots.length} claim explanations`,
+      );
+    }
+  }
+  await ctx.close();
+}
+// Ambiguous words need an author's link, not a vocabulary match. Ordinary
+// claims and task states must not send readers to JWT or OAuth definitions.
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  for (const [path, selector, expected] of [
+    [
+      "/flows/mcp-authorization/",
+      '#step-8 a[href="/glossary/#claim"], #step-13 a[href="/glossary/#state"]',
+      false,
+    ],
+    ["/flows/agent-to-agent/", 'a[href="/glossary/#state"]', false],
+    ["/deployments/kubernetes/", 'a[href="/glossary/#claim"]', false],
+    ["/flows/token-exchange/", 'a[href="/glossary/#claim"]', true],
+    [
+      "/flows/authorization-code-pkce/",
+      'a[href="/glossary/#state"] code',
+      true,
+    ],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    record(
+      path,
+      "claim and state links refer to their technical meanings",
+      (await page.locator(selector).count()) > 0 === expected,
+    );
+  }
+  for (const [path, selector] of [
+    ["/standards/", ".sx-item > .chips"],
+    ["/concepts/", ".ti-sources .chips"],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const rows = await page.locator(selector).evaluateAll((items) =>
+      items.map((row) => ({
+        fields: row.children.length,
+        separators: row.textContent.match(/ · /g)?.length ?? 0,
+      })),
+    );
+    record(
+      path,
+      "adjacent metadata and source references have literal separators",
+      rows.length > 0 &&
+        rows.every((r) => r.separators === Math.max(0, r.fields - 1)),
     );
   }
   await ctx.close();

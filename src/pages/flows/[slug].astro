@@ -224,11 +224,11 @@ const details = [
   article
   here={{ trail: [{ label: 'Flows', href: '/flows/' }, { label: group.title }], current: flow.short }}
 >
+  <article>
   <div class="page-head">
     <div class="wrap">
       <h1>{flow.title}</h1>
       <p class="lede">{flow.tagline}</p>
-      <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
     </div>
   </div>
 
@@ -236,6 +236,7 @@ const details = [
     <div class="intro">
       <div class="prose">
         <Fragment set:html={block(flow.summary, g)} />
+        <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
         {
           (taught || likened) && (
             <ul class="ways-in">
@@ -418,10 +419,8 @@ const details = [
     </section>
 
     <section aria-labelledby="standards">
-      <div class="section-head">
-        <h2 id="standards">Standards in play</h2>
-        <p><a href="/standards/">See the full tracker</a> for status and links.</p>
-      </div>
+      <h2 id="standards">Standards in play</h2>
+      <p><a href="/standards/">See the full tracker</a> for status and links.</p>
       {
         byRole.length > 0 ? (
           byRole.map((g) => (
@@ -485,6 +484,7 @@ const details = [
       }
     </nav>
   </div>
+  </article>
 </Base>
 
 <style>

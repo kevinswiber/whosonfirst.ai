@@ -162,11 +162,13 @@ const toc = [
       <nav class="toc" aria-label="On this page">
         {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
       </nav>
-      <DocMeta reviewed={REVIEWED} details={details} more="Review details" />
     </div>
   </div>
 
   <div class="numbered">
+    <div class="wrap">
+      <DocMeta reviewed={REVIEWED} details={details} more="Review details" />
+    </div>
   <section class="section" id="roles">
     <div class="wrap">
       <div class="section-head">
@@ -391,7 +393,7 @@ const toc = [
     <div class="wrap">
       <div class="section-head">
         <h2>What is in a token</h2>
-        <p>Nine credentials you will meet. Open any claim to see which question it answers.</p>
+        <p>Nine credentials you will meet. Each claim is followed by the question it answers and what it means.</p>
       </div>
       <TokenInspector />
     </div>

@@ -16,6 +16,8 @@ import { termSlug } from "./term";
 
 /** Too common on this site to be worth marking: every page is about them. */
 const UNMARKED = new Set(["agent", "workload", "oauth", "mcp"]);
+/** These also have ordinary meanings. Authors link their technical uses explicitly. */
+const EXPLICIT = new Set(["claim", "state"]);
 
 interface Entry {
   term: string;
@@ -36,7 +38,8 @@ const plain = (md: string) =>
 
 const entries = new Map<string, Entry>();
 for (const t of glossary) {
-  if (UNMARKED.has(t.term.toLowerCase())) continue;
+  if (UNMARKED.has(t.term.toLowerCase()) || EXPLICIT.has(t.term.toLowerCase()))
+    continue;
   const base = {
     term: t.term,
     slug: termSlug(t.term),

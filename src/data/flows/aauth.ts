@@ -25,7 +25,7 @@ AAuth is an individual draft in its eleventh revision, which is why this page is
     "Prototypes and interoperability tests. Nothing here is settled enough to build a product on.",
   ],
   watchOut: [
-    "**It is an individual draft, and it is still being redesigned.** The person token, which every step of this diagram depends on, first appeared in the current revision. That revision also renamed endpoints and removed claims. The draft lists four implementations and calls each of them exploratory.",
+    "**It is an individual draft, and it is still being redesigned.** The person token, which every step of this diagram depends on, first appeared in the current revision. That revision also renamed endpoints and removed [claims](/glossary/#claim). The draft lists four implementations and calls each of them exploratory.",
     "**The API never learns which agent is calling.** In the arrangement drawn it sees a person, a scope and a key. No token it reads names the agent or the agent’s provider, and that is deliberate. A rule such as “only agents from this vendor” cannot be enforced here.",
     "**Check the token’s type.** A person token and an auth token from the same person server carry the same issuer, audience, subject and key. Only `typ` tells them apart. An API that skips that check treats “this is Alice’s agent” as “Alice approved this.” The draft says to test for the mistake, because it fails open.",
     "**Any person server can speak to any API.** Nothing is arranged between them beforehand. A person token shows that the same person is back, under the same issuer and subject. It does not show who they are, or that anyone checked. Key your records on issuer and subject together, and decide what a newcomer may do.",

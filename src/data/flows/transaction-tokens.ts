@@ -173,7 +173,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
   notes: [
     {
       title: "Where this stands",
-      body: `The transaction tokens draft has been through repeated working group last calls and is waiting for its write-up before going to the IESG. A separate individual draft proposes agent-specific context for the token, so that each agent in a chain is recorded as the request moves. Its claim design changed during 2026, which is a fair signal of how settled it is.`,
+      body: `The transaction tokens draft has been through repeated working group last calls and is waiting for its write-up before going to the IESG. A separate individual draft proposes agent-specific context for the token, so that each agent in a chain is recorded as the request moves. Its [claim](/glossary/#claim) design changed during 2026, which is a fair signal of how settled it is.`,
     },
   ],
 };

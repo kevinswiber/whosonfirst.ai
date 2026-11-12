@@ -1,7 +1,7 @@
 ---
 /**
- * Annotated token examples. Each claim line is a native <details> element, so
- * the explanations work without JavaScript. Every example stays in the page;
+ * Annotated token examples. Each claim is followed by its explanation, with no
+ * disclosure to hide it from a reading mode. Every example stays in the page;
  * the links jump to an example without hiding the others.
  */
 import { tokens, CAT_LABEL, CAT_TONE } from "../data/tokens";
@@ -40,17 +40,17 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
           <p set:html={inline(t.intro)} />
         </header>
         <div class="ti-code">
-          {t.lines.map((l, i) =>
+          {t.lines.map((l) =>
             l.note ? (
-              <details class={`claim tone-${CAT_TONE[l.cat ?? 'meta']}`} name={`ti-${t.id}`} open={i === t.lines.findIndex((line) => line.note)}>
-                <summary style={`--indent:${l.indent ?? 0}`}>
+              <div class={`claim tone-${CAT_TONE[l.cat ?? 'meta']}`}>
+                <div class="claim-line" style={`--indent:${l.indent ?? 0}`}>
                   <code>{l.text}</code>
-                </summary>
+                </div>
                 <div class="claim-note" style={`--indent:${l.indent ?? 0}`}>
-                  <span class="claim-cat">{CAT_LABEL[l.cat ?? 'meta']}</span>
+                  <span class="claim-cat">{CAT_LABEL[l.cat ?? 'meta']}</span>{' '}
                   <p set:html={inline(l.note)} />
                 </div>
-              </details>
+              </div>
             ) : (
               <div class="plain" style={`--indent:${l.indent ?? 0}`}>
                 <code>{l.text}</code>
@@ -65,10 +65,13 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
             </a>
           )}
           <span class="chips">
-            {t.standards.filter(hasStd).map((id) => (
-              <a class="chip" href={`/standards/#${id}`}>
-                {std(id).ref}
-              </a>
+            {t.standards.filter(hasStd).map((id, i) => (
+              <span class="ti-source">
+                {i > 0 && ' · '}
+                <a class="chip" href={`/standards/#${id}`}>
+                  {std(id).ref}
+                </a>
+              </span>
             ))}
           </span>
         </p>
@@ -171,36 +174,14 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
     word-break: break-word;
   }
   .plain,
-  .claim summary {
+  .claim-line {
     padding: 0.14rem 1rem 0.14rem calc(1rem + var(--indent) * 1.3rem);
   }
   .plain code {
     color: var(--fg-subtle);
   }
-  .claim summary {
-    list-style: none;
-    cursor: pointer;
+  .claim-line {
     border-left: 3px solid var(--tone);
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-  }
-  .claim summary::-webkit-details-marker {
-    display: none;
-  }
-  .claim summary::after {
-    content: '+';
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--fg-subtle);
-    flex: none;
-  }
-  .claim[open] summary::after {
-    content: '–';
-  }
-  .claim summary:hover,
-  .claim[open] summary {
     background: color-mix(in srgb, var(--tone) 12%, transparent);
   }
   .claim-note {
@@ -253,6 +234,13 @@ const cats = Object.keys(CAT_LABEL).filter((c) => c !== "meta") as ClaimCat[];
   }
   /* a specification's name can be longer than a phone is wide */
   .ti-panel .ti-sources .chips {
+    min-width: 0;
+    column-gap: 0.6rem;
+  }
+  .ti-source {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35em;
     min-width: 0;
   }
   .ti-panel .ti-sources .chip {

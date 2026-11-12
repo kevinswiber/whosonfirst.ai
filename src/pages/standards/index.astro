@@ -199,9 +199,9 @@ const moved = [
                       <span class="chip" data-tone={STATUS_TONE[s.status]}>
                         {STATUS_LABEL[s.status]}
                       </span>
-                      <span class="chip">{s.body}</span>
+                      <span class="chip">{' · '}{s.body}</span>
                       {s.topics.map((t) => (
-                        <span class="chip topic">{TOPIC_LABEL[t]}</span>
+                        <span class="chip topic">{' · '}{TOPIC_LABEL[t]}</span>
                       ))}
                     </div>
                     <p class="sx-summary" set:html={inline(s.summary)} />
@@ -622,6 +622,9 @@ const moved = [
   .sx-item h3 {
     margin: 0;
     font-size: 1.24rem;
+  }
+  .sx-item > .chips {
+    column-gap: 0.6rem;
   }
   .sx-ref {
     font-family: var(--font-mono);

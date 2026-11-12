@@ -102,8 +102,40 @@ avoids intercepting Chrome's action on the original link:
 implements `OnLinkClicked` with the target node's default accessibility action.
 The regression checks cover link semantics, pointer, keyboard, touch and
 programmatic activation, preview dismissal and literal metadata separators.
-The updated preview still needs a native Chrome recheck; these checks do not
-simulate Reading Mode itself.
+The user's follow-up screenshot at 20:50 UTC confirms that glossary terms render
+as links in Chrome Reading Mode, and the accompanying capture contains the
+literal standard separators. It does not establish link activation or behavior
+on other pages. These automated checks do not simulate Reading Mode itself.
+
+The next pass addresses remaining structure and content availability:
+
+- Visual number badges no longer duplicate the ordered lists' accessible
+  numbering. A phase is introduced only at its first step; Markdown and social
+  cards retain their own explicit step and phase context.
+- All 71 token claim explanations on Concepts are visible. Previously only 9
+  were visible, and closed notes were missing from Chromium's accessibility
+  tree, despite being present in the DOM-based extraction audit.
+- Ordinary uses of “claim” and “state” no longer link to JWT and OAuth terms.
+  Authors link those technical meanings explicitly.
+- Flow and guide review facts sit with their narrative, and Concepts keeps its
+  review facts in its main content. The component's neutral `page-facts` class
+  avoids Readability's negative match on `meta`.
+- The standards tracker and token source lists have literal separators too.
+
+The repeated audit retains 19/19 DPoP and 33/33 MCP narrative/provenance
+fragments, including entry at step 2; all 271 Concepts token/provenance leaf
+fragments and 23 source links; five Kubernetes layers and its review line; and
+99 standards source blocks with 222 links. Token code, labels and paragraphs
+are compared within each example: extractors can change block boundaries
+without losing words. The standards tracker and home review lines still fall
+outside this extractor's selected content, as do the short taglines noted
+above. Native checks of the latest structure remain open in #59.
+
+The screenshots below show the normal site, not a native Reader theme.
+
+![Token claims with their explanations visible on desktop](reader-mode/token-annotations-desktop.png)
+
+![Token claims with their explanations visible on a phone](reader-mode/token-annotations-mobile.png)
 
 ## What belongs in each mode
 

@@ -74,11 +74,20 @@ for (const path of [
     const holder = document.createElement("div");
     holder.innerHTML = article?.content || "";
     const norm = (s) => s.replace(/\s+/g, " ").trim();
+    // Compare token paragraphs, labels and code separately. An extractor can
+    // change block boundaries without losing words; comparing a whole panel's
+    // textContent mistakes those whitespace changes for missing explanations.
     const fragments = [
       ...document.querySelectorAll(
-        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel",
+        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel > header > h3, .ti-panel > header > p, .ti-panel .claim-line > code, .ti-panel .plain > code, .claim-note > .claim-cat, .claim-note > p, main .doc-line",
       ),
-    ].map((x) => ({ kind: x.className, text: norm(x.textContent) }));
+    ].map((x) => ({
+      kind: x.matches(".claim-note > p")
+        ? "claim-note prose"
+        : x.className || x.tagName.toLowerCase(),
+      text: norm(x.textContent),
+      token: x.closest(".ti-panel")?.id,
+    }));
     const sourceLinks = [
       ...document.querySelectorAll(".sx-source a, .ti-sources a"),
     ].map((a) => a.href);
@@ -95,8 +104,17 @@ for (const path of [
         (href) => !extractedLinks.has(href),
       ),
       fragmentsMissing: fragments
-        .filter((x) => !norm(holder.textContent).includes(x.text))
-        .map((x) => ({ kind: x.kind, excerpt: x.text.slice(0, 100) })),
+        .filter((x) => {
+          const scope = x.token
+            ? holder.querySelector(`#${CSS.escape(x.token)}`)
+            : holder;
+          return !scope || !norm(scope.textContent).includes(x.text);
+        })
+        .map((x) => ({
+          kind: x.kind,
+          token: x.token,
+          excerpt: x.text.slice(0, 100),
+        })),
       fragmentsChecked: fragments.length,
       svg: holder.querySelectorAll("svg").length,
       controls: holder.querySelectorAll("button, nav").length,

@@ -386,18 +386,18 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     </div>
     </aside>
 
-    <ol class="flow-steps">
+    <ol class="flow-steps" role="list">
       {
         rows.map((r) => (
           <li class:list={['flow-step', `kind-${r.s.kind}`, { 'phase-start': r.part?.start }]} data-step={r.i} id={`step-${r.i + 1}`}>
-            {r.part && (
+            {r.part?.start && (
               <p class="step-phase">
                 <span class="step-phase-n">Part {r.part.n} of {r.part.of} </span>
                 {r.part.title}
               </p>
             )}
             <p class="step-meta">
-              <span class={`step-num role-${r.from.role}`}>{r.i + 1} </span>
+              <span class={`step-num role-${r.from.role}`} aria-hidden="true">{r.i + 1} </span>
               <span class="step-route">
                 <span class={`who role-${r.from.role}`}>{r.from.label} </span>
                 {r.to && (
@@ -1245,8 +1245,7 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
   .flow-step.is-current {
     border-color: var(--accent);
   }
-  /* Which part of the flow a step belongs to. Stepping through, every step says
-     so. Read as a list, only the step that opens a part does, as a heading. */
+  /* Each part is introduced once, at its first step, in every presentation. */
   .step-phase {
     margin: 0 0 0.8rem;
     padding-bottom: 0.6rem;
@@ -1263,9 +1262,6 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--fg-muted);
-  }
-  .flow:is([data-all], [data-narrative], :not([data-js])) .flow-step:not(.phase-start) .step-phase {
-    display: none;
   }
   .step-meta {
     display: flex;
@@ -1442,9 +1438,6 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     }
     .flow-step {
       break-inside: avoid;
-    }
-    .flow-step:not(.phase-start) .step-phase {
-      display: none;
     }
     /* a printer leaves out backgrounds unless told: the number is white on its color */
     .step-num {
