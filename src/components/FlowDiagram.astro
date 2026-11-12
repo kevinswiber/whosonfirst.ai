@@ -792,6 +792,16 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
+  /* Both stacked tablets and side-by-side desktops keep navigation reachable
+     while the complete narrative scrolls inside the panel. */
+  @media screen and (min-width: 48rem) {
+    .flow[data-js]:not([data-all]) .flow-panel {
+      max-height: calc(100dvh - 5.4rem - var(--here, 0rem));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+  }
   @media (min-width: 68rem) {
     .flow {
       /* the diagram gets the room: it is drawn at its natural size here */
@@ -801,10 +811,6 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     .flow-panel {
       position: sticky;
       top: calc(4.6rem + var(--here, 0rem));
-      max-height: calc(100dvh - 5.4rem - var(--here, 0rem));
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-width: thin;
     }
     .flow[data-all] .flow-panel,
     .flow:not([data-js]) .flow-panel {
@@ -1146,9 +1152,9 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
   }
 
   /* panel */
-  /* Beside the diagram the panel scrolls on its own when an explanation is taller
-     than the window. The controls stay at its top so a step can always be changed. */
-  @media (min-width: 68rem) {
+  /* The panel scrolls on its own at tablet and desktop widths. The controls
+     stay at its top so a step can always be changed. */
+  @media (min-width: 48rem) {
     .flow[data-js]:not([data-all]) .flow-bar {
       position: sticky;
       top: 0;

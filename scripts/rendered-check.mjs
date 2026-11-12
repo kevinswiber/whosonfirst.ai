@@ -2440,6 +2440,78 @@ await ctx.close();
     await ctx.close();
   }
 }
+// The stacked tablet layout must keep its controls reachable as the complete
+// narrative advances, including at either edge of its breakpoint.
+for (const width of [768, 900, 1087]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+  const page = await ctx.newPage();
+  for (const path of ["/flows/dpop/", FLOW]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      window.scrollBy(0, panel.getBoundingClientRect().top - 120);
+    });
+    const initialY = await page.evaluate(() => scrollY);
+    const count = await page.locator(".flow-step").count();
+    for (let i = 1; i < count; i++) {
+      await page.locator('[data-act="next"]').click();
+    }
+    const seen = await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const heading = document
+        .querySelector(".flow-step.is-current h3")
+        .getBoundingClientRect();
+      return {
+        y: scrollY,
+        scrolled: panel.scrollTop > 0,
+        bounded: panel.clientHeight < panel.scrollHeight,
+        controlsVisible: bar.top >= 100 && bar.bottom < innerHeight,
+        headingVisible:
+          heading.top >= bar.bottom && heading.bottom < innerHeight,
+        readable: [...document.querySelectorAll(".flow-step")].every((step) =>
+          step.checkVisibility({ visibilityProperty: true }),
+        ),
+      };
+    });
+    record(
+      `tablet ${width}px ${path}`,
+      "Next reaches the last step without scrolling controls off the page",
+      Math.abs(seen.y - initialY) <= 1 &&
+        seen.scrolled &&
+        seen.bounded &&
+        seen.controlsVisible &&
+        seen.headingVisible &&
+        seen.readable,
+      JSON.stringify({ initialY, ...seen }),
+    );
+    // A diagram selection uses the same bounded narrative panel.
+    await page.locator('svg .step[data-step="1"]').first().click();
+    const selected = await page.evaluate(() => {
+      const panel = document.querySelector(".flow-panel");
+      const bar = document.querySelector(".flow-bar").getBoundingClientRect();
+      const heading = document
+        .querySelector(".flow-step.is-current h3")
+        .getBoundingClientRect();
+      return {
+        id: document.querySelector(".flow-step.is-current").id,
+        scrolled: panel.scrollTop > 0,
+        headingBelowControls: heading.top >= bar.bottom,
+        headingInPanel: heading.bottom <= panel.getBoundingClientRect().bottom,
+      };
+    });
+    record(
+      `tablet ${width}px ${path}`,
+      "diagram selection aligns its explanation inside the scrolling panel",
+      selected.id === "step-2" &&
+        selected.scrolled &&
+        selected.headingBelowControls &&
+        selected.headingInPanel,
+      JSON.stringify(selected),
+    );
+  }
+  await ctx.close();
+}
 // Reader extractors inspect the live DOM. Selection must never remove the
 // canonical narrative with hidden/aria-hidden or display:none. This is a
 // content-availability contract, not an emulation of any browser's Reader.
