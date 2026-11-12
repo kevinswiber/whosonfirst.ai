@@ -338,6 +338,17 @@ export const TOPIC_LABEL: Record<StdTopic, string> = {
   guidance: "Guidance",
 };
 
+/**
+ * Another document a tracker entry says something about: one that updates it,
+ * a companion, a newer version still in draft. One that has its own entry is
+ * named by that entry's `id` and links to it, so its address is kept in one
+ * place. Any other is named with the address of the document itself, which is
+ * the source for what `note` says.
+ */
+export type RelatedDoc =
+  | { entry: string; note: string }
+  | { name: string; url: string; note: string };
+
 export interface Standard {
   id: string;
   /** Short display name, e.g. "Token Exchange". */
@@ -348,6 +359,12 @@ export interface Standard {
   status: StdStatus;
   /** Free-text status detail: revision, date, where it is in the process. */
   detail?: string;
+  /**
+   * Other documents this entry says something about, each with its link. A fact
+   * about another document goes here and not in `detail`, so that it is shown
+   * with its source.
+   */
+  related?: RelatedDoc[];
   /**
    * For a project, a platform or a guidance document, whose status alone shows no
    * maturity: the level its maintainers' own statements support, with the evidence

@@ -37,7 +37,16 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "rfc",
     detail:
-      "October 2012. Updated by RFCs 8252, 8996 and 9700. Still the current standard until OAuth 2.1 is published.",
+      "October 2012. Still the current standard until OAuth 2.1 is published.",
+    related: [
+      { entry: "rfc8252", note: "Updates this RFC." },
+      {
+        name: "RFC 8996, Deprecating TLS 1.0 and TLS 1.1",
+        url: rfc(8996),
+        note: "Updates this RFC.",
+      },
+      { entry: "rfc9700", note: "Updates this RFC." },
+    ],
     topics: ["core"],
     summary:
       "Defines the roles (client, authorization server, resource server) and the core grants: authorization code, client credentials, refresh.",
@@ -51,7 +60,15 @@ export const standards: Standard[] = [
     ref: "RFC 6750",
     body: "IETF",
     status: "rfc",
-    detail: "October 2012. Updated by RFCs 8996 and 9700.",
+    detail: "October 2012.",
+    related: [
+      {
+        name: "RFC 8996, Deprecating TLS 1.0 and TLS 1.1",
+        url: rfc(8996),
+        note: "Updates this RFC.",
+      },
+      { entry: "rfc9700", note: "Updates this RFC." },
+    ],
     topics: ["core"],
     summary:
       "The `Authorization: Bearer` header and the `WWW-Authenticate` error vocabulary, including `insufficient_scope`.",
@@ -163,7 +180,19 @@ export const standards: Standard[] = [
     ref: "RFC 7519",
     body: "IETF",
     status: "rfc",
-    detail: "May 2015. Updated by RFCs 7797 and 8725.",
+    detail: "May 2015.",
+    related: [
+      {
+        name: "RFC 7797, JSON Web Signature (JWS) Unencoded Payload Option",
+        url: rfc(7797),
+        note: "Updates this RFC.",
+      },
+      {
+        name: "RFC 8725, JSON Web Token Best Current Practices",
+        url: rfc(8725),
+        note: "Updates this RFC.",
+      },
+    ],
     topics: ["core"],
     summary:
       "A compact way to carry claims between two parties, signed or encrypted, with seven registered claims: `iss`, `sub`, `aud`, `exp`, `nbf`, `iat` and `jti`. A recipient not named in `aud` must reject the token, and no one may accept it at or after `exp`.",
@@ -233,7 +262,8 @@ export const standards: Standard[] = [
     ref: "RFC 9126",
     body: "IETF",
     status: "rfc",
-    detail: "September 2021. Updated by RFC 10070.",
+    detail: "September 2021.",
+    related: [{ entry: "rfc10070", note: "Updates this RFC." }],
     topics: ["core"],
     otherNames: ["PAR"],
     summary:
@@ -263,7 +293,14 @@ export const standards: Standard[] = [
     ref: "RFC 9635",
     body: "IETF",
     status: "rfc",
-    detail: "October 2024. Resource server companion is RFC 9767.",
+    detail: "October 2024.",
+    related: [
+      {
+        name: "RFC 9767, GNAP Resource Server Connections",
+        url: rfc(9767),
+        note: "The companion for resource servers. April 2025.",
+      },
+    ],
     topics: ["core", "delegation"],
     summary:
       "Grant Negotiation and Authorization Protocol: a ground-up redesign with key-bound clients, negotiated interaction and continuation.",
@@ -385,7 +422,8 @@ export const standards: Standard[] = [
     ref: "RFC 7523",
     body: "IETF",
     status: "rfc",
-    detail: "May 2015. Updated by RFC 10070.",
+    detail: "May 2015.",
+    related: [{ entry: "rfc10070", note: "Updates this RFC." }],
     topics: ["core", "registration", "delegation"],
     summary:
       "Two uses of a signed JWT at the token endpoint: authenticating a client (`private_key_jwt`) and as an authorization grant (`jwt-bearer`).",
@@ -592,10 +630,15 @@ export const standards: Standard[] = [
     ref: "RFC 9396",
     body: "IETF",
     status: "rfc",
-    detail:
-      "May 2023. A companion draft on metadata and error remediation was adopted by the OAuth working group in August 2026.",
+    detail: "May 2023.",
+    related: [
+      {
+        name: "OAuth 2.0 RAR Metadata and Error Remediation",
+        url: draft("draft-ietf-oauth-rar-metadata-remediation"),
+        note: "A companion draft, adopted by the OAuth working group in August 2026.",
+      },
+    ],
     topics: ["human-in-the-loop", "authorization"],
-    otherNames: ["RAR"],
     summary:
       "`authorization_details`: a structured JSON description of exactly what is being authorized, in place of coarse scope strings.",
     agents:
@@ -775,7 +818,14 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -01, November 2026. Informational. Adopted by WIMSE in September 2026; previously the individual draft draft-klrc-aiagent-auth.",
+      "Revision -01, November 2026. Informational. Adopted by WIMSE in September 2026.",
+    related: [
+      {
+        name: "draft-klrc-aiagent-auth",
+        url: draft("draft-klrc-aiagent-auth"),
+        note: "The individual draft this replaced when it was adopted.",
+      },
+    ],
     topics: ["workload", "delegation", "guidance"],
     summary:
       "Defines no new protocol. Describes how existing ones compose for agents: workload identity for the agent, OAuth for authorization, transaction tokens inside a domain, identity chaining across domains.",
@@ -893,8 +943,14 @@ export const standards: Standard[] = [
     ref: "Kubernetes KEP-3331",
     body: "Kubernetes",
     status: "final",
-    detail:
-      "GA in v1.34. Structured authorization configuration (KEP-3221) has been GA since v1.32.",
+    detail: "GA in v1.34.",
+    related: [
+      {
+        name: "KEP-3221, Structured Authorization Configuration",
+        url: "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration",
+        note: "The counterpart for authorization. GA since v1.32.",
+      },
+    ],
     topics: ["kubernetes"],
     summary:
       "A configuration file for the API server that accepts multiple JWT issuers with CEL-based claim validation and mapping.",
@@ -1014,7 +1070,10 @@ export const standards: Standard[] = [
     ref: "Google Cloud IAM",
     body: "Google Cloud",
     status: "project",
-    detail: "Platform documentation. The token exchange follows RFC 8693.",
+    detail: "Platform documentation.",
+    related: [
+      { entry: "rfc8693", note: "The token exchange follows this RFC." },
+    ],
     topics: ["workload"],
     summary:
       "Workloads outside Google Cloud present a credential from their own identity provider to Google’s Security Token Service, which returns a federated access token. A workload identity pool provider holds the trust in the outside issuer and the conditions on its attributes.",
@@ -1119,8 +1178,8 @@ export const standards: Standard[] = [
     ref: "io.modelcontextprotocol/enterprise-managed-authorization",
     body: "MCP",
     status: "final",
-    detail:
-      "Official extension, stable at revision 2026-07-28. An application of ID-JAG.",
+    detail: "Official extension, stable at revision 2026-07-28.",
+    related: [{ entry: "id-jag", note: "The grant this extension applies." }],
     topics: ["agent-protocol", "delegation"],
     summary:
       "An MCP client exchanges the user’s single sign-on token at the enterprise identity provider for an ID-JAG, then redeems it at the MCP server’s authorization server.",
@@ -1286,8 +1345,14 @@ export const standards: Standard[] = [
     ref: "RFC 9901",
     body: "IETF",
     status: "rfc",
-    detail:
-      "November 2025. The companion SD-JWT VC draft is in IESG evaluation.",
+    detail: "November 2025.",
+    related: [
+      {
+        name: "SD-JWT-based Verifiable Digital Credentials (SD-JWT VC)",
+        url: draft("draft-ietf-oauth-sd-jwt-vc"),
+        note: "A companion draft, in IESG evaluation.",
+      },
+    ],
     topics: ["credentials"],
     summary:
       "Selective Disclosure for JWTs: a signed credential whose holder can reveal only chosen claims, with key binding.",
@@ -1301,8 +1366,14 @@ export const standards: Standard[] = [
     ref: "OpenID4VP 1.0",
     body: "OpenID Foundation",
     status: "final",
-    detail:
-      "Reported final in July 2025. The issuance counterpart, OpenID4VCI 1.0, followed in September 2025.",
+    detail: "Reported final in July 2025.",
+    related: [
+      {
+        name: "OpenID for Verifiable Credential Issuance 1.0",
+        url: "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html",
+        note: "The issuance counterpart, which followed in September 2025.",
+      },
+    ],
     topics: ["credentials"],
     summary: "A protocol for requesting and presenting verifiable credentials.",
     agents:
@@ -1315,8 +1386,19 @@ export const standards: Standard[] = [
     ref: "W3C VC Data Model 2.0",
     body: "W3C",
     status: "final",
-    detail:
-      "W3C Recommendation, May 2025. Version 2.1 is a W3C Working Draft, 22 October 2026. Decentralized Identifiers 1.1 is at Candidate Recommendation.",
+    detail: "W3C Recommendation, May 2025.",
+    related: [
+      {
+        name: "Verifiable Credentials Data Model 2.1",
+        url: "https://www.w3.org/TR/vc-data-model-2.1/",
+        note: "W3C Working Draft, 22 October 2026.",
+      },
+      {
+        name: "Decentralized Identifiers (DIDs) 1.1",
+        url: "https://www.w3.org/TR/did-1.1/",
+        note: "W3C Candidate Recommendation Snapshot, 5 March 2026.",
+      },
+    ],
     topics: ["credentials"],
     summary:
       "A data model for cryptographically verifiable claims made by an issuer about a subject.",
@@ -1492,6 +1574,18 @@ if (byId.size !== standards.length) {
   for (const s of standards) {
     if (seen.has(s.id)) throw new Error(`Duplicate standard id "${s.id}"`);
     seen.add(s.id);
+  }
+}
+
+// A related document that is itself an entry is named by its id, and the build
+// refuses one this file does not have.
+for (const s of standards) {
+  for (const r of s.related ?? []) {
+    if ("entry" in r && !byId.has(r.entry)) {
+      throw new Error(
+        `Standard "${s.id}" lists an unknown related entry "${r.entry}"`,
+      );
+    }
   }
 }
 
