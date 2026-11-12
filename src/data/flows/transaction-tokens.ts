@@ -163,6 +163,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     "txn-tokens-agents",
     "wimse-arch",
     "wimse-aims",
+    "rfc7519",
   ],
   related: [
     "token-exchange",
