@@ -178,7 +178,7 @@ const details = [
     : []),
   flow.roles
     ? {
-        label: `${counted.length} required references`,
+        label: `${counted.length} required ${counted.length === 1 ? "reference" : "references"}`,
         value: makeup,
         href: "#standards",
         note:
