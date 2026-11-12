@@ -1594,7 +1594,7 @@ for (const theme of THEMES) {
             input.value = "";
             input.dispatchEvent(new Event("input", { bubbles: true }));
             const item = document.querySelector("#rfc9126");
-            return /\bPAR\b/.test(item.innerText);
+            return /\bPAR\b/.test(item.textContent);
           });
           record(
             where,
