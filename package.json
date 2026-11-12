@@ -20,6 +20,7 @@
     "check:rendered": "node scripts/rendered-check.mjs",
     "readme:figure": "node scripts/readme-figure.mjs",
     "social:assets": "node scripts/social-assets.mjs",
+    "sources:changed": "node scripts/source-changes.mjs",
     "generate-types": "wrangler types",
     "deploy": "npm run build && wrangler deploy"
   },

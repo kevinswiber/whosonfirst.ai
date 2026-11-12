@@ -12,6 +12,19 @@ A run is read-only. It does not edit files, commit, open issues or open pull req
 2. Check everything under [Every run](#every-run). In January, April, July and October, also check everything under [Quarterly](#quarterly).
 3. Write the report described under [The report](#the-report).
 
+A run can start by asking which sources have changed at all:
+
+```bash
+npm run sources:changed
+```
+
+This asks each source the tracker links to, on an entry or in its `related`, whether it has changed since the last review, using the `ETag` or `Last-Modified` value recorded then in `docs/source-validators.json`. It reads nothing and changes nothing. How to read its answer:
+
+- **Not modified** is a finding from the source itself: the page is as it was when it was last checked, and its items are unchanged.
+- **Changed since recorded** means only “read this one”. A page can change without the fact on the site changing: the datatracker's record changes whenever a document's metadata does.
+- **Nothing recorded** is read as before. About a fifth of the sources give no value, or give one that cannot be asked with: pages on GitHub, Google Cloud's documentation, a few others.
+- It covers the tracker's links. A flow's `sources` and the vendor claims are not covered, and neither is a fact that is not on the linked page, such as a release list. Those are checked as written below.
+
 Rules for a run:
 
 - **The source decides.** Compare what the site says with what the linked source says today. Do not report a change from memory or from a search result summary; open the source.
@@ -229,6 +242,14 @@ For the person, or the session, that makes the changes. One fact is often stated
    The last two are dates for those pages alone. Change them only if those pages were re-read.
 8. **How facts were checked.** `src/pages/about.mdx`, the Accuracy section of `README.md`, the comment at the top of `src/data/standards.ts`, and the page facts and "Reading status correctly" on the standards page say which facts came from primary sources and which were reported. They say IETF process states were read from the datatracker. If a run could not read them there, that description changes.
 9. Run `npm run check`, `npm test` and `npm run build`.
+
+When the changes from a full review have been applied, and every source the command listed has been read, record the values the sources give now:
+
+```bash
+npm run sources:changed -- --record
+```
+
+Commit `docs/source-validators.json` with the changes. Recording says “checked as of now”, so do not record after a partial review: a source recorded without being read would answer “not modified” next time, and whatever changed on it would be missed.
 
 ## Domains a run needs
 
