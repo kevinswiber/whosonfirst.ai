@@ -105,7 +105,7 @@ The working group’s agent architecture document says plainly that agents are w
       kind: "self",
       label: "Sign a proof for this request",
       title: "The agent signs a Workload Proof Token",
-      body: `A very short-lived JWT of type \`wpt+jwt\`, signed with the private key. \`aud\` is the URL being called, \`wth\` is a hash of the WIT, and \`jti\` lets the receiver refuse a second use, if it keeps track. The short expiry is what limits a copy either way. Two more claims are mandatory when the request carries the tokens they cover: \`tth\` is a hash of a transaction token, and \`oth\` holds hashes of other tokens that carry the user’s identity or the request’s authorization context.`,
+      body: `A very short-lived JWT of type \`wpt+jwt\`, signed with the private key. \`aud\` is the URL being called, without any query, \`wth\` is a hash of the WIT, and \`jti\` lets the receiver refuse a second use, if it keeps track. The short expiry is what limits a copy either way. Two more claims are mandatory when the request carries the tokens they cover: \`tth\` is a hash of a transaction token, and \`oth\` holds hashes of other tokens that carry the user’s identity or the request’s authorization context.`,
       code: {
         lang: "json",
         text: `// header: { "alg": "Ed25519", "typ": "wpt+jwt" }
@@ -145,7 +145,7 @@ Authorization: WPT eyJhbGciOiJFZDI1NTE5IiwidHlwIjoid3B0K2p3dCJ9…`,
       kind: "self",
       label: "Verify WIT, then proof",
       title: "The tool verifies identity and possession",
-      body: `It verifies the WIT against the issuer’s keys, then verifies the WPT’s signature with the public key inside the WIT, checks that \`wth\` matches, that \`aud\` is this endpoint, and that the proof is fresh and unseen. Only then does it treat the caller as \`research-agent\`.`,
+      body: `It verifies the WIT against the issuer’s keys, then verifies the WPT’s signature with the public key inside the WIT, checks that \`wth\` matches, that \`aud\` is this endpoint, and that the proof has not expired and, where it keeps track of \`jti\`, has not been seen before. It knows its own address from its configuration, not from the \`Host\` header, which a gateway may have rewritten. Only then does it treat the caller as \`research-agent\`.`,
     },
     {
       from: "tool",
@@ -153,7 +153,7 @@ Authorization: WPT eyJhbGciOiJFZDI1NTE5IiwidHlwIjoid3B0K2p3dCJ9…`,
       kind: "resp",
       label: "Response",
       title: "The call proceeds",
-      body: `Anything that copied the headers on the way, including the gateway’s logs, has a proof valid for one request to one URL, for minutes at most.`,
+      body: `Anything that copied the headers on the way, including the gateway’s logs, has a proof for one URL that expires within minutes, and that a receiver keeping track of \`jti\` refuses a second time.`,
     },
   ],
   standards: [
