@@ -159,6 +159,9 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization": {
     "lastModified": "Wed, 11 Nov 2026 19:31:30 GMT"
   },
+  "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr": {
+    "lastModified": "Thu, 12 Nov 2026 19:17:11 GMT"
+  },
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },

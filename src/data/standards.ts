@@ -1226,6 +1226,14 @@ export const standards: Standard[] = [
     status: "final",
     detail:
       "Introduced in 2025-11-25 and reworked in 2026-07-28. Still marked as subject to change.",
+    related: [
+      {
+        name: "MCP specification 2026-07-28, Multi Round-Trip Requests",
+        url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr",
+        kind: "companion",
+        note: "Defines `InputRequiredResult`, `inputRequests`, `inputResponses` and `requestState`, which carry an elicitation and the retry that answers it.",
+      },
+    ],
     topics: ["agent-protocol", "human-in-the-loop"],
     summary:
       "A server asks the client to send the user to a URL for an interaction that must not pass through the client: third-party sign-in, entering a secret, a payment.",

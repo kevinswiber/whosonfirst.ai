@@ -185,7 +185,13 @@ The same mechanism covers anything sensitive that should bypass the agent: enter
       body: `From the agent’s point of view a tool call took a detour through the user. It holds exactly what it held before.`,
     },
   ],
-  standards: ["mcp-elicitation", "mcp-authorization", "oauth-2-1"],
+  standards: [
+    "mcp-elicitation",
+    "mcp-authorization",
+    "oauth-2-1",
+    "rfc6749",
+    "rfc7636",
+  ],
   related: [
     "mcp-authorization",
     "credential-broker",
