@@ -6,7 +6,7 @@ export const agentToAgent: Flow = {
   short: "Agent to agent (A2A)",
   group: "agent-to-agent",
   human: "any",
-  maturity: "emerging",
+  maturity: "stable",
   tagline:
     "One agent discovers another, reads what credentials it wants, and presents them. When the remote agent needs more, it says so mid-task.",
   summary: `The Agent2Agent protocol lets independently built agents hand work to each other. Its position on security is deliberately conservative: an agent is an ordinary enterprise application, and should be authenticated the way web services already are. A2A does not invent a token format or an identity scheme. It defines how a remote agent **declares** what it requires, and leaves obtaining the credential to existing standards.
@@ -179,6 +179,17 @@ Two parts of version 1.0 matter for trust. Agent Cards can be signed, so a calle
     "rfc8705",
     "oauth-2-1",
   ],
+  roles: {
+    a2a: "required", // the stated basis: version 1.0, every step but 4 and 5
+    "oidc-discovery": "required", // the card in step 2 declares an OpenID Connect scheme, which A2A defines by its discovery URL
+    rfc7515: "required", // the card's signatures, steps 2 and 3; A2A 1.0 section 8.4 defines them as JSON Web Signatures
+    rfc8785: "required", // the canonical form the signature is checked against, step 3; A2A 1.0 section 8.4.1
+    rfc6749: "required", // the access token from an authorization server, steps 4 and 5
+    rfc6750: "required", // the Bearer token on the request, step 6
+    rfc8693: "optional", // one way to get the token in step 4, and the one the page recommends when acting for a user; no step depends on it
+    rfc8705: "background", // OAuth's use of mutual TLS; the mutual TLS scheme a card can declare does not cite it, and no step uses it
+    "oauth-2-1": "background", // a related draft; A2A 1.0 names OAuth 2.0 and does not cite it
+  },
   related: [
     "token-exchange",
     "client-credentials",
