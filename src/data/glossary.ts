@@ -11,7 +11,7 @@ export interface Term {
 export const glossary: Term[] = [
   {
     term: "AAuth",
-    def: "A draft protocol, separate from OAuth, in which each agent has its own key and signs every request, and a person server vouches for the user it acts for. An unrelated OAuth draft shares the name.",
+    def: "A draft protocol, separate from OAuth, for agents with their own signing keys and signed requests. Depending on the access mode, an API learns the agent’s identity or accepts a person server’s assertion about the user. An unrelated OAuth draft shares the name.",
     see: { href: "/flows/aauth/", label: "AAuth" },
   },
   {
@@ -293,7 +293,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Person server",
-    def: "In AAuth, a server the user chooses to represent them. It tells an API which person an agent acts for, asks that person for consent, and issues the token that records it.",
+    def: "In AAuth, a server the user chooses to represent them. It asserts which person an agent acts for, handles consent when needed, and issues an auth token itself or obtains one from the resource’s access server.",
     see: { href: "/flows/aauth/", label: "AAuth" },
   },
   {
