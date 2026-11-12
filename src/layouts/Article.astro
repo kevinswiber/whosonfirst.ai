@@ -65,43 +65,47 @@ const here = fm.section
   here={here}
   article={Boolean(kind)}
 >
-  <div class="page-head">
-    <div class="wrap">
-      {!fm.section && <p class="eyebrow">Guide</p>}
-      <h1>{fm.title}</h1>
-      {fm.lede && <p class="lede">{fm.lede}</p>}
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        {!fm.section && <p class="eyebrow">Guide</p>}
+        <h1>{fm.title}</h1>
+        {
+          kind && (
+            <p class="primer">
+              This guide uses the vocabulary of the <a href="/learn/">lessons</a>. If a term is new, press it for its
+              definition, or start there.
+            </p>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="wrap article-grid">
       {
-        kind && (
-          <p class="primer">
-            This guide uses the vocabulary of the <a href="/learn/">lessons</a>. If a term is new, press it for its
-            definition, or start there.
-          </p>
+        toc.length > 2 && (
+          <nav class="article-toc" aria-label="On this page">
+            <p>On this page</p>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
         )
       }
-      {kind && <DocMeta reviewed={REVIEWED} subject="Guide" details={details} more="Review details" />}
+      <div class="article-main">
+        <div class="article">
+          {fm.lede && <p class="lede">{fm.lede}</p>}
+          {kind && <DocMeta reviewed={REVIEWED} subject="Guide" details={details} more="Review details" />}
+          <Fragment set:html={article} />
+        </div>
+        {kind && <WayOn html={body} path={Astro.url.pathname} />}
+      </div>
     </div>
-  </div>
-
-  <div class="wrap article-grid">
-    {
-      toc.length > 2 && (
-        <nav class="article-toc" aria-label="On this page">
-          <p>On this page</p>
-          <ol>
-            {toc.map((h) => (
-              <li>
-                <a href={`#${h.slug}`}>{h.text}</a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )
-    }
-    <div class="article-main">
-      <article class="article" set:html={article} />
-      {kind && <WayOn html={body} path={Astro.url.pathname} />}
-    </div>
-  </div>
+  </article>
 </Base>
 
 <style>
@@ -181,7 +185,8 @@ const here = fm.section
     padding-top: 1.1em;
     border-top: 1px solid var(--border);
   }
-  .article :global(h2:first-child) {
+  .article :global(h2:first-child),
+  .article :global(.lede + h2) {
     border-top: 0;
     padding-top: 0;
   }

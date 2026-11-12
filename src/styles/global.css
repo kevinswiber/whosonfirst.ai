@@ -154,9 +154,8 @@ main
   text-decoration-thickness: 2px;
 }
 
-/* A glossary term where it is used. It is a link to its entry; with the script
-   running it shows the definition in place instead. The dotted line says "there
-   is a definition here" without claiming to be a link to somewhere else. */
+/* A glossary term links to its entry and previews the definition on hover or
+   focus. The dotted underline distinguishes definitions from other links. */
 a.term {
   color: inherit;
   text-decoration-line: underline;
@@ -164,7 +163,6 @@ a.term {
   text-decoration-color: var(--fg-muted);
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.22em;
-  cursor: help;
 }
 a.term:hover,
 a.term[aria-expanded="true"] {
@@ -471,11 +469,11 @@ blockquote p:last-child {
 
 /* Facts about the page. One line carries the two that matter at a glance: the
    specification followed and the review date. The rest is one disclosure away. */
-.doc-meta {
+.page-facts {
   margin: 1.3rem 0 0;
   padding-top: 0.85rem;
   border-top: 1px solid var(--border);
-  font-size: 0.94rem;
+  font-size: 1rem;
   line-height: 1.4;
 }
 .doc-line {
@@ -533,7 +531,7 @@ blockquote p:last-child {
   padding: 0.9rem 1rem;
   background: var(--bg-sunken);
   border-radius: var(--radius);
-  font-size: 0.92rem;
+  font-size: 1rem;
 }
 .doc-details dt {
   font-family: var(--font-label);
@@ -547,10 +545,13 @@ blockquote p:last-child {
 .doc-details dd {
   margin: 0;
 }
+.doc-value {
+  margin: 0;
+}
 .doc-note {
   display: block;
-  margin-top: 0.1rem;
-  font-size: 0.86rem;
+  margin: 0.1rem 0 0;
+  font-size: 1rem;
   color: var(--fg-muted);
 }
 
@@ -743,7 +744,7 @@ a.card :is(h3, h4) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fg-muted);
-  margin-bottom: 0.3rem;
+  margin: 0 0 0.3rem;
 }
 
 .role-human {

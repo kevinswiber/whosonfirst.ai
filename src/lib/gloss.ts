@@ -4,8 +4,10 @@
  * `inline()` and `block()` in md.ts take a Gloss. With one, the first time a
  * glossary term appears in the text they are given, it becomes a link to its
  * entry that carries the definition with it. A script in the base layout shows
- * that definition in place when the link is activated; without the script it is
- * an ordinary link to the glossary.
+ * that definition in place on hover or focus. Activating the link always goes
+ * to the glossary, with or without the script.
+ * Explicit links to known glossary entries carry the same preview, without
+ * changing which ordinary-text occurrence is marked automatically.
  *
  * "The first time" is counted by the Gloss, so whoever renders a piece of the
  * page decides what one reading of it is: a flow page's own text shares one, and
@@ -16,6 +18,8 @@ import { termSlug } from "./term";
 
 /** Too common on this site to be worth marking: every page is about them. */
 const UNMARKED = new Set(["agent", "workload", "oauth", "mcp"]);
+/** These also have ordinary meanings. Authors link their technical uses explicitly. */
+const EXPLICIT = new Set(["claim", "state"]);
 
 interface Entry {
   term: string;
@@ -35,14 +39,17 @@ const plain = (md: string) =>
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
 const entries = new Map<string, Entry>();
+const definitions = new Map<string, Omit<Entry, "exact">>();
 for (const t of glossary) {
-  if (UNMARKED.has(t.term.toLowerCase())) continue;
   const base = {
     term: t.term,
     slug: termSlug(t.term),
     def: plain(t.def),
     home: t.see?.href,
   };
+  definitions.set(base.slug, base);
+  if (UNMARKED.has(t.term.toLowerCase()) || EXPLICIT.has(t.term.toLowerCase()))
+    continue;
   for (const name of [t.term, ...(t.aka ?? [])]) {
     // claim names such as `aud` are only ever written as code, which is left alone
     if (/^[a-z]{2,4}$/.test(name)) continue;
@@ -74,6 +81,28 @@ export function gloss(path?: string): Gloss {
 
 const attr = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+/** Give an authored glossary link the same preview as an automatically marked term.
+ * The caller supplies just the opening tag; its label and destination stay intact.
+ * Explicit links express the author's intent, even for ambiguous or repeated terms.
+ */
+export function markExplicitLink(opening: string): string {
+  const slug = opening.match(/\shref=(["'])\/glossary\/#([^"']+)\1/)?.[2];
+  const entry = slug && definitions.get(slug);
+  if (!entry || /\sdata-term=/.test(opening)) return opening;
+  const classes = /\sclass=(["'])(.*?)\1/;
+  const styled = classes.test(opening)
+    ? opening.replace(
+        classes,
+        (_, quote: string, value: string) =>
+          ` class=${quote}${value.split(/\s+/).includes("term") ? value : `${value} term`}${quote}`,
+      )
+    : opening.replace(/^<a\b/i, '<a class="term"');
+  return styled.replace(
+    />$/,
+    ` data-term="${attr(entry.term)}" data-def="${attr(entry.def)}">`,
+  );
+}
 
 /**
  * Marks first uses of glossary terms in a run of text that is already HTML-escaped
@@ -127,11 +156,15 @@ export function markHtml(html: string, g: Gloss): string {
         return prose > 0 && leave === 0 ? mark(text, g) : text;
       const name = tag.toLowerCase();
       if (rest.endsWith("/")) return whole;
+      const rendered =
+        !close && name === "a" && prose > 0 && leave === 0
+          ? markExplicitLink(whole)
+          : whole;
       const step = close ? -1 : 1;
       if (name === "p" || name === "li") prose = Math.max(0, prose + step);
       if (LEAVE.has(name) || name.includes("-"))
         leave = Math.max(0, leave + step);
-      return whole;
+      return rendered;
     },
   );
 }

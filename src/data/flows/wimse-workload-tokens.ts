@@ -84,7 +84,7 @@ The working group’s agent architecture document says plainly that agents are w
       kind: "resp",
       label: "WIT: subject + public key",
       title: "The issuer returns a Workload Identity Token",
-      body: `A signed JWT of type \`wit+jwt\`. The subject is the workload’s identifier, a URI scoped to a trust domain. The \`cnf\` claim holds the workload’s public key and names the algorithm its proofs must be signed with. There is no audience: the same WIT is shown to every peer, which is safe because it is worthless without the key.`,
+      body: `A signed JWT of type \`wit+jwt\`. The subject is the workload’s identifier, a URI scoped to a trust domain. The \`cnf\` [claim](/glossary/#claim) holds the workload’s public key and names the algorithm its proofs must be signed with. There is no audience: the same WIT is shown to every peer, which is safe because it is worthless without the key.`,
       code: {
         lang: "json",
         text: `// header: { "alg": "ES256", "kid": "issuer-key-1", "typ": "wit+jwt" }
@@ -105,7 +105,7 @@ The working group’s agent architecture document says plainly that agents are w
       kind: "self",
       label: "Sign a proof for this request",
       title: "The agent signs a Workload Proof Token",
-      body: `A very short-lived JWT of type \`wpt+jwt\`, signed with the private key. \`aud\` is the URL being called, without any query, \`wth\` is a hash of the WIT, and \`jti\` lets the receiver refuse a second use, if it keeps track. The short expiry is what limits a copy either way. Two more claims are mandatory when the request carries the tokens they cover: \`tth\` is a hash of a transaction token, and \`oth\` holds hashes of other tokens that carry the user’s identity or the request’s authorization context.`,
+      body: `A very short-lived JWT of type \`wpt+jwt\`, signed with the private key. \`aud\` is the URL being called, without any query, \`wth\` is a hash of the WIT, and \`jti\` lets the receiver refuse a second use, if it keeps track. The short expiry is what limits a copy either way. Two more [claims](/glossary/#claim) are mandatory when the request carries the tokens they cover: \`tth\` is a hash of a transaction token, and \`oth\` holds hashes of other tokens that carry the user’s identity or the request’s authorization context.`,
       code: {
         lang: "json",
         text: `// header: { "alg": "Ed25519", "typ": "wpt+jwt" }
