@@ -2042,6 +2042,262 @@ await ctx.close();
   );
   await ctx.close();
 }
+// Back on a flow page. On a phone, opening the diagram adds one entry and Back
+// closes it, at the step the reader reached; closing it with its own control
+// leaves no entry behind. At a desk, stepping adds none and Back leaves the page.
+{
+  const where = "phone flow";
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  const settle = () => page.waitForTimeout(150);
+  const now = () =>
+    page.evaluate(() => {
+      // after a Back that left the page, there is no diagram to ask about
+      const s = document.querySelector(".flow-stage > summary");
+      if (!s) return { path: location.pathname, hash: location.hash };
+      const r = s.getBoundingClientRect();
+      const step = /^#step-\d+$/.test(location.hash)
+        ? document.querySelector(location.hash)?.getBoundingClientRect()
+        : null;
+      return {
+        path: location.pathname,
+        hash: location.hash,
+        open: s.parentElement.open,
+        onSummary: document.activeElement === s,
+        summaryInView: r.top >= 0 && r.bottom <= innerHeight,
+        stepInView: !!step && step.top >= 0 && step.top < innerHeight / 2,
+      };
+    });
+  const pressStep = (n) =>
+    page.evaluate((i) => {
+      document
+        .querySelector(`svg .step[data-step="${i}"] .hit`)
+        .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }, n - 1);
+  // each from a fresh arrival, from the home page, with the diagram opened
+  const arrive = async () => {
+    await page.goto(`${origin}/`, { waitUntil: "networkidle" });
+    await page.goto(`${origin}${FLOW}`, { waitUntil: "networkidle" });
+    await page.click(".flow-stage > summary");
+    await settle();
+  };
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.goBack();
+  await settle();
+  const back = await now();
+  record(
+    where,
+    "Back closes the opened diagram and stays at the step reached",
+    back.path === FLOW &&
+      back.open === false &&
+      back.hash === "#step-4" &&
+      back.stepInView,
+    JSON.stringify(back),
+  );
+  await page.goForward();
+  await settle();
+  const forward = await now();
+  record(
+    where,
+    "Forward after Back opens the diagram again",
+    forward.path === FLOW && forward.open === true,
+    JSON.stringify(forward),
+  );
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.reload({ waitUntil: "networkidle" });
+  await settle();
+  const reloaded = await now();
+  await page.goBack();
+  await settle();
+  const after = await now();
+  record(
+    where,
+    "a reload with the diagram open keeps it open, and Back still closes it",
+    reloaded.open === true &&
+      after.path === FLOW &&
+      after.open === false &&
+      after.stepInView,
+    JSON.stringify({ reloaded, after }),
+  );
+  await arrive();
+  await page.click(".flow-back button");
+  await settle();
+  const closed = await now();
+  await page.goBack();
+  await settle();
+  const left = page.url();
+  record(
+    where,
+    "closing the diagram with its own control leaves no entry: the next Back leaves the page",
+    closed.open === false &&
+      closed.onSummary &&
+      closed.summaryInView &&
+      left === `${origin}/`,
+    JSON.stringify({ closed, left }),
+  );
+  // opened on a phone, then widened (a phone turned on its side, a window
+  // dragged wider): Back takes the entry, and the diagram, now beside the
+  // panel with no control to open it, stays open
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.goBack();
+  await settle();
+  const widened = await now();
+  await page.setViewportSize({ width: 390, height: 844 });
+  record(
+    where,
+    "widened after opening, Back leaves the diagram open beside the panel",
+    widened.path === FLOW && widened.open === true,
+    JSON.stringify(widened),
+  );
+  // a link to another step, followed with the diagram open, goes to that
+  // step and is not taken for Back; Back then retraces both
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  const followed = await now();
+  await page.goBack();
+  await settle();
+  await page.goBack();
+  await settle();
+  const retraced = await now();
+  record(
+    where,
+    "with the diagram open, a link to another step goes there, and Back retraces it",
+    followed.hash === "#step-6" &&
+      followed.open === true &&
+      followed.stepInView &&
+      retraced.path === FLOW &&
+      retraced.open === false &&
+      retraced.hash === "#step-4" &&
+      retraced.stepInView,
+    JSON.stringify({ followed, retraced }),
+  );
+  // and closed with its own control after such a link, the diagram leaves
+  // nothing behind: the address keeps the step, and the next Back leaves
+  await arrive();
+  await pressStep(4);
+  await settle();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  await page.click(".flow-back button");
+  await settle();
+  const shut = await now();
+  await page.goBack();
+  await settle();
+  const out = page.url();
+  record(
+    where,
+    "closed with its own control after a link, the diagram leaves no entry behind",
+    shut.open === false &&
+      shut.hash === "#step-6" &&
+      shut.onSummary &&
+      out === `${origin}/`,
+    JSON.stringify({ shut, out }),
+  );
+  // widened after a link, Back, then narrowed again: closing the diagram on
+  // the way back to a phone's width steps back one entry, not off the page
+  await arrive();
+  await page.evaluate(() => {
+    location.hash = "#step-6";
+  });
+  await settle();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.goBack();
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  const narrowed = await now();
+  record(
+    where,
+    "widened after a link, Back, then narrowed: the reader is still on the flow, diagram closed",
+    narrowed.path === FLOW && narrowed.open === false,
+    JSON.stringify(narrowed),
+  );
+  // widened, stepped with Next, narrowed: the entry the phone added is still
+  // known for what it is, and Forward opens the diagram again
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await settle();
+  await page.click('[data-act="next"]');
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  await page.goForward();
+  await settle();
+  const stepped = await now();
+  record(
+    where,
+    "widened, stepped, narrowed: Forward still opens the diagram",
+    stepped.path === FLOW && stepped.open === true,
+    JSON.stringify(stepped),
+  );
+  // widened, reloaded, narrowed: closing the diagram takes its entry, so Back leaves
+  await arrive();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.reload({ waitUntil: "networkidle" });
+  await settle();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settle();
+  await page.goBack();
+  await settle();
+  record(
+    where,
+    "widened, reloaded, narrowed: the next Back leaves the page",
+    page.url() === `${origin}/`,
+    page.url(),
+  );
+  // a link to a step still opens on that step, with the diagram closed
+  await page.goto(`${origin}/`, { waitUntil: "networkidle" });
+  await page.goto(`${origin}${FLOW}#step-6`, { waitUntil: "networkidle" });
+  await settle();
+  const linked = await now();
+  record(
+    where,
+    "a link to a step opens on that step",
+    linked.hash === "#step-6" && !linked.open && linked.stepInView,
+    JSON.stringify(linked),
+  );
+  await ctx.close();
+}
+{
+  const where = "desktop flow";
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  await page.goto(`${origin}/`, { waitUntil: "networkidle" });
+  await page.goto(`${origin}${FLOW}`, { waitUntil: "networkidle" });
+  for (let i = 0; i < 3; i++) await page.click('[data-act="next"]');
+  const at = await page.evaluate(() => location.hash);
+  await page.goBack();
+  await page.waitForTimeout(150);
+  record(
+    where,
+    "stepping adds no history: Back leaves the page",
+    at === "#step-4" && page.url() === `${origin}/`,
+    `${at} then ${page.url()}`,
+  );
+  await ctx.close();
+}
 // decision guide: after "Start over", an answer chosen before can be chosen again at once
 {
   const ctx = await browser.newContext({
