@@ -70,8 +70,14 @@ const next = {};
 const check = async (url) => {
   const had = NEVER_THE_SAME.has(new URL(url).host) ? undefined : known[url];
   try {
-    const res = await get(url, had ? conditions(had) : {});
+    let res = await get(url, had ? conditions(had) : {});
     await res.arrayBuffer();
+    // A site served from several machines can give a value that differs from
+    // one machine to the next. Ask twice more before calling a page changed.
+    for (let again = 0; had && res.status === 200 && again < 2; again++) {
+      res = await get(url, conditions(had));
+      await res.arrayBuffer();
+    }
     if (res.status === 304) {
       result.same.push(url);
       next[url] = had;
@@ -91,8 +97,13 @@ const check = async (url) => {
     const etag = res.headers.get("etag");
     const lastModified = res.headers.get("last-modified");
     if (etag) v.etag = etag;
-    if (lastModified) v.lastModified = lastModified;
-    if (!etag && !lastModified) return;
+    // A Last-Modified within the hour before the response is, far more often
+    // than a page just edited, the time a cache last rebuilt the page. It
+    // would read as changed at every rebuild, so it is not kept.
+    const served = Date.parse(res.headers.get("date") ?? "") || Date.now();
+    const fresh = lastModified && served - Date.parse(lastModified) < 3600000;
+    if (lastModified && !fresh) v.lastModified = lastModified;
+    if (!v.etag && !v.lastModified) return;
     if (NEVER_THE_SAME.has(new URL(url).host)) return;
     // Some servers send a value and never honour it, or send a new one each
     // time. Keep a value only if asking again with it says "not modified".
