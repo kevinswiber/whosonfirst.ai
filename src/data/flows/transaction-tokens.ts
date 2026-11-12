@@ -182,7 +182,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
   notes: [
     {
       title: "Where this stands",
-      body: `The transaction tokens draft has been through repeated working group last calls and is waiting for its write-up before going to the IESG. A separate individual draft proposes agent-specific context for the token: an \`agentic_ctx\` claim that names the agent that started the chain and the agent that asked most recently, with a count of the hops between them. The transaction token service replaces the token each time an agent hands the request on. Its claim design changed during 2026, which is a fair signal of how settled it is.`,
+      body: `The transaction tokens draft has been through repeated working group last calls and is waiting for its write-up before going to the IESG. A separate individual draft proposes agent-specific context for the token: an \`agentic_ctx\` claim that names the agent that started the chain and the agent that asked most recently, with a count of the hops between them. The transaction token service replaces the token each time an agent hands the request on. Its [claim](/glossary/#claim) design changed during 2026, which is a fair signal of how settled it is.`,
     },
   ],
 };

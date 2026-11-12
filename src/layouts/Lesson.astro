@@ -65,144 +65,146 @@ const term = (name: string) =>
     current: l.short,
   }}
 >
-  <div class="page-head">
-    <div class="wrap">
-      <p class="eyebrow">{l.minutes} min read</p>
-      <h1>{l.title}</h1>
-      <p class="lede" set:html={inline(lede)} />
-      <nav class="path" aria-label="Lessons">
-        <ol>
-          {
-            lessons.map((x, n) => (
-              <li>
-                <a href={`/learn/${x.slug}/`} aria-current={x === l ? 'page' : undefined}>
-                  <span class="path-n">{n + 1}</span>
-                  <span class="path-t">{x.short}</span>
-                </a>
-              </li>
-            ))
-          }
-        </ol>
-      </nav>
-      {
-        i > 0 && (
-          <p class="builds">
-            This lesson builds on the {i === 1 ? 'one' : 'ones'} before it. If you arrived here first and a term is
-            unfamiliar, <a href={`/learn/${lessons[0].slug}/`}>lesson 1</a> is where they start, and each is in the{' '}
-            <a href="/glossary/">glossary</a>.
-          </p>
-        )
-      }
-    </div>
-  </div>
-
-  <div class="wrap">
-    <article class="lesson">
-      <slot />
-
-      <Check questions={checks} />
-
-      <section class="keep" aria-labelledby="keep">
-        <h2 id="keep">What to keep</h2>
-        <ul>
-          {ideas.map((k) => <li set:html={inline(k)} />)}
-        </ul>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <p class="eyebrow">{l.minutes} min read</p>
+        <h1>{l.title}</h1>
+        <nav class="path" aria-label="Lessons">
+          <ol>
+            {
+              lessons.map((x, n) => (
+                <li>
+                  <a href={`/learn/${x.slug}/`} aria-current={x === l ? 'page' : undefined}>
+                    <span class="path-n">{n + 1}</span>
+                    <span class="path-t">{x.short}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
         {
-          rule && (
-            <div class="keep-rule callout" data-tone="red">
-              <p class="callout-title">One rule</p>
-              <p set:html={inline(rule)} />
-            </div>
-          )
-        }
-      </section>
-
-      {
-        names.length > 0 && (
-          <section class="names" aria-labelledby="names">
-            <h2 id="names">The names for these</h2>
-            <p>
-              The rest of this guide, and every specification, uses these terms. Each links to its entry in the{' '}
+          i > 0 && (
+            <p class="builds">
+              This lesson builds on the {i === 1 ? 'one' : 'ones'} before it. If you arrived here first and a term is
+              unfamiliar, <a href={`/learn/${lessons[0].slug}/`}>lesson 1</a> is where they start, and each is in the{' '}
               <a href="/glossary/">glossary</a>.
             </p>
-            <div class="table-scroll" tabindex="0" role="region" aria-label="The names for these">
-              {/* the roles are stated because on a phone the rows are laid out as blocks, and a
-                  browser may stop treating a table laid out that way as a table */}
-              <table role="table">
-                <thead role="rowgroup">
-                  <tr role="row">
-                    <th scope="col" role="columnheader">In this lesson</th>
-                    <th scope="col" role="columnheader">Its name</th>
-                    <th scope="col" role="columnheader">Defined as</th>
-                  </tr>
-                </thead>
-                <tbody role="rowgroup">
-                  {names.map(([plain, name]) => {
-                    const t = term(name);
-                    return (
-                      <tr role="row">
-                        <td role="cell">{plain}</td>
-                        <th scope="row" role="rowheader">
-                          <a href={`/glossary/#${termSlug(t.term)}`}>{t.term}</a>
-                        </th>
-                        <td role="cell" set:html={inline(t.def)} />
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )
-      }
+          )
+        }
+      </div>
+    </div>
 
-      <section class="deeper" aria-labelledby="deeper">
-        <h2 id="deeper">Go deeper</h2>
-        <p>
-          The same ground at full depth, when you want it.{next && ' None of it is needed for the next lesson.'}
-        </p>
-        <ul>
+    <div class="wrap">
+      <div class="lesson">
+        <p class="lede" set:html={inline(lede)} />
+        <slot />
+
+        <Check questions={checks} />
+
+        <section class="keep" aria-labelledby="keep">
+          <h2 id="keep">What to keep</h2>
+          <ul>
+            {ideas.map((k) => <li set:html={inline(k)} />)}
+          </ul>
           {
-            l.deeper.map((d) => (
-              <li>
-                <a href={d.href}>{d.label}</a>
-                <span>{d.note}</span>
-              </li>
-            ))
+            rule && (
+              <div class="keep-rule callout" data-tone="red">
+                <p class="callout-title">One rule</p>
+                <p set:html={inline(rule)} />
+              </div>
+            )
           }
-        </ul>
-      </section>
-    </article>
+        </section>
 
-    <nav class="pager" aria-label="Lessons before and after">
-      {
-        prev ? (
-          <a href={`/learn/${prev.slug}/`}>
-            <span>← Lesson {i}</span>
-            {prev.title}
-          </a>
-        ) : (
-          <a href="/learn/">
-            <span>← Back to</span>
-            All lessons
-          </a>
-        )
-      }
-      {
-        next ? (
-          <a class="next" href={`/learn/${next.slug}/`}>
-            <span>Lesson {i + 2} →</span>
-            {next.title}
-          </a>
-        ) : (
-          <a class="next" href="/learn/#next">
-            <span>Finished →</span>
-            Where to go from here
-          </a>
-        )
-      }
-    </nav>
-  </div>
+        {
+          names.length > 0 && (
+            <section class="names" aria-labelledby="names">
+              <h2 id="names">The names for these</h2>
+              <p>
+                The rest of this guide, and every specification, uses these terms. Each links to its entry in the{' '}
+                <a href="/glossary/">glossary</a>.
+              </p>
+              <div class="table-scroll" tabindex="0" role="region" aria-label="The names for these">
+                {/* the roles are stated because on a phone the rows are laid out as blocks, and a
+                    browser may stop treating a table laid out that way as a table */}
+                <table role="table">
+                  <thead role="rowgroup">
+                    <tr role="row">
+                      <th scope="col" role="columnheader">In this lesson</th>
+                      <th scope="col" role="columnheader">Its name</th>
+                      <th scope="col" role="columnheader">Defined as</th>
+                    </tr>
+                  </thead>
+                  <tbody role="rowgroup">
+                    {names.map(([plain, name]) => {
+                      const t = term(name);
+                      return (
+                        <tr role="row">
+                          <td role="cell">{plain}</td>
+                          <th scope="row" role="rowheader">
+                            <a href={`/glossary/#${termSlug(t.term)}`}>{t.term}</a>
+                          </th>
+                          <td role="cell" set:html={inline(t.def)} />
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )
+        }
+
+        <section class="deeper" aria-labelledby="deeper">
+          <h2 id="deeper">Go deeper</h2>
+          <p>
+            The same ground at full depth, when you want it.{next && ' None of it is needed for the next lesson.'}
+          </p>
+          <ul>
+            {
+              l.deeper.map((d) => (
+                <li>
+                  <a href={d.href}>{d.label}</a>
+                  <span>{d.note}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </div>
+
+      <nav class="pager" aria-label="Lessons before and after">
+        {
+          prev ? (
+            <a href={`/learn/${prev.slug}/`}>
+              <span>← Lesson {i}</span>
+              {prev.title}
+            </a>
+          ) : (
+            <a href="/learn/">
+              <span>← Back to</span>
+              All lessons
+            </a>
+          )
+        }
+        {
+          next ? (
+            <a class="next" href={`/learn/${next.slug}/`}>
+              <span>Lesson {i + 2} →</span>
+              {next.title}
+            </a>
+          ) : (
+            <a class="next" href="/learn/#next">
+              <span>Finished →</span>
+              Where to go from here
+            </a>
+          )
+        }
+      </nav>
+    </div>
+  </article>
 </Base>
 
 <style>
@@ -290,7 +292,7 @@ const term = (name: string) =>
   .lesson :global(:where(p, ul, ol, h2, h3, h4, blockquote, dl)) {
     max-width: var(--prose);
   }
-  .lesson :global(> p),
+  .lesson :global(> p:not(.lede)),
   .lesson :global(> ul),
   .lesson :global(> ol) {
     font-size: 1.04rem;
@@ -307,6 +309,10 @@ const term = (name: string) =>
   }
   .lesson :global(.wide) {
     max-width: 60rem;
+  }
+  /* A sequence and its explanation need the same room as a full flow page. */
+  .lesson :global(.wide:has(flow-diagram)) {
+    max-width: var(--wide);
   }
 
   .keep ul {

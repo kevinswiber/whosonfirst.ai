@@ -162,7 +162,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
       kind: "resp",
       label: "Access token for the MCP server",
       title: "An ordinary access token comes back",
-      body: `Audience-restricted to the MCP server named in the grant’s \`resource\` claim. From here the agent uses it like any other MCP access token.`,
+      body: `Audience-restricted to the MCP server named in the grant’s \`resource\` [claim](/glossary/#claim). From here the agent uses it like any other MCP access token.`,
       gain: [["client", "access token (aud: MCP server)"]],
     },
     {

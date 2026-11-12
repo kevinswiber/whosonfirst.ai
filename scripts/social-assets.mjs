@@ -291,6 +291,8 @@ async function readFlow(slug) {
     inPage(`
       const d = one("flow-diagram");
       const lines = one(".flow-lines", d).getBoundingClientRect();
+      let part = "";
+      let phase = "";
       return {
         title: text(one(".page-head h1")),
         tagline: text(one(".page-head .lede")),
@@ -303,9 +305,15 @@ async function readFlow(slug) {
         steps: all(".flow-step", d).map((li, i) => {
           const row = one('svg .step[data-step="' + i + '"] .hit', d).getBoundingClientRect();
           const who = all(".step-route .who", li);
+          // The narrative introduces a phase once; each standalone card needs it.
+          const heading = li.querySelector(".step-phase");
+          if (heading) {
+            part = text(heading.querySelector(".step-phase-n"));
+            phase = text(heading).replace(part, "").trim();
+          }
           return {
-            part: text(li.querySelector(".step-phase-n")),
-            phase: text(li.querySelector(".step-phase")).replace(text(li.querySelector(".step-phase-n")), "").trim(),
+            part,
+            phase,
             from: { label: text(who[0]), role: role(who[0]) },
             to: who[1] ? { label: text(who[1]), role: role(who[1]) } : null,
             kind: text(one(".step-kind", li)),
