@@ -184,7 +184,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
   notes: [
     {
       title: "Relation to ID-JAG",
-      body: `[ID-JAG](/flows/cross-app-access/) is a profile of this pattern for one common case: the first authorization server is an enterprise identity provider and the input is the user’s single sign-on assertion. The WIMSE working group’s agent architecture document recommends identity chaining or ID-JAG whenever an agent crosses a trust domain.`,
+      body: `[ID-JAG](/flows/cross-app-access/) is a profile of this pattern for one common case: the first authorization server is an enterprise identity provider and the input is the user’s single sign-on assertion. The WIMSE working group’s document on agent identity, AIMS, says an agent should use identity chaining, or a specification derived from it such as ID-JAG, when what it calls is protected by a different authorization server.`,
     },
   ],
 };

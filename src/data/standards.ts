@@ -485,7 +485,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -17, July 2026. Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
+      "Revision -17, July 2026. Approved by the IESG and in the RFC Editor queue since June 2026, where its status became “Final Approval Pending” in November 2026; no RFC number yet.",
     topics: ["delegation"],
     summary:
       "Token exchange in one domain yields a JWT grant that is redeemed at another domain’s authorization server.",
