@@ -2885,6 +2885,49 @@ for (const javaScriptEnabled of [false, true]) {
           structure.complete,
         JSON.stringify(structure),
       );
+      const chains = await page.locator(".lh-panel").evaluateAll((panels) =>
+        panels.map((panel) => {
+          const nodes = [...panel.querySelectorAll(".lh-node")].map(
+            (node) =>
+              `${node.querySelector("strong").textContent} (${node.querySelector("span").textContent})`,
+          );
+          const credentials = [...panel.querySelectorAll(".lh-cred")].map(
+            (el) => el.textContent,
+          );
+          const items = [...panel.querySelectorAll(".lh-path li")];
+          return {
+            expected: credentials.map(
+              (credential, i) =>
+                `${nodes[i]} to ${nodes[i + 1]}: ${credential}.`,
+            ),
+            actual: items.map((el) => el.textContent),
+            visible: items.every((el) =>
+              el.checkVisibility({ visibilityProperty: true }),
+            ),
+          };
+        }),
+      );
+      const chainText = await page.locator(".lh").ariaSnapshot();
+      record(
+        path,
+        "each chain exposes all three ordered hops with both endpoints and the credential",
+        chains.length === 5 &&
+          chains.every(
+            ({ expected, actual, visible }) =>
+              visible &&
+              expected.length === 3 &&
+              JSON.stringify(actual) === JSON.stringify(expected) &&
+              expected.every((text) => chainText.includes(text)),
+          ),
+      );
+      const diagrams = await Promise.all(
+        (await page.locator(".lh-chain").all()).map((el) => el.ariaSnapshot()),
+      );
+      record(
+        path,
+        "decorative chain boxes do not duplicate the accessible hop narrative",
+        diagrams.length === 5 && diagrams.every((text) => !text.trim()),
+      );
       await page.locator('.lh-modes a[href="#lh-bound"]').click();
       const target = await page.locator("#lh-bound h3").boundingBox();
       record(

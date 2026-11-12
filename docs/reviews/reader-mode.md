@@ -166,6 +166,37 @@ still tracked in #59; the extraction audit is not a substitute for that check.
 
 ![Human involvement on the normal mobile site](reader-mode/concepts-human-mobile.png)
 
+### Chain diagrams in Chrome
+
+The owner's next native Chrome capture, at 1:58 p.m. Pacific on November 12,
+confirms the Concepts introduction, five comparison headings and three human
+sections now survive. The screenshot also exposes a separate diagram problem:
+Chrome flattens the CSS boxes and arrows into loose text such as `UserAlice`
+and `AgentOrchestrator`, even though its accessibility capture describes the
+whole chain as an image. That image role alone does not preserve its layout.
+
+Each comparison now includes a visible ordered list of its three hops. Each
+line names both parties and the credential between them, generated from the
+same data as the visual chain. The diagram is a decorative, accessibility-hidden
+aside; literal spacing between its labels is an additional fallback. Its verdict
+table, explanation and source link remain in the article. No content depends
+on the visual diagram or a separate Reader-only version.
+
+Browser regression checks compare all 15 hop sentences with the diagram data,
+require their text in the accessibility tree with JavaScript on and off, and
+check that decorative labels do not duplicate it. The extraction audit includes
+those sentences and reports any retained chain diagrams: all 310 Concepts
+fragments and 23 token source links survive, with zero chain diagrams retained.
+Native Chrome still
+needs a recheck for this change: the intended result is three complete lines
+per arrangement without the loose box labels.
+
+These screenshots show the normal site with the additional hop descriptions:
+
+![Delegation chain and hop descriptions on desktop](reader-mode/concepts-chain-desktop.png)
+
+![Delegation hop descriptions and verdicts on a phone](reader-mode/concepts-chain-mobile.png)
+
 ## What belongs in each mode
 
 | Page family        | Reading-mode expectation                                                                                                                 |

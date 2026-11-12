@@ -99,11 +99,11 @@ const MARK_TEXT: Record<Mark, string> = {
     modes.map((m) => (
       <section class="lh-panel" data-mode={m.id} id={`lh-${m.id}`} aria-labelledby={`lh-heading-${m.id}`}>
         <h3 id={`lh-heading-${m.id}`}>{m.name}</h3>
-        <div class="lh-chain" role="img" aria-label={`Chain with ${m.name}: ${m.hops.join(', then ')}`}>
+        <aside class="lh-chain" aria-hidden="true">
           {nodes.map((n, i) => (
             <>
               <div class={`lh-node role-${n.role}`}>
-                <strong>{n.label}</strong>
+                <strong>{n.label}</strong>{' '}
                 <span>{n.sub}</span>
               </div>
               {i < 3 && (
@@ -114,7 +114,14 @@ const MARK_TEXT: Record<Mark, string> = {
               )}
             </>
           ))}
-        </div>
+        </aside>
+
+        <h4>Credentials at each hop</h4>
+        <ol class="lh-path">
+          {m.hops.map((credential, i) => (
+            <li>{`${nodes[i].label} (${nodes[i].sub}) to ${nodes[i + 1].label} (${nodes[i + 1].sub}): ${credential}.`}</li>
+          ))}
+        </ol>
 
         <div class="lh-result">
           <table>
@@ -189,6 +196,19 @@ const MARK_TEXT: Record<Mark, string> = {
   .lh-panel h3 {
     margin: 0 0 1rem;
     font-size: 1.2rem;
+  }
+  .lh-panel h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .lh-path {
+    max-width: 75ch;
+    margin: 0 0 1.4rem;
+    padding-left: 1.5rem;
+    font-size: 1rem;
+  }
+  .lh-path li + li {
+    margin-top: 0.3rem;
   }
 
   .lh-chain {

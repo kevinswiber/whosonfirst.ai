@@ -79,7 +79,7 @@ for (const path of [
     // textContent mistakes those whitespace changes for missing explanations.
     const fragments = [
       ...document.querySelectorAll(
-        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel > header > h3, .ti-panel > header > p, .ti-panel .claim-line > code, .ti-panel .plain > code, .claim-note > .claim-cat, .claim-note > p, main .doc-line, article.numbered > .page-head .lede, article.numbered > .page-head .primer, #human .modes h3, #human .modes p, #human .callout-title, .lh-panel h3, .lh-panel table, .lh-verdict p",
+        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel > header > h3, .ti-panel > header > p, .ti-panel .claim-line > code, .ti-panel .plain > code, .claim-note > .claim-cat, .claim-note > p, main .doc-line, article.numbered > .page-head .lede, article.numbered > .page-head .primer, #human .modes h3, #human .modes p, #human .callout-title, .lh-panel h3, .lh-path li, .lh-panel table, .lh-verdict p",
       ),
     ].map((x) => ({
       kind: x.matches(".claim-note > p")
@@ -119,6 +119,7 @@ for (const path of [
       fragmentsChecked: fragments.length,
       svg: holder.querySelectorAll("svg").length,
       controls: holder.querySelectorAll("button, nav").length,
+      chainDiagrams: holder.querySelectorAll(".lh-chain").length,
       expected,
       headings: [...holder.querySelectorAll("h1,h2,h3,h4")].map((x) =>
         x.textContent.trim(),
