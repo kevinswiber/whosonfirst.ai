@@ -1,0 +1,276 @@
+{
+  "https://a2a-protocol.org/v1.0.1/specification/": {
+    "etag": "W/\"6af433d9-936ef\"",
+    "lastModified": "Wed, 11 Nov 2026 09:22:33 GMT"
+  },
+  "https://ap2-protocol.org": {
+    "lastModified": "Tue, 28 Apr 2026 12:33:34 GMT"
+  },
+  "https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/doc.json": {
+    "etag": "W/\"ee61fffff3b11b238faf42befba1ae03\""
+  },
+  "https://datatracker.ietf.org/doc/draft-hardt-httpbis-signature-key/doc.json": {
+    "etag": "W/\"f4b41deb7d4a5dc2cecb164ed5a6a960\""
+  },
+  "https://datatracker.ietf.org/doc/draft-hardt-oauth-aauth-protocol/doc.json": {
+    "etag": "W/\"406d3a398878c29e5a680a4ab1241ca4\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/doc.json": {
+    "etag": "W/\"58410017ef0967e515f7184c1a8ad741\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/doc.json": {
+    "etag": "W/\"59591b5dc93500ba811991d53054edb7\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-deferred-token-response/doc.json": {
+    "etag": "W/\"121c9f64c656da013bdb57b1506a5d76\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-delegate-sd-jwt/doc.json": {
+    "etag": "W/\"ac53a03dec0b56a1bc03a016a277e521\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-first-party-apps/doc.json": {
+    "etag": "W/\"c91e04a8c23ceaa58015813960c7e577\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/doc.json": {
+    "etag": "W/\"9e3e469411707b3da2a495641ec7a403\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-chaining/doc.json": {
+    "etag": "W/\"6a33b70d1b12516139a3f27188b6cae9\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-rar-metadata-remediation/doc.json": {
+    "etag": "W/\"ae7b874ed43e46f39fe6d783b75cdca7\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-refresh-token-expiration/doc.json": {
+    "etag": "W/\"41c5c8554750daf82ad0f52d68b9c389\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-sd-jwt-vc/doc.json": {
+    "etag": "W/\"66a77a9ca89391d407f07d2919b80d7a\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-spiffe-client-auth/doc.json": {
+    "etag": "W/\"8e4bf150339eb030676f80bb9e6a9a26\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/doc.json": {
+    "etag": "W/\"199299e7c1ff21da3db31cf7e5b1970a\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/doc.json": {
+    "etag": "W/\"3fcf30b1843c5af96b1d53c828919df7\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/doc.json": {
+    "etag": "W/\"5eb5097fb841c0cf3bed72988e78d263\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-webbotauth-httpsig-protocol/doc.json": {
+    "etag": "W/\"ad2d67226c67e0b8efb1424d6aad44ae\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-aims/doc.json": {
+    "etag": "W/\"3cd299a0614dc6b1e0c959d6ce39554c\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-arch/doc.json": {
+    "etag": "W/\"6c92d9c3ffc9df83c244420c6fedff91\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-http-signature/doc.json": {
+    "etag": "W/\"93c99516011fbd7657aa16c8e857b8cf\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-workload-creds/doc.json": {
+    "etag": "W/\"e7fdb594baae693c1b0d2728b0fd2988\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-workload-identity-practices/doc.json": {
+    "etag": "W/\"ba5323ba6c2bde68a8348f2dfb658b90\""
+  },
+  "https://datatracker.ietf.org/doc/draft-ietf-wimse-wpt/doc.json": {
+    "etag": "W/\"9f74feae3eb59962e04957e5f4bac99d\""
+  },
+  "https://datatracker.ietf.org/doc/draft-klrc-aiagent-auth/doc.json": {
+    "etag": "W/\"9eb98cf2d6ab3a98415a521e01863496\""
+  },
+  "https://datatracker.ietf.org/doc/draft-mcguinness-oauth-actor-profile/doc.json": {
+    "etag": "W/\"32a57f762b0f89604d62996bb96d8aaf\""
+  },
+  "https://datatracker.ietf.org/doc/draft-mcguinness-oauth-mission/doc.json": {
+    "etag": "W/\"aa114ea964712a2b346b6cec3b226c55\""
+  },
+  "https://datatracker.ietf.org/doc/draft-rosenberg-oauth-aauth/doc.json": {
+    "etag": "W/\"55b40881396834e3991eab93db107086\""
+  },
+  "https://datatracker.ietf.org/doc/draft-wzdk-scim-agent-resource/doc.json": {
+    "etag": "W/\"9eb9d93985fbb20a9d845f560dbfa336\""
+  },
+  "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html": {
+    "etag": "\"gdo/i4b8FYBLQHovrSM016/ILfg=-gzip\"",
+    "lastModified": "Wed, 11 Nov 2026 23:44:14 GMT"
+  },
+  "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html": {
+    "etag": "\"9s+1ZRSiNIqLC/OImudbsRdvmaw=-gzip\"",
+    "lastModified": "Wed, 11 Nov 2026 23:44:13 GMT"
+  },
+  "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_outbound.html": {
+    "etag": "\"6IH5jXDoUofmnonO3kBjSXAITM0=-gzip\"",
+    "lastModified": "Wed, 11 Nov 2026 23:44:16 GMT"
+  },
+  "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html": {
+    "etag": "\"TEtdXWBsgrNeH7N/goRFY6WFAWw=-gzip\"",
+    "lastModified": "Wed, 11 Nov 2026 10:48:04 GMT"
+  },
+  "https://kubernetes.io/docs/reference/access-authn-authz/authentication/": {
+    "etag": "W/\"e0b8312102c3511c6e3b8a7ab7138b96-ssl\""
+  },
+  "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/": {
+    "etag": "W/\"3cab452dc184ccc32d8d5a5400dc203c-ssl\""
+  },
+  "https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/": {
+    "etag": "W/\"5461c606919461f81c038afe2586fb8c-ssl\""
+  },
+  "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview": {
+    "etag": "\"eUSfNWFhp4PFzagTO9w6zSo2wbM=\"",
+    "lastModified": "Mon, 24 Aug 2026 12:32:49 GMT"
+  },
+  "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation": {
+    "etag": "\"5HYue5c2JaJIA+9zEQGZIjsulEE=\"",
+    "lastModified": "Mon, 24 Aug 2026 12:32:47 GMT"
+  },
+  "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization": {
+    "lastModified": "Wed, 11 Nov 2026 19:31:30 GMT"
+  },
+  "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
+    "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
+  },
+  "https://openid.net/specs/authorization-api-1_0-final.html": {
+    "etag": "\"3bb64-6482a0d30732a-gzip\"",
+    "lastModified": "Mon, 12 Jan 2026 05:21:47 GMT"
+  },
+  "https://openid.net/specs/fapi-security-profile-2_0-final.html": {
+    "etag": "\"24c46-62ec1cdb4adc0-gzip\"",
+    "lastModified": "Sat, 22 Feb 2025 21:29:35 GMT"
+  },
+  "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html": {
+    "etag": "\"7b27d-63ef05fa65044-gzip\"",
+    "lastModified": "Tue, 16 Sep 2025 19:46:18 GMT"
+  },
+  "https://openid.net/specs/openid-4-verifiable-presentations-1_0.html": {
+    "etag": "\"7dd49-63994268300de-gzip\"",
+    "lastModified": "Thu, 10 Jul 2025 14:38:44 GMT"
+  },
+  "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html": {
+    "etag": "\"1b12d-5caf39dbfa700-gzip\"",
+    "lastModified": "Wed, 01 Sep 2021 18:55:56 GMT"
+  },
+  "https://openid.net/specs/openid-connect-discovery-1_0.html": {
+    "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
+    "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
+  },
+  "https://spiffe.io/docs/latest/spiffe-about/overview/": {
+    "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
+  },
+  "https://verifiableintent.dev": {
+    "lastModified": "Mon, 20 Apr 2026 19:06:54 GMT"
+  },
+  "https://www.rfc-editor.org/rfc/rfc10017.json": {
+    "etag": "\"9480003fab1f5427f54d6874f2ddcbce\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc10027.json": {
+    "etag": "\"e491835c9e024b22713ca35c21597bb1\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc10070.json": {
+    "etag": "\"124ae35aa581757130ba3d046cfa13b9\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc6749.json": {
+    "etag": "\"98484c6bf6b69d50e8b411d6248eecf0\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc6750.json": {
+    "etag": "\"cb471e153acf5bf4bfae15c9dc19e2d6\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7009.json": {
+    "etag": "\"811fb6c40b086412e91d58da66472e8f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7519.json": {
+    "etag": "\"77d3a837744df1a380e85fabe059c42f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7523.json": {
+    "etag": "\"87d1717c339b780debc800e74107f349\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7591.json": {
+    "etag": "\"9ac565cb835140cb945b762d6d4d46e1\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7636.json": {
+    "etag": "\"c366fd4c160cfba7de778df5bc633017\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7638.json": {
+    "etag": "\"6b3dd859e7d75e5974061e61da59be83\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7662.json": {
+    "etag": "\"1a3e5228ce48128d1cb4a9810e39dd3a\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7797.json": {
+    "etag": "\"9d85c46d1733ebf148ef614caadc7a1f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8252.json": {
+    "etag": "\"2637d98f2f142ccd12fa3a123d114233\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8414.json": {
+    "etag": "\"a58c82ee5977949ef56219d8b8824ec6\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8628.json": {
+    "etag": "\"b4d10c5c7795c4d5264bb5fdb72ffab0\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8693.json": {
+    "etag": "\"fd2bd14ef8a8c9db8a7470a405363aca\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8705.json": {
+    "etag": "\"e0e92ba101503f6f7f1488117e60cda8\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8707.json": {
+    "etag": "\"3a35ffbeb234130356a8ae8c988dd74c\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8725.json": {
+    "etag": "\"f06686081761f0de4358043b2a85382b\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8996.json": {
+    "etag": "\"e9e03cd48501408d6af6e357392876c5\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9068.json": {
+    "etag": "\"8a3aa9e5a54df47b0c3635bd5d7f83e1\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9101.json": {
+    "etag": "\"572a78d3de080104d3073368e7ff2902\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9126.json": {
+    "etag": "\"d18e503ef83790e7a100bfcefec33ff1\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9207.json": {
+    "etag": "\"9ab818632fda04c7235cbfbbcfc9fc16\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9396.json": {
+    "etag": "\"091bbaa7404e1afb85b17599b813ecec\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9421.json": {
+    "etag": "\"ae4f6d10b76a6dfa61d8f04ffa11dc0d\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9449.json": {
+    "etag": "\"c3d136ebe7dbdd7c7f841865ac37a421\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9470.json": {
+    "etag": "\"26765f7f7fa3481bce26340734197c7f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9635.json": {
+    "etag": "\"f5ed04e46bda06558a53ea6fd89212b5\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9700.json": {
+    "etag": "\"7cbc7f88e8d7ae6fb2ba61737abd6f2b\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9728.json": {
+    "etag": "\"3a9a117ea2670a3928f9d1662f8bb7a2\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9767.json": {
+    "etag": "\"75ef030286b300dcab97cb6e44f0b861\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9901.json": {
+    "etag": "\"a46da0074c30a9e371f877404b785e66\""
+  },
+  "https://www.w3.org/TR/did-1.1/": {
+    "lastModified": "Thu, 05 Mar 2026 07:44:18 GMT"
+  },
+  "https://www.w3.org/TR/vc-data-model-2.0/": {
+    "lastModified": "Mon, 05 May 2025 13:24:09 GMT"
+  },
+  "https://www.w3.org/TR/vc-data-model-2.1/": {
+    "lastModified": "Thu, 22 Oct 2026 04:21:15 GMT"
+  }
+}
