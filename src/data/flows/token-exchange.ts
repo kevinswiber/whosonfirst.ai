@@ -159,6 +159,12 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     },
   ],
   standards: ["rfc8693", "rfc8707", "rfc9068", "mcp-authorization"],
+  roles: {
+    rfc8693: "required", // the grant, its parameters and the `act` claim: steps 3 to 5 and 7
+    rfc9068: "required", // tokens A and B are drawn as JWT access tokens, and step 7 teaches the audience check it sets (section 4)
+    "mcp-authorization": "required", // step 2 teaches its rule: an MCP server must not pass on the token it received
+    rfc8707: "background", // RFC 8693 defines `resource` for the exchange request itself (section 2.1) and cites this only for background
+  },
   related: [
     "cross-app-access",
     "identity-chaining",
