@@ -2083,6 +2083,69 @@ for (const activation of ["click", "Enter", "touch", "programmatic click"]) {
   );
   await ctx.close();
 }
+// Authored glossary links use the same preview as automatic terms, in both
+// data-file Markdown and MDX prose. Activation must still work without scripts.
+for (const javaScriptEnabled of [false, true]) {
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    reducedMotion: "reduce",
+  });
+  const page = await ctx.newPage();
+  for (const [path, selector] of [
+    ["/flows/aauth/", '.credentials > p a[href="/glossary/#claim"]'],
+    ["/deployments/local/", 'main p a[href="/glossary/#claim"]'],
+  ]) {
+    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+    const term = page.locator(selector).first();
+    const definition = await term.getAttribute("data-def");
+    record(
+      path,
+      "explicit claims links retain their label and glossary treatment with or without scripts",
+      (await term.textContent()) === "claims" &&
+        (await term.getAttribute("data-term")) === "Claim" &&
+        !!definition?.startsWith("One named statement inside a token") &&
+        (await term.evaluate((el) => el.classList.contains("term"))),
+    );
+    if (javaScriptEnabled) {
+      // Scrolling intentionally dismisses a preview. Bring this deep link into
+      // view and let scroll events finish before testing a pointer entering it.
+      await term.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      );
+      await term.hover();
+      const tip = page.locator("#term-tip");
+      record(
+        path,
+        "hovering an explicit glossary link previews its definition",
+        (await tip.evaluate((el) => el.matches(":popover-open"))) &&
+          (await tip.locator(".term-tip-def").textContent()) === definition,
+      );
+      await page.keyboard.press("Escape");
+      await term.focus();
+      record(
+        path,
+        "focusing an explicit glossary link previews its definition",
+        (await tip.evaluate((el) => el.matches(":popover-open"))) &&
+          (await tip.locator(".term-tip-def").textContent()) === definition,
+      );
+    }
+    await Promise.all([
+      page.waitForURL(`${origin}/glossary/#claim`),
+      term.press("Enter"),
+    ]);
+    record(
+      path,
+      "activating an explicit glossary term reaches its definition with or without scripts",
+      (await page.locator("#claim").count()) === 1,
+    );
+  }
+  await ctx.close();
+}
 // the narrowest window: nothing scrolls sideways, on the pages above or on any flow
 const ctx = await browser.newContext({
   viewport: NARROW,
@@ -2944,7 +3007,7 @@ for (const javaScriptEnabled of [false, true]) {
     ["/flows/token-exchange/", 'a[href="/glossary/#claim"]', true],
     [
       "/flows/authorization-code-pkce/",
-      'a[href="/glossary/#state"] code',
+      'a.term[href="/glossary/#state"] code',
       true,
     ],
   ]) {

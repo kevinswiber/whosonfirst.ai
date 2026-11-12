@@ -7,7 +7,7 @@
  * term, outside code and outside links.
  */
 import type { Gloss } from "./gloss";
-import { mark } from "./gloss";
+import { mark, markExplicitLink } from "./gloss";
 
 const ESC: Record<string, string> = {
   "&": "&amp;",
@@ -36,7 +36,7 @@ export function inline(text: string, g?: Gloss): string {
     (_, label: string, href: string) => {
       const external = /^https?:/.test(href);
       return hold(
-        `<a href="${href}"${external ? ' rel="noopener"' : ""}>${emphasis(label)}</a>`,
+        `${markExplicitLink(`<a href="${href}"${external ? ' rel="noopener"' : ""}>`)}${emphasis(label)}</a>`,
       );
     },
   );
