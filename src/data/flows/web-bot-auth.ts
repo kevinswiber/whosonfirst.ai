@@ -152,7 +152,20 @@ Signature: sig1=:tQjDZHcVQ+BJ29HnzMuNjWJr4UC8yyFlTJnPli1pWH6QpLOGt9uDi/hgBwEsoJl
       body: `If the site needs to know which person the agent is acting for, to show an account page or take an order, that is a separate step using the site’s own login or an OAuth token.`,
     },
   ],
-  standards: ["web-bot-auth", "rfc9421", "visa-tap", "signature-key"],
+  standards: [
+    "web-bot-auth",
+    "rfc9421",
+    "rfc7638",
+    "visa-tap",
+    "signature-key",
+  ],
+  roles: {
+    "web-bot-auth": "required", // the stated basis: revision -01. Signature-Agent and the key directory, steps 1 to 6
+    rfc9421: "required", // Signature-Input and Signature, and how the signature base is built and verified: steps 3, 4 and 6
+    rfc7638: "required", // `keyid` in step 4 is this thumbprint; the draft requires it (Section 5.2)
+    "visa-tap": "background", // one of the payment networks’ schemes the closing note points to; no step uses it
+    "signature-key": "background", // another way to convey a signer’s key; the draft’s -01 text does not use it, and the page does not
+  },
   related: [
     "agent-payments",
     "agent-to-agent",
