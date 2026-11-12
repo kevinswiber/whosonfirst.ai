@@ -537,6 +537,21 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     top: 0.5rem;
   }
 
+  /* On paper there is nothing to press: the name of the site and where the page
+     sits stay, the menu, the shortcut and the theme switch go. */
+  @media print {
+    .skip,
+    .menu-toggle,
+    .quick,
+    nav,
+    .theme {
+      display: none !important;
+    }
+    .site-header {
+      position: static;
+    }
+  }
+
   .site-header {
     position: sticky;
     top: 0;

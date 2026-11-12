@@ -187,6 +187,7 @@ Two checks cover this:
   - a lesson's figure shows one complete variation, the table beneath covers them all, a choice changes what is shown, no explanation appears before an answer is chosen, each question has one right answer, and the page runs in the order every lesson shares
   - a flow's overview comes before its diagram and agrees with it, a part's link brings the diagram into view at its first step, and a glossary term shows its definition inside the window and puts it away again
   - each page's review date and specification are on its first line of facts with the rest behind a disclosure, the standards lookup precedes its history, the phone menu opens from the keyboard and shows every destination, the phone flow page reads as a narrative with the diagram on demand and easy to leave, and the stepper keeps keyboard focus usable (Left and Right step, Down scrolls, focus moves off a disabled button)
+  - every flow printed, from a desktop part way through its steps and from a phone, in the dark theme: every step is there in order with its heading, no button is, the ink is the light theme's, and the diagram is drawn whole, with no step singled out, inside the width of a sheet and no taller than one
 
   It needs Chromium: `npx playwright install chromium`.
 
