@@ -79,7 +79,7 @@ for (const path of [
     // textContent mistakes those whitespace changes for missing explanations.
     const fragments = [
       ...document.querySelectorAll(
-        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel > header > h3, .ti-panel > header > p, .ti-panel .claim-line > code, .ti-panel .plain > code, .claim-note > .claim-cat, .claim-note > p, main .doc-line",
+        ".flow-step .step-body, .flow-step pre, .flow-step .held, .sc-glance, .sx-source, .km-panel, .ti-panel > header > h3, .ti-panel > header > p, .ti-panel .claim-line > code, .ti-panel .plain > code, .claim-note > .claim-cat, .claim-note > p, main .doc-line, article.numbered > .page-head .lede, article.numbered > .page-head .primer, #human .modes h3, #human .modes p, #human .callout-title, .lh-panel h3, .lh-panel table, .lh-verdict p",
       ),
     ].map((x) => ({
       kind: x.matches(".claim-note > p")
@@ -99,6 +99,7 @@ for (const path of [
         (p) => norm(holder.textContent).includes(norm(p.textContent)),
       ),
       extractedTitle: article?.title,
+      pageHeading: document.querySelector("main h1")?.textContent.trim(),
       sourceLinksChecked: sourceLinks.length,
       sourceLinksMissing: sourceLinks.filter(
         (href) => !extractedLinks.has(href),

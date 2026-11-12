@@ -137,6 +137,35 @@ The screenshots below show the normal site, not a native Reader theme.
 
 ![Token claims with their explanations visible on a phone](reader-mode/token-annotations-mobile.png)
 
+### Concepts follow-up
+
+The user's Chrome Reading Mode screenshot at 21:16 UTC on November 12 shows
+the document title replacing the page heading, the opening prose missing, and
+review details running together. Its accompanying capture retains all nine
+annotated tokens but omits the three human-involvement explanations. The five
+delegation alternatives also need headings independent of their diagram labels.
+
+Concepts now puts its heading, introduction and sections in one article. It
+keeps the review date without repeating the introductory description in a
+disclosure. Shared review values and notes use paragraphs, literal spacing and
+body-sized text. Comparison tables also put literal spaces between labels and
+explanations.
+All five delegation alternatives are visible sections with headings; their
+navigation links jump to each section. The three human-involvement cards keep
+their prose outside their heading links, reducing the risk of extraction as
+navigation. The warning that follows has a real heading.
+
+The repeated Readability audit retains the original page heading and opening
+prose, all 295 checked Concepts fragments, and 23 token source links. This
+supersedes the Concepts tagline omission recorded above. The rendered checks
+also cover these sections with JavaScript on and off and verify that the jump
+links reach visible headings. Native Chrome validation of this follow-up is
+still tracked in #59; the extraction audit is not a substitute for that check.
+
+![Concepts opening on the normal desktop site](reader-mode/concepts-opening-desktop.png)
+
+![Human involvement on the normal mobile site](reader-mode/concepts-human-mobile.png)
+
 ## What belongs in each mode
 
 | Page family        | Reading-mode expectation                                                                                                                 |
@@ -144,7 +173,7 @@ The screenshots below show the normal site, not a native Reader theme.
 | Flows              | Summary, every ordered step, message examples and credential holdings; no navigation controls or loose diagram labels.                   |
 | Lessons            | Introduction, explanation, all comparison outcomes, takeaways and further reading. Interactive self-checks may be omitted by extractors. |
 | Deployment guides  | Introduction, all identity layers and their limits, examples and checklist.                                                              |
-| Concepts           | Every token example and its explanation.                                                                                                 |
+| Concepts           | Introduction, roles, every delegation and human-involvement alternative, and every token example with its explanation.                   |
 | Standards          | Every entry in the unfiltered page, status and links to its sources. Clear filters before entering Reader.                               |
 | Glossary and About | Definitions and explanatory prose.                                                                                                       |
 | Home and indexes   | Navigation is their purpose; native Reader may decline these pages.                                                                      |

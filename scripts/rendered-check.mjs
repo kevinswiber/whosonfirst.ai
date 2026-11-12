@@ -1539,6 +1539,24 @@ for (const theme of THEMES) {
               return d.open && d.querySelector("dl").offsetParent !== null;
             })),
         );
+        record(
+          where,
+          "review values and notes remain separate paragraphs with literal spacing",
+          await page.locator("main .doc-details dd").evaluateAll((items) =>
+            items.every((dd) => {
+              const value = dd.querySelector(".doc-value");
+              const note = dd.querySelector(".doc-note");
+              return (
+                !note ||
+                (value?.tagName === "P" &&
+                  note.tagName === "P" &&
+                  dd.textContent.includes(
+                    `${value.textContent} ${note.textContent}`,
+                  ))
+              );
+            }),
+          ),
+        );
         if (pg.name === "flow")
           record(
             where,
@@ -2801,7 +2819,10 @@ for (const javaScriptEnabled of [false, true]) {
 }
 // Comparisons and their annotations explain each alternative without interaction.
 for (const javaScriptEnabled of [false, true]) {
-  const ctx = await browser.newContext({ javaScriptEnabled });
+  const ctx = await browser.newContext({
+    javaScriptEnabled,
+    reducedMotion: "reduce",
+  });
   const page = await ctx.newPage();
   for (const [path, selector] of [
     ["/concepts/", ".ti-panel"],
@@ -2823,6 +2844,57 @@ for (const javaScriptEnabled of [false, true]) {
       JSON.stringify(seen),
     );
     if (path === "/concepts/") {
+      const structure = await page.evaluate(() => {
+        const article = document.querySelector("main > article");
+        const heading = article?.querySelector("h1");
+        const intro = article?.querySelector(".page-head .lede");
+        const facts = article?.querySelector(".page-facts");
+        const comparisons = [...document.querySelectorAll(".lh-panel")];
+        const modes = [...document.querySelectorAll("#human .modes .card")];
+        return {
+          opening:
+            !!heading &&
+            !!intro &&
+            !!facts &&
+            !!(
+              intro.compareDocumentPosition(facts) &
+              Node.DOCUMENT_POSITION_FOLLOWING
+            ),
+          comparisons: comparisons.length,
+          modes: modes.length,
+          complete: [...comparisons, ...modes].every(
+            (p) =>
+              p.querySelector("h3")?.textContent.trim() &&
+              p.checkVisibility({ visibilityProperty: true }) &&
+              [...p.querySelectorAll("h3, p, table")].every((el) =>
+                el.checkVisibility({ visibilityProperty: true }),
+              ),
+          ),
+        };
+      });
+      record(
+        path,
+        "the article opens with its heading and introduction before review facts",
+        structure.opening,
+      );
+      record(
+        path,
+        "all five delegation and three human-involvement comparisons have readable headings and explanations",
+        structure.comparisons === 5 &&
+          structure.modes === 3 &&
+          structure.complete,
+        JSON.stringify(structure),
+      );
+      await page.locator('.lh-modes a[href="#lh-bound"]').click();
+      const target = await page.locator("#lh-bound h3").boundingBox();
+      record(
+        path,
+        "a delegation navigation link reaches its visible section heading",
+        new URL(page.url()).hash === "#lh-bound" &&
+          !!target &&
+          target.y >= 90 &&
+          target.y + target.height < 720,
+      );
       const notes = page.locator(".claim-note");
       const visible = await notes.evaluateAll((items) =>
         items.every(

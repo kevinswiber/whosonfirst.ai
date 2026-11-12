@@ -77,9 +77,9 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
             <div>
               <dt>{it.label}</dt>
               <dd>
-                {it.href ? <a href={it.href}>{it.value}</a> : it.value}
+                <p class="doc-value">{it.href ? <a href={it.href}>{it.value}</a> : it.value}</p>{' '}
                 {it.note && (
-                  <span class="doc-note">{it.noteHref ? <a href={it.noteHref}>{it.note}</a> : whole(it.note)}</span>
+                  <p class="doc-note">{it.noteHref ? <a href={it.noteHref}>{it.note}</a> : whole(it.note)}</p>
                 )}
               </dd>
             </div>
