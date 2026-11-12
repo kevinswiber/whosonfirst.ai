@@ -60,7 +60,7 @@ Grouped by the question that matters most when choosing between them: is a perso
 - [Step-up authorization](https://whosonfirst.ai/flows/step-up-authorization/): start with a weak token, and ask the user for exactly what a sensitive action needs.
 - [Backchannel approval (CIBA)](https://whosonfirst.ai/flows/ciba/): approval arrives as a push notification, not a redirect.
 - [URL elicitation](https://whosonfirst.ai/flows/url-elicitation/): a tool hands back a link, the user signs in elsewhere, and the secret never touches the agent.
-- [AAuth](https://whosonfirst.ai/flows/aauth/): one calendar-read scenario, from agent enrollment through identity, consent, signed requests and API enforcement.
+- [AAuth](https://whosonfirst.ai/flows/aauth/): the agent signs requests with its own key; in the calendar flow shown, a user-chosen server vouches for the person and their consent.
 
 **Delegation chains**
 

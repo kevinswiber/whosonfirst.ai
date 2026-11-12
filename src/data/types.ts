@@ -167,7 +167,14 @@ export interface Flow {
    * arrangement is drawn and what else exists. `references` says, beside the required references,
    * that they and the rating belong to that arrangement and not to every implementation.
    */
-  illustrated?: { steps: string; references: string };
+  illustrated?: {
+    steps: string;
+    /** Conditions already true before the first step, rendered as a list. */
+    preconditions?: string[];
+    /** A short note explaining how to read the example listings. */
+    examples?: string;
+    references: string;
+  };
   /**
    * How the flow appears in different settings. For a flow that is a pattern more than a
    * protocol, where the steps have to stay general. Shown as a table where there is room, and as
@@ -214,8 +221,10 @@ export const ROLE_PART: Record<Role, string> = {
   infra: "{label}",
 };
 
-/** A section of a flow page made of parts in reading order, between the steps and the cautions. */
+/** A section of a flow page made of parts in reading order, after the steps. */
 export interface FlowSection {
+  /** Put source-review material after the reader’s cautions and notes. */
+  afterNotes?: boolean;
   /** The heading's anchor. */
   id: string;
   title: string;

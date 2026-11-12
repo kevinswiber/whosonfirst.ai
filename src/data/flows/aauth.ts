@@ -12,23 +12,19 @@ export const aauth: Flow = {
   maturity: "experimental",
   tagline:
     "An agent proves which person it acts for, obtains their consent, and signs its calendar request. The API still decides what to allow.",
-  summary: `Alice asks an assistant to read her calendar. The assistant has its own signing key, but a key alone says neither whose calendar this is nor whether Alice agreed. AAuth separates those questions: an **agent provider** names the agent, a **person server (PS)** represents Alice, and the **calendar API** enforces access to her data.
+  summary: `Alice asks an assistant to read her calendar. An **agent provider** names the agent, a **person server (PS)** represents Alice, and the **calendar API** enforces access to her data.
 
-This page follows **PS authorization**, one of AAuth’s five resource access modes. The API has no separate access server. It accepts identity and consent from Alice’s person server, then applies its own policy. Alice is a returning calendar user: the API already associates her person server’s issuer and directed subject with her calendar. That account relationship is a scenario assumption, not something a signature creates.
-
-AAuth is a separate protocol, not an OAuth extension. This guide follows the author’s draft repository at revision **-11**, checked on **12 November 2026**. It remains an individual Internet-Draft. The unrelated “AAuth — Agentic Authorization OAuth 2.1 Extension” is a different proposal.`,
+AAuth is a separate protocol from OAuth. This page follows **PS authorization**, one of its five resource access modes. The API has no separate access server: it accepts identity and consent from Alice’s person server, then applies its own policy.`,
   fits: [
     "Exploring agents that encounter APIs without being registered as clients at each one.",
     "Understanding what a user-chosen person server asserts, and what an API must still enforce.",
     "Prototyping signed requests, identity, and consent as separate checks. The draft is still changing.",
   ],
   watchOut: [
-    "**Pin the draft, not just a library version.** The reference here is protocol -11 and HTTP Signature Keys -09. The draft describes its listed implementations as exploratory. An explorer or SDK can track some changes and lag on others.",
-    "**The API receives no agent identifier in this mode.** It sees a person, a scope and a signing key. Neither the person token nor the auth token names the agent or its provider. It can correlate calls using the key, but cannot infer a provider identity from it.",
-    "**Check the token’s type.** A person token and an auth token from the same person server carry the same issuer, audience, subject and key. Check `typ` to distinguish their purposes. An API that skips that check treats “this is Alice’s agent” as “Alice approved this.” The draft says to test for the mistake, because it fails open.",
-    "**Discovery is not permission.** Anyone can publish a person server and sign a token. A valid signature establishes its issuer’s statement, not a right to an existing calendar. Match the opaque `(iss, sub)` pair to the correct account and enforce local policy. A new pair must not inherit an existing user’s data.",
-    "**The agent writes its own justification**, and the user reads it when deciding. The person server has to show it as the agent’s claim, apart from the API’s own description of the access. An agent misled into requesting access can still give a plausible reason.",
-    "**The signature covers less than it seems.** On a call to an API it covers, by default, the method, the host, the path and the token presented. The query string and the body are covered only if the API says they must be. Requests that carry a body to a person server or an access server, and requests to revoke a token, are stricter: the signature must also cover a digest of the body and its content type.",
+    "Require an auth token on the final call; a valid person token is not enough ([step 18](#step-18)).",
+    "The API must enforce account access, scope and replay protections ([security boundaries](#boundaries)).",
+    "The agent’s justification is its own claim, so the consent page must identify its source ([step 14](#step-14)).",
+    "The draft and implementations can change independently; pin both ([status and sources](#reading-sources)).",
   ],
   lesson: "whose-authority",
   phases: [
@@ -54,12 +50,12 @@ AAuth is a separate protocol, not an OAuth extension. This guide follows the aut
     },
   ],
   parts: {
-    user: "Chooses a person server and connects the agent to it. In this scenario Alice has already allowed the agent to act as her at this API. Now she reviews a request for calendar.read, with the API’s scope description separated from the agent’s justification.",
-    ap: "Enrolls the agent using a platform-appropriate mechanism and issues a signed agent token binding its identifier to its public key. Publishes issuer metadata and signing keys. This establishes agent identity; it does not authorize calendar access.",
-    ps: "Verifies the agent and its binding to Alice. Issues a person token for this API. Checks the API’s signed resource token against the original person token and the agent’s key, obtains consent, and issues a bounded auth token.",
+    user: "Reviews the agent, calendar service and requested scope, then approves or refuses at the person server.",
+    ap: "Enrolls the agent and binds its identity to its public key in an agent token.",
+    ps: "Represents Alice, checks the request for access, obtains her consent and issues the tokens.",
     agent:
-      "Keeps its signing key, discovers endpoints and keys, and presents the right token to each party. Verifies the API’s challenge, carries it and the original person token to the PS, handles deferred responses, and checks the returned auth token before retrying.",
-    api: "Publishes metadata and scope descriptions. Verifies the person token before asking for consent. On the retry, requires an auth token, verifies the request signature, maps (iss, sub) to the calendar account, and enforces calendar.read.",
+      "Keeps its signing key, carries tokens between parties and verifies each response before continuing.",
+    api: "Describes the access it requires, verifies tokens and request signatures, and enforces its own policy.",
   },
   participants: [
     {
@@ -108,7 +104,7 @@ AAuth is a separate protocol, not an OAuth extension. This guide follows the aut
       kind: "back",
       label: "Enroll public key",
       title: "The agent proves itself to its provider",
-      body: "The agent proves itself to the agent provider through a platform-specific enrollment mechanism. The provider decides whether to issue an identity bound to the submitted key. The core protocol does not define one universal enrollment request; the bootstrap companion discusses platform-specific choices. The diagram therefore shows enrollment without an HTTP example.",
+      body: `The agent proves itself to the agent provider through a platform-specific enrollment mechanism. The provider decides whether to issue an identity bound to the submitted public key. The core draft does not specify a universal enrollment exchange, so this step has no HTTP listing.`,
     },
     {
       from: "ap",
@@ -116,9 +112,9 @@ AAuth is a separate protocol, not an OAuth extension. This guide follows the aut
       kind: "resp",
       label: "Agent token",
       title: "The provider signs the agent’s identity",
-      body: `The provider issues an **agent token**, with \`typ: aa-agent+jwt\`. Its issuer signature binds an agent identifier to \`cnf.jwk\`, the agent’s public key. The provider key and the agent key are different keys with different jobs. The recommended lifetime is no more than 24 hours. This token declares Alice’s person server in \`ps\`; an agent with a person server must declare it, although agents without one are also supported.
+      body: `The provider issues an **agent token** with \`typ: aa-agent+jwt\`. Its signature binds the agent identifier to \`cnf.jwk\`, the agent’s public key. The provider’s signing key is separate from the agent’s key. The recommended lifetime is at most 24 hours. The required \`ps\` claim names Alice’s person server.
 
-The decoded view below separates the JWT header from its payload. It is not the HTTP response format.`,
+The listing shows the decoded JWT header and payload.`,
       code: {
         lang: "json",
         text: `{
@@ -167,16 +163,14 @@ Host: calendar.example`,
       kind: "resp",
       label: "Metadata and scope meaning",
       title: "The API describes the access it expects",
-      body: `This API advertises \`access_mode: auth-token\`, so the agent’s initial protected call must present a person token. The declaration is advisory; requirements can change at runtime. The API publishes \`jwks_uri\` so its resource tokens can be verified, and describes \`calendar.read\` for the consent screen.
-
-This scenario uses a challenge from GET /events. AAuth also permits asking a resource’s advertised authorization endpoint for a resource token in advance; that is a different entry path to the same mode.`,
+      body: `The API advertises \`access_mode: auth-token\`, so the agent starts with a person token. This declaration is advisory; requirements can change at runtime. The API publishes \`jwks_uri\` for verifying its resource tokens and describes \`calendar.read\` for the consent page.`,
       code: {
         lang: "json",
         text: `{
   "issuer": "https://calendar.example",
   "jwks_uri": "https://calendar.example/.well-known/jwks.json",
   "access_mode": "auth-token",
-  "name": "Alice’s calendar service",
+  "name": "Example Calendar",
   "scope_descriptions": {
     "calendar.read": "Read your calendar events"
   }
@@ -189,11 +183,9 @@ This scenario uses a challenge from GET /events. AAuth also permits asking a res
       kind: "back",
       label: "Ask for a person token",
       title: "The agent asks for a person token for this API",
-      body: `The agent discovers the PS’s metadata at \`https://ps.example/.well-known/aauth-person.json\`, checks its \`issuer\`, and reads \`person_token_endpoint\` and \`auth_token_endpoint\`. In this example they are \`/person\` and \`/token\`; those paths are not fixed by the protocol.
+      body: `The agent reads the PS’s metadata at \`https://ps.example/.well-known/aauth-person.json\` and checks its \`issuer\`. The metadata supplies \`person_token_endpoint\` and \`auth_token_endpoint\`, here \`/person\` and \`/token\`.
 
-It asks for a person token whose audience is the calendar API. \`Signature-Key\` carries its **agent token**. The agent signs the request with its own private key. \`Signature-Input\` names the covered components and creation time; \`Signature\` carries the result. A request with a body to the PS must cover \`content-digest\` and \`content-type\` as well as method, authority, path and signature-key.
-
-Every protected agent request below is signed, including polling. Shortened listings omit some signature headers. Metadata retrieval and the browser’s interaction are separate from those agent requests.`,
+The request names the calendar API as the token’s audience. \`Signature-Key\` carries the **agent token**; the agent signs with its own private key. \`Signature-Input\` lists the signed components, and \`Signature\` carries the result. Body-bearing requests to the PS must cover \`content-digest\` and \`content-type\`, in addition to method, authority, path and signature-key.`,
       code: {
         lang: "http",
         text: `POST /person HTTP/1.1
@@ -214,11 +206,9 @@ Signature: sig=:SIGNATURE_BYTES:
       kind: "resp",
       label: "Person token for this API",
       title: "The person server identifies Alice to this API",
-      body: `The PS verifies the provider’s signature on the agent token, then the agent’s HTTP signature using the key in that token. It checks which person this agent is bound to. Alice connected it earlier and has already approved it acting as her at this API, so the PS can answer immediately. First use of a resource may require a separate interaction here; it is not the calendar-scope consent shown later.
+      body: `The PS verifies the provider’s signature on the agent token and the agent’s HTTP signature. It checks the existing agent–person binding and resource approval, so it can answer immediately.
 
-The response body contains \`person_token\` and \`expires_in\`. Its decoded JWT is below. The header’s \`typ\` is \`aa-person+jwt\`. The payload’s \`aud\` names just this API; \`sub\` is Alice’s directed identifier there; \`cnf.jwk\` is the agent’s public key. There is no scope or account claim. The lifetime is at most one hour and cannot exceed the agent token’s expiry.
-
-This identifies Alice consistently at this API; it does not verify her legal identity or grant a scope. An API using person-identity mode could serve requests on identity alone. This calendar endpoint instead requires an auth token.`,
+The response contains \`person_token\` and \`expires_in\`. In the decoded JWT below, \`typ\` is \`aa-person+jwt\`, \`aud\` names this API, \`sub\` is Alice’s directed identifier there, and \`cnf.jwk\` is the agent’s public key. It carries no scope or account claim. Its lifetime is at most one hour and cannot exceed the agent token’s expiry.`,
       code: {
         lang: "json",
         text: `{
@@ -254,15 +244,17 @@ This identifies Alice consistently at this API; it does not verify her legal ide
       kind: "back",
       label: "Signed request, person token",
       title: "The agent calls the API as Alice’s agent",
-      body: `The agent signs \`GET /events\` with the same private key, but presents its **person token** in \`Signature-Key\`. The API learns the PS’s assertion about Alice without receiving the agent token or the agent identifier.
+      body: `The agent signs \`GET /events\` with its private key and presents the **person token** in \`Signature-Key\`. The API receives the PS’s assertion about Alice, but no agent identifier.
 
-\`AAuth-Capabilities: interaction\` says the agent can direct Alice to a page if needed. Possession of this person token does not satisfy this endpoint’s requirement for calendar consent.`,
+\`AAuth-Capabilities: interaction\` says the agent can direct Alice to a consent page.`,
       code: {
         lang: "http",
         text: `GET /events HTTP/1.1
 Host: calendar.example
 AAuth-Capabilities: interaction
-Signature-Key: sig=jwt;jwt="PERSON_TOKEN"`,
+Signature-Key: sig=jwt;jwt="PERSON_TOKEN"
+Signature-Input: sig=("@method" "@authority" "@path" "signature-key");created=1794268801
+Signature: sig=:SIGNATURE_BYTES:`,
       },
     },
     {
@@ -271,11 +263,11 @@ Signature-Key: sig=jwt;jwt="PERSON_TOKEN"`,
       kind: "resp",
       label: "401 with a resource token",
       title: "The API says what it needs, in a token of its own",
-      body: `The API verifies the person token’s type, issuer signature, expiry, audience and key binding, and verifies the HTTP signature. It recognizes Alice by \`(iss, sub)\`. It does not return her events yet: this endpoint requires consent for \`calendar.read\`.
+      body: `The API verifies the person token’s type, issuer signature, expiry, audience and key binding, and verifies the HTTP signature. This endpoint also requires consent for \`calendar.read\`, so it does not return her events yet.
 
-It responds with \`401 Unauthorized\` and \`AAuth-Requirement: requirement=auth-token; resource-token="RESOURCE_TOKEN"\`. The decoded resource token is below. **The API signs this token with its own issuer key.** It describes the requested access; it is not a grant.
+It responds with \`401 Unauthorized\` and \`AAuth-Requirement: requirement=auth-token; resource-token="RESOURCE_TOKEN"\`. The API signs this resource token, decoded below, with its own issuer key. It describes the requested access.
 
-\`aud\` names the PS because this scenario has no access server. \`ps\` and \`sub\` identify the person; \`presented_jti\` identifies the exact person token; \`agent_jkt\` is the RFC 7638 thumbprint of the agent’s key. The recommended lifetime is at most five minutes. Altering the scope or person breaks the API’s signature.`,
+\`aud\` names the PS because this scenario has no access server. \`ps\` and \`sub\` identify the person; \`presented_jti\` identifies the exact person token; \`agent_jkt\` is the RFC 7638 thumbprint of the agent’s key. The recommended lifetime is at most five minutes.`,
       code: {
         lang: "json",
         text: `{
@@ -314,21 +306,25 @@ It responds with \`401 Unauthorized\` and \`AAuth-Requirement: requirement=auth-
       kind: "back",
       label: "Ask for an auth token",
       title: "The agent takes the API’s request to the person server",
-      body: `The agent submits the **resource token** as \`resource_token\` and the original **person token** as \`presented_token\`. Its HTTP request presents the **agent token** in \`Signature-Key\`. Those three tokens do different jobs: the API’s request, the person named at the API, and the identity of the agent now asking the PS.
+      body: `The agent submits the **resource token** as \`resource_token\` and the original **person token** as \`presented_token\`. Its HTTP request presents the **agent token** in \`Signature-Key\`. These carry the API’s request, the person named at the API, and the requesting agent’s identity.
 
-\`justification\` is the agent’s own account of why it wants access. \`capabilities\` says it can direct Alice to an interaction page; outside a mission it is supplied per request. \`Prefer: wait=45\` lets the PS hold the connection for up to 45 seconds. It does not guarantee an answer within that time.`,
+\`justification\` gives the agent’s reason for access; \`capabilities\` says it can direct Alice to a page. \`Prefer: wait=45\` allows the PS to hold the connection for up to 45 seconds without promising a decision in that time.`,
       code: {
         lang: "http",
         text: `POST /token HTTP/1.1
 Host: ps.example
 Content-Type: application/json
+Content-Digest: sha-256=:BaDaUqpHcNcrniyiSOuljtJ6jb9qVoUnY7FF5HekFPk=:
 Prefer: wait=45
 Signature-Key: sig=jwt;jwt="AGENT_TOKEN"
+Signature-Input: sig=("@method" "@authority" "@path" "signature-key"
+  "content-digest" "content-type");created=1794268803
+Signature: sig=:SIGNATURE_BYTES:
 
 {
   "resource_token": "RESOURCE_TOKEN",
   "presented_token": "PERSON_TOKEN",
-  "justification": "Read Alice’s calendar to suggest free times next week",
+  "justification": "Read the calendar to suggest free times next week",
   "capabilities": ["interaction"]
 }`,
       },
@@ -339,9 +335,9 @@ Signature-Key: sig=jwt;jwt="AGENT_TOKEN"
       kind: "resp",
       label: "202: the user must approve",
       title: "The person server answers: not yet",
-      body: `The PS verifies the API’s JWT signature, token type and expiry. It checks that \`aud\` and \`ps\` name itself, and that \`agent_jkt\` matches the signing agent’s key. It also verifies \`presented_token\`: its audience must be the API, its key must match, and its \`jti\`, issuer and subject must agree with the resource token. Mission and tenant claims, when present, must agree too.
+      body: `The PS verifies the resource token’s type, API signature and expiry. It checks that \`aud\` and \`ps\` name itself and \`agent_jkt\` matches the requesting agent’s key. It verifies \`presented_token\` too: its audience must be the API, its key must match, and its \`jti\`, issuer and subject must match the resource token’s \`presented_jti\`, \`ps\` and \`sub\`.
 
-Alice has not granted this agent \`calendar.read\`, so the PS returns \`202 Accepted\`, a pending URL and an interaction URL. **These URLs have different jobs.** The agent polls \`Location\`; Alice visits the interaction \`url\` with its \`code\`. The pending URL must have the responding server’s origin. The code links Alice’s visit to this request; it does not record approval.`,
+The PS needs Alice’s consent, so it returns \`202 Accepted\`. The agent polls the pending URL in \`Location\`; Alice visits the interaction \`url\` with its \`code\`. The pending URL must have the PS’s origin. The code links Alice’s visit to this request; it does not approve access.`,
       code: {
         lang: "http",
         text: `HTTP/1.1 202 Accepted
@@ -362,9 +358,7 @@ Content-Type: application/json
       kind: "oob",
       label: "Link and code",
       title: "The agent sends Alice to her person server",
-      body: `The agent sends Alice the URL and code through its existing channel to her. An attacker can imitate that message, so the person server’s page must show the whole request for Alice to review.
-
-A person server that has its own channel to Alice, such as a notification on her phone, can use that and leave the agent out. The draft calls that the stronger arrangement.`,
+      body: `This PS advertises no \`interaction_endpoint\`, so the agent uses the direct-interaction fallback: it sends Alice the URL and code through its existing channel to her. The person server’s page must show the full request so Alice can recognize a link to someone else’s request.`,
       code: {
         lang: "text",
         text: "To approve, open https://ps.example/interact?code=A1B2-C3D4",
@@ -376,9 +370,9 @@ A person server that has its own channel to Alice, such as a notification on her
       kind: "front",
       label: "Sign in, read, approve",
       title: "Alice decides at her person server",
-      body: `Alice signs in using the method her person server provides. The page shows content from two sources and has to keep them apart. From the API: its name, and its own description of the scope, “Read your calendar events”. From the agent: its justification, marked as the agent’s claim. Where the API has described the access, the person server may not decide on the agent’s words alone.
+      body: `Alice signs in to her person server. The page identifies the agent asking for access and shows **Example Calendar** and its scope description, “Read your calendar events”, from the API’s metadata. It presents the agent’s justification separately, marked as the agent’s claim. The PS must not decide on that justification alone when the API describes the access.
 
-Alice approves on her person server’s page. The agent does not control that page, and the interaction code alone cannot approve the request.`,
+Alice approves or refuses on the person server’s page. The agent does not control that page.`,
     },
     {
       from: "agent",
@@ -388,9 +382,9 @@ Alice approves on her person server’s page. The agent does not control that pa
       title: "The agent polls",
       body: `The agent sends signed \`GET\` requests to the pending URL, using its agent token and respecting \`Retry-After\`. It does not resend the original POST body. The PS verifies the requesting agent on every poll.
 
-While the decision is pending the PS returns \`202\`. A body with \`status: "interacting"\` means Alice has arrived: stop prompting her, but keep polling. A non-\`202\` response ends this polling exchange. A denial or an expired interaction is not a token.
+While the decision is pending the PS returns \`202\`. A body with \`status: "interacting"\` means Alice has arrived: stop prompting her, but keep polling. A non-\`202\` response ends this polling exchange.
 
-The auth token returns on this channel, not through Alice’s browser. No OAuth authorization code is exchanged.`,
+The auth token returns through polling, not through Alice’s browser.`,
       code: {
         lang: "http",
         text: `GET /pending/f7a3b9c HTTP/1.1
@@ -452,9 +446,9 @@ The token’s lifetime is at most one hour. It must expire no later than either 
       kind: "back",
       label: "Signed request, auth token",
       title: "The agent calls again, with the auth token",
-      body: `The agent retries the request from step 8, now presenting the **auth token** in \`Signature-Key\`. It signs again with the same private key and a fresh \`created\` time. Swapping the token without signing again would invalidate the HTTP signature because the signature covers \`signature-key\`.
+      body: `The agent retries step 8 with the **auth token** in \`Signature-Key\`. It signs again with the same private key and a fresh \`created\` time. Replacing the person token without signing again would invalidate the request signature, which covers \`signature-key\`.
 
-This request has no body or query string. AAuth’s base signature covers method, authority, path and signature-key. Extra components must be covered when the server requires them. The default freshness window is 60 seconds, not a guarantee that a captured request can be used only once.`,
+This request has no body or query string.`,
       code: {
         lang: "http",
         text: `GET /events HTTP/1.1
@@ -483,9 +477,9 @@ Signature: sig=:SIGNATURE_BYTES:`,
       kind: "resp",
       label: "200 OK: Alice’s events",
       title: "The API returns the calendar events",
-      body: `The API returns Alice’s events only after all the checks in step 18 pass. It has evidence of a person-server assertion, consented scope, and possession of the bound key. It has no agent identifier in this flow.
+      body: `The API returns Alice’s events only after all the checks in step 18 pass. It has evidence of a person-server assertion, consented scope, and possession of the bound key.
 
-Later reads can reuse the unexpired auth token with a new HTTP signature on each request. The PS does not approve or observe every calendar read. The API remains responsible for enforcing the allowed scope on every call.`,
+Later reads can reuse the unexpired auth token with a new HTTP signature on each request. The PS does not approve or observe every calendar read. The API enforces the allowed scope on every call.`,
     },
   ],
   standards: [
@@ -506,11 +500,15 @@ Later reads can reuse the unexpired auth token with a new HTTP signature on each
     "aauth-rosenberg": "background",
   },
   illustrated: {
-    steps: `**One scenario: a returning user grants read access to their calendar.** Alice has connected this agent to her PS and allowed it to act as her at this API, but has not granted \`calendar.read\`. The API already maps her \`(iss, sub)\` to her calendar. The PS requires fresh consent for this scope. There is no mission, separate access server, downstream API or sub-agent.
-
-AAuth calls this **three-party PS authorization**, counting agent, resource and PS. The drawing also includes the person and the agent provider, so it has five lanes. Enrollment appears as a conceptual exchange; the protected requests follow the core protocol. Metadata and JWKS fetches used to verify tokens are described in the steps rather than repeated for every cached key.
-
-**Reading the examples.** Token listings show decoded JWT headers and payloads, not new wire formats. Token strings and signature bytes in HTTP listings are placeholders; these are teaching examples, not cryptographic test vectors. HTTP header wrapping is for readability. [Compare the five access modes](#comparison).`,
+    steps: `**One scenario: a returning user grants read access to their calendar.** The PS requires fresh consent for this scope.`,
+    preconditions: [
+      "Alice has connected this agent to her person server.",
+      "She has allowed it to act as her at this API.",
+      "The API maps her `(iss, sub)` to her existing calendar.",
+      "She has not yet granted `calendar.read`.",
+    ],
+    examples:
+      "JWT listings show decoded headers and payloads. Token strings and signature bytes are placeholders, not cryptographic test vectors. HTTP headers wrap for readability.",
     references:
       "The diagram follows protocol -11: agent, person, resource and auth tokens, HTTP request signatures, and a JWK thumbprint binding. Enrollment is shown conceptually, without choosing a bootstrap mechanism. The access-mode comparison describes the other arrangements; this diagram follows only PS authorization.",
   },
@@ -577,7 +575,7 @@ AAuth calls this **three-party PS authorization**, counting agent, resource and 
       },
     ],
     after:
-      "In agent identity and resource-managed access, the API sees the agent’s identifier and can make rules about it. In the other three it does not: no token the API reads names the agent. In federated authorization the agent token does reach the access server, which may weigh what it says about the agent.",
+      "In federated authorization the access server also receives the agent token and may use it in its policy decision.",
   },
   notes: [
     {
@@ -592,19 +590,17 @@ AAuth calls this **three-party PS authorization**, counting agent, resource and 
     },
     {
       title: "What is not drawn",
-      body: `Most of the draft is outside this diagram.
+      body: `**Other ways in.** An API can advertise an authorization endpoint so the agent can ask for a resource token before making an API call. A first request for a person token at a resource may need its own user interaction. Agents without a person server and APIs that serve on person identity alone use other access modes.
 
-**Missions.** The agent proposes a description of a whole task, and the user approves it at the person server. The person server then evaluates and logs each authorization request the agent brings under that mission. It considers the approved task and earlier requests. It does not see every call. Once an auth token is issued, the agent calls the API directly until the token expires, and it is the API that enforces what the token grants. An agent can also report to the person server what it did. That report is optional.
+**Other ways to reach the user.** When a PS offers an \`interaction_endpoint\`, the draft says the agent SHOULD try that relay before directing the user itself; \`interaction_unavailable\` permits fallback. A PS can also contact the user through its own established channel and return \`requirement=approval\`. The draft calls that a stronger defense against misleading links.
 
-**Access servers.** An API that wants a policy engine of its own names one in the resource token, and the person server obtains the auth token there.
+**Missions.** A user can approve a task description at the PS. It then evaluates and logs authorization requests under that mission against the task and earlier requests. It still does not observe every subsequent API call. An agent may report what it did, but that report is optional.
 
-**Chains.** An API that calls another API acts as an agent in its turn, and presents the token it received as evidence of whom it is acting for. The draft deliberately puts no delegation chain in any token, whereas [token exchange](/flows/token-exchange/) can carry actor information. Downstream permission is evaluated anew, not automatically narrowed from an upstream scope.
+**Access servers and chains.** An API can name an access server to evaluate its policy. An API calling another API acts as an agent in turn; downstream permission is evaluated anew, not automatically narrowed from an upstream scope. AAuth tokens carry no delegation chain, whereas [token exchange](/flows/token-exchange/) can carry actor information.
 
-Companion drafts cover how an agent enrolls with its provider, authorization described in an API’s own vocabulary, and event delivery.`,
-    },
-    {
-      title: "Where it stands",
-      body: "The protocol and HTTP Signature Keys remain individual Internet-Drafts, at revisions -11 and -09 respectively. The author’s repository reports that AAuth has been adopted as an OpenID Foundation working group and that specification work will migrate there. That statement does not turn the IETF draft into a published standard. See the source review above before copying an example from a different implementation or revision.",
+**Drawing conventions.** AAuth calls this three-party PS authorization, counting agent, resource and PS. The drawing adds the person and provider, so it has five lanes. Enrollment is conceptual; metadata and JWKS fetches used in verification are described in the steps rather than drawn for every cached key.
+
+Companion drafts cover enrollment, authorization in an API’s own vocabulary, and event delivery.`,
     },
   ],
   credentials: {
@@ -660,7 +656,9 @@ Companion drafts cover how an agent enrolls with its provider, authorization des
       parts: [
         {
           title: "Identity continuity and account access",
-          body: "A directed subject identifies the same person under the same issuer at this resource. It is opaque, and it is not an email address or evidence of legal identity. The API must use the issuer and subject together. If it already has accounts from another sign-in system, linking one to this pair needs a separate, authenticated account-linking decision. A newcomer cannot acquire an existing calendar by asserting a matching name.",
+          body: `The draft describes looking up \`(iss, sub)\`: a known pair matches an existing user record; an unknown pair creates a new one. The subject is opaque and proves continuity under that issuer, not a legal identity. A new record does not identify another user’s existing calendar; the API still applies its own policy.
+
+**This guide’s recommendation:** if the API also has accounts from another sign-in system, require a separate authenticated decision before linking one to this pair. The draft does not define that account-linking procedure.`,
           sources: [
             {
               label: "Person tokens and verification",
@@ -688,7 +686,7 @@ Companion drafts cover how an agent enrolls with its provider, authorization des
         },
         {
           title: "Proof of possession and replay",
-          body: "Copying a token alone is insufficient without the bound private key. Copying an entire signed request may still permit replay within its freshness window unless the verifier detects duplicates. The default window is 60 seconds and can be advertised differently. Method, authority, path and signature-key are the base coverage; a query string is not implicitly signed. Require the components that affect the operation. Requests with bodies to the PS or AS, and revocation requests with bodies, also require signed content-digest and content-type.",
+          body: "Copying a token alone is insufficient without the bound private key. Copying an entire signed request may still permit replay within its freshness window unless the verifier detects duplicates. The default window is 60 seconds and can be advertised differently. An API request’s query string and body are not implicitly signed. The API must require coverage for components that affect the operation. The draft separately requires signed content-digest and content-type for bodies sent to a PS or access server, and for revocation requests with bodies.",
           sources: [
             {
               label: "Signed components",
@@ -720,14 +718,19 @@ The protocol also defines revocation and cascading notices. Stopping new issuanc
     },
     {
       id: "reading-sources",
-      title: "Which source to follow",
+      afterNotes: true,
+      title: "Status and sources",
       intro:
-        "Reviewed on 12 November 2026. The author’s draft repository is the reference for this explanation; the explorer and JavaScript packages are supporting material.",
+        "Reviewed on 12 November 2026 against protocol -11 and HTTP Signature Keys -09, both individual Internet-Drafts. The author’s draft repository is the reference; the explorer and JavaScript packages are supporting material.",
       parts: [
         {
           title: "The protocol draft",
-          body: "This page was checked against repository commit e287b1e. Its protocol Markdown matches the repository’s protocol -11 tag. Datatracker also lists -11. The source link below preserves the reviewed version as the repository changes. The diagram remains experimental; a working implementation is not evidence of standardization.",
+          body: "The protocol Markdown at e287b1e matches the -11 tag and Datatracker revision. The author’s README reports adoption of an OpenID Foundation working group and a planned move of specification work there. That report does not change the IETF draft’s status. The flow remains experimental.",
           sources: [
+            {
+              label: "Author’s README at e287b1e",
+              href: "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md",
+            },
             {
               label: "Reviewed protocol source (e287b1e)",
               href: "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md",
