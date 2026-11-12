@@ -159,12 +159,26 @@ Authorization: WPT eyJhbGciOiJFZDI1NTE5IiwidHlwIjoid3B0K2p3dCJ9…`,
   standards: [
     "wimse-creds",
     "wimse-wpt",
+    "wimse-id",
     "wimse-httpsig",
+    "rfc9421",
+    "wimse-mtls",
+    "spiffe",
     "wimse-arch",
     "wimse-aims",
-    "spiffe",
-    "rfc9421",
   ],
+  basis: ["wimse-creds", "wimse-wpt"],
+  roles: {
+    "wimse-creds": "required", // the token: its claims in step 3, its header field in step 5, and how it is verified in step 7
+    "wimse-wpt": "required", // the proof: its claims in step 4, the `WPT` scheme in step 5, and how it is verified in step 7
+    "wimse-id": "required", // the subject in step 3 is a workload identifier, a URI scoped to a trust domain; the credentials draft cites it normatively
+    "wimse-httpsig": "optional", // the other proof that survives a proxy; named in the summary and the notes, not drawn
+    rfc9421: "optional", // what that proof is a profile of; no step signs a message this way
+    "wimse-mtls": "optional", // the third proof, for when nothing sits in the path; named in the notes, not drawn
+    spiffe: "optional", // one issuer and one identifier scheme: the WIT-SVID profile, SPIRE as the example issuer, the `spiffe` URI in step 3
+    "wimse-arch": "background", // the architecture and terms the drafts follow; not named on this page
+    "wimse-aims": "background", // named in the summary for its position that agents are workloads
+  },
   related: [
     "spiffe-workload-identity",
     "dpop",
