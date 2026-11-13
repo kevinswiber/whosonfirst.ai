@@ -1,7 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
 import FlowCard from "../../components/FlowCard.astro";
-import { fieldProfile } from "../../data/field";
 import { byGroup, flow, flows, maturityLabel } from "../../data/flows";
 import { HUMAN_LABEL } from "../../data/types";
 
@@ -173,7 +172,6 @@ const filters = [
             {g.flows.map((f) => (
               <div class="fl-cell" data-human={f.human}>
                 <FlowCard flow={f} />
-                {fieldProfile(f.slug) && <p class="fl-implementations"><a href={`/implementations/${f.slug}/`}>See implementations<span class="visually-hidden"> for {f.short}</span></a></p>}
               </div>
             ))}
           </div>
@@ -333,9 +331,7 @@ const filters = [
   }
   .fl-cell {
     display: grid;
-    grid-template-rows: 1fr auto;
   }
-  .fl-implementations { margin: 0.5rem 0 0; font-size: 0.95rem; }
 
   /* CSS-only filter. "any" flows always show. */
   .fl:has(input[value='present']:checked) .fl-cell:not([data-human='present'], [data-human='any']),

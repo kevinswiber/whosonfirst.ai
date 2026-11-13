@@ -283,7 +283,7 @@ test("flow sections and recommendation results lead to their implementation reco
   assert.match(page.url(), /\/implementations\/authorization-code-pkce\/$/);
 });
 
-test("home, flow cards and deployment next steps expose implementations without scripts", async (t) => {
+test("scriptless navigation keeps flow cards focused and exposes implementations elsewhere", async (t) => {
   const ctx = await site.context({ javaScriptEnabled: false });
   t.after(() => ctx.close());
   const page = await ctx.newPage();
@@ -294,11 +294,9 @@ test("home, flow cards and deployment next steps expose implementations without 
     .click();
   assert.match(page.url(), /\/implementations\/$/);
   await open(page, site.url("/flows/"));
-  await page
-    .locator("main")
-    .getByRole("link", { name: "See implementations for DPoP", exact: true })
-    .click();
-  assert.match(page.url(), /\/implementations\/dpop\/$/);
+  assert.equal(await page.locator(".fl-cell a").count(), FLOWS.length);
+  await page.locator('.flow-card[href="/flows/dpop/"]').click();
+  assert.match(page.url(), /\/flows\/dpop\/$/);
   await open(page, site.url("/deployments/kubernetes/"));
   const next = page.locator(".way-on");
   const evidence = next.getByRole("link", { name: /See implementations for/ });
