@@ -38,7 +38,7 @@ The initial explicit-link design used plain flow headings in the overview, with 
 
 The reader-facing section is **Implementations**, at `/implementations/` and `/implementations/<slug>/`. Navigation, overview and record headings, breadcrumbs, About and generated Markdown use that name. Each record’s title identifies implementations and deployment reports; its breadcrumb is Implementations / flow name. Flow explanations retain their own pages and link to the evidence through a real section in their section menu. The old `#in-the-field` flow fragment remains usable.
 
-The overview retains its bounded examples and explicit implementation/diagram links. Search displays every matching accepted entry, including when a query also names the flow; it keeps products and roles within the same record. Home, decision-guide results, flow cards and deployment next steps introduce the evidence at relevant points. Product mention remains separate from recommendation.
+The overview retains its bounded examples and explicit full-record and flow-guide links. Search displays every matching accepted entry, including when a query also names the flow; it keeps products and roles within the same record. Home, decision-guide results, flow cards and deployment next steps introduce the evidence at relevant points. Product mention remains separate from recommendation.
 
 [Issue #87](https://github.com/kevinswiber/whosonfirst.ai/issues/87) owns static **By product** / **By flow** browsing and editorial product grouping. The current overview’s product search still needs JavaScript. Complete records remain readable without it, but finding a product across all flows is a known discovery limitation until that follow-up. The follow-up must preserve edition/runtime/version boundaries and test finding every documented role for a product beyond the overview examples, including with scripts disabled. Reader evaluation is still pending.
 
@@ -63,3 +63,7 @@ The directory retains compact lists inside its comparison rows. It shows the sam
 The flow-page section now shows every reviewed implementation and deployment entry in one card grid. No fixed limit is imposed. Names and roles or settings lead each card; **Implementation** and **Deployment report** labels sit at the bottom, following the related-flow pattern. The link **See the full record** appears directly beneath the section heading, followed by “for sources and details.”
 
 The flow-page section omits its sample introduction, review date, prevalence disclaimer and empty-category messages. Review context stays in the directory and complete evidence record. The directory retains its bounded compact examples and coverage wording. Sources, dates, evidence entries and direct entry destinations are unchanged.
+
+## Directory navigation, 13 November 2026
+
+Each comparison row keeps its onward links beneath the flow name and review metadata, in the first column. **See the full record** is followed by “for sources and details,” matching the flow-page section. **See the flow** opens the guide from the top. There is no separate action column; the remaining width belongs to implementation evidence and deployment reports. On a phone, the identity and links precede the evidence. Both links retain the flow name in their accessible text.

@@ -26,14 +26,17 @@ test("the compact directory, full record and flow guide connect without JavaScri
   const dpop = page.locator("#dpop");
   assert.equal(await dpop.getByRole("heading").getByRole("link").count(), 0);
   assert.equal(
-    await dpop.locator(".field-actions").getByRole("link").count(),
+    await dpop
+      .locator(".field-identity .field-actions")
+      .getByRole("link")
+      .count(),
     2,
   );
   assert.equal(
     await dpop
-      .getByRole("link", { name: "View flow diagram for DPoP" })
+      .getByRole("link", { name: "See the flow for DPoP" })
       .getAttribute("href"),
-    "/flows/dpop/#walkthrough",
+    "/flows/dpop/",
   );
   const snapshot = await dpop.locator(".field-overview").textContent();
   assert.match(snapshot, /\d+ entries in this review/);
@@ -47,7 +50,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   );
   assert.doesNotMatch(snapshot, /Spring Security/);
   await dpop
-    .getByRole("link", { name: "View implementations for DPoP" })
+    .getByRole("link", { name: "See the full record for DPoP" })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.ok(
