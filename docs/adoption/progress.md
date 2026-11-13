@@ -1,10 +1,10 @@
-# In the field progress
+# Implementations progress
 
 **13 November 2026 · Completed and locally verified scoped field records for all 25 published flows.** [Issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84) tracks the directory and flow evidence sections. The [design](review-and-design.md) and [evidence review](evidence-review.md) describe the intended reader tasks, primary sources and decisions.
 
 ## Current implementation
 
-- Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/field/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
+- Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/implementations/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
 - Keep the standards rating and show role-specific implementation support, named operator reports, observations and dated changes independently. The first release has no adoption score or public survey results. Keep the pilot data available for research.
 - The data covers all 25 published flows, with 80 implementation entries, 19 attributed deployment accounts and one scoped interoperability observation. Entries state their actual roles and any prototype status, revision mismatch or missing production evidence. Coverage is a source-review result, not a prevalence estimate or a claim that the illustrated flow is implemented end to end.
 
@@ -48,6 +48,16 @@ The final required gates passed in order: `npm run check`, `npm test` (99 passed
 
 This completion pass used one host, one build, one complete rendered run and one source-list recovery after the early unit failure. Three bounded research lanes and one continuing independent reviewer covered the new records. No product interoperability or production system was tested. Failed and successful logs and screenshots were retained. Human reader evaluation remains pending.
 
+## Implementations navigation, 13 November 2026
+
+The reader-facing section is now **Implementations**, with `/implementations/` and `/implementations/<slug>/` routes. Headings, navigation, breadcrumbs, About, metadata and generated Markdown agree. Flow guides expose a named evidence section through their section menu and retain `#in-the-field`; its new `#implementation-evidence` heading avoids the workload guide’s existing `#implementations` fragment. Home, flow cards, decision-guide results and relevant deployment next steps link to the records. Records link back to the mechanism and directory.
+
+Search now displays every matching accepted entry, including queries that name the flow. Product and role still have to match within one record. Coverage, attribution and “Mention is not recommendation” remain explicit. [Issue #87](https://github.com/kevinswiber/whosonfirst.ai/issues/87) tracks the separate static **By product** / **By flow** browsing and reviewed product grouping. Finding a product across flows still requires the search enhancement or visiting individual records. Human reader evaluation remains pending.
+
+The required gates passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (964 passed, six skipped). The focused navigation and Markdown checks passed, including a three-entry role query, scriptless contextual links, the existing workload fragment and exact evidence destinations. Built-site visual inspection confirmed the directory search, renamed record and flow section menu. No evidence data changed.
+
+The pass used one host, three short builds, two full rendered runs and one continuing reviewer with two bounded review rounds. The first full run found a 15 px evidence-date paragraph and incorrect section tracking for side-by-side headings. The date is now 1 rem; section tracking follows visual position and honors a selected fragment at the header. All 64 focused typography/menu checks passed before the final full run. Earlier formatting and test-selector failures, the failing full run and recovery logs were retained. The progress receipt was checked separately after the gates. The branch is prepared for review; merge and deployment remain outside this pass.
+
 ## Local review
 
-The implementation is on `feat/in-the-field`. Run `npm run dev` in that worktree, then open `/field/` and `/field/dpop/`. Search for a product plus role, such as “spring resource-server verifier”, and follow its exact evidence link for the sources and limits. The full record links back to `/flows/dpop/` for the mechanism. There is no new service, dependency, collection schedule or network request from a reader’s browser.
+The implementation is on `feat/in-the-field`. Run `npm run dev` in that worktree, then open `/implementations/` and `/implementations/dpop/`. Search for a product plus role, such as “spring resource-server verifier”, and follow its exact evidence link for the sources and limits. The full record links back to `/flows/dpop/` for the mechanism. There is no new service, dependency, collection schedule or network request from a reader’s browser.

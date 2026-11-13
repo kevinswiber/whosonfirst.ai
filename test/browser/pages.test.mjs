@@ -22,7 +22,7 @@ const LINED = [
   "flow",
   "concepts",
   "deployment guide",
-  "field record",
+  "implementation record",
 ];
 
 const site = useBrowser();
@@ -107,6 +107,9 @@ describe("every kind of page", { concurrency: true }, () => {
                   const pick = links[Math.min(2, links.length - 1)];
                   pick.click();
                   await frame();
+                  found.picked = pick.textContent;
+                  found.current =
+                    sec.querySelector(".here-sec-name").textContent;
                   const target = document.getElementById(pick.hash.slice(1));
                   const t = target.getBoundingClientRect().top;
                   found.went =
@@ -133,7 +136,7 @@ describe("every kind of page", { concurrency: true }, () => {
                 assert.ok(l?.button, "no button for the sections");
                 assert.ok(
                   l.listed > 1 && l.menuFits && l.went && l.marked,
-                  `${l.listed ?? 0} listed${l.menuFits ? "" : ", list off screen"}${l.went ? "" : ", did not arrive"}${l.marked ? "" : ", wrong section marked"}`,
+                  `${l.listed ?? 0} listed${l.menuFits ? "" : ", list off screen"}${l.went ? "" : ", did not arrive"}${l.marked ? "" : `, picked “${l.picked}” but marked “${l.current}”`}`,
                 );
               });
               if (vp.name === "desktop")

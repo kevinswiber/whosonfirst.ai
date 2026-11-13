@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import { fieldProfile } from "../../data/field";
 import {
   questions,
   rules,
@@ -36,6 +37,7 @@ const data = {
         tagline: f.tagline,
         human: HUMAN_LABEL[f.human],
         maturity: maturityLabel(f),
+        implementations: Boolean(fieldProfile(f.slug)),
       },
     ]),
   ),
@@ -128,7 +130,7 @@ const data = {
     cautions: { when: Record<string, string[]>; text: string }[];
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
-    flows: Record<string, { short: string; tagline: string; human: string; maturity: string }>;
+    flows: Record<string, { short: string; tagline: string; human: string; maturity: string; implementations: boolean }>;
   }
 
   const esc = (s: string) =>
@@ -216,7 +218,10 @@ const data = {
           html += `<section class="dg-group dg-${role}"><h2>${esc(data.roles[role])}</h2><ul>`;
           for (const r of list) {
             const f = data.flows[r.flow];
-            html += `<li><a class="dg-flow" href="/flows/${r.flow}/"><strong>${esc(f.short)}</strong><span class="dg-meta">${esc(f.human)} · ${esc(f.maturity)}</span></a><p>${esc(r.why)}</p></li>`;
+            const evidence = f.implementations
+              ? `<p class="dg-evidence"><a href="/implementations/${r.flow}/" aria-label="See implementations for ${esc(f.short)}">See implementations</a></p>`
+              : '';
+            html += `<li><a class="dg-flow" href="/flows/${r.flow}/"><strong>${esc(f.short)}</strong><span class="dg-meta">${esc(f.human)} · ${esc(f.maturity)}</span></a><p>${esc(r.why)}</p>${evidence}</li>`;
           }
           html += `</ul></section>`;
         }

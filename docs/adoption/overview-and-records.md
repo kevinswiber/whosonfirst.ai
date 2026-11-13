@@ -4,11 +4,11 @@ Design update, 12 November 2026. This follows reader feedback on the first local
 
 ## The three reading tasks
 
-| Place                               | Reader’s question                                                                                 | What belongs here                                                                                                                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **In the field overview** `/field/` | What supports the products or roles I work with, across flows? What has been reviewed?            | Existing standards wording, a count of reviewed options/operators, a few explicitly labeled names, review date and links to complete records. Search across every accepted entry. |
-| **Field record** `/field/<slug>/`   | Which implementation fits this role, under what conditions, and what evidence supports the claim? | All implementation roles, release conditions, deployment accounts, sources, qualifications, review scope and dated events.                                                        |
-| **Flow guide** `/flows/<slug>/`     | How does this mechanism work and what must each party do?                                         | The explanation and diagram, with a short field summary and a direct link to the evidence record.                                                                                 |
+| Place                                            | Reader’s question                                                                                 | What belongs here                                                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implementations overview** `/implementations/` | What supports the products or roles I work with, across flows? What has been reviewed?            | Existing standards wording, a count of reviewed options/operators, a few explicitly labeled names, review date and links to complete records. Search across every accepted entry. |
+| **Field record** `/implementations/<slug>/`      | Which implementation fits this role, under what conditions, and what evidence supports the claim? | All implementation roles, release conditions, deployment accounts, sources, qualifications, review scope and dated events.                                                        |
+| **Flow guide** `/flows/<slug>/`                  | How does this mechanism work and what must each party do?                                         | The explanation and diagram, with a short field summary and a direct link to the evidence record.                                                                                 |
 
 The overview has a cross-flow purpose. It can expose the different roles a product supports across protocols, show where the reviewed evidence is thin, or help someone find a client library before choosing a guide to read. A reader who already knows the mechanism can go straight from its guide to the full record. Both paths use the same reviewed data.
 
@@ -30,6 +30,14 @@ Separate pages are useful before lists become large because the two kinds of rea
 
 Review Device authorization, Client credentials, Token exchange, CIBA and A2A, and deepen the DPoP list. These add distinct roles, stages, historical reports and mechanism-specific qualifications. They also give search real matches outside an overview sample. Source coverage remains selective. The checks validate rendering and evidence boundaries; they do not establish reader comprehension or prevalence.
 
-## Explicit destinations, 13 November 2026
+## Initial explicit destinations, 13 November 2026
 
-Flow names are plain headings in the overview. Each reviewed row offers one **View field evidence** link and one **View flow diagram** link. An unreviewed row offers only the flow diagram. The name never changes destination with review status, and the row does not repeat the field-page link. Diagram links lead directly to the flow’s **Step by step** section. Full evidence pages use the same **View flow diagram** destination. Search results remain links to the exact matching evidence entry.
+The initial explicit-link design used plain flow headings in the overview, with **View field evidence** and **View flow diagram** actions. Diagram links led directly to the flow’s **Step by step** section. The section below records the later naming and reciprocal-navigation decision. Search results remain links to the exact matching evidence entry.
+
+## Agreed information architecture split, 13 November 2026
+
+The reader-facing section is **Implementations**, at `/implementations/` and `/implementations/<slug>/`. Navigation, overview and record headings, breadcrumbs, About and generated Markdown use that name. Each record’s title identifies implementations and deployment reports; its breadcrumb is Implementations / flow name. Flow explanations retain their own pages and link to the evidence through a real section in their section menu. The old `#in-the-field` flow fragment remains usable.
+
+The overview retains its bounded examples and explicit implementation/diagram links. Search displays every matching accepted entry, including when a query also names the flow; it keeps products and roles within the same record. Home, decision-guide results, flow cards and deployment next steps introduce the evidence at relevant points. Product mention remains separate from recommendation.
+
+[Issue #87](https://github.com/kevinswiber/whosonfirst.ai/issues/87) owns static **By product** / **By flow** browsing and editorial product grouping. The current overview’s product search still needs JavaScript. Complete records remain readable without it, but finding a product across all flows is a known discovery limitation until that follow-up. The follow-up must preserve edition/runtime/version boundaries and test finding every documented role for a product beyond the overview examples, including with scripts disabled. Reader evaluation is still pending.

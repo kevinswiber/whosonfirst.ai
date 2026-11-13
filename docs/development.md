@@ -119,9 +119,9 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `test/`                               | The checks, as tests: see [Checks](#checks)                                                        |
 | `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
 
-## Field evidence
+## Implementation evidence
 
-`src/data/field/records.ts` holds reviewed implementation support, named deployment reports and scoped observations separately. `model.ts` validates their sources, units, dates and event references; `index.ts` admits accepted evidence for published flows. The overview at `/field/` includes every published flow in the existing group order. Its bounded examples link to complete records at `/field/<slug>/`; only reviewed profiles generate those pages. Mechanism guides keep a short summary and the `#in-the-field` anchor. A missing profile means “Not reviewed”.
+`src/data/field/records.ts` holds reviewed implementation support, named deployment reports and scoped observations separately. `model.ts` validates their sources, units, dates and event references; `index.ts` admits accepted evidence for published flows. The overview at `/implementations/` includes every published flow in the existing group order. Its bounded examples link to complete records at `/implementations/<slug>/`; only reviewed profiles generate those pages. Mechanism guides keep a short summary and the `#in-the-field` anchor. A missing profile means “Not reviewed”.
 
 Keep overview and guide examples bounded as the records grow. Counts describe accepted implementation entries and named operators, never prevalence. Overview search must index all accepted entries, including those outside its examples, and show a direct evidence link for an entry match. A query that combines a product and role must match them in the same entry. Full record pages render all sources, limits and dated changes without scripts, pagination or disclosure controls. Their Markdown copies carry the same evidence.
 

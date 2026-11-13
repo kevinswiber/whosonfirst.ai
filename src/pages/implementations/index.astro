@@ -12,7 +12,7 @@ const groups = byGroup().map((group) => ({
       flow,
       profile,
       snapshot: profile && fieldSnapshot(profile),
-      href: profile ? `/field/${flow.slug}/` : `/flows/${flow.slug}/`,
+      href: profile ? `/implementations/${flow.slug}/` : `/flows/${flow.slug}/`,
     };
   }),
 }));
@@ -22,31 +22,31 @@ const reviewed = groups
 ---
 
 <Base
-  title="In the field"
+  title="Implementations"
   reviewMetadata={false}
   description="Find documented implementation options and named production reports for agent authentication and authorization flows."
 >
   <div class="page-head">
     <div class="wrap">
-      <h1>In the field</h1>
+      <h1>Implementations</h1>
       <p class="lede">Find products that implement part of a flow and accounts of how named organizations have used it in production.</p>
       <p class="field-coverage">
         <strong>{reviewed} of {flows.length} flows reviewed</strong> · <a href="#methodology">How we review evidence</a>
       </p>
-      <p class="field-note">Counts reflect the sources reviewed for each flow. Market prevalence is unknown.</p>
+      <p class="field-note">Coverage is selective. Counts reflect the sources reviewed for each flow; market prevalence is unknown. Mention is not recommendation.</p>
     </div>
   </div>
 
   <div class="wrap">
     <field-directory>
-      <form class="field-controls" role="search" aria-label="Field directory" hidden>
+      <form class="field-controls" role="search" aria-label="Implementation directory" hidden>
         <div class="field-inputs">
           <label class="field-search">
             Search by flow, product or role
             <input type="search" placeholder="e.g. Keycloak or client library" autocomplete="off" />
           </label>
           <label class="field-review">
-            Field review
+            Evidence review
             <select>
               <option value="">All flows</option>
               <option value="reviewed">Reviewed</option>
@@ -58,6 +58,7 @@ const reviewed = groups
         <p class="field-count" role="status">{flows.length} flows shown</p>
       </form>
 
+      <noscript><p>Product and role search needs JavaScript. Browse by flow below; each record includes all reviewed entries.</p></noscript>
       <p class="field-empty" hidden>No flows match. Try a different term or clear the filters.</p>
 
       {groups.map((group) => (
@@ -80,7 +81,7 @@ const reviewed = groups
                       <dd>{maturityLabel(flow)}</dd>
                     </div>
                     <div>
-                      <dt class="visually-hidden">Field review</dt>
+                      <dt class="visually-hidden">Evidence review</dt>
                       <dd>
                         {profile
                           ? <>Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></>
@@ -91,7 +92,7 @@ const reviewed = groups
                 </div>
                 <div class="field-actions">
                   {profile && (
-                    <a class="field-evidence-link" href={href}>View field evidence<span class="visually-hidden"> for {flow.short}</span></a>
+                    <a class="field-evidence-link" href={href}>View implementations<span class="visually-hidden"> for {flow.short}</span></a>
                   )}
                   <a href={`/flows/${flow.slug}/#walkthrough`}>View flow diagram<span class="visually-hidden"> for {flow.short}</span></a>
                 </div>
@@ -224,7 +225,7 @@ const reviewed = groups
           for (const { record, matches, flowText, candidates } of entries) {
             const matchesReview = !review.value || record.dataset.review === review.value;
             const matchesFlow = contains(flowText);
-            const matchingEntries = matchesReview && !matchesFlow
+            const matchingEntries = matchesReview && words.length > 0
               ? candidates.filter((candidate) => contains(candidate.text))
               : [];
             const show = matchesReview && (matchesFlow || matchingEntries.length > 0);
@@ -236,18 +237,12 @@ const reviewed = groups
                 const label = document.createElement('strong');
                 label.textContent = 'Matching evidence';
                 const list = document.createElement('ul');
-                for (const { link } of matchingEntries.slice(0, 2)) {
+                for (const { link } of matchingEntries) {
                   const item = document.createElement('li');
                   const anchor = document.createElement('a');
                   anchor.href = link.getAttribute('href')!;
                   anchor.textContent = link.textContent;
                   item.append(anchor);
-                  list.append(item);
-                }
-                const remaining = matchingEntries.length - 2;
-                if (remaining > 0) {
-                  const item = document.createElement('li');
-                  item.textContent = `${remaining} more ${remaining === 1 ? 'match' : 'matches'} in the full record.`;
                   list.append(item);
                 }
                 matches.append(label, list);

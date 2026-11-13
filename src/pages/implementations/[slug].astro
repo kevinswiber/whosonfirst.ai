@@ -18,7 +18,7 @@ interface Props {
 
 const { profile } = Astro.props;
 const guide = flow(profile.slug);
-const title = `${guide.short} in the field`;
+const title = `${guide.short} implementations and deployment reports`;
 ---
 
 <Base
@@ -26,15 +26,15 @@ const title = `${guide.short} in the field`;
   description={`Documented implementation options, production reports and sources for ${guide.short}.`}
   article
   reviewMetadata={false}
-  here={{ trail: [{ label: 'In the field', href: '/field/' }], current: guide.short }}
+  here={{ trail: [{ label: 'Implementations', href: '/implementations/' }], current: guide.short }}
 >
   <article>
     <div class="page-head">
       <div class="wrap">
         <h1>{title}</h1>
-        <p class="field-date">Field evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
+        <p class="field-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
         <p class="field-links">
-          <a href={`/flows/${guide.slug}/#walkthrough`}>View flow diagram</a> · <a href="/field/">Compare all flows in the field</a>
+          <a href={`/flows/${guide.slug}/`}>How {guide.short} works</a> · <a href="/implementations/">Browse implementations</a>
         </p>
       </div>
     </div>

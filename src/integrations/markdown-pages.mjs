@@ -530,7 +530,11 @@ const SECTIONS = [
   { title: "Start here", match: /^\/(learn\/|guide\/|concepts\/)?$/ },
   { title: "Lessons", match: /^\/learn\/[^/]+\/$/, order: "/learn/" },
   { title: "Flows", match: /^\/flows\//, order: "/flows/" },
-  { title: "In the field", match: /^\/field\//, order: "/field/" },
+  {
+    title: "Implementations",
+    match: /^\/implementations\//,
+    order: "/implementations/",
+  },
   { title: "Deployments", match: /^\/deployments\//, order: "/deployments/" },
   { title: "Reference", match: /^\/(standards|glossary)\/$/ },
   { title: "Optional", match: /^\/about\/$/ },

@@ -255,7 +255,7 @@ const details = [
       <div class="prose">
         <Fragment set:html={block(flow.summary, g)} />
         <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
-        <FieldSummary slug={flow.slug} profile={inTheField} />
+        <FieldSummary name={flow.short} slug={flow.slug} profile={inTheField} />
         {
           (taught || likened) && (
             <ul class="ways-in">

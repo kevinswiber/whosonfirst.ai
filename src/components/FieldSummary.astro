@@ -5,20 +5,19 @@ import { fieldSnapshot } from "../lib/field";
 
 interface Props {
   slug: string;
+  name: string;
   profile?: FieldProfile;
 }
 
-const { slug, profile } = Astro.props;
+const { slug, name, profile } = Astro.props;
 const snapshot = profile && fieldSnapshot(profile);
 ---
 
-<div class="field-summary" id="in-the-field" data-field-reviewed={profile ? '' : undefined}>
-  <p class="field-summary-head">
-    <strong><a href={profile ? `/field/${slug}/` : `/field/#${slug}`}>In the field</a></strong>
-    {profile && (
-      <span class="field-summary-date">Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></span>
-    )}
-  </p>
+<section class="field-summary" id="in-the-field" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
+  <h2 id="implementation-evidence">{name} implementations and deployment reports</h2>
+  {profile && (
+    <p class="field-summary-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
+  )}
   {snapshot ? (
     <>
       <p class="field-summary-line">
@@ -33,9 +32,10 @@ const snapshot = profile && fieldSnapshot(profile);
       </p>
     </>
   ) : (
-    <p class="field-summary-line">Field evidence for this flow has yet to be reviewed.</p>
+    <p class="field-summary-line">Implementation evidence for this flow has yet to be reviewed.</p>
   )}
-</div>
+  <p class="field-summary-link"><a href={profile ? `/implementations/${slug}/` : `/implementations/#${slug}`}>View implementations</a></p>
+</section>
 
 <style>
   .field-summary {
@@ -46,16 +46,18 @@ const snapshot = profile && fieldSnapshot(profile);
     line-height: 1.45;
   }
   .field-summary:target { border-inline-start-color: var(--accent); }
-  .field-summary-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.2rem 0.8rem;
-    margin: 0;
+  .field-summary h2 {
+    margin: 0 0 0.35rem;
+    padding: 0;
+    border: 0;
+    font-size: 1.2rem;
+    line-height: 1.35;
   }
+  .field-summary-link { margin: 0.5rem 0 0; }
   .field-summary-date {
+    margin: 0 0 0.4rem;
     color: var(--fg-muted);
-    font-size: 0.88rem;
+    font-size: 1rem;
   }
   .field-summary-line {
     margin: 0.3rem 0 0;

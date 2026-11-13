@@ -266,10 +266,11 @@ test("every page gives its own address as canonical and describes itself in stru
 test("pages with field evidence make no whole-page reviewer claim", () => {
   const pages = built.filter(
     (p) =>
-      p.path.startsWith("/field/") || p.html.includes("data-field-reviewed"),
+      p.path.startsWith("/implementations/") ||
+      p.html.includes("data-field-reviewed"),
   );
-  assert.ok(pages.some((p) => p.path === "/field/"));
-  assert.ok(pages.some((p) => p.path === "/field/dpop/"));
+  assert.ok(pages.some((p) => p.path === "/implementations/"));
+  assert.ok(pages.some((p) => p.path === "/implementations/dpop/"));
   assert.ok(pages.some((p) => p.path === "/flows/dpop/"));
   for (const page of pages) {
     const scripts = [
@@ -285,4 +286,33 @@ test("pages with field evidence make no whole-page reviewer claim", () => {
     assert.equal(webpage.reviewedBy, undefined, page.path);
     assert.equal(webpage.lastReviewed, undefined, page.path);
   }
+});
+
+test("Implementations uses its published name and URLs in page metadata and Markdown navigation", () => {
+  const records = built.filter((p) => p.path.startsWith("/implementations/"));
+  assert.ok(records.length > 1);
+  assert.ok(!built.some((p) => p.path.startsWith("/field/")));
+  for (const page of records) {
+    const title = plain(
+      /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main(page))?.[1] ?? "",
+    );
+    assert.match(
+      title,
+      page.path === "/implementations/"
+        ? /^Implementations$/
+        : / implementations and deployment reports$/,
+    );
+    assert.match(
+      head(page),
+      /Implementations|implementations and deployment reports/,
+    );
+    assert.ok(file(copyOf(page)).startsWith(`# ${title}\n`), page.path);
+    assert.ok(!page.html.includes('href="/field/'), page.path);
+  }
+  const navigation = file("llms.txt");
+  assert.match(navigation, /^## Implementations$/m);
+  assert.ok(
+    navigation.includes("https://whosonfirst.ai/implementations/dpop/index.md"),
+  );
+  assert.doesNotMatch(navigation, /https:\/\/whosonfirst\.ai\/field\//);
 });
