@@ -9,9 +9,11 @@ export const oauthMtls: Flow = {
   maturity: "stable",
   tagline:
     "Bind an access token to the client certificate the agent presents over mutual TLS.",
-  summary: `In mutual TLS (mTLS), each side of a connection proves it holds the private key for the certificate it presents. An OAuth authorization server can bind an access token to the client certificate it sees. The API then checks that the caller is using that same certificate. A token that requires this extra proof is called a sender-constrained token.
+  summary: `Alice administers her team’s shared calendar. In the Calendar API settings, she adds the client \`calendar-agent\` to the team calendar’s read-access list so it can prepare the daily schedule. The agent uses the [client credentials grant](/flows/client-credentials/). Its token names the agent and represents its own permissions.
 
-This example uses the [client credentials grant](/flows/client-credentials/). The token represents the agent’s own authority to read invoices. The authorization server uses the certificate to authenticate the client. The API checks the certificate binding to see who can use the token. These are independent choices. An authorization server can use mTLS client authentication with unbound tokens, or bind tokens while using a different method to authenticate the client.`,
+In mutual TLS (mTLS), each side of a connection proves it holds the private key for the certificate it presents. Here the authorization server binds the token to the agent’s client certificate. The Calendar API then checks that the caller is using that same certificate. A token that requires this extra proof is called a sender-constrained token.
+
+The authorization server also uses the certificate to authenticate the client. Client authentication and token binding are independent choices. An authorization server can use mTLS client authentication with unbound tokens, or bind tokens while using a different method to authenticate the client.`,
   fits: [
     "The agent can present its client certificate to both the authorization server and the API, and both support certificate-bound access tokens.",
   ],
@@ -29,7 +31,7 @@ This example uses the [client credentials grant](/flows/client-credentials/). Th
         name: "Client certificate",
         type: "X.509 certificate",
         issuer: "The agent’s certificate authority",
-        recipient: "Authorization server and invoice API",
+        recipient: "Authorization server and Calendar API",
         meaning:
           "The authorization server checks the certificate against the identity registered for the OAuth client.",
         binding: "The TLS handshake proves possession of the private key.",
@@ -38,9 +40,9 @@ This example uses the [client credentials grant](/flows/client-credentials/). Th
         name: "Certificate-bound access token",
         type: "OAuth access token, shown as a signed JWT",
         issuer: "Authorization server",
-        recipient: "Invoice API",
+        recipient: "Calendar API",
         meaning:
-          "The agent may read invoices at this API, subject to its policy.",
+          "The agent can read events on calendars the API lets this client read.",
         binding: "The token records a hash of the client certificate.",
       },
     ],
@@ -61,7 +63,7 @@ This example uses the [client credentials grant](/flows/client-credentials/). Th
     { id: "as", label: "Authorization server", role: "authz" },
     {
       id: "api",
-      label: "Invoice API",
+      label: "Calendar API",
       sub: "Resource server",
       role: "resource",
     },
@@ -70,8 +72,9 @@ This example uses the [client credentials grant](/flows/client-credentials/). Th
     steps:
       "The agent uses a certificate signed by its organization’s certificate authority (CA). The authorization server uses it for client authentication and issues a signed, certificate-bound access token. The API handles the agent’s TLS connection directly.",
     preconditions: [
-      "The authorization server trusts the CA. The registration for client ID `invoice-agent` names `invoice-agent.example` as the expected DNS name in the client certificate.",
-      "The authorization server is configured to issue bound tokens for this client. The invoice API requires them and requests a client certificate during the TLS handshake.",
+      "The authorization server trusts the CA. The registration for client ID `calendar-agent` names `calendar-agent.example` as the expected DNS name in the client certificate.",
+      "The authorization server is configured to issue bound tokens for this client. The Calendar API requires them and requests a client certificate during the TLS handshake.",
+      "The Calendar API’s read-access list for the team calendar includes `calendar-agent`.",
     ],
     examples:
       "HTTP listings omit transport details and some headers. The token’s decoded claims are illustrative.",
@@ -103,7 +106,7 @@ This example uses the [client credentials grant](/flows/client-credentials/). Th
 Host: auth.example
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=client_credentials&client_id=invoice-agent&scope=invoices.read`,
+grant_type=client_credentials&client_id=calendar-agent&scope=calendar.read`,
       },
     },
     {
@@ -111,7 +114,7 @@ grant_type=client_credentials&client_id=invoice-agent&scope=invoices.read`,
       kind: "self",
       label: "Authenticate and grant scope",
       title: "The authorization server checks the client",
-      body: "The server checks that the certificate chains to a trusted CA and contains the registered DNS name. A TLS handshake can fail before an OAuth request arrives. If the request reaches the token endpoint and the expected certificate is missing or mismatched, the OAuth error is `invalid_client`. Once the client is authenticated, the server applies its grant policy. Here the policy permits `invoices.read` at the invoice API.",
+      body: "The server checks that the certificate chains to a trusted CA and contains the registered DNS name. A TLS handshake can fail before an OAuth request arrives. If the request reaches the token endpoint and the expected certificate is missing or mismatched, the OAuth error is `invalid_client`. Once the client is authenticated, the server applies its grant policy. Here it grants `calendar.read` at the Calendar API.",
     },
     {
       from: "as",
@@ -124,10 +127,10 @@ grant_type=client_credentials&client_id=invoice-agent&scope=invoices.read`,
         lang: "json",
         text: `{
   "iss": "https://auth.example",
-  "sub": "invoice-agent",
-  "client_id": "invoice-agent",
-  "aud": "https://invoices.example",
-  "scope": "invoices.read",
+  "sub": "calendar-agent",
+  "client_id": "calendar-agent",
+  "aud": "https://calendar.example",
+  "scope": "calendar.read",
   "iat": 1794528000,
   "exp": 1794528300,
   "jti": "892c879b-69ce-4561-a51c-b520ae954221",
@@ -147,8 +150,8 @@ grant_type=client_credentials&client_id=invoice-agent&scope=invoices.read`,
       body: "The API asks for a client certificate during the handshake, before it can see the HTTP request or its token. The agent checks the API’s server certificate and presents the same client certificate it used at the token endpoint, again proving it holds the private key. It sends the access token in the usual `Authorization: Bearer` header on that connection.",
       code: {
         lang: "http",
-        text: `GET /invoices HTTP/1.1
-Host: invoices.example
+        text: `GET /calendars/team/events HTTP/1.1
+Host: calendar.example
 Authorization: Bearer eyJ0eXAiOiJhdCtqd3QiLCJhbGciOiJSUzI1NiJ9…`,
       },
     },
@@ -165,9 +168,9 @@ For the binding check, the API can rely on the TLS proof and the match to the si
       from: "api",
       to: "agent",
       kind: "resp",
-      label: "Return allowed invoices",
+      label: "Return team calendar events",
       title: "The API decides whether to allow the call",
-      body: "The API still applies its own policy to the requested operation. Here it accepts `invoices.read` for this agent and returns the invoices the agent may see.",
+      body: "The API checks that `calendar.read` covers the operation and that the requested calendar’s read-access list includes `calendar-agent`. Both checks pass, so the API returns the team calendar’s events.",
     },
   ],
   notes: [
