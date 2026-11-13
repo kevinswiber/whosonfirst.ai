@@ -1,0 +1,1394 @@
+{
+  "what": "What a fixed panel of well-known authorization servers says it supports",
+  "day": "2026-11-13",
+  "panel": 82,
+  "answered": 82,
+  "didNotAnswer": [],
+  "signals": {
+    "pkceS256": {
+      "says": "PKCE with S256",
+      "defined": "RFC 8414, code_challenge_methods_supported",
+      "flow": "authorization-code-pkce",
+      "n": 69,
+      "of": 82,
+      "percent": 84.1,
+      "who": [
+        "Google",
+        "GitHub",
+        "GitLab",
+        "Salesforce",
+        "Slack",
+        "Atlassian",
+        "Okta",
+        "PayPal",
+        "Twitch",
+        "Dropbox",
+        "Yahoo",
+        "Spotify",
+        "Xero",
+        "Hugging Face",
+        "Zoom",
+        "Discord",
+        "Box",
+        "Figma",
+        "Vercel",
+        "Cloudflare",
+        "Sentry",
+        "Linear",
+        "Asana",
+        "Shopify",
+        "Stripe",
+        "Notion",
+        "Adobe",
+        "Heroku",
+        "Pipedrive",
+        "HubSpot",
+        "Amazon Web Services",
+        "OpenAI",
+        "xAI",
+        "X",
+        "monday.com",
+        "ClickUp",
+        "Canva",
+        "Intercom",
+        "Square",
+        "Zapier",
+        "Neon",
+        "Supabase",
+        "Webflow",
+        "Wix",
+        "Zoho",
+        "Kakao",
+        "LINE",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "EVE Online",
+        "Autodesk",
+        "Gitea",
+        "Codeberg",
+        "SourceForge",
+        "PlanetScale",
+        "DigitalOcean",
+        "Datadog",
+        "Airtable",
+        "Todoist",
+        "Front",
+        "Typeform",
+        "Calendly",
+        "Miro",
+        "Coinbase",
+        "Booking.com",
+        "Withings"
+      ]
+    },
+    "issParameter": {
+      "says": "the iss parameter on the authorization response",
+      "defined": "RFC 9207, authorization_response_iss_parameter_supported",
+      "n": 19,
+      "of": 82,
+      "percent": 23.2,
+      "who": [
+        "Google",
+        "GitHub",
+        "Discord",
+        "Figma",
+        "Cloudflare",
+        "Sentry",
+        "Linear",
+        "Notion",
+        "Heroku",
+        "Pipedrive",
+        "monday.com",
+        "ClickUp",
+        "Neon",
+        "Supabase",
+        "SAP",
+        "Red Hat",
+        "Docker",
+        "PlanetScale",
+        "Withings"
+      ]
+    },
+    "deviceGrant": {
+      "says": "the device authorization grant",
+      "defined": "RFC 8628, device_authorization_endpoint or its grant type",
+      "flow": "device-authorization",
+      "n": 15,
+      "of": 82,
+      "percent": 18.3,
+      "who": [
+        "Google",
+        "Microsoft",
+        "GitHub",
+        "Okta",
+        "Spotify",
+        "Hugging Face",
+        "Vercel",
+        "Cloudflare",
+        "xAI",
+        "Zoho",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "Battle.net"
+      ]
+    },
+    "ciba": {
+      "says": "client-initiated backchannel authentication",
+      "defined": "OpenID CIBA Core 1.0, backchannel_authentication_endpoint or its grant type",
+      "flow": "ciba",
+      "n": 5,
+      "of": 82,
+      "percent": 6.1,
+      "who": [
+        "Okta",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB"
+      ]
+    },
+    "clientCredentials": {
+      "says": "the client credentials grant",
+      "defined": "RFC 8414, grant_types_supported",
+      "flow": "client-credentials",
+      "n": 23,
+      "of": 82,
+      "percent": 28,
+      "who": [
+        "GitLab",
+        "Atlassian",
+        "Okta",
+        "Dropbox",
+        "Spotify",
+        "Xero",
+        "Zoom",
+        "Discord",
+        "Vercel",
+        "Cloudflare",
+        "Shopify",
+        "HubSpot",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "Rockstar Games",
+        "Battle.net",
+        "Autodesk",
+        "PlanetScale",
+        "Front",
+        "Uber"
+      ]
+    },
+    "privateKeyJwt": {
+      "says": "client authentication with a signed JWT",
+      "defined": "RFC 8414, token_endpoint_auth_methods_supported: private_key_jwt",
+      "n": 19,
+      "of": 82,
+      "percent": 23.2,
+      "who": [
+        "Microsoft",
+        "Salesforce",
+        "Atlassian",
+        "Okta",
+        "Dropbox",
+        "Vercel",
+        "Cloudflare",
+        "Notion",
+        "Login.gov",
+        "Neon",
+        "Zoho",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "Typeform",
+        "Coinbase",
+        "Uber"
+      ]
+    },
+    "tokenExchange": {
+      "says": "token exchange",
+      "defined": "RFC 8693, its grant type in grant_types_supported",
+      "flow": "token-exchange",
+      "n": 11,
+      "of": 82,
+      "percent": 13.4,
+      "who": [
+        "Atlassian",
+        "Okta",
+        "Hugging Face",
+        "Shopify",
+        "Amazon Web Services",
+        "SAP",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "Battle.net",
+        "Uber"
+      ]
+    },
+    "jwtBearer": {
+      "says": "the JWT bearer grant",
+      "defined": "RFC 7523, its grant type in grant_types_supported",
+      "n": 23,
+      "of": 82,
+      "percent": 28,
+      "who": [
+        "Google",
+        "Slack",
+        "Atlassian",
+        "Okta",
+        "Dropbox",
+        "Spotify",
+        "Zoom",
+        "Figma",
+        "Vercel",
+        "Linear",
+        "Asana",
+        "Notion",
+        "HubSpot",
+        "monday.com",
+        "Canva",
+        "Supabase",
+        "Zoho",
+        "SAP",
+        "Red Hat",
+        "Docker",
+        "Datadog",
+        "Miro",
+        "Uber"
+      ]
+    },
+    "idJag": {
+      "says": "the identity assertion authorization grant (ID-JAG)",
+      "defined": "draft-ietf-oauth-identity-assertion-authz-grant, authorization_grant_profiles_supported",
+      "flow": "cross-app-access",
+      "n": 14,
+      "of": 82,
+      "percent": 17.1,
+      "who": [
+        "Slack",
+        "Okta",
+        "Dropbox",
+        "Figma",
+        "Vercel",
+        "Linear",
+        "Asana",
+        "Notion",
+        "monday.com",
+        "Canva",
+        "Supabase",
+        "Docker",
+        "Datadog",
+        "Miro"
+      ]
+    },
+    "identityChaining": {
+      "says": "identity chaining across domains",
+      "defined": "draft-ietf-oauth-identity-chaining, identity_chaining_requested_token_types_supported",
+      "flow": "identity-chaining",
+      "n": 2,
+      "of": 82,
+      "percent": 2.4,
+      "who": [
+        "Okta",
+        "MongoDB"
+      ]
+    },
+    "dpop": {
+      "says": "DPoP",
+      "defined": "RFC 9449, dpop_signing_alg_values_supported",
+      "flow": "dpop",
+      "n": 7,
+      "of": 82,
+      "percent": 8.5,
+      "who": [
+        "Salesforce",
+        "Okta",
+        "Spotify",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB"
+      ]
+    },
+    "mtlsBoundTokens": {
+      "says": "certificate-bound access tokens",
+      "defined": "RFC 8705, tls_client_certificate_bound_access_tokens",
+      "flow": "oauth-mtls",
+      "n": 4,
+      "of": 82,
+      "percent": 4.9,
+      "who": [
+        "Microsoft",
+        "Salesforce",
+        "SAP",
+        "Red Hat"
+      ]
+    },
+    "mtlsClientAuth": {
+      "says": "mutual-TLS client authentication",
+      "defined": "RFC 8705, tls_client_auth or self_signed_tls_client_auth",
+      "n": 4,
+      "of": 82,
+      "percent": 4.9,
+      "who": [
+        "Microsoft",
+        "Salesforce",
+        "SAP",
+        "Red Hat"
+      ]
+    },
+    "par": {
+      "says": "pushed authorization requests",
+      "defined": "RFC 9126, pushed_authorization_request_endpoint",
+      "n": 8,
+      "of": 82,
+      "percent": 9.8,
+      "who": [
+        "Atlassian",
+        "Okta",
+        "Adobe",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "MongoDB",
+        "Uber"
+      ]
+    },
+    "rar": {
+      "says": "rich authorization requests",
+      "defined": "RFC 9396, authorization_details_types_supported",
+      "n": 0,
+      "of": 82,
+      "percent": 0,
+      "who": []
+    },
+    "cimd": {
+      "says": "client ID metadata documents",
+      "defined": "draft-ietf-oauth-client-id-metadata-document, client_id_metadata_document_supported",
+      "n": 20,
+      "of": 82,
+      "percent": 24.4,
+      "who": [
+        "Atlassian",
+        "Okta",
+        "Hugging Face",
+        "Vercel",
+        "Cloudflare",
+        "Sentry",
+        "Linear",
+        "Notion",
+        "Heroku",
+        "Pipedrive",
+        "monday.com",
+        "Canva",
+        "Neon",
+        "Cisco",
+        "Docker",
+        "SourceForge",
+        "Airtable",
+        "Todoist",
+        "Typeform",
+        "Coinbase"
+      ]
+    },
+    "dynamicRegistration": {
+      "says": "dynamic client registration",
+      "defined": "RFC 7591, registration_endpoint",
+      "n": 44,
+      "of": 82,
+      "percent": 53.7,
+      "who": [
+        "GitLab",
+        "Salesforce",
+        "Atlassian",
+        "Okta",
+        "PayPal",
+        "Dropbox",
+        "Hugging Face",
+        "Figma",
+        "Vercel",
+        "Cloudflare",
+        "Sentry",
+        "Linear",
+        "Asana",
+        "Stripe",
+        "Notion",
+        "Adobe",
+        "Pipedrive",
+        "Amazon Web Services",
+        "monday.com",
+        "ClickUp",
+        "Canva",
+        "Intercom",
+        "Square",
+        "Zapier",
+        "Neon",
+        "Supabase",
+        "Webflow",
+        "Wix",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "MongoDB",
+        "SourceForge",
+        "PlanetScale",
+        "DigitalOcean",
+        "Datadog",
+        "Airtable",
+        "Todoist",
+        "Typeform",
+        "Calendly",
+        "Miro",
+        "Coinbase",
+        "Uber",
+        "Withings"
+      ]
+    },
+    "revocation": {
+      "says": "token revocation",
+      "defined": "RFC 7009, revocation_endpoint",
+      "flow": "access-revocation",
+      "n": 50,
+      "of": 82,
+      "percent": 61,
+      "who": [
+        "Google",
+        "Apple",
+        "GitLab",
+        "Salesforce",
+        "Atlassian",
+        "Okta",
+        "PayPal",
+        "Dropbox",
+        "Spotify",
+        "Xero",
+        "Discord",
+        "Box",
+        "Vercel",
+        "Cloudflare",
+        "Sentry",
+        "Linear",
+        "Asana",
+        "Intuit",
+        "Shopify",
+        "Stripe",
+        "Notion",
+        "Adobe",
+        "Pipedrive",
+        "OpenAI",
+        "xAI",
+        "monday.com",
+        "Canva",
+        "Intercom",
+        "Square",
+        "Zapier",
+        "Neon",
+        "Webflow",
+        "Wix",
+        "Zoho",
+        "LINE",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "Docker",
+        "MongoDB",
+        "EVE Online",
+        "Battle.net",
+        "Autodesk",
+        "PlanetScale",
+        "DigitalOcean",
+        "Todoist",
+        "Front",
+        "Coinbase",
+        "Booking.com",
+        "Uber"
+      ]
+    },
+    "introspection": {
+      "says": "token introspection",
+      "defined": "RFC 7662, introspection_endpoint",
+      "n": 21,
+      "of": 82,
+      "percent": 25.6,
+      "who": [
+        "GitLab",
+        "Salesforce",
+        "Okta",
+        "Yahoo",
+        "Xero",
+        "Vercel",
+        "Shopify",
+        "Notion",
+        "HubSpot",
+        "Zoho",
+        "SAP",
+        "Cisco",
+        "Red Hat",
+        "MongoDB",
+        "Rockstar Games",
+        "Battle.net",
+        "Autodesk",
+        "Gitea",
+        "Codeberg",
+        "Fedora",
+        "PlanetScale"
+      ]
+    }
+  },
+  "rows": [
+    {
+      "org": "Google",
+      "answered": true,
+      "signals": [
+        "deviceGrant",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Microsoft",
+      "answered": true,
+      "signals": [
+        "deviceGrant",
+        "mtlsBoundTokens",
+        "mtlsClientAuth",
+        "privateKeyJwt"
+      ]
+    },
+    {
+      "org": "Apple",
+      "answered": true,
+      "signals": [
+        "revocation"
+      ]
+    },
+    {
+      "org": "GitHub",
+      "answered": true,
+      "signals": [
+        "deviceGrant",
+        "issParameter",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "GitLab",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "dynamicRegistration",
+        "introspection",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Salesforce",
+      "answered": true,
+      "signals": [
+        "dpop",
+        "dynamicRegistration",
+        "introspection",
+        "mtlsBoundTokens",
+        "mtlsClientAuth",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Slack",
+      "answered": true,
+      "signals": [
+        "idJag",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Atlassian",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "clientCredentials",
+        "dynamicRegistration",
+        "jwtBearer",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Okta",
+      "answered": true,
+      "signals": [
+        "ciba",
+        "cimd",
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "dynamicRegistration",
+        "idJag",
+        "identityChaining",
+        "introspection",
+        "jwtBearer",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "PayPal",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "LinkedIn",
+      "answered": true,
+      "signals": []
+    },
+    {
+      "org": "Twitch",
+      "answered": true,
+      "signals": [
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Dropbox",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "dynamicRegistration",
+        "idJag",
+        "jwtBearer",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Yahoo",
+      "answered": true,
+      "signals": [
+        "introspection",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Meta",
+      "answered": true,
+      "signals": []
+    },
+    {
+      "org": "Spotify",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Xero",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "introspection",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Hugging Face",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "deviceGrant",
+        "dynamicRegistration",
+        "pkceS256",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Zoom",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Discord",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "issParameter",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Box",
+      "answered": true,
+      "signals": [
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Figma",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "idJag",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Vercel",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "clientCredentials",
+        "deviceGrant",
+        "dynamicRegistration",
+        "idJag",
+        "introspection",
+        "jwtBearer",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Cloudflare",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "clientCredentials",
+        "deviceGrant",
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Sentry",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Linear",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "idJag",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Asana",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "idJag",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Intuit",
+      "answered": true,
+      "signals": [
+        "revocation"
+      ]
+    },
+    {
+      "org": "Shopify",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "introspection",
+        "pkceS256",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "DocuSign",
+      "answered": true,
+      "signals": []
+    },
+    {
+      "org": "Stripe",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Notion",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "idJag",
+        "introspection",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Adobe",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "par",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Heroku",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "issParameter",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Pipedrive",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "HubSpot",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "introspection",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Login.gov",
+      "answered": true,
+      "signals": [
+        "privateKeyJwt"
+      ]
+    },
+    {
+      "org": "Amazon Web Services",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "OpenAI",
+      "answered": true,
+      "signals": [
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "xAI",
+      "answered": true,
+      "signals": [
+        "deviceGrant",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "X",
+      "answered": true,
+      "signals": [
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "monday.com",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "idJag",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "ClickUp",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Canva",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "idJag",
+        "jwtBearer",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Intercom",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Square",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Zapier",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Neon",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Supabase",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "idJag",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Webflow",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Wix",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Zoho",
+      "answered": true,
+      "signals": [
+        "deviceGrant",
+        "introspection",
+        "jwtBearer",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Kakao",
+      "answered": true,
+      "signals": [
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "LINE",
+      "answered": true,
+      "signals": [
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "SAP",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "dynamicRegistration",
+        "introspection",
+        "issParameter",
+        "jwtBearer",
+        "mtlsBoundTokens",
+        "mtlsClientAuth",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Cisco",
+      "answered": true,
+      "signals": [
+        "ciba",
+        "cimd",
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "dynamicRegistration",
+        "introspection",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Red Hat",
+      "answered": true,
+      "signals": [
+        "ciba",
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "dynamicRegistration",
+        "introspection",
+        "issParameter",
+        "jwtBearer",
+        "mtlsBoundTokens",
+        "mtlsClientAuth",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Docker",
+      "answered": true,
+      "signals": [
+        "ciba",
+        "cimd",
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "idJag",
+        "issParameter",
+        "jwtBearer",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "MongoDB",
+      "answered": true,
+      "signals": [
+        "ciba",
+        "clientCredentials",
+        "deviceGrant",
+        "dpop",
+        "dynamicRegistration",
+        "identityChaining",
+        "introspection",
+        "par",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Rockstar Games",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "introspection"
+      ]
+    },
+    {
+      "org": "EVE Online",
+      "answered": true,
+      "signals": [
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Battle.net",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "deviceGrant",
+        "introspection",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Autodesk",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "introspection",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Gitea",
+      "answered": true,
+      "signals": [
+        "introspection",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Codeberg",
+      "answered": true,
+      "signals": [
+        "introspection",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "SourceForge",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Fedora",
+      "answered": true,
+      "signals": [
+        "introspection"
+      ]
+    },
+    {
+      "org": "Tailscale",
+      "answered": true,
+      "signals": []
+    },
+    {
+      "org": "PlanetScale",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "dynamicRegistration",
+        "introspection",
+        "issParameter",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "DigitalOcean",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Datadog",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "idJag",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Airtable",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Todoist",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "37signals",
+      "answered": true,
+      "signals": []
+    },
+    {
+      "org": "Front",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Typeform",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "pkceS256",
+        "privateKeyJwt"
+      ]
+    },
+    {
+      "org": "Calendly",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Miro",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "idJag",
+        "jwtBearer",
+        "pkceS256"
+      ]
+    },
+    {
+      "org": "Coinbase",
+      "answered": true,
+      "signals": [
+        "cimd",
+        "dynamicRegistration",
+        "pkceS256",
+        "privateKeyJwt",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Booking.com",
+      "answered": true,
+      "signals": [
+        "pkceS256",
+        "revocation"
+      ]
+    },
+    {
+      "org": "Uber",
+      "answered": true,
+      "signals": [
+        "clientCredentials",
+        "dynamicRegistration",
+        "jwtBearer",
+        "par",
+        "privateKeyJwt",
+        "revocation",
+        "tokenExchange"
+      ]
+    },
+    {
+      "org": "Withings",
+      "answered": true,
+      "signals": [
+        "dynamicRegistration",
+        "issParameter",
+        "pkceS256"
+      ]
+    }
+  ]
+}

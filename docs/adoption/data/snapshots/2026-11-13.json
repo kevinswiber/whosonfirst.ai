@@ -1,0 +1,1555 @@
+{
+  "what": "Where each flow stands, by the rubric in scripts/adoption/rubric.mjs",
+  "day": "2026-11-13",
+  "from": {
+    "ledger": 201,
+    "issuers": {
+      "day": "2026-11-13",
+      "answered": 82
+    },
+    "mcpCensus": {
+      "day": "2026-11-13",
+      "asked": 2500,
+      "reached": 2463
+    },
+    "attention": "2026-11-13"
+  },
+  "flows": [
+    {
+      "slug": "aauth",
+      "title": "AAuth",
+      "rating": "experimental",
+      "group": "human-in-the-loop",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 50,
+        "grade": 2,
+        "position": 2,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 3,
+        "generallyAvailable": 0,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 3,
+        "adopters": 0,
+        "lists": 2,
+        "checked": 5,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "AAuth"
+          ],
+          "last12Months": 9,
+          "the12MonthsBefore": 0
+        },
+        "paper": [
+          {
+            "name": "draft-hardt-oauth-aauth-protocol",
+            "rev": "11",
+            "lastRevision": "2026-09-25",
+            "revisionsInLast12Months": 15
+          },
+          {
+            "name": "draft-hardt-httpbis-signature-key",
+            "rev": "09",
+            "lastRevision": "2026-09-13",
+            "revisionsInLast12Months": 10
+          }
+        ]
+      }
+    },
+    {
+      "slug": "agent-payments",
+      "title": "Agent payments (AP2)",
+      "rating": "experimental",
+      "group": "agent-to-agent",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 50,
+        "grade": 2,
+        "position": 2,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 2,
+        "generallyAvailable": 0,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": "falling"
+      },
+      "evidence": {
+        "implementers": 4,
+        "adopters": 0,
+        "lists": 1,
+        "checked": 5,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "Agent Payments Protocol"
+          ],
+          "last12Months": 3,
+          "the12MonthsBefore": 7
+        },
+        "paper": [
+          {
+            "name": "draft-ietf-oauth-delegate-sd-jwt",
+            "rev": "00",
+            "lastRevision": "2026-10-30",
+            "revisionsInLast12Months": 2
+          }
+        ]
+      }
+    },
+    {
+      "slug": "agent-to-agent",
+      "title": "Agent to agent (A2A)",
+      "rating": "stable",
+      "group": "agent-to-agent",
+      "level": "Available",
+      "basis": "documented",
+      "supply": {
+        "score": 75,
+        "grade": 3,
+        "position": 3,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 7,
+        "generallyAvailable": 3,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 25,
+        "grade": 1,
+        "position": 1,
+        "means": "One named organization runs it, or it was seen at least once in a count",
+        "named": 1
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 3,
+        "from": "talk",
+        "direction": "steady"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 1,
+        "lists": 2,
+        "checked": 10,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "A2A protocol",
+            "Agent2Agent"
+          ],
+          "last12Months": 74,
+          "the12MonthsBefore": 75
+        },
+        "downloads": [
+          {
+            "registry": "npm",
+            "name": "@a2a-js/sdk",
+            "whole": true,
+            "lastWholeMonth": 18548725
+          },
+          {
+            "registry": "pypi",
+            "name": "a2a-sdk",
+            "whole": true,
+            "lastWholeMonth": 12377299
+          }
+        ]
+      }
+    },
+    {
+      "slug": "authorization-code-pkce",
+      "title": "Authorization code + PKCE",
+      "rating": "stable",
+      "group": "human-present",
+      "level": "Common",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 86,
+        "grade": 3,
+        "position": 3.428142857142857,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 6,
+        "generallyAvailable": 6,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Thirty or more named organizations, or half of a counted population",
+        "named": 69,
+        "share": 84.1
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports PKCE with S256",
+          "n": 69,
+          "of": 82,
+          "percent": 84.1
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support PKCE with S256",
+          "n": 1067,
+          "of": 1082,
+          "percent": 98.6,
+          "margin": 0.7
+        }
+      ],
+      "attention": {
+        "grade": 3,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 0,
+        "lists": 0,
+        "checked": 7,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "PKCE"
+          ],
+          "last12Months": 70,
+          "the12MonthsBefore": 38
+        }
+      }
+    },
+    {
+      "slug": "ciba",
+      "title": "Backchannel approval (CIBA)",
+      "rating": "stable",
+      "group": "human-in-the-loop",
+      "level": "Available",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Ten or more organizations with a generally available release",
+        "organizations": 18,
+        "generallyAvailable": 18,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 68,
+        "grade": 2,
+        "position": 2.7135714285714285,
+        "means": "Three or more named organizations, or 5% of a counted population",
+        "named": 8,
+        "share": 6.1
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports client-initiated backchannel authentication",
+          "n": 5,
+          "of": 82,
+          "percent": 6.1
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support client-initiated backchannel authentication",
+          "n": 18,
+          "of": 1082,
+          "percent": 1.7,
+          "margin": 0.8
+        }
+      ],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 3,
+        "lists": 1,
+        "checked": 11,
+        "stageInferred": 1
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "CIBA"
+          ],
+          "last12Months": 3,
+          "the12MonthsBefore": 1
+        }
+      }
+    },
+    {
+      "slug": "client-credentials",
+      "title": "Client credentials",
+      "rating": "stable",
+      "group": "autonomous",
+      "level": "Established",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 82,
+        "grade": 3,
+        "position": 3.2854285714285716,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 5,
+        "generallyAvailable": 5,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 91,
+        "grade": 3,
+        "position": 3.64935,
+        "means": "Ten or more named organizations, or 20% of a counted population",
+        "named": 23,
+        "share": 28
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports the client credentials grant",
+          "n": 23,
+          "of": 82,
+          "percent": 28
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support the client credentials grant",
+          "n": 97,
+          "of": 1082,
+          "percent": 9,
+          "margin": 1.7
+        }
+      ],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 0,
+        "lists": 0,
+        "checked": 6,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "client credentials grant",
+            "client credentials flow"
+          ],
+          "last12Months": 4,
+          "the12MonthsBefore": 4
+        }
+      }
+    },
+    {
+      "slug": "credential-broker",
+      "title": "Credential broker",
+      "rating": "unrated",
+      "group": "cross-cutting",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 67,
+        "grade": 2,
+        "position": 2.666,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 7,
+        "generallyAvailable": 2,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 25,
+        "grade": 1,
+        "position": 1,
+        "means": "One named organization runs it, or it was seen at least once in a count",
+        "named": 1
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 2,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 1,
+        "lists": 0,
+        "checked": 8,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "credential broker"
+          ],
+          "last12Months": 18,
+          "the12MonthsBefore": 0
+        }
+      }
+    },
+    {
+      "slug": "cross-app-access",
+      "title": "Enterprise-managed (ID-JAG)",
+      "rating": "emerging",
+      "group": "delegation",
+      "level": "Available",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 58,
+        "grade": 2,
+        "position": 2.333,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 12,
+        "generallyAvailable": 1,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 82,
+        "grade": 3,
+        "position": 3.2997,
+        "means": "Ten or more named organizations, or 20% of a counted population",
+        "named": 16,
+        "share": 17.1
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports the identity assertion authorization grant (ID-JAG)",
+          "n": 14,
+          "of": 82,
+          "percent": 17.1
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support the identity assertion authorization grant (ID-JAG)",
+          "n": 16,
+          "of": 1082,
+          "percent": 1.5,
+          "margin": 0.7
+        }
+      ],
+      "attention": {
+        "grade": 2,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 4,
+        "lists": 3,
+        "checked": 14,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "Cross App Access",
+            "ID-JAG"
+          ],
+          "last12Months": 10,
+          "the12MonthsBefore": 0
+        },
+        "paper": [
+          {
+            "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+            "rev": "06",
+            "lastRevision": "2026-10-31",
+            "revisionsInLast12Months": 5
+          },
+          {
+            "name": "draft-ietf-oauth-identity-chaining",
+            "rev": "17",
+            "lastRevision": "2026-07-19",
+            "revisionsInLast12Months": 11
+          },
+          {
+            "name": "draft-ietf-oauth-client-id-metadata-document",
+            "rev": "03",
+            "lastRevision": "2026-11-02",
+            "revisionsInLast12Months": 3
+          }
+        ]
+      }
+    },
+    {
+      "slug": "device-authorization",
+      "title": "Device authorization",
+      "rating": "stable",
+      "group": "human-present",
+      "level": "Established",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 86,
+        "grade": 3,
+        "position": 3.428142857142857,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 6,
+        "generallyAvailable": 6,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 81,
+        "grade": 3,
+        "position": 3.24975,
+        "means": "Ten or more named organizations, or 20% of a counted population",
+        "named": 15,
+        "share": 18.3
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports the device authorization grant",
+          "n": 15,
+          "of": 82,
+          "percent": 18.3
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support the device authorization grant",
+          "n": 106,
+          "of": 1082,
+          "percent": 9.8,
+          "margin": 1.8
+        }
+      ],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": "steady"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 1,
+        "lists": 0,
+        "checked": 8,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "device authorization grant",
+            "device code flow"
+          ],
+          "last12Months": 5,
+          "the12MonthsBefore": 5
+        }
+      }
+    },
+    {
+      "slug": "dpop",
+      "title": "DPoP",
+      "rating": "stable",
+      "group": "cross-cutting",
+      "level": "Available",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Ten or more organizations with a generally available release",
+        "organizations": 16,
+        "generallyAvailable": 16,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 71,
+        "grade": 2,
+        "position": 2.8562857142857143,
+        "means": "Three or more named organizations, or 5% of a counted population",
+        "named": 9,
+        "share": 8.5
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports DPoP",
+          "n": 7,
+          "of": 82,
+          "percent": 8.5
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support DPoP",
+          "n": 78,
+          "of": 1082,
+          "percent": 7.2,
+          "margin": 1.5
+        }
+      ],
+      "attention": {
+        "grade": 3,
+        "from": "downloads",
+        "direction": "steady"
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 2,
+        "lists": 1,
+        "checked": 9,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "DPoP"
+          ],
+          "last12Months": 19,
+          "the12MonthsBefore": 20
+        },
+        "downloads": [
+          {
+            "registry": "npm",
+            "name": "dpop",
+            "lastWholeMonth": 8431514
+          }
+        ]
+      }
+    },
+    {
+      "slug": "identity-chaining",
+      "title": "Identity chaining",
+      "rating": "emerging",
+      "group": "delegation",
+      "level": "Early",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 58,
+        "grade": 2,
+        "position": 2.333,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 2,
+        "generallyAvailable": 1,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 37,
+        "grade": 1,
+        "position": 1.4995,
+        "means": "One named organization runs it, or it was seen at least once in a count",
+        "named": 2,
+        "share": 2.4
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports identity chaining across domains",
+          "n": 2,
+          "of": 82,
+          "percent": 2.4
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support identity chaining across domains",
+          "n": 0,
+          "of": 1082,
+          "percent": 0,
+          "margin": 0.2
+        }
+      ],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 2,
+        "adopters": 0,
+        "lists": 1,
+        "checked": 3,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "identity chaining"
+          ],
+          "last12Months": 2,
+          "the12MonthsBefore": 0
+        },
+        "paper": [
+          {
+            "name": "draft-ietf-oauth-identity-chaining",
+            "rev": "17",
+            "lastRevision": "2026-07-19",
+            "revisionsInLast12Months": 11
+          }
+        ]
+      }
+    },
+    {
+      "slug": "mcp-authorization",
+      "title": "MCP authorization",
+      "rating": "emerging",
+      "group": "human-present",
+      "level": "Common",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 82,
+        "grade": 3,
+        "position": 3.2854285714285716,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 25,
+        "generallyAvailable": 5,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Thirty or more named organizations, or half of a counted population",
+        "named": 4,
+        "share": 89.7
+      },
+      "counted": [
+        {
+          "source": "MCP census",
+          "says": "public MCP servers that refuse a request with no token and publish protected resource metadata",
+          "n": 835,
+          "of": 931,
+          "margin": 2,
+          "percent": 89.7
+        }
+      ],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 2,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 4,
+        "lists": 1,
+        "checked": 12,
+        "stageInferred": 5
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "MCP authorization",
+            "MCP OAuth"
+          ],
+          "last12Months": 33,
+          "the12MonthsBefore": 15
+        },
+        "downloads": [
+          {
+            "registry": "npm",
+            "name": "@modelcontextprotocol/sdk",
+            "whole": true,
+            "lastWholeMonth": 295595332
+          },
+          {
+            "registry": "pypi",
+            "name": "mcp",
+            "whole": true,
+            "lastWholeMonth": 291873346
+          },
+          {
+            "registry": "crates",
+            "name": "rmcp",
+            "whole": true,
+            "lastWholeMonth": 12228063
+          }
+        ],
+        "paper": [
+          {
+            "name": "draft-ietf-oauth-v2-1",
+            "rev": "17",
+            "lastRevision": "2026-10-31",
+            "revisionsInLast12Months": 3
+          },
+          {
+            "name": "draft-ietf-oauth-client-id-metadata-document",
+            "rev": "03",
+            "lastRevision": "2026-11-02",
+            "revisionsInLast12Months": 3
+          }
+        ]
+      }
+    },
+    {
+      "slug": "spiffe-workload-identity",
+      "title": "SPIFFE + mTLS",
+      "rating": "stable",
+      "group": "autonomous",
+      "level": "Established",
+      "basis": "documented",
+      "supply": {
+        "score": 79,
+        "grade": 3,
+        "position": 3.142714285714286,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 23,
+        "generallyAvailable": 4,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 79,
+        "grade": 3,
+        "position": 3.14985,
+        "means": "Ten or more named organizations, or 20% of a counted population",
+        "named": 13
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 3,
+        "from": "downloads",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 3,
+        "lists": 2,
+        "checked": 12,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "SPIFFE"
+          ],
+          "last12Months": 41,
+          "the12MonthsBefore": 9
+        },
+        "downloads": [
+          {
+            "registry": "pypi",
+            "name": "spiffe",
+            "lastWholeMonth": 233046
+          },
+          {
+            "registry": "crates",
+            "name": "spiffe",
+            "lastWholeMonth": 1864129
+          }
+        ]
+      }
+    },
+    {
+      "slug": "step-up-authorization",
+      "title": "Step-up authorization",
+      "rating": "stable",
+      "group": "human-in-the-loop",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 67,
+        "grade": 2,
+        "position": 2.666,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 5,
+        "generallyAvailable": 2,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 25,
+        "grade": 1,
+        "position": 1,
+        "means": "One named organization runs it, or it was seen at least once in a count",
+        "named": 1
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 5,
+        "adopters": 1,
+        "lists": 0,
+        "checked": 6,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "step-up authentication",
+            "RFC 9470"
+          ],
+          "last12Months": 1,
+          "the12MonthsBefore": 1
+        }
+      }
+    },
+    {
+      "slug": "token-exchange",
+      "title": "Token exchange",
+      "rating": "stable",
+      "group": "delegation",
+      "level": "Established",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 86,
+        "grade": 3,
+        "position": 3.428142857142857,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 6,
+        "generallyAvailable": 6,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 80,
+        "grade": 3,
+        "position": 3.1998,
+        "means": "Ten or more named organizations, or 20% of a counted population",
+        "named": 14,
+        "share": 13.4
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports token exchange",
+          "n": 11,
+          "of": 82,
+          "percent": 13.4
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support token exchange",
+          "n": 51,
+          "of": 1082,
+          "percent": 4.7,
+          "margin": 1.3
+        }
+      ],
+      "attention": {
+        "grade": 2,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 3,
+        "lists": 0,
+        "checked": 10,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "OAuth token exchange",
+            "RFC 8693"
+          ],
+          "last12Months": 10,
+          "the12MonthsBefore": 3
+        }
+      }
+    },
+    {
+      "slug": "transaction-tokens",
+      "title": "Transaction tokens",
+      "rating": "emerging",
+      "group": "delegation",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 50,
+        "grade": 2,
+        "position": 2,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 3,
+        "generallyAvailable": 0,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 0,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 3,
+        "adopters": 0,
+        "lists": 0,
+        "checked": 3,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "transaction tokens"
+          ],
+          "last12Months": 0,
+          "the12MonthsBefore": 0
+        },
+        "paper": [
+          {
+            "name": "draft-ietf-oauth-transaction-tokens",
+            "rev": "11",
+            "lastRevision": "2026-07-30",
+            "revisionsInLast12Months": 5
+          }
+        ]
+      }
+    },
+    {
+      "slug": "url-elicitation",
+      "title": "URL elicitation",
+      "rating": "emerging",
+      "group": "human-in-the-loop",
+      "level": "Available",
+      "basis": "documented",
+      "supply": {
+        "score": 86,
+        "grade": 3,
+        "position": 3.428142857142857,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 6,
+        "generallyAvailable": 6,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 0,
+        "lists": 0,
+        "checked": 6,
+        "stageInferred": 6
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "MCP elicitation"
+          ],
+          "last12Months": 1,
+          "the12MonthsBefore": 1
+        }
+      }
+    },
+    {
+      "slug": "web-bot-auth",
+      "title": "Web Bot Auth",
+      "rating": "emerging",
+      "group": "agent-to-agent",
+      "level": "Available",
+      "basis": "documented",
+      "supply": {
+        "score": 82,
+        "grade": 3,
+        "position": 3.2854285714285716,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 6,
+        "generallyAvailable": 5,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 54,
+        "grade": 2,
+        "position": 2.142714285714286,
+        "means": "Three or more named organizations, or 5% of a counted population",
+        "named": 4
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 2,
+        "from": "talk",
+        "direction": "steady"
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 1,
+        "lists": 1,
+        "checked": 8,
+        "stageInferred": 3
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "Web Bot Auth"
+          ],
+          "last12Months": 28,
+          "the12MonthsBefore": 24
+        },
+        "downloads": [
+          {
+            "registry": "npm",
+            "name": "web-bot-auth",
+            "lastWholeMonth": 843130
+          },
+          {
+            "registry": "crates",
+            "name": "web-bot-auth",
+            "lastWholeMonth": 83761
+          }
+        ],
+        "paper": [
+          {
+            "name": "draft-ietf-webbotauth-httpsig-protocol",
+            "rev": "01",
+            "lastRevision": "2026-10-29",
+            "revisionsInLast12Months": 8
+          }
+        ]
+      }
+    },
+    {
+      "slug": "wimse-workload-tokens",
+      "title": "Workload tokens (WIMSE)",
+      "rating": "emerging",
+      "group": "autonomous",
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 50,
+        "grade": 2,
+        "position": 2,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 3,
+        "generallyAvailable": 0,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 3,
+        "adopters": 0,
+        "lists": 1,
+        "checked": 4,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "WIMSE"
+          ],
+          "last12Months": 6,
+          "the12MonthsBefore": 0
+        },
+        "paper": [
+          {
+            "name": "draft-ietf-wimse-workload-creds",
+            "rev": "03",
+            "lastRevision": "2026-10-30",
+            "revisionsInLast12Months": 4
+          },
+          {
+            "name": "draft-ietf-wimse-wpt",
+            "rev": "02",
+            "lastRevision": "2026-08-27",
+            "revisionsInLast12Months": 3
+          },
+          {
+            "name": "draft-ietf-wimse-identifier",
+            "rev": "04",
+            "lastRevision": "2026-10-23",
+            "revisionsInLast12Months": 5
+          }
+        ]
+      }
+    },
+    {
+      "slug": "workload-identity-federation",
+      "title": "Workload identity federation",
+      "rating": "stable",
+      "group": "autonomous",
+      "level": "Common",
+      "basis": "documented",
+      "supply": {
+        "score": 89,
+        "grade": 3,
+        "position": 3.5708571428571427,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 7,
+        "generallyAvailable": 7,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Thirty or more named organizations, or half of a counted population",
+        "named": 13000
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 2,
+        "lists": 2,
+        "checked": 11,
+        "stageInferred": 1
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "workload identity federation"
+          ],
+          "last12Months": 9,
+          "the12MonthsBefore": 5
+        }
+      }
+    },
+    {
+      "slug": "tool-call-authorization",
+      "title": "Authorizing a tool call with AuthZEN",
+      "planned": 72,
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 67,
+        "grade": 2,
+        "position": 2.666,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 19,
+        "generallyAvailable": 2,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 0,
+        "lists": 3,
+        "checked": 10,
+        "stageInferred": 2
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "AuthZEN"
+          ],
+          "last12Months": 2,
+          "the12MonthsBefore": 2
+        }
+      }
+    },
+    {
+      "slug": "access-revocation",
+      "title": "Withdrawing an agent’s access",
+      "planned": 73,
+      "level": "Available",
+      "basis": "documented",
+      "supply": {
+        "score": 82,
+        "grade": 3,
+        "position": 3.2854285714285716,
+        "means": "Three or more organizations with a generally available release",
+        "organizations": 8,
+        "generallyAvailable": 5,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 0,
+        "lists": 1,
+        "checked": 7,
+        "stageInferred": 5
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "Shared Signals Framework",
+            "CAEP"
+          ],
+          "last12Months": 2,
+          "the12MonthsBefore": 3
+        }
+      }
+    },
+    {
+      "slug": "oauth-mtls",
+      "title": "Certificate-bound access tokens with mTLS",
+      "planned": 74,
+      "level": "Available",
+      "basis": "measured and documented",
+      "supply": {
+        "score": 100,
+        "grade": 4,
+        "position": 4,
+        "means": "Ten or more organizations with a generally available release",
+        "organizations": 26,
+        "generallyAvailable": 26,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 61,
+        "grade": 2,
+        "position": 2.428142857142857,
+        "means": "Three or more named organizations, or 5% of a counted population",
+        "named": 6,
+        "share": 4.9
+      },
+      "counted": [
+        {
+          "source": "issuer panel",
+          "says": "organizations on the panel whose authorization server says it supports certificate-bound access tokens",
+          "n": 4,
+          "of": 82,
+          "percent": 4.9
+        }
+      ],
+      "alsoCounted": [
+        {
+          "source": "MCP census",
+          "says": "authorization servers of public MCP servers that say they support certificate-bound access tokens",
+          "n": 13,
+          "of": 1082,
+          "percent": 1.2,
+          "margin": 0.7
+        }
+      ],
+      "attention": {
+        "grade": 0,
+        "from": "talk",
+        "direction": null
+      },
+      "evidence": {
+        "implementers": 7,
+        "adopters": 2,
+        "lists": 1,
+        "checked": 10,
+        "stageInferred": 4
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "RFC 8705",
+            "certificate-bound access tokens"
+          ],
+          "last12Months": 0,
+          "the12MonthsBefore": 1
+        }
+      }
+    },
+    {
+      "slug": "biscuit-delegation",
+      "title": "Delegating narrower permissions with Biscuit",
+      "planned": 75,
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 58,
+        "grade": 2,
+        "position": 2.333,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 5,
+        "generallyAvailable": 1,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 37,
+        "grade": 1,
+        "position": 1.4995,
+        "means": "One named organization runs it, or it was seen at least once in a count",
+        "named": 2
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 2,
+        "from": "downloads",
+        "direction": "rising"
+      },
+      "evidence": {
+        "implementers": 5,
+        "adopters": 2,
+        "lists": 1,
+        "checked": 8,
+        "stageInferred": 1
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "Biscuit tokens",
+            "biscuitsec",
+            "Biscuit authorization"
+          ],
+          "last12Months": 3,
+          "the12MonthsBefore": 6
+        },
+        "downloads": [
+          {
+            "registry": "crates",
+            "name": "biscuit-auth",
+            "lastWholeMonth": 644205
+          },
+          {
+            "registry": "npm",
+            "name": "@biscuit-auth/biscuit-wasm",
+            "lastWholeMonth": 71163
+          },
+          {
+            "registry": "pypi",
+            "name": "biscuit-python",
+            "lastWholeMonth": 46504
+          }
+        ]
+      }
+    },
+    {
+      "slug": "gnap",
+      "title": "GNAP",
+      "planned": 76,
+      "level": "Early",
+      "basis": "documented",
+      "supply": {
+        "score": 58,
+        "grade": 2,
+        "position": 2.333,
+        "means": "Two or more organizations, at any release stage",
+        "organizations": 8,
+        "generallyAvailable": 1,
+        "onlyAuthors": false
+      },
+      "use": {
+        "score": 0,
+        "grade": 0,
+        "position": 0,
+        "means": "No use recorded",
+        "named": 0
+      },
+      "counted": [],
+      "alsoCounted": [],
+      "attention": {
+        "grade": 1,
+        "from": "talk",
+        "direction": "falling"
+      },
+      "evidence": {
+        "implementers": 6,
+        "adopters": 0,
+        "lists": 2,
+        "checked": 8,
+        "stageInferred": 0
+      },
+      "heard": {
+        "talk": {
+          "phrases": [
+            "GNAP"
+          ],
+          "last12Months": 3,
+          "the12MonthsBefore": 15
+        },
+        "downloads": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,3149 @@
+{
+  "what": "Talk, downloads and draft revisions around each flow",
+  "day": "2026-11-13",
+  "windows": {
+    "quarters": [
+      "2023-11",
+      "2024-02",
+      "2024-05",
+      "2024-08",
+      "2024-11",
+      "2025-02",
+      "2025-05",
+      "2025-08",
+      "2025-11",
+      "2026-02",
+      "2026-05",
+      "2026-08"
+    ],
+    "lastWholeMonth": "2026-10"
+  },
+  "flows": {
+    "aauth": {
+      "talk": {
+        "phrases": [
+          "AAuth"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 3
+          },
+          {
+            "from": "2026-05",
+            "n": 3
+          },
+          {
+            "from": "2026-08",
+            "n": 3
+          }
+        ],
+        "last12Months": 9,
+        "the12MonthsBefore": 0
+      },
+      "paper": [
+        {
+          "entry": "aauth-hardt",
+          "name": "draft-hardt-oauth-aauth-protocol",
+          "rev": "11",
+          "state": "Active",
+          "revisionsInLast12Months": 15,
+          "lastRevision": "2026-09-25",
+          "revisions": [
+            {
+              "name": "draft-hardt-aauth-protocol",
+              "rev": "00",
+              "published": "2026-04-02"
+            },
+            {
+              "name": "draft-hardt-aauth-protocol",
+              "rev": "01",
+              "published": "2026-04-13"
+            },
+            {
+              "name": "draft-hardt-aauth-protocol",
+              "rev": "02",
+              "published": "2026-04-29"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "00",
+              "published": "2026-04-29"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "01",
+              "published": "2026-05-06"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "02",
+              "published": "2026-06-09"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "03",
+              "published": "2026-06-15"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "04",
+              "published": "2026-06-15"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "05",
+              "published": "2026-06-15"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "06",
+              "published": "2026-06-17"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "07",
+              "published": "2026-06-17"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "08",
+              "published": "2026-06-25"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "09",
+              "published": "2026-07-05"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "10",
+              "published": "2026-08-06"
+            },
+            {
+              "name": "draft-hardt-oauth-aauth-protocol",
+              "rev": "11",
+              "published": "2026-09-25"
+            }
+          ]
+        },
+        {
+          "entry": "signature-key",
+          "name": "draft-hardt-httpbis-signature-key",
+          "rev": "09",
+          "state": "Active",
+          "revisionsInLast12Months": 10,
+          "lastRevision": "2026-09-13",
+          "revisions": [
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "00",
+              "published": "2026-01-07"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "01",
+              "published": "2026-01-08"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "02",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "03",
+              "published": "2026-04-04"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "04",
+              "published": "2026-04-09"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "05",
+              "published": "2026-06-17"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "06",
+              "published": "2026-07-03"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "07",
+              "published": "2026-07-05"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "08",
+              "published": "2026-08-05"
+            },
+            {
+              "name": "draft-hardt-httpbis-signature-key",
+              "rev": "09",
+              "published": "2026-09-13"
+            }
+          ]
+        }
+      ]
+    },
+    "agent-payments": {
+      "talk": {
+        "phrases": [
+          "Agent Payments Protocol"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 7
+          },
+          {
+            "from": "2025-11",
+            "n": 1
+          },
+          {
+            "from": "2026-02",
+            "n": 2
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 3,
+        "the12MonthsBefore": 7
+      },
+      "paper": [
+        {
+          "entry": "delegate-sd-jwt",
+          "name": "draft-ietf-oauth-delegate-sd-jwt",
+          "rev": "00",
+          "state": "Active",
+          "revisionsInLast12Months": 2,
+          "lastRevision": "2026-10-30",
+          "revisions": [
+            {
+              "name": "draft-gco-oauth-delegate-sd-jwt",
+              "rev": "00",
+              "published": "2026-04-22"
+            },
+            {
+              "name": "draft-ietf-oauth-delegate-sd-jwt",
+              "rev": "00",
+              "published": "2026-10-30"
+            }
+          ]
+        }
+      ]
+    },
+    "agent-to-agent": {
+      "talk": {
+        "phrases": [
+          "A2A protocol",
+          "Agent2Agent"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 28
+          },
+          {
+            "from": "2025-05",
+            "n": 30
+          },
+          {
+            "from": "2025-08",
+            "n": 17
+          },
+          {
+            "from": "2025-11",
+            "n": 18
+          },
+          {
+            "from": "2026-02",
+            "n": 35
+          },
+          {
+            "from": "2026-05",
+            "n": 17
+          },
+          {
+            "from": "2026-08",
+            "n": 4
+          }
+        ],
+        "last12Months": 74,
+        "the12MonthsBefore": 75
+      },
+      "downloads": [
+        {
+          "registry": "npm",
+          "name": "@a2a-js/sdk",
+          "whole": true,
+          "byMonth": [
+            {
+              "month": "2025-05",
+              "n": 0
+            },
+            {
+              "month": "2025-06",
+              "n": 1336
+            },
+            {
+              "month": "2025-07",
+              "n": 17667
+            },
+            {
+              "month": "2025-08",
+              "n": 188760
+            },
+            {
+              "month": "2025-09",
+              "n": 553108
+            },
+            {
+              "month": "2025-10",
+              "n": 912244
+            },
+            {
+              "month": "2025-11",
+              "n": 1090388
+            },
+            {
+              "month": "2025-12",
+              "n": 1192325
+            },
+            {
+              "month": "2026-01",
+              "n": 2421443
+            },
+            {
+              "month": "2026-02",
+              "n": 3640014
+            },
+            {
+              "month": "2026-03",
+              "n": 5127800
+            },
+            {
+              "month": "2026-04",
+              "n": 4227562
+            },
+            {
+              "month": "2026-05",
+              "n": 4836286
+            },
+            {
+              "month": "2026-06",
+              "n": 5967898
+            },
+            {
+              "month": "2026-07",
+              "n": 7206191
+            },
+            {
+              "month": "2026-08",
+              "n": 8793048
+            },
+            {
+              "month": "2026-09",
+              "n": 12514375
+            },
+            {
+              "month": "2026-10",
+              "n": 18548725
+            }
+          ]
+        },
+        {
+          "registry": "pypi",
+          "name": "a2a-sdk",
+          "whole": true,
+          "byMonth": [
+            {
+              "month": "2026-06",
+              "n": 11523543
+            },
+            {
+              "month": "2026-07",
+              "n": 12348432
+            },
+            {
+              "month": "2026-08",
+              "n": 16626313
+            },
+            {
+              "month": "2026-09",
+              "n": 11081474
+            },
+            {
+              "month": "2026-10",
+              "n": 12377299
+            }
+          ]
+        }
+      ]
+    },
+    "authorization-code-pkce": {
+      "talk": {
+        "phrases": [
+          "PKCE"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 6
+          },
+          {
+            "from": "2024-02",
+            "n": 8
+          },
+          {
+            "from": "2024-05",
+            "n": 3
+          },
+          {
+            "from": "2024-08",
+            "n": 9
+          },
+          {
+            "from": "2024-11",
+            "n": 11
+          },
+          {
+            "from": "2025-02",
+            "n": 6
+          },
+          {
+            "from": "2025-05",
+            "n": 10
+          },
+          {
+            "from": "2025-08",
+            "n": 11
+          },
+          {
+            "from": "2025-11",
+            "n": 18
+          },
+          {
+            "from": "2026-02",
+            "n": 32
+          },
+          {
+            "from": "2026-05",
+            "n": 15
+          },
+          {
+            "from": "2026-08",
+            "n": 5
+          }
+        ],
+        "last12Months": 70,
+        "the12MonthsBefore": 38
+      }
+    },
+    "ciba": {
+      "talk": {
+        "phrases": [
+          "CIBA"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 1
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 1
+          },
+          {
+            "from": "2026-02",
+            "n": 1
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 1
+          }
+        ],
+        "last12Months": 3,
+        "the12MonthsBefore": 1
+      }
+    },
+    "client-credentials": {
+      "talk": {
+        "phrases": [
+          "client credentials grant",
+          "client credentials flow"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 2
+          },
+          {
+            "from": "2024-02",
+            "n": 2
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 1
+          },
+          {
+            "from": "2024-11",
+            "n": 1
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 1
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 3
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 1
+          }
+        ],
+        "last12Months": 4,
+        "the12MonthsBefore": 4
+      }
+    },
+    "credential-broker": {
+      "talk": {
+        "phrases": [
+          "credential broker"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 6
+          },
+          {
+            "from": "2026-05",
+            "n": 4
+          },
+          {
+            "from": "2026-08",
+            "n": 8
+          }
+        ],
+        "last12Months": 18,
+        "the12MonthsBefore": 0
+      }
+    },
+    "cross-app-access": {
+      "talk": {
+        "phrases": [
+          "Cross App Access",
+          "ID-JAG"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 6
+          },
+          {
+            "from": "2026-08",
+            "n": 4
+          }
+        ],
+        "last12Months": 10,
+        "the12MonthsBefore": 0
+      },
+      "paper": [
+        {
+          "entry": "id-jag",
+          "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+          "rev": "06",
+          "state": "Active",
+          "revisionsInLast12Months": 5,
+          "lastRevision": "2026-10-31",
+          "revisions": [
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "00",
+              "published": "2024-03-02"
+            },
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "01",
+              "published": "2024-07-02"
+            },
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "02",
+              "published": "2024-10-20"
+            },
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "03",
+              "published": "2025-04-23"
+            },
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "04",
+              "published": "2025-06-20"
+            },
+            {
+              "name": "draft-parecki-oauth-identity-assertion-authz-grant",
+              "rev": "05",
+              "published": "2025-07-02"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "00",
+              "published": "2025-09-08"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "01",
+              "published": "2025-10-19"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "02",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "03",
+              "published": "2026-04-22"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "04",
+              "published": "2026-05-21"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "05",
+              "published": "2026-10-30"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-assertion-authz-grant",
+              "rev": "06",
+              "published": "2026-10-31"
+            }
+          ]
+        },
+        {
+          "entry": "identity-chaining",
+          "name": "draft-ietf-oauth-identity-chaining",
+          "rev": "17",
+          "state": "Active",
+          "revisionsInLast12Months": 11,
+          "lastRevision": "2026-07-19",
+          "revisions": [
+            {
+              "name": "draft-identity-chaining",
+              "rev": "00",
+              "published": "2023-07-10"
+            },
+            {
+              "name": "draft-schwenkschuster-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-10-23"
+            },
+            {
+              "name": "draft-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-11-30"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-12-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "01",
+              "published": "2024-02-19"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "02",
+              "published": "2024-07-08"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "03",
+              "published": "2024-12-21"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "04",
+              "published": "2025-02-27"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "05",
+              "published": "2025-07-03"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "06",
+              "published": "2025-09-12"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "07",
+              "published": "2026-02-06"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "08",
+              "published": "2026-02-09"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "09",
+              "published": "2026-04-24"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "10",
+              "published": "2026-04-24"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "11",
+              "published": "2026-05-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "12",
+              "published": "2026-05-11"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "13",
+              "published": "2026-06-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "14",
+              "published": "2026-06-02"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "15",
+              "published": "2026-06-19"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "16",
+              "published": "2026-06-26"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "17",
+              "published": "2026-07-19"
+            }
+          ]
+        },
+        {
+          "entry": "cimd",
+          "name": "draft-ietf-oauth-client-id-metadata-document",
+          "rev": "03",
+          "state": "Active",
+          "revisionsInLast12Months": 3,
+          "lastRevision": "2026-11-02",
+          "revisions": [
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "00",
+              "published": "2024-07-02"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "01",
+              "published": "2024-07-08"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "02",
+              "published": "2025-01-10"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "03",
+              "published": "2025-07-23"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "00",
+              "published": "2025-10-08"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "01",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "02",
+              "published": "2026-07-06"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "03",
+              "published": "2026-11-02"
+            }
+          ]
+        }
+      ]
+    },
+    "device-authorization": {
+      "talk": {
+        "phrases": [
+          "device authorization grant",
+          "device code flow"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 1
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 2
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 1
+          },
+          {
+            "from": "2025-11",
+            "n": 1
+          },
+          {
+            "from": "2026-02",
+            "n": 1
+          },
+          {
+            "from": "2026-05",
+            "n": 3
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 5,
+        "the12MonthsBefore": 5
+      }
+    },
+    "dpop": {
+      "talk": {
+        "phrases": [
+          "DPoP"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 8
+          },
+          {
+            "from": "2024-08",
+            "n": 3
+          },
+          {
+            "from": "2024-11",
+            "n": 12
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 5
+          },
+          {
+            "from": "2025-08",
+            "n": 2
+          },
+          {
+            "from": "2025-11",
+            "n": 2
+          },
+          {
+            "from": "2026-02",
+            "n": 5
+          },
+          {
+            "from": "2026-05",
+            "n": 6
+          },
+          {
+            "from": "2026-08",
+            "n": 6
+          }
+        ],
+        "last12Months": 19,
+        "the12MonthsBefore": 20
+      },
+      "downloads": [
+        {
+          "registry": "npm",
+          "name": "dpop",
+          "byMonth": [
+            {
+              "month": "2025-05",
+              "n": 72252
+            },
+            {
+              "month": "2025-06",
+              "n": 61746
+            },
+            {
+              "month": "2025-07",
+              "n": 26374
+            },
+            {
+              "month": "2025-08",
+              "n": 27367
+            },
+            {
+              "month": "2025-09",
+              "n": 482372
+            },
+            {
+              "month": "2025-10",
+              "n": 1421333
+            },
+            {
+              "month": "2025-11",
+              "n": 1835078
+            },
+            {
+              "month": "2025-12",
+              "n": 2102097
+            },
+            {
+              "month": "2026-01",
+              "n": 2473365
+            },
+            {
+              "month": "2026-02",
+              "n": 3008607
+            },
+            {
+              "month": "2026-03",
+              "n": 4105410
+            },
+            {
+              "month": "2026-04",
+              "n": 4355589
+            },
+            {
+              "month": "2026-05",
+              "n": 4944072
+            },
+            {
+              "month": "2026-06",
+              "n": 5884429
+            },
+            {
+              "month": "2026-07",
+              "n": 6871238
+            },
+            {
+              "month": "2026-08",
+              "n": 7061345
+            },
+            {
+              "month": "2026-09",
+              "n": 7260247
+            },
+            {
+              "month": "2026-10",
+              "n": 8431514
+            }
+          ]
+        }
+      ]
+    },
+    "identity-chaining": {
+      "talk": {
+        "phrases": [
+          "identity chaining"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 1
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 2
+          }
+        ],
+        "last12Months": 2,
+        "the12MonthsBefore": 0
+      },
+      "paper": [
+        {
+          "entry": "identity-chaining",
+          "name": "draft-ietf-oauth-identity-chaining",
+          "rev": "17",
+          "state": "Active",
+          "revisionsInLast12Months": 11,
+          "lastRevision": "2026-07-19",
+          "revisions": [
+            {
+              "name": "draft-identity-chaining",
+              "rev": "00",
+              "published": "2023-07-10"
+            },
+            {
+              "name": "draft-schwenkschuster-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-10-23"
+            },
+            {
+              "name": "draft-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-11-30"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "00",
+              "published": "2023-12-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "01",
+              "published": "2024-02-19"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "02",
+              "published": "2024-07-08"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "03",
+              "published": "2024-12-21"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "04",
+              "published": "2025-02-27"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "05",
+              "published": "2025-07-03"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "06",
+              "published": "2025-09-12"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "07",
+              "published": "2026-02-06"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "08",
+              "published": "2026-02-09"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "09",
+              "published": "2026-04-24"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "10",
+              "published": "2026-04-24"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "11",
+              "published": "2026-05-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "12",
+              "published": "2026-05-11"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "13",
+              "published": "2026-06-01"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "14",
+              "published": "2026-06-02"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "15",
+              "published": "2026-06-19"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "16",
+              "published": "2026-06-26"
+            },
+            {
+              "name": "draft-ietf-oauth-identity-chaining",
+              "rev": "17",
+              "published": "2026-07-19"
+            }
+          ]
+        }
+      ]
+    },
+    "mcp-authorization": {
+      "talk": {
+        "phrases": [
+          "MCP authorization",
+          "MCP OAuth"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 2
+          },
+          {
+            "from": "2025-05",
+            "n": 8
+          },
+          {
+            "from": "2025-08",
+            "n": 5
+          },
+          {
+            "from": "2025-11",
+            "n": 5
+          },
+          {
+            "from": "2026-02",
+            "n": 10
+          },
+          {
+            "from": "2026-05",
+            "n": 10
+          },
+          {
+            "from": "2026-08",
+            "n": 8
+          }
+        ],
+        "last12Months": 33,
+        "the12MonthsBefore": 15
+      },
+      "downloads": [
+        {
+          "registry": "npm",
+          "name": "@modelcontextprotocol/sdk",
+          "whole": true,
+          "byMonth": [
+            {
+              "month": "2025-05",
+              "n": 20933359
+            },
+            {
+              "month": "2025-06",
+              "n": 16837593
+            },
+            {
+              "month": "2025-07",
+              "n": 21605761
+            },
+            {
+              "month": "2025-08",
+              "n": 24658353
+            },
+            {
+              "month": "2025-09",
+              "n": 31258519
+            },
+            {
+              "month": "2025-10",
+              "n": 33786684
+            },
+            {
+              "month": "2025-11",
+              "n": 35008987
+            },
+            {
+              "month": "2025-12",
+              "n": 38516712
+            },
+            {
+              "month": "2026-01",
+              "n": 50249918
+            },
+            {
+              "month": "2026-02",
+              "n": 71656771
+            },
+            {
+              "month": "2026-03",
+              "n": 141911796
+            },
+            {
+              "month": "2026-04",
+              "n": 140092905
+            },
+            {
+              "month": "2026-05",
+              "n": 153164130
+            },
+            {
+              "month": "2026-06",
+              "n": 171229606
+            },
+            {
+              "month": "2026-07",
+              "n": 202755593
+            },
+            {
+              "month": "2026-08",
+              "n": 225916792
+            },
+            {
+              "month": "2026-09",
+              "n": 241754775
+            },
+            {
+              "month": "2026-10",
+              "n": 295595332
+            }
+          ]
+        },
+        {
+          "registry": "pypi",
+          "name": "mcp",
+          "whole": true,
+          "byMonth": [
+            {
+              "month": "2026-06",
+              "n": 280853112
+            },
+            {
+              "month": "2026-07",
+              "n": 319707848
+            },
+            {
+              "month": "2026-08",
+              "n": 329844958
+            },
+            {
+              "month": "2026-09",
+              "n": 230129094
+            },
+            {
+              "month": "2026-10",
+              "n": 291873346
+            }
+          ]
+        },
+        {
+          "registry": "crates",
+          "name": "rmcp",
+          "whole": true,
+          "byMonth": [
+            {
+              "month": "2026-09",
+              "n": 7516930
+            },
+            {
+              "month": "2026-10",
+              "n": 12228063
+            }
+          ]
+        }
+      ],
+      "paper": [
+        {
+          "entry": "oauth-2-1",
+          "name": "draft-ietf-oauth-v2-1",
+          "rev": "17",
+          "state": "Active",
+          "revisionsInLast12Months": 3,
+          "lastRevision": "2026-10-31",
+          "revisions": [
+            {
+              "name": "draft-parecki-oauth-v2-1",
+              "rev": "00",
+              "published": "2020-03-08"
+            },
+            {
+              "name": "draft-parecki-oauth-v2-1",
+              "rev": "01",
+              "published": "2020-03-08"
+            },
+            {
+              "name": "draft-parecki-oauth-v2-1",
+              "rev": "02",
+              "published": "2020-04-24"
+            },
+            {
+              "name": "draft-parecki-oauth-v2-1",
+              "rev": "03",
+              "published": "2020-07-04"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "00",
+              "published": "2020-07-30"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "01",
+              "published": "2021-02-02"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "02",
+              "published": "2021-03-16"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "03",
+              "published": "2021-09-08"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "04",
+              "published": "2021-10-06"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "05",
+              "published": "2022-03-08"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "06",
+              "published": "2022-07-24"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "07",
+              "published": "2022-10-24"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "08",
+              "published": "2023-03-13"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "09",
+              "published": "2023-07-10"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "10",
+              "published": "2024-01-09"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "11",
+              "published": "2024-05-15"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "12",
+              "published": "2024-11-15"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "13",
+              "published": "2025-05-28"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "14",
+              "published": "2025-10-20"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "15",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "16",
+              "published": "2026-09-03"
+            },
+            {
+              "name": "draft-ietf-oauth-v2-1",
+              "rev": "17",
+              "published": "2026-10-31"
+            }
+          ]
+        },
+        {
+          "entry": "cimd",
+          "name": "draft-ietf-oauth-client-id-metadata-document",
+          "rev": "03",
+          "state": "Active",
+          "revisionsInLast12Months": 3,
+          "lastRevision": "2026-11-02",
+          "revisions": [
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "00",
+              "published": "2024-07-02"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "01",
+              "published": "2024-07-08"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "02",
+              "published": "2025-01-10"
+            },
+            {
+              "name": "draft-parecki-oauth-client-id-metadata-document",
+              "rev": "03",
+              "published": "2025-07-23"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "00",
+              "published": "2025-10-08"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "01",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "02",
+              "published": "2026-07-06"
+            },
+            {
+              "name": "draft-ietf-oauth-client-id-metadata-document",
+              "rev": "03",
+              "published": "2026-11-02"
+            }
+          ]
+        }
+      ]
+    },
+    "spiffe-workload-identity": {
+      "talk": {
+        "phrases": [
+          "SPIFFE"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 3
+          },
+          {
+            "from": "2024-02",
+            "n": 8
+          },
+          {
+            "from": "2024-05",
+            "n": 2
+          },
+          {
+            "from": "2024-08",
+            "n": 1
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 4
+          },
+          {
+            "from": "2025-08",
+            "n": 5
+          },
+          {
+            "from": "2025-11",
+            "n": 7
+          },
+          {
+            "from": "2026-02",
+            "n": 15
+          },
+          {
+            "from": "2026-05",
+            "n": 8
+          },
+          {
+            "from": "2026-08",
+            "n": 11
+          }
+        ],
+        "last12Months": 41,
+        "the12MonthsBefore": 9
+      },
+      "downloads": [
+        {
+          "registry": "pypi",
+          "name": "spiffe",
+          "byMonth": [
+            {
+              "month": "2026-06",
+              "n": 109533
+            },
+            {
+              "month": "2026-07",
+              "n": 119867
+            },
+            {
+              "month": "2026-08",
+              "n": 178856
+            },
+            {
+              "month": "2026-09",
+              "n": 194238
+            },
+            {
+              "month": "2026-10",
+              "n": 233046
+            }
+          ]
+        },
+        {
+          "registry": "crates",
+          "name": "spiffe",
+          "byMonth": [
+            {
+              "month": "2026-09",
+              "n": 1163381
+            },
+            {
+              "month": "2026-10",
+              "n": 1864129
+            }
+          ]
+        }
+      ]
+    },
+    "step-up-authorization": {
+      "talk": {
+        "phrases": [
+          "step-up authentication",
+          "RFC 9470"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 2
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 1
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 1,
+        "the12MonthsBefore": 1
+      }
+    },
+    "token-exchange": {
+      "talk": {
+        "phrases": [
+          "OAuth token exchange",
+          "RFC 8693"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 2
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 2
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 5
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 5
+          }
+        ],
+        "last12Months": 10,
+        "the12MonthsBefore": 3
+      }
+    },
+    "transaction-tokens": {
+      "talk": {
+        "phrases": [
+          "transaction tokens"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 1
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 0,
+        "the12MonthsBefore": 0
+      },
+      "paper": [
+        {
+          "entry": "txn-tokens",
+          "name": "draft-ietf-oauth-transaction-tokens",
+          "rev": "11",
+          "state": "Active",
+          "revisionsInLast12Months": 5,
+          "lastRevision": "2026-07-30",
+          "revisions": [
+            {
+              "name": "draft-oauth-transaction-tokens",
+              "rev": "00",
+              "published": "2023-11-29"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "00",
+              "published": "2023-11-29"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "01",
+              "published": "2024-03-16"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "02",
+              "published": "2024-06-21"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "03",
+              "published": "2024-07-04"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "04",
+              "published": "2024-12-30"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "05",
+              "published": "2025-03-03"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "06",
+              "published": "2025-07-28"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "07",
+              "published": "2026-01-24"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "08",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "09",
+              "published": "2026-07-06"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "10",
+              "published": "2026-07-29"
+            },
+            {
+              "name": "draft-ietf-oauth-transaction-tokens",
+              "rev": "11",
+              "published": "2026-07-30"
+            }
+          ]
+        }
+      ]
+    },
+    "url-elicitation": {
+      "talk": {
+        "phrases": [
+          "MCP elicitation"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 1
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 1
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 1,
+        "the12MonthsBefore": 1
+      }
+    },
+    "web-bot-auth": {
+      "talk": {
+        "phrases": [
+          "Web Bot Auth"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 4
+          },
+          {
+            "from": "2025-08",
+            "n": 20
+          },
+          {
+            "from": "2025-11",
+            "n": 4
+          },
+          {
+            "from": "2026-02",
+            "n": 5
+          },
+          {
+            "from": "2026-05",
+            "n": 9
+          },
+          {
+            "from": "2026-08",
+            "n": 10
+          }
+        ],
+        "last12Months": 28,
+        "the12MonthsBefore": 24
+      },
+      "downloads": [
+        {
+          "registry": "npm",
+          "name": "web-bot-auth",
+          "byMonth": [
+            {
+              "month": "2025-05",
+              "n": 294
+            },
+            {
+              "month": "2025-06",
+              "n": 197
+            },
+            {
+              "month": "2025-07",
+              "n": 263
+            },
+            {
+              "month": "2025-08",
+              "n": 312
+            },
+            {
+              "month": "2025-09",
+              "n": 561
+            },
+            {
+              "month": "2025-10",
+              "n": 885
+            },
+            {
+              "month": "2025-11",
+              "n": 7474
+            },
+            {
+              "month": "2025-12",
+              "n": 5332
+            },
+            {
+              "month": "2026-01",
+              "n": 5177
+            },
+            {
+              "month": "2026-02",
+              "n": 14715
+            },
+            {
+              "month": "2026-03",
+              "n": 18469
+            },
+            {
+              "month": "2026-04",
+              "n": 39993
+            },
+            {
+              "month": "2026-05",
+              "n": 59748
+            },
+            {
+              "month": "2026-06",
+              "n": 52769
+            },
+            {
+              "month": "2026-07",
+              "n": 90539
+            },
+            {
+              "month": "2026-08",
+              "n": 272508
+            },
+            {
+              "month": "2026-09",
+              "n": 648926
+            },
+            {
+              "month": "2026-10",
+              "n": 843130
+            }
+          ]
+        },
+        {
+          "registry": "crates",
+          "name": "web-bot-auth",
+          "byMonth": [
+            {
+              "month": "2026-09",
+              "n": 93491
+            },
+            {
+              "month": "2026-10",
+              "n": 83761
+            }
+          ]
+        }
+      ],
+      "paper": [
+        {
+          "entry": "web-bot-auth",
+          "name": "draft-ietf-webbotauth-httpsig-protocol",
+          "rev": "01",
+          "state": "Active",
+          "revisionsInLast12Months": 8,
+          "lastRevision": "2026-10-29",
+          "revisions": [
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "00",
+              "published": "2025-04-15"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "00",
+              "published": "2025-04-15"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "01",
+              "published": "2025-05-07"
+            },
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "01",
+              "published": "2025-06-19"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "02",
+              "published": "2025-06-19"
+            },
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "02",
+              "published": "2025-08-29"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "03",
+              "published": "2025-08-29"
+            },
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "03",
+              "published": "2025-09-05"
+            },
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "04",
+              "published": "2025-10-20"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "04",
+              "published": "2025-10-20"
+            },
+            {
+              "name": "draft-meunier-http-message-signatures-directory",
+              "rev": "05",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-meunier-web-bot-auth-architecture",
+              "rev": "05",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-meunier-webbotauth-httpsig-directory",
+              "rev": "00",
+              "published": "2026-06-26"
+            },
+            {
+              "name": "draft-meunier-webbotauth-httpsig-protocol",
+              "rev": "00",
+              "published": "2026-06-26"
+            },
+            {
+              "name": "draft-meunier-webbotauth-httpsig-protocol",
+              "rev": "01",
+              "published": "2026-08-06"
+            },
+            {
+              "name": "draft-meunier-webbotauth-httpsig-protocol",
+              "rev": "02",
+              "published": "2026-08-18"
+            },
+            {
+              "name": "draft-ietf-webbotauth-httpsig-protocol",
+              "rev": "00",
+              "published": "2026-09-01"
+            },
+            {
+              "name": "draft-ietf-webbotauth-httpsig-protocol",
+              "rev": "01",
+              "published": "2026-10-29"
+            }
+          ]
+        }
+      ]
+    },
+    "wimse-workload-tokens": {
+      "talk": {
+        "phrases": [
+          "WIMSE"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 1
+          },
+          {
+            "from": "2026-02",
+            "n": 3
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 2
+          }
+        ],
+        "last12Months": 6,
+        "the12MonthsBefore": 0
+      },
+      "paper": [
+        {
+          "entry": "wimse-creds",
+          "name": "draft-ietf-wimse-workload-creds",
+          "rev": "03",
+          "state": "Active",
+          "revisionsInLast12Months": 4,
+          "lastRevision": "2026-10-30",
+          "revisions": [
+            {
+              "name": "draft-sheffer-wimse-s2s-protocol",
+              "rev": "00",
+              "published": "2024-07-03"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "00",
+              "published": "2024-08-15"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "01",
+              "published": "2024-10-18"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "02",
+              "published": "2025-01-17"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "03",
+              "published": "2025-03-03"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "04",
+              "published": "2025-05-19"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "05",
+              "published": "2025-06-19"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "06",
+              "published": "2025-07-04"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "07",
+              "published": "2025-10-16"
+            },
+            {
+              "name": "draft-ietf-wimse-workload-creds",
+              "rev": "00",
+              "published": "2025-11-04"
+            },
+            {
+              "name": "draft-ietf-wimse-workload-creds",
+              "rev": "01",
+              "published": "2026-05-05"
+            },
+            {
+              "name": "draft-ietf-wimse-workload-creds",
+              "rev": "02",
+              "published": "2026-07-02"
+            },
+            {
+              "name": "draft-ietf-wimse-workload-creds",
+              "rev": "03",
+              "published": "2026-10-30"
+            }
+          ]
+        },
+        {
+          "entry": "wimse-wpt",
+          "name": "draft-ietf-wimse-wpt",
+          "rev": "02",
+          "state": "Active",
+          "revisionsInLast12Months": 3,
+          "lastRevision": "2026-08-27",
+          "revisions": [
+            {
+              "name": "draft-sheffer-wimse-s2s-protocol",
+              "rev": "00",
+              "published": "2024-07-03"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "00",
+              "published": "2024-08-15"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "01",
+              "published": "2024-10-18"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "02",
+              "published": "2025-01-17"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "03",
+              "published": "2025-03-03"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "04",
+              "published": "2025-05-19"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "05",
+              "published": "2025-06-19"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "06",
+              "published": "2025-07-04"
+            },
+            {
+              "name": "draft-ietf-wimse-s2s-protocol",
+              "rev": "07",
+              "published": "2025-10-16"
+            },
+            {
+              "name": "draft-ietf-wimse-wpt",
+              "rev": "00",
+              "published": "2025-11-04"
+            },
+            {
+              "name": "draft-ietf-wimse-wpt",
+              "rev": "01",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-wimse-wpt",
+              "rev": "02",
+              "published": "2026-08-27"
+            }
+          ]
+        },
+        {
+          "entry": "wimse-id",
+          "name": "draft-ietf-wimse-identifier",
+          "rev": "04",
+          "state": "Active",
+          "revisionsInLast12Months": 5,
+          "lastRevision": "2026-10-23",
+          "revisions": [
+            {
+              "name": "draft-rosomakho-wimse-identifier",
+              "rev": "00",
+              "published": "2025-07-03"
+            },
+            {
+              "name": "draft-ietf-wimse-identifier",
+              "rev": "00",
+              "published": "2025-11-02"
+            },
+            {
+              "name": "draft-ietf-wimse-identifier",
+              "rev": "01",
+              "published": "2025-12-29"
+            },
+            {
+              "name": "draft-ietf-wimse-identifier",
+              "rev": "02",
+              "published": "2026-03-02"
+            },
+            {
+              "name": "draft-ietf-wimse-identifier",
+              "rev": "03",
+              "published": "2026-07-06"
+            },
+            {
+              "name": "draft-ietf-wimse-identifier",
+              "rev": "04",
+              "published": "2026-10-23"
+            }
+          ]
+        }
+      ]
+    },
+    "workload-identity-federation": {
+      "talk": {
+        "phrases": [
+          "workload identity federation"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 1
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 4
+          },
+          {
+            "from": "2025-08",
+            "n": 1
+          },
+          {
+            "from": "2025-11",
+            "n": 2
+          },
+          {
+            "from": "2026-02",
+            "n": 1
+          },
+          {
+            "from": "2026-05",
+            "n": 1
+          },
+          {
+            "from": "2026-08",
+            "n": 5
+          }
+        ],
+        "last12Months": 9,
+        "the12MonthsBefore": 5
+      }
+    },
+    "tool-call-authorization": {
+      "talk": {
+        "phrases": [
+          "AuthZEN"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 1
+          },
+          {
+            "from": "2024-08",
+            "n": 1
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 1
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 2
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 2,
+        "the12MonthsBefore": 2
+      }
+    },
+    "access-revocation": {
+      "talk": {
+        "phrases": [
+          "Shared Signals Framework",
+          "CAEP"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 3
+          },
+          {
+            "from": "2025-11",
+            "n": 2
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 2,
+        "the12MonthsBefore": 3
+      }
+    },
+    "oauth-mtls": {
+      "talk": {
+        "phrases": [
+          "RFC 8705",
+          "certificate-bound access tokens"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 2
+          },
+          {
+            "from": "2024-08",
+            "n": 0
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 0
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 0,
+        "the12MonthsBefore": 1
+      }
+    },
+    "biscuit-delegation": {
+      "talk": {
+        "phrases": [
+          "Biscuit tokens",
+          "biscuitsec",
+          "Biscuit authorization"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 10
+          },
+          {
+            "from": "2024-02",
+            "n": 1
+          },
+          {
+            "from": "2024-05",
+            "n": 1
+          },
+          {
+            "from": "2024-08",
+            "n": 1
+          },
+          {
+            "from": "2024-11",
+            "n": 0
+          },
+          {
+            "from": "2025-02",
+            "n": 0
+          },
+          {
+            "from": "2025-05",
+            "n": 1
+          },
+          {
+            "from": "2025-08",
+            "n": 5
+          },
+          {
+            "from": "2025-11",
+            "n": 3
+          },
+          {
+            "from": "2026-02",
+            "n": 0
+          },
+          {
+            "from": "2026-05",
+            "n": 0
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 3,
+        "the12MonthsBefore": 6
+      },
+      "downloads": [
+        {
+          "registry": "crates",
+          "name": "biscuit-auth",
+          "byMonth": [
+            {
+              "month": "2026-09",
+              "n": 905955
+            },
+            {
+              "month": "2026-10",
+              "n": 644205
+            }
+          ]
+        },
+        {
+          "registry": "npm",
+          "name": "@biscuit-auth/biscuit-wasm",
+          "byMonth": [
+            {
+              "month": "2025-05",
+              "n": 1368
+            },
+            {
+              "month": "2025-06",
+              "n": 1367
+            },
+            {
+              "month": "2025-07",
+              "n": 2277
+            },
+            {
+              "month": "2025-08",
+              "n": 975
+            },
+            {
+              "month": "2025-09",
+              "n": 1669
+            },
+            {
+              "month": "2025-10",
+              "n": 2099
+            },
+            {
+              "month": "2025-11",
+              "n": 1560
+            },
+            {
+              "month": "2025-12",
+              "n": 1931
+            },
+            {
+              "month": "2026-01",
+              "n": 1822
+            },
+            {
+              "month": "2026-02",
+              "n": 2133
+            },
+            {
+              "month": "2026-03",
+              "n": 4794
+            },
+            {
+              "month": "2026-04",
+              "n": 4994
+            },
+            {
+              "month": "2026-05",
+              "n": 13686
+            },
+            {
+              "month": "2026-06",
+              "n": 15875
+            },
+            {
+              "month": "2026-07",
+              "n": 20778
+            },
+            {
+              "month": "2026-08",
+              "n": 46236
+            },
+            {
+              "month": "2026-09",
+              "n": 24663
+            },
+            {
+              "month": "2026-10",
+              "n": 71163
+            }
+          ]
+        },
+        {
+          "registry": "pypi",
+          "name": "biscuit-python",
+          "byMonth": [
+            {
+              "month": "2026-06",
+              "n": 30353
+            },
+            {
+              "month": "2026-07",
+              "n": 61848
+            },
+            {
+              "month": "2026-08",
+              "n": 42376
+            },
+            {
+              "month": "2026-09",
+              "n": 37531
+            },
+            {
+              "month": "2026-10",
+              "n": 46504
+            }
+          ]
+        }
+      ]
+    },
+    "gnap": {
+      "talk": {
+        "phrases": [
+          "GNAP"
+        ],
+        "byQuarter": [
+          {
+            "from": "2023-11",
+            "n": 0
+          },
+          {
+            "from": "2024-02",
+            "n": 0
+          },
+          {
+            "from": "2024-05",
+            "n": 0
+          },
+          {
+            "from": "2024-08",
+            "n": 2
+          },
+          {
+            "from": "2024-11",
+            "n": 8
+          },
+          {
+            "from": "2025-02",
+            "n": 1
+          },
+          {
+            "from": "2025-05",
+            "n": 0
+          },
+          {
+            "from": "2025-08",
+            "n": 6
+          },
+          {
+            "from": "2025-11",
+            "n": 0
+          },
+          {
+            "from": "2026-02",
+            "n": 2
+          },
+          {
+            "from": "2026-05",
+            "n": 1
+          },
+          {
+            "from": "2026-08",
+            "n": 0
+          }
+        ],
+        "last12Months": 3,
+        "the12MonthsBefore": 15
+      },
+      "downloads": [
+        {
+          "registry": "crates",
+          "name": "gnap",
+          "byMonth": []
+        }
+      ]
+    }
+  }
+}

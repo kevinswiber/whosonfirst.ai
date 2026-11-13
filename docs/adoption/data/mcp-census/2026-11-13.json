@@ -1,0 +1,307 @@
+{
+  "what": "How public MCP servers ask for authorization, from the documents they publish",
+  "day": "2026-11-13",
+  "seed": "2026-11-13",
+  "registry": "https://registry.modelcontextprotocol.io/v0/servers",
+  "frame": {
+    "listed": 63030,
+    "activeWithRemote": 41787,
+    "operators": 26671,
+    "asked": 2500
+  },
+  "reached": {
+    "n": 2463,
+    "of": 2500,
+    "percent": 98.5,
+    "margin": 0.5
+  },
+  "notReached": {
+    "ENOTFOUND": 23,
+    "TimeoutError": 12,
+    "EAI_AGAIN": 2
+  },
+  "firstAnswer": {
+    "refusedWith401": {
+      "n": 931,
+      "of": 2463,
+      "percent": 37.8,
+      "margin": 1.9
+    },
+    "letIn": {
+      "n": 1394,
+      "of": 2463,
+      "percent": 56.6,
+      "margin": 2
+    },
+    "other": {
+      "n": 138,
+      "of": 2463,
+      "percent": 5.6,
+      "margin": 0.9
+    },
+    "statuses": {
+      "200": 1392,
+      "202": 2,
+      "400": 2,
+      "401": 931,
+      "402": 5,
+      "403": 9,
+      "404": 56,
+      "405": 6,
+      "410": 3,
+      "429": 1,
+      "500": 4,
+      "502": 6,
+      "503": 30,
+      "521": 2,
+      "525": 1,
+      "526": 3,
+      "530": 10
+    }
+  },
+  "challenge": {
+    "namesResourceMetadata": {
+      "n": 818,
+      "of": 931,
+      "percent": 87.9,
+      "margin": 2.1
+    },
+    "bearer": {
+      "n": 870,
+      "of": 931,
+      "percent": 93.4,
+      "margin": 1.6
+    },
+    "noChallengeHeader": {
+      "n": 58,
+      "of": 931,
+      "percent": 6.2,
+      "margin": 1.6
+    }
+  },
+  "resourceMetadata": {
+    "published": {
+      "n": 1109,
+      "of": 2463,
+      "percent": 45,
+      "margin": 2
+    },
+    "publishedAmongRefused": {
+      "n": 835,
+      "of": 931,
+      "percent": 89.7,
+      "margin": 2
+    },
+    "foundByChallenge": 814,
+    "foundAtWellKnownOnly": 295,
+    "saysDpopRequired": 0
+  },
+  "authorizationServer": {
+    "found": {
+      "n": 1082,
+      "of": 2463,
+      "percent": 43.9,
+      "margin": 2
+    },
+    "foundThroughResourceMetadata": 1078,
+    "foundAtOwnOriginOnly": 4,
+    "runByAnotherOperator": {
+      "n": 98,
+      "of": 1082,
+      "percent": 9.1,
+      "margin": 1.7
+    },
+    "onSharedSuffix": {
+      "supabase.co": 55,
+      "auth0.com": 3,
+      "workers.dev": 3,
+      "co.uk": 2,
+      "com.br": 2,
+      "descope.com": 2,
+      "onrender.com": 2,
+      "amazonaws.com": 1,
+      "azurewebsites.net": 1,
+      "clerk.accounts.dev": 1,
+      "co.kr": 1,
+      "co.za": 1,
+      "com.au": 1,
+      "com.cn": 1,
+      "fly.dev": 1,
+      "netlify.app": 1,
+      "pages.dev": 1,
+      "run.app": 1,
+      "workos.com": 1
+    }
+  },
+  "signals": {
+    "pkceS256": {
+      "says": "PKCE with S256",
+      "defined": "RFC 8414, code_challenge_methods_supported",
+      "flow": "authorization-code-pkce",
+      "n": 1067,
+      "of": 1082,
+      "percent": 98.6,
+      "margin": 0.7
+    },
+    "issParameter": {
+      "says": "the iss parameter on the authorization response",
+      "defined": "RFC 9207, authorization_response_iss_parameter_supported",
+      "n": 524,
+      "of": 1082,
+      "percent": 48.4,
+      "margin": 3
+    },
+    "deviceGrant": {
+      "says": "the device authorization grant",
+      "defined": "RFC 8628, device_authorization_endpoint or its grant type",
+      "flow": "device-authorization",
+      "n": 106,
+      "of": 1082,
+      "percent": 9.8,
+      "margin": 1.8
+    },
+    "ciba": {
+      "says": "client-initiated backchannel authentication",
+      "defined": "OpenID CIBA Core 1.0, backchannel_authentication_endpoint or its grant type",
+      "flow": "ciba",
+      "n": 18,
+      "of": 1082,
+      "percent": 1.7,
+      "margin": 0.8
+    },
+    "clientCredentials": {
+      "says": "the client credentials grant",
+      "defined": "RFC 8414, grant_types_supported",
+      "flow": "client-credentials",
+      "n": 97,
+      "of": 1082,
+      "percent": 9,
+      "margin": 1.7
+    },
+    "privateKeyJwt": {
+      "says": "client authentication with a signed JWT",
+      "defined": "RFC 8414, token_endpoint_auth_methods_supported: private_key_jwt",
+      "n": 128,
+      "of": 1082,
+      "percent": 11.8,
+      "margin": 1.9
+    },
+    "tokenExchange": {
+      "says": "token exchange",
+      "defined": "RFC 8693, its grant type in grant_types_supported",
+      "flow": "token-exchange",
+      "n": 51,
+      "of": 1082,
+      "percent": 4.7,
+      "margin": 1.3
+    },
+    "jwtBearer": {
+      "says": "the JWT bearer grant",
+      "defined": "RFC 7523, its grant type in grant_types_supported",
+      "n": 34,
+      "of": 1082,
+      "percent": 3.1,
+      "margin": 1.1
+    },
+    "idJag": {
+      "says": "the identity assertion authorization grant (ID-JAG)",
+      "defined": "draft-ietf-oauth-identity-assertion-authz-grant, authorization_grant_profiles_supported",
+      "flow": "cross-app-access",
+      "n": 16,
+      "of": 1082,
+      "percent": 1.5,
+      "margin": 0.7
+    },
+    "identityChaining": {
+      "says": "identity chaining across domains",
+      "defined": "draft-ietf-oauth-identity-chaining, identity_chaining_requested_token_types_supported",
+      "flow": "identity-chaining",
+      "n": 0,
+      "of": 1082,
+      "percent": 0,
+      "margin": 0.2
+    },
+    "dpop": {
+      "says": "DPoP",
+      "defined": "RFC 9449, dpop_signing_alg_values_supported",
+      "flow": "dpop",
+      "n": 78,
+      "of": 1082,
+      "percent": 7.2,
+      "margin": 1.5
+    },
+    "mtlsBoundTokens": {
+      "says": "certificate-bound access tokens",
+      "defined": "RFC 8705, tls_client_certificate_bound_access_tokens",
+      "flow": "oauth-mtls",
+      "n": 13,
+      "of": 1082,
+      "percent": 1.2,
+      "margin": 0.7
+    },
+    "mtlsClientAuth": {
+      "says": "mutual-TLS client authentication",
+      "defined": "RFC 8705, tls_client_auth or self_signed_tls_client_auth",
+      "n": 14,
+      "of": 1082,
+      "percent": 1.3,
+      "margin": 0.7
+    },
+    "par": {
+      "says": "pushed authorization requests",
+      "defined": "RFC 9126, pushed_authorization_request_endpoint",
+      "n": 16,
+      "of": 1082,
+      "percent": 1.5,
+      "margin": 0.7
+    },
+    "rar": {
+      "says": "rich authorization requests",
+      "defined": "RFC 9396, authorization_details_types_supported",
+      "n": 0,
+      "of": 1082,
+      "percent": 0,
+      "margin": 0.2
+    },
+    "cimd": {
+      "says": "client ID metadata documents",
+      "defined": "draft-ietf-oauth-client-id-metadata-document, client_id_metadata_document_supported",
+      "n": 406,
+      "of": 1082,
+      "percent": 37.5,
+      "margin": 2.9
+    },
+    "dynamicRegistration": {
+      "says": "dynamic client registration",
+      "defined": "RFC 7591, registration_endpoint",
+      "n": 992,
+      "of": 1082,
+      "percent": 91.7,
+      "margin": 1.6
+    },
+    "revocation": {
+      "says": "token revocation",
+      "defined": "RFC 7009, revocation_endpoint",
+      "flow": "access-revocation",
+      "n": 649,
+      "of": 1082,
+      "percent": 60,
+      "margin": 2.9
+    },
+    "introspection": {
+      "says": "token introspection",
+      "defined": "RFC 7662, introspection_endpoint",
+      "n": 121,
+      "of": 1082,
+      "percent": 11.2,
+      "margin": 1.9
+    }
+  },
+  "registration": {
+    "cimdOnly": 57,
+    "dynamicOnly": 643,
+    "both": 349,
+    "neither": 33,
+    "of": 1082
+  }
+}
