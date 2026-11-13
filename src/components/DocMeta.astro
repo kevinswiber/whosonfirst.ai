@@ -14,6 +14,10 @@ export interface MetaItem {
   note?: string;
   noteHref?: string;
 }
+export interface MetaGroup {
+  label: string;
+  items: MetaItem[];
+}
 interface Props {
   /** The specification, or specifications, the page says the flow implements. */
   based?: {
@@ -29,6 +33,8 @@ interface Props {
   /** What the review date is a review of: "Guide" on a flow page, "Tracker" on the standards page. */
   subject?: string;
   details?: MetaItem[];
+  /** Independent columns in reading order, each keeping related facts together. */
+  groups?: MetaGroup[];
   /** The disclosure's label. */
   more?: string;
 }
@@ -38,8 +44,11 @@ const {
   reviewed,
   subject,
   details = [],
+  groups = [],
   more = "Sources and review details",
 } = Astro.props;
+const columns =
+  groups.length > 0 ? groups : [{ label: undefined, items: details }];
 // dates such as 2026-07-28 should not break across lines at their hyphens
 const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
 ---
@@ -69,22 +78,29 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
     </span>
   </p>
   {
-    details.length > 0 && (
+    columns.some((column) => column.items.length > 0) && (
       <details class="doc-details">
         <summary>{more}</summary>
-        <dl>
-          {details.map((it) => (
-            <div>
-              <dt>{it.label}</dt>
-              <dd>
-                <p class="doc-value">{it.href ? <a href={it.href}>{it.value}</a> : it.value}</p>{' '}
-                {it.note && (
-                  <p class="doc-note">{it.noteHref ? <a href={it.noteHref}>{it.note}</a> : whole(it.note)}</p>
-                )}
-              </dd>
+        <div class:list={{ 'doc-groups': groups.length > 0 }}>
+          {columns.map((column) => (
+            <div class="doc-group" role={column.label ? 'group' : undefined} aria-label={column.label}>
+              {column.label && <p class="doc-group-title">{column.label}</p>}
+              <dl>
+                {column.items.map((it) => (
+                  <div>
+                    <dt>{it.label}</dt>
+                    <dd>
+                      <p class="doc-value">{it.href ? <a href={it.href}>{it.value}</a> : it.value}</p>{' '}
+                      {it.note && (
+                        <p class="doc-note">{it.noteHref ? <a href={it.noteHref}>{it.note}</a> : whole(it.note)}</p>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           ))}
-        </dl>
+        </div>
       </details>
     )
   }

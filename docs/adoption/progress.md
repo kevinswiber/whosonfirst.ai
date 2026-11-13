@@ -4,7 +4,7 @@
 
 ## Current implementation
 
-- Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/implementations/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
+- Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/implementations/<slug>/`. Flow guides place a summary at `#implementation-evidence`, after standards and before related flows. Use **Not reviewed** for coverage still pending.
 - Keep the standards rating and show role-specific implementation support, named operator reports, observations and dated changes independently. The first release has no adoption score or public survey results. Keep the pilot data available for research.
 - The data covers all 25 published flows, with 80 implementation entries, 19 attributed deployment accounts and one scoped interoperability observation. Entries state their actual roles and any prototype status, revision mismatch or missing production evidence. Coverage is a source-review result, not a prevalence estimate or a claim that the illustrated flow is implemented end to end.
 
@@ -57,6 +57,16 @@ Search now displays every matching accepted entry, including queries that name t
 The required gates passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (964 passed, six skipped). The focused navigation and Markdown checks passed, including a three-entry role query, scriptless contextual links, the existing workload fragment and exact evidence destinations. Built-site visual inspection confirmed the directory search, renamed record and flow section menu. No evidence data changed.
 
 The pass used one host, three short builds, two full rendered runs and one continuing reviewer with two bounded review rounds. The first full run found a 15 px evidence-date paragraph and incorrect section tracking for side-by-side headings. The date is now 1 rem; section tracking follows visual position and honors a selected fragment at the header. All 64 focused typography/menu checks passed before the final full run. Earlier formatting and test-selector failures, the failing full run and recovery logs were retained. The progress receipt was checked separately after the gates. The branch is prepared for review; merge and deployment remain outside this pass.
+
+## Evidence presentation and review details, 13 November 2026
+
+Flow summaries now follow **Standards in play** and precede **Related flows**, with the normal responsive section gap. They name reviewed implementation examples and their roles, describe the included deployment report, and state that the selection does not measure use. Overview counts say **in this review**; empty categories describe the record’s coverage. Record pages use **Deployment reports** consistently and link to **Browse implementations across all flows**. The existing `#in-the-field` alias and `#implementation-evidence` heading remain usable.
+
+The source disclosure keeps **About this guide** and **Specification basis** in independent columns, stacking in that order on a phone. All basis references stay together. Existing diagram qualifications, dates, ratings and source evidence are preserved. An independent review checked all flow fragments and representative Markdown, then identified wording inconsistencies and the removed alias; both were corrected.
+
+The final required gates passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (967 passed, six existing skips). Focused checks cover scriptless summaries, review scope, old fragments, directory navigation and one- and two-reference disclosures at desktop and phone widths. Visual inspection confirmed the section gap, stacked disclosure and directory link. The receipt was checked separately after the gates.
+
+This pass used one host, three builds, two complete rendered runs and one continuing reviewer. The final rebuild and rendered run include the two reader-requested presentation corrections made during visual review. Logs and screenshots are retained. No source research or evidence-data change was needed. Push and CI verification are authorized; merge remains outside this pass.
 
 ## Local review
 

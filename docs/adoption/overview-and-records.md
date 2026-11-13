@@ -41,3 +41,13 @@ The reader-facing section is **Implementations**, at `/implementations/` and `/i
 The overview retains its bounded examples and explicit implementation/diagram links. Search displays every matching accepted entry, including when a query also names the flow; it keeps products and roles within the same record. Home, decision-guide results, flow cards and deployment next steps introduce the evidence at relevant points. Product mention remains separate from recommendation.
 
 [Issue #87](https://github.com/kevinswiber/whosonfirst.ai/issues/87) owns static **By product** / **By flow** browsing and editorial product grouping. The current overview’s product search still needs JavaScript. Complete records remain readable without it, but finding a product across all flows is a known discovery limitation until that follow-up. The follow-up must preserve edition/runtime/version boundaries and test finding every documented role for a product beyond the overview examples, including with scripts disabled. Reader evaluation is still pending.
+
+## Review coverage and disclosure grouping, 13 November 2026
+
+The implementation summary moves after **Standards in play** and before **Related flows**, using the normal section heading **Implementations and deployment reports**. Its heading uses `#implementation-evidence`; the section retains the `#in-the-field` alias. The workload guide’s separate `#implementations` destination remains unchanged. The summary names up to two reviewed entries with their documented roles and one deployment account, without prominent counts. It says the selection does not measure adoption. The onward link names implementations, reports and sources; the evidence-review date follows the summary.
+
+The overview labels its counts as entries or operators covered **in this review**. An empty category means no entry or report is included. It makes no claim that a comprehensive search found none, that reports were never sought, or that the flow is unused. The record headings use **Implementation evidence** and **Deployment reports** consistently; underlying sources, roles, release conditions and production qualifications are unchanged.
+
+Flow review disclosures use independent **About this guide** and **Specification basis** columns. Each reads top to bottom and the columns stack in that order on a phone. All basis references stay together, labeled by their references rather than numbered as steps. Diagram-specific basis and rating qualifications, no-basis patterns and unsettled references retain their original meanings. The short based-on/review line stays outside the disclosure.
+
+Full-record pages label the directory link **Browse implementations across all flows**, distinguishing it from the current flow’s record.

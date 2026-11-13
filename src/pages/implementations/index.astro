@@ -33,7 +33,7 @@ const reviewed = groups
       <p class="field-coverage">
         <strong>{reviewed} of {flows.length} flows reviewed</strong> · <a href="#methodology">How we review evidence</a>
       </p>
-      <p class="field-note">Coverage is selective. Counts reflect the sources reviewed for each flow; market prevalence is unknown. Mention is not recommendation.</p>
+      <p class="field-note">Coverage is selective and varies by flow. Counts describe entries and operators covered in this review; they do not measure adoption. Mention is not recommendation.</p>
     </div>
   </div>
 
@@ -100,7 +100,7 @@ const reviewed = groups
                   <>
                     <dl class="field-overview">
                       <div>
-                        <dt>Implementation options</dt>
+                        <dt>Implementation evidence</dt>
                         <dd>
                           {snapshot.productExamples ? (
                             <>
@@ -109,18 +109,18 @@ const reviewed = groups
                                 {snapshot.products.length === 1 ? 'Example: ' : 'Examples: '}{snapshot.productExamples}
                               </p>
                             </>
-                          ) : 'None found in reviewed sources.'}
+                          ) : 'No entry included in this review.'}
                         </dd>
                       </div>
                       <div>
-                        <dt>Production reports</dt>
+                        <dt>Deployment reports</dt>
                         <dd>
                           {snapshot.operator ? (
                             <>
                               <strong>{snapshot.operatorsLabel}</strong>
                               <p class="field-examples">Example: {snapshot.operator}</p>
                             </>
-                          ) : 'None found in reviewed sources.'}
+                          ) : 'No report included in this review.'}
                         </dd>
                       </div>
                     </dl>
@@ -165,12 +165,12 @@ const reviewed = groups
           <dd>Comes from the flow’s specifications. <a href="/about/#how-flows-are-rated">How flows are rated</a>.</dd>
         </div>
         <div>
-          <dt>Implementation options</dt>
+          <dt>Implementation evidence</dt>
           <dd>Primary sources describe each product’s role and support. Where they give a release stage, the record uses their wording. Interoperability requires its own evidence.</dd>
         </div>
         <div>
-          <dt>Production reports</dt>
-          <dd>Accounts of specific deployments name the operator, who reported the use, and the setting. A review that finds no such account leaves production use unknown.</dd>
+          <dt>Deployment reports</dt>
+          <dd>Accounts of specific deployments name the operator, who reported the use, and the setting. “No report included” describes this review’s coverage; it does not establish that the flow is unused.</dd>
         </div>
         <div>
           <dt>Observations</dt>

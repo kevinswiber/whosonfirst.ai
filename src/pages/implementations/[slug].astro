@@ -23,7 +23,7 @@ const title = `${guide.short} implementations and deployment reports`;
 
 <Base
   title={title}
-  description={`Documented implementation options, production reports and sources for ${guide.short}.`}
+  description={`Reviewed implementation entries, deployment reports and sources for ${guide.short}.`}
   article
   reviewMetadata={false}
   here={{ trail: [{ label: 'Implementations', href: '/implementations/' }], current: guide.short }}
@@ -34,7 +34,7 @@ const title = `${guide.short} implementations and deployment reports`;
         <h1>{title}</h1>
         <p class="field-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
         <p class="field-links">
-          <a href={`/flows/${guide.slug}/`}>How {guide.short} works</a> · <a href="/implementations/">Browse implementations</a>
+          <a href={`/flows/${guide.slug}/`}>How {guide.short} works</a> · <a href="/implementations/">Browse implementations across all flows</a>
         </p>
       </div>
     </div>

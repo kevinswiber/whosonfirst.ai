@@ -1,67 +1,58 @@
 ---
 import type { FieldProfile } from "../data/field";
 import { fieldDate } from "../data/field";
-import { fieldSnapshot } from "../lib/field";
 
 interface Props {
   slug: string;
-  name: string;
   profile?: FieldProfile;
 }
 
-const { slug, name, profile } = Astro.props;
-const snapshot = profile && fieldSnapshot(profile);
+const { slug, profile } = Astro.props;
+const examples = profile?.implementations.slice(0, 2) ?? [];
+const deployment = profile?.deployments[0];
 ---
 
-<section class="field-summary" id="in-the-field" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
-  <h2 id="implementation-evidence">{name} implementations and deployment reports</h2>
-  {profile && (
-    <p class="field-summary-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
-  )}
-  {snapshot ? (
-    <>
-      <p class="field-summary-line">
-        {snapshot.productExamples
-          ? <><strong>{snapshot.optionsLabel}.</strong> {snapshot.products.length === 1 ? 'Example: ' : 'Examples: '}{snapshot.productExamples}</>
-          : 'No implementation option found in reviewed sources.'}
-      </p>
-      <p class="field-summary-line">
-        {snapshot.operator
-          ? <><strong>{snapshot.operatorsLabel} in production reports.</strong> For example, {snapshot.operator}.</>
-          : 'No production report found in reviewed sources.'}
-      </p>
-    </>
-  ) : (
-    <p class="field-summary-line">Implementation evidence for this flow has yet to be reviewed.</p>
-  )}
-  <p class="field-summary-link"><a href={profile ? `/implementations/${slug}/` : `/implementations/#${slug}`}>View implementations</a></p>
+<section id="in-the-field" class="field-summary" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
+  <h2 id="implementation-evidence">Implementations and deployment reports</h2>
+  <div class="prose">
+    {profile ? (
+      <>
+        {examples.length > 0 ? (
+          <p>
+            Reviewed examples include{' '}
+            {examples.map((entry, i) => (
+              <>{i > 0 && ' and '}<strong>{entry.product}</strong> ({entry.role})</>
+            ))}.
+          </p>
+        ) : <p>This record includes no implementation entry.</p>}
+        <p>
+          {deployment
+            ? <>This record includes a deployment report about {deployment.organization}.</>
+            : 'This record includes no deployment report.'}
+          {' '}The selection does not measure how widely the flow is used.
+        </p>
+        <p><a href={`/implementations/${slug}/`}>See implementations, reports and sources →</a></p>
+        <p class="field-summary-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time>.</p>
+      </>
+    ) : (
+      <>
+        <p>Implementation evidence for this flow has yet to be reviewed.</p>
+        <p><a href={`/implementations/#${slug}`}>Browse implementations →</a></p>
+      </>
+    )}
+  </div>
 </section>
 
 <style>
   .field-summary {
-    margin: 1rem 0 0;
-    padding: 0.65rem 0 0.7rem 0.9rem;
-    border-inline-start: 2px solid var(--border-strong);
-    font-size: 0.95rem;
-    line-height: 1.45;
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
   }
-  .field-summary:target { border-inline-start-color: var(--accent); }
-  .field-summary h2 {
-    margin: 0 0 0.35rem;
-    padding: 0;
-    border: 0;
-    font-size: 1.2rem;
-    line-height: 1.35;
+  h2 {
+    margin-top: 0;
+    font-size: 1.55rem;
   }
-  .field-summary-link { margin: 0.5rem 0 0; }
   .field-summary-date {
-    margin: 0 0 0.4rem;
     color: var(--fg-muted);
     font-size: 1rem;
   }
-  .field-summary-line {
-    margin: 0.3rem 0 0;
-    color: var(--fg-muted);
-  }
-  .field-summary-line strong { color: var(--fg); }
 </style>

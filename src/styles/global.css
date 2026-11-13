@@ -533,6 +533,33 @@ blockquote p:last-child {
   border-radius: var(--radius);
   font-size: 1rem;
 }
+/* Related facts read down each column, then down the next. */
+.doc-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 1.5rem 2rem;
+  margin: 0.5rem 0 0;
+  padding: 0.9rem 1rem;
+  background: var(--bg-sunken);
+  border-radius: var(--radius);
+}
+.doc-groups .doc-group {
+  min-width: 0;
+}
+.doc-groups .doc-group-title {
+  margin: 0 0 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.doc-groups dl {
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+.doc-groups dl > div + div {
+  margin-top: 0.9rem;
+}
 .doc-details dt {
   font-family: var(--font-label);
   font-size: 0.7rem;

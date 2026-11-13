@@ -151,20 +151,37 @@ const makeup = [
 ]
   .filter(Boolean)
   .join(", ");
-const details = [
+const aboutDetails = [
   {
     label: "This page",
     value: "Implementation guide",
     note: "An explanation, not a specification",
   },
-  ...basis.map((s, n) => ({
-    label: drawn
-      ? basis.length > 1
-        ? `Diagram basis ${n + 1} of ${basis.length}`
-        : "Diagram’s specification"
-      : basis.length > 1
-        ? `Basis ${n + 1} of ${basis.length}`
-        : "Primary specification",
+  {
+    label: "Flow maturity",
+    value: maturityLabel(flow),
+    note: rated?.provisional
+      ? `Provisional until the role of ${pendingNames} is settled: what the rating means`
+      : unrated
+        ? "None of its references is required, so there is no level to take: what the rating means"
+        : flow.roles
+          ? drawn
+            ? "For the flow the diagram draws, from its required references: what the rating means"
+            : "From its required references: what the rating means"
+          : "What the rating means",
+    noteHref: "/about/#how-flows-are-rated",
+  },
+  { label: "Human involvement", value: HUMAN_LABEL[flow.human] },
+  {
+    label: "Review",
+    value: `Checked against sources in ${REVIEWED}`,
+    note: "How it was checked",
+    noteHref: "/about/#how-facts-were-checked",
+  },
+];
+const basisDetails = [
+  ...basis.map((s) => ({
+    label: s.ref,
     value: s.name,
     href: `/standards/#${s.id}`,
     note: [
@@ -211,26 +228,12 @@ const details = [
           value: makeup,
           href: "#standards",
         },
+];
+const detailGroups = [
+  { label: "About this guide", items: aboutDetails },
   {
-    label: "Flow maturity",
-    value: maturityLabel(flow),
-    note: rated?.provisional
-      ? `Provisional until the role of ${pendingNames} is settled: what the rating means`
-      : unrated
-        ? "None of its references is required, so there is no level to take: what the rating means"
-        : flow.roles
-          ? drawn
-            ? "For the flow the diagram draws, from its required references: what the rating means"
-            : "From its required references: what the rating means"
-          : "What the rating means",
-    noteHref: "/about/#how-flows-are-rated",
-  },
-  { label: "Human involvement", value: HUMAN_LABEL[flow.human] },
-  {
-    label: "Review",
-    value: `Checked against sources in ${REVIEWED}`,
-    note: "How it was checked",
-    noteHref: "/about/#how-facts-were-checked",
+    label: drawn ? "Diagram’s specification basis" : "Specification basis",
+    items: basisDetails,
   },
 ];
 ---
@@ -254,8 +257,7 @@ const details = [
     <div class="intro">
       <div class="prose">
         <Fragment set:html={block(flow.summary, g)} />
-        <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
-        <FieldSummary name={flow.short} slug={flow.slug} profile={inTheField} />
+        <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" groups={detailGroups} />
         {
           (taught || likened) && (
             <ul class="ways-in">
@@ -500,6 +502,8 @@ const details = [
         )
       }
     </section>
+
+    <FieldSummary slug={flow.slug} profile={inTheField} />
 
     {
       rel.length > 0 && (

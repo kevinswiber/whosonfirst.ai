@@ -33,7 +33,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
     "/flows/dpop/#walkthrough",
   );
   const snapshot = await dpop.locator(".field-overview").textContent();
-  assert.match(snapshot, /\d+ documented options/);
+  assert.match(snapshot, /\d+ entries in this review/);
   assert.match(snapshot, /Examples: Keycloak · oauth4webapi/);
   assert.doesNotMatch(snapshot, /Spring Security/);
   await dpop
@@ -48,7 +48,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
       })
       .isVisible(),
   );
-  const options = page.getByRole("region", { name: "Implementation options" });
+  const options = page.getByRole("region", { name: "Implementation evidence" });
   const spring = options.locator("#field-dpop-spring");
   assert.ok(
     await spring
@@ -63,7 +63,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   );
   assert.match(
     await page
-      .getByRole("region", { name: "Production reports" })
+      .getByRole("region", { name: "Deployment reports" })
       .textContent(),
     /Norsk helsenett/,
   );
@@ -78,7 +78,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   const summary = page.locator("#in-the-field");
   assert.equal(
     await summary
-      .getByRole("link", { name: "View implementations" })
+      .getByRole("link", { name: "See implementations, reports and sources →" })
       .getAttribute("href"),
     "/implementations/dpop/",
   );
@@ -205,7 +205,7 @@ test("flow sections and recommendation results lead to their implementation reco
   await page
     .locator("#here-menu")
     .getByRole("link", {
-      name: "DPoP implementations and deployment reports",
+      name: "Implementations and deployment reports",
       exact: true,
     })
     .click();
@@ -213,10 +213,10 @@ test("flow sections and recommendation results lead to their implementation reco
   assert.ok((await page.locator(":target").getByRole("link").count()) === 0);
   await page
     .getByRole("region", {
-      name: "DPoP implementations and deployment reports",
+      name: "Implementations and deployment reports",
       exact: true,
     })
-    .getByRole("link", { name: "View implementations" })
+    .getByRole("link", { name: "See implementations, reports and sources →" })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.equal(
@@ -227,7 +227,10 @@ test("flow sections and recommendation results lead to their implementation reco
     "/implementations/",
   );
   await page
-    .getByRole("link", { name: "Browse implementations", exact: true })
+    .getByRole("link", {
+      name: "Browse implementations across all flows",
+      exact: true,
+    })
     .click();
   assert.match(page.url(), /\/implementations\/$/);
 
@@ -276,4 +279,56 @@ test("home, flow cards and deployment next steps expose implementations without 
   assert.ok(await evidence.first().isVisible());
   await evidence.first().click();
   assert.match(page.url(), /\/implementations\/[^/]+\/$/);
+});
+
+test("flow evidence follows the standards and describes selected records without an adoption count", async (t) => {
+  const ctx = await site.context({ javaScriptEnabled: false });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  for (const slug of ["authorization-code-pkce", "dpop"]) {
+    await open(page, site.url(`/flows/${slug}/`));
+    const summary = page.getByRole("region", {
+      name: "Implementations and deployment reports",
+      exact: true,
+    });
+    assert.equal(await page.locator(".intro .field-summary").count(), 0);
+    assert.ok(
+      await summary.evaluate((section) => {
+        const standards = document.querySelector(
+          'section[aria-labelledby="standards"]',
+        );
+        const related = document.querySelector(
+          'section[aria-labelledby="related"]',
+        );
+        return (
+          Boolean(
+            standards.compareDocumentPosition(section) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+          ) &&
+          Boolean(
+            section.compareDocumentPosition(related) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+          )
+        );
+      }),
+    );
+    const copy = await summary.textContent();
+    assert.match(copy, /Reviewed examples include/);
+    assert.match(copy, /does not measure how widely the flow is used/);
+    assert.doesNotMatch(
+      copy,
+      /documented options|\d+ (entries|operators|named operators)/,
+    );
+    assert.match(copy, /Client library/);
+    if (slug === "authorization-code-pkce")
+      assert.match(copy, /This record includes no deployment report/);
+    else assert.match(copy, /deployment report about Norsk helsenett/);
+  }
+  await open(page, site.url("/implementations/"));
+  const pkce = await page
+    .locator("#authorization-code-pkce .field-overview")
+    .textContent();
+  assert.match(pkce, /3 entries in this review/);
+  assert.match(pkce, /No report included in this review/);
+  assert.doesNotMatch(pkce, /None found|No production report found/);
 });

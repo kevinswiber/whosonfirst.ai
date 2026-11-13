@@ -10,17 +10,16 @@ const { profile } = Astro.props;
 const categories = [
   {
     id: "field-implementations",
-    title: "Implementation options",
+    title: "Implementation evidence",
     entries: profile.implementations,
-    empty:
-      "No implementation option found in the sources reviewed for this record.",
+    empty: "This record includes no implementation entry.",
   },
   {
     id: "field-production",
-    title: "Production reports",
+    title: "Deployment reports",
     entries: profile.deployments,
     empty:
-      "No production report found in the sources reviewed for this record. Use outside those sources is unknown.",
+      "This record includes no deployment report. The selection does not measure how widely the flow is used.",
   },
   ...(profile.observations.length > 0
     ? [

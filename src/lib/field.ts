@@ -1,7 +1,7 @@
 import type { FieldProfile } from "../data/field";
 import { deploymentOrganizations } from "../data/field";
 
-/** The same bounded sample on the directory and on the mechanism guide. */
+/** Coverage counts and bounded examples for the implementation directory. */
 export function fieldSnapshot(profile: FieldProfile) {
   const options = profile.implementations.length;
   const products = [
@@ -12,9 +12,13 @@ export function fieldSnapshot(profile: FieldProfile) {
     products,
     operator: profile.deployments[0]?.organization,
     optionsLabel:
-      options === 1 ? "1 documented option" : `${options} documented options`,
+      options === 1
+        ? "1 entry in this review"
+        : `${options} entries in this review`,
     operatorsLabel:
-      operators === 1 ? "1 named operator" : `${operators} named operators`,
+      operators === 1
+        ? "1 operator covered in this review"
+        : `${operators} operators covered in this review`,
     productExamples: products.join(" · "),
   };
 }
