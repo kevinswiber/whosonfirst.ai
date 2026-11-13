@@ -1447,17 +1447,83 @@ export const standards: Standard[] = [
   /* ───────────── Signals ───────────── */
   {
     id: "shared-signals",
-    name: "Shared Signals Framework, CAEP, RISC",
-    ref: "OpenID SSF 1.0 · CAEP 1.0 · RISC 1.0",
+    name: "Shared Signals Framework",
+    ref: "OpenID SSF 1.0",
     body: "OpenID Foundation",
     status: "final",
-    detail: "All three reported final in September 2025.",
+    detail: "Final specification published in August 2025.",
+    related: [
+      { entry: "caep", kind: "companion" },
+      {
+        name: "Risk Incident Sharing and Coordination (RISC) 1.0",
+        url: "https://openid.net/specs/openid-risc-1_0-final.html",
+        kind: "companion",
+        note: "A final specification that defines event types for sharing risk incidents.",
+      },
+    ],
     topics: ["signals"],
     summary:
-      "A framework for pushing security events between systems: session revoked, credential changed, device non-compliant.",
+      "A framework for pushing or polling for security events over streams configured between cooperating services.",
     agents:
-      "The mechanism for telling everything an agent has touched that its access just ended, without waiting for tokens to expire.",
-    url: "https://openid.net/wg/sharedsignals/",
+      "Carries events to participating receivers. Each receiver decides how to apply what it learns to the access it controls.",
+    url: "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html",
+  },
+  {
+    id: "caep",
+    name: "Continuous Access Evaluation Profile",
+    ref: "OpenID CAEP 1.0",
+    body: "OpenID Foundation",
+    status: "final",
+    detail: "Final specification published in August 2025.",
+    related: [{ entry: "shared-signals", kind: "builds-on" }],
+    topics: ["signals"],
+    summary:
+      "Defines event types for Shared Signals, including session revoked, credential change and device compliance change.",
+    agents:
+      "A participating service can use a Session Revoked event to close the local sessions that match its subject.",
+    url: "https://openid.net/specs/openid-caep-1_0-final.html",
+  },
+  {
+    id: "rfc8417",
+    name: "Security Event Token",
+    ref: "RFC 8417",
+    body: "IETF",
+    status: "rfc",
+    detail: "July 2018.",
+    topics: ["signals"],
+    summary:
+      "A JWT that carries an issuer’s statements about a security event.",
+    agents:
+      "The envelope a Shared Signals receiver validates before using an event to change local access.",
+    url: rfc(8417),
+  },
+  {
+    id: "rfc9493",
+    name: "Subject Identifiers for Security Event Tokens",
+    ref: "RFC 9493",
+    body: "IETF",
+    status: "rfc",
+    detail: "December 2023.",
+    topics: ["signals"],
+    summary:
+      "Defines structured formats for identifying subjects in security events, including opaque IDs and issuer-and-subject pairs.",
+    agents:
+      "Gives cooperating services a way to name the session or account a security event concerns.",
+    url: rfc(9493),
+  },
+  {
+    id: "rfc8935",
+    name: "Push-Based Security Event Token Delivery",
+    ref: "RFC 8935",
+    body: "IETF",
+    status: "rfc",
+    detail: "Document dated November 2020.",
+    topics: ["signals"],
+    summary:
+      "Defines delivery of a Security Event Token by HTTP POST over TLS, with a response reporting acceptance or an error.",
+    agents:
+      "A service can acknowledge a revocation event before it applies the change to the API’s session state.",
+    url: rfc(8935),
   },
   {
     id: "status-list",

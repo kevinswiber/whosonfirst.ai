@@ -61,6 +61,10 @@ const COMPARE: Record<string, [subject: string, proof: string]> = {
     "Agent acting for a user",
     "Existing bearer token",
   ],
+  "access-revocation": [
+    "Employee, plus the company session ID",
+    "Existing bearer access token",
+  ],
   "credential-broker": ["Unchanged", "Nothing: the proxy holds the secret"],
 };
 for (const f of flows) {
@@ -98,12 +102,12 @@ const filters = [
 
 <Base
   title="Agent authentication and authorization flows"
-  description="Step-by-step interactive walkthroughs of every way an AI agent can authenticate and be authorized, from OAuth with a human at the keyboard to workload identity with no human at all."
+  description="Step-by-step walkthroughs of how AI agents get, use and lose access, from user consent to workload identity and revocation."
 >
   <div class="page-head">
     <div class="wrap">
       <p class="eyebrow">Flows</p>
-      <h1>Every way an agent gets access</h1>
+      <h1>How agents get, use and lose access</h1>
       <p class="lede">
         {flows.length} flows, each as a sequence diagram you can step through. They are grouped by the question that
         matters most when choosing between them: is there a person involved, and when?
@@ -116,7 +120,7 @@ const filters = [
       <div class="section-head">
         <h2 id="start">Start with these</h2>
         <p>
-          Six flows cover most of the ground, and the others are variations on them. If the vocabulary is new,{' '}
+          Six flows cover the common ways to get access. If the vocabulary is new,{' '}
           <a href="/learn/">the lessons</a> come first.
         </p>
       </div>
