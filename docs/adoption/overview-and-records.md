@@ -29,3 +29,7 @@ Separate pages are useful before lists become large because the two kinds of rea
 ## Expanded evidence as a design check
 
 Review Device authorization, Client credentials, Token exchange, CIBA and A2A, and deepen the DPoP list. These add distinct roles, stages, historical reports and mechanism-specific qualifications. They also give search real matches outside an overview sample. Source coverage remains selective. The checks validate rendering and evidence boundaries; they do not establish reader comprehension or prevalence.
+
+## Explicit destinations, 13 November 2026
+
+Flow names are plain headings in the overview. Each reviewed row offers one **View field evidence** link and one **View flow diagram** link. An unreviewed row offers only the flow diagram. The name never changes destination with review status, and the row does not repeat the field-page link. Diagram links lead directly to the flow’s **Step by step** section. Full evidence pages use the same **View flow diagram** destination. Search results remain links to the exact matching evidence entry.

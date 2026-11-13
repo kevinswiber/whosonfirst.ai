@@ -1755,4 +1755,2217 @@ export const profiles: FieldProfile[] = [
       },
     ],
   },
+  {
+    slug: "step-up-authorization",
+    reviewedOn: "2026-11-13",
+    scope:
+      "RFC 9470 step-up challenges and the authorization-server response. A stronger or fresher login, transaction-specific consent under RFC 9396, and API enforcement each require their own evidence.",
+    searchNote:
+      "Selected RFC 9470 issuer, client and resource-server documentation, plus Mozilla’s account of its own authorization service. Generic MFA and transaction-specific consent inferred from step-up were outside this search.",
+    implementations: [
+      {
+        kind: "implementation",
+        id: "step-up-pingone",
+        organization: "Ping Identity",
+        product: "PingOne SSO and API Access Management",
+        role: "Authorization server and resource-server challenge",
+        summary:
+          "PingOne API Access Management can enforce an authentication requirement and return an RFC 9470 challenge. PingOne SSO can apply the named authentication policy and issue a new token.",
+        limits:
+          "The guide assigns separate roles to the two products. It does not document RFC 9396 consent for a specific transaction.",
+        sources: [
+          {
+            publisher: "Ping Identity",
+            title: "Step-up authentication for APIs",
+            url: "https://docs.pingidentity.com/pingone/authentication/p1_stepup_authentication_for_apis.html",
+          },
+        ],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a release stage for this capability.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "step-up-authlete",
+        organization: "Authlete",
+        product: "Authlete",
+        role: "Authorization-server backend",
+        summary:
+          "Supports RFC 9470 from version 2.3. It associates authentication context and time with access tokens and exposes those values for resource-server checks.",
+        limits:
+          "The integrating application supplies the user authentication and protected-resource policy. The guide gives no release day for version 2.3.",
+        sources: [
+          {
+            publisher: "Authlete",
+            title:
+              "RFC 9470 OAuth 2.0 Step Up Authentication Challenge Protocol",
+            url: "https://developers.authlete.com/protocols-and-flows/advanced-flows/oauth-2-0-step-up-authentication-challenge-protocol-rfc-9470",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "Supported from 2.3",
+          detail:
+            "Authlete’s implementation section explicitly names 2.3 as the starting version.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "step-up-sdxc",
+        organization: "sdxc project",
+        product: "@sdxc/auth",
+        role: "Client and resource-server library",
+        summary:
+          "Creates RFC 9470 challenges from authentication strength and age requirements, and parses the challenge so a relying party can start a new authorization request.",
+        limits:
+          "The library provides integration functions. Authorization policy, user authentication, and transaction details depend on the application and issuer.",
+        sources: [
+          {
+            publisher: "sdxc project",
+            title: "Release 2026.10.25",
+            url: "https://github.com/sergiodxa/monorepo/releases/tag/v2026.10.25",
+            publishedOn: "2026-10-25",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "In release 2026.10.25",
+          detail:
+            "The project’s 25 October 2026 release notes list the client and resource-server changes.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        id: "step-up-mozilla",
+        organization: "Mozilla",
+        setting: "Mozilla Accounts authorization service",
+        summary:
+          "Mozilla documents the authorization-server half of RFC 9470 in Mozilla Accounts, including a fresh two-factor check through acr_values and max_age.",
+        limits:
+          "Relying parties implement the resource-server challenge. The guide ties a silent-request error redirect to the release containing FXA-12860. The account does not establish that release date, a complete relying-party deployment, or traffic.",
+        sources: [
+          {
+            publisher: "Mozilla",
+            title: "Step-up authentication",
+            url: "https://raw.githubusercontent.com/mozilla/ecosystem-platform/master/docs/relying-parties/how-tos/step-up-authentication.md",
+          },
+        ],
+        attribution: "operator-report",
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "step-up-authorization-evidence-added",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "Added the reviewed sources to the field record.",
+        evidenceIds: [
+          "step-up-pingone",
+          "step-up-authlete",
+          "step-up-sdxc",
+          "step-up-mozilla",
+        ],
+      },
+      {
+        id: "step-up-sdxc-release",
+        kind: "release",
+        date: "2026-10-25",
+        summary:
+          "The sdxc project released RFC 9470 challenge and client response support in @sdxc/auth.",
+        evidenceIds: ["step-up-sdxc"],
+      },
+    ],
+  },
+  {
+    slug: "cross-app-access",
+    reviewedOn: "2026-11-13",
+    scope:
+      "ID-JAG issuance, exchange and redemption for enterprise-managed authorization, including implementations of the MCP extension. General workforce SSO and generic cross-domain JWT support do not establish ID-JAG.",
+    searchNote:
+      "Selected issuer, client and resource authorization-server guides and release notes, plus one hosted integration from its operator. Draft revision coverage varies and customer uptake is unknown.",
+    implementations: [
+      {
+        kind: "implementation",
+        id: "xaa-okta",
+        organization: "Okta",
+        product: "Okta Cross App Access",
+        role: "Identity provider and resource authorization server",
+        summary:
+          "Documents policy-controlled ID-JAG issuance and redemption at a resource authorization server. A custom authorization server can accept a grant from a trusted external issuer.",
+        limits:
+          "Okta’s org authorization server does not accept external ID-JAGs. The cited September release applies to the named custom app and resource app capability; the concepts guide does not name a draft revision.",
+        sources: [
+          {
+            publisher: "Okta",
+            title: "Cross App Access (XAA)",
+            url: "https://developer.okta.com/docs/concepts/xaa/",
+          },
+          {
+            publisher: "Okta",
+            title:
+              "Okta Identity Engine Production release notes, version 2026.09.0",
+            url: "https://help.okta.com/oie/en-us/content/topics/releasenotes/versions/release-prod-2026-09-0.htm",
+            publishedOn: "2026-09-15",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "Generally available for the named app configuration",
+          detail:
+            "Okta Identity Engine release 2026.09.0 lists XAA for custom SSO-agentic requesting apps and SSO resource apps under Generally Available.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "xaa-claude",
+        organization: "Anthropic",
+        product: "Claude",
+        role: "MCP client",
+        summary:
+          "Claude documents obtaining an identity assertion and presenting it at the connector’s token endpoint under MCP Enterprise-Managed Authorization.",
+        limits:
+          "Anthropic lists Team and Enterprise plans. It documents customer-IdP assertions and separately labels Claude-issued assertions beta. The guide does not establish IETF draft revision conformance.",
+        sources: [
+          {
+            publisher: "Anthropic",
+            title: "Enterprise Managed Auth for connectors",
+            url: "https://claude.com/docs/connectors/building/enterprise-managed-auth",
+          },
+        ],
+        release: {
+          stage: "unspecified",
+          label: "Available on Team and Enterprise",
+          detail:
+            "Anthropic names these plans for Enterprise Managed Auth. The separate Claude-issued assertion option is beta.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "xaa-pingfederate",
+        organization: "Ping Identity",
+        product: "PingFederate",
+        role: "ID-JAG issuer and resource authorization server",
+        summary:
+          "PingFederate 13.1 release notes document ID-JAG issuance through OAuth token exchange and acceptance through the JWT bearer grant.",
+        limits:
+          "The release notes give June 2026, with no exact publication day or ID-JAG draft revision in the feature entry. Deployment and interoperability are separate.",
+        sources: [
+          {
+            publisher: "Ping Identity",
+            title: "PingFederate 13.1 (June 2026)",
+            url: "https://docs.pingidentity.com/pingfederate/13.1/release_notes/pf_release_notes_131.html",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "In PingFederate 13.1",
+          detail:
+            "The 13.1 release notes list both issuer and receiver support.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "xaa-keycloak",
+        organization: "Keycloak",
+        product: "Keycloak ID-JAG receiver",
+        role: "Resource authorization server",
+        summary:
+          "Keycloak documents using an external ID-JAG as a JWT authorization grant to obtain a scoped local access token.",
+        limits:
+          "The guide follows draft revision -01, requires the identity-assertion-jwt feature flag, and does not document a completed issuer implementation.",
+        sources: [
+          {
+            publisher: "Keycloak",
+            title: "Identity Assertion JWT Authorization Grant",
+            url: "https://www.keycloak.org/securing-apps/identity-assertion-jwt-authorization-grant",
+          },
+        ],
+        release: {
+          stage: "experimental",
+          label: "Experimental receiver",
+          detail:
+            "Keycloak describes this feature as experimental and advises against production use.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        id: "xaa-posthog",
+        organization: "PostHog",
+        setting: "Hosted PostHog authorization service for API and MCP access",
+        summary:
+          "PostHog documents validating an ID-JAG and issuing a scoped access token for its own services. Its Claude guide describes an integration with its MCP server.",
+        limits:
+          "The operator limits the feature to organizations on the Scale or Enterprise platform add-on. The guides do not date deployment or establish user volume, support by every listed IdP, or conformance to a particular revision.",
+        sources: [
+          {
+            publisher: "PostHog",
+            title: "ID-JAG (XAA) authentication",
+            url: "https://posthog.com/docs/settings/authentication/id-jag",
+          },
+          {
+            publisher: "PostHog",
+            title: "Connect Claude with enterprise-managed authorization",
+            url: "https://posthog.com/docs/model-context-protocol/claude-managed-authorization",
+          },
+        ],
+        attribution: "operator-report",
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "cross-app-access-evidence-added",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "Added the reviewed sources to the field record.",
+        evidenceIds: [
+          "xaa-okta",
+          "xaa-claude",
+          "xaa-pingfederate",
+          "xaa-keycloak",
+          "xaa-posthog",
+        ],
+      },
+      {
+        id: "xaa-okta-2026-09-release",
+        kind: "release",
+        date: "2026-09-15",
+        summary:
+          "Okta Identity Engine 2026.09.0 listed Cross App Access for custom SSO-agentic requesting apps and SSO resource apps as generally available.",
+        evidenceIds: ["xaa-okta"],
+      },
+    ],
+  },
+  {
+    slug: "identity-chaining",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Cross-domain chaining with an RFC 8693 exchange for an assertion targeted at a second authorization server, then RFC 7523 redemption for that server’s access token. Support for the separate ID-JAG profile does not by itself establish this chain.",
+    searchNote:
+      "Selected a configuration guide and an implementer’s draft report. Cross-domain building blocks, draft acknowledgments, public demos and interoperability claims without a named operator do not establish production use.",
+    implementations: [
+      {
+        kind: "implementation",
+        id: "identity-chain-keycloak",
+        organization: "Keycloak",
+        product: "Keycloak",
+        role: "Issuing and receiving authorization servers",
+        summary:
+          "Documents a two-realm or two-server chain. Standard Token Exchange in the first realm produces a JWT targeted at the second, which redeems it through JWT Authorization Grant.",
+        limits:
+          "The guide combines two supported features and names no draft revision. The sample does not establish support for all discovery metadata, request fields, or cross-vendor interoperability.",
+        sources: [
+          {
+            publisher: "Keycloak",
+            title: "OAuth Identity and Authorization Chaining Across Domains",
+            url: "https://www.keycloak.org/securing-apps/oauth-identity-authorization-chaining-across-domains",
+          },
+          {
+            publisher: "Keycloak",
+            title: "Keycloak 26.6.0 released",
+            url: "https://www.keycloak.org/2026/04/keycloak-2660-released",
+            publishedOn: "2026-04-08",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "Uses supported Keycloak features",
+          detail:
+            "Keycloak 26.6.0 promoted the receiving JWT Authorization Grant from preview to supported. The guide combines it with supported Standard Token Exchange.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "identity-chain-authgent",
+        organization: "authgent project",
+        product: "authgent",
+        role: "Reference authorization server",
+        summary:
+          "The maintainer’s implementation report maps issuance and redemption of chaining grants to authgent’s code and identifies revision -15 as its target at publication.",
+        limits:
+          "The project overview still refers to -14. This claim describes the dated report, with no verification against the site’s later revision. The report identifies a demo and says it did not test against an independent implementation.",
+        sources: [
+          {
+            publisher: "Dhruv Agnihotri",
+            title:
+              "Implementation Status of OAuth Identity Chaining and Transaction Tokens",
+            url: "https://datatracker.ietf.org/doc/html/draft-agnihotri-oauth-agent-impl-status-02",
+            publishedOn: "2026-06-23",
+          },
+        ],
+        release: {
+          stage: "experimental",
+          label: "Maintainer report: experimental to operational",
+          detail:
+            "The report uses this range for project maturity. It does not give a GA stage for the chaining feature.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "identity-chaining-evidence-added",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "Added the reviewed sources to the field record.",
+        evidenceIds: ["identity-chain-keycloak", "identity-chain-authgent"],
+      },
+      {
+        id: "identity-chain-keycloak-jwt-release",
+        kind: "release",
+        date: "2026-04-08",
+        summary:
+          "Keycloak 26.6.0 promoted its receiving JWT Authorization Grant from preview to supported.",
+        evidenceIds: ["identity-chain-keycloak"],
+      },
+    ],
+  },
+  {
+    slug: "transaction-tokens",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Implementations of the IETF OAuth Transaction Tokens draft for signed transaction context carried across calls within a trust domain. A generic JWT, RFC 8693 exchange, or the separate agent-context draft does not establish this capability.",
+    searchNote:
+      "Selected transaction-token services and verification integrations from their project documentation. The reviewed sources describe examples, demos and release artifacts. They did not establish a named production deployment.",
+    implementations: [
+      {
+        kind: "implementation",
+        id: "txn-tokenetes",
+        organization: "Tokenetes project",
+        product: "Tokenetes",
+        role: "Transaction-token service and sidecar verifier",
+        summary:
+          "The project documents a service that issues Transaction Tokens and a Kubernetes sidecar that verifies them against configured request rules.",
+        limits:
+          "The guide links the IETF draft without naming a revision. It documents issuer and sidecar components of the same project. The versioned release does not establish current-draft conformance or deployment.",
+        sources: [
+          {
+            publisher: "Tokenetes project",
+            title: "Introduction to Tokenetes",
+            url: "https://tokenetes.io/docs/",
+          },
+          {
+            publisher: "Tokenetes project",
+            title: "Tokenetes releases",
+            url: "https://github.com/tokenetes/tokenetes/releases",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "Published service release 1.0.1",
+          detail:
+            "The project release page lists service image 1.0.1. The docs do not give a separate release stage for verification.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "txn-kontxt",
+        organization: "kontxt project",
+        product: "kontxt",
+        role: "Transaction-token service, client and verifier",
+        summary:
+          "Implements the project’s documented draft -08 path for Kubernetes. Its Envoy adapter exchanges an access token at the edge and verifies the transaction token on downstream requests. A Go SDK supplies direct client and verification functions.",
+        limits:
+          "The checked README names revision -08. It does not establish release stage, interoperability with another implementation, or support for the site’s later revision.",
+        sources: [
+          {
+            publisher: "kontxt project",
+            title: "kontxt README",
+            url: "https://github.com/aramase/kontxt",
+          },
+        ],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a release stage for this capability.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "txn-authgent",
+        organization: "authgent project",
+        product: "authgent",
+        role: "Reference transaction-token issuer",
+        summary:
+          "The maintainer’s implementation report maps the token exchange request and transaction-token issuance to its OAuth server against draft revision -08.",
+        limits:
+          "This is a self-report with a test harness and a demo. The report says the issuer skips the scope-subset check when the subject token has no scope. Independent interoperability and support for later revisions remain unverified.",
+        sources: [
+          {
+            publisher: "Dhruv Agnihotri",
+            title:
+              "Implementation Status of OAuth Identity Chaining and Transaction Tokens",
+            url: "https://datatracker.ietf.org/doc/html/draft-agnihotri-oauth-agent-impl-status-02",
+            publishedOn: "2026-06-23",
+          },
+        ],
+        release: {
+          stage: "experimental",
+          label: "Maintainer report: experimental to operational",
+          detail:
+            "The report uses this range for project maturity. It does not give a GA stage for transaction tokens.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "transaction-tokens-evidence-added",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "Added the reviewed sources to the field record.",
+        evidenceIds: ["txn-tokenetes", "txn-kontxt", "txn-authgent"],
+      },
+    ],
+  },
+  {
+    slug: "oauth-mtls",
+    reviewedOn: "2026-11-13",
+    scope:
+      "RFC 8705 certificate-bound OAuth access tokens. Issuer binding, presentation of the same client certificate and enforcement by the protected resource are distinct from mTLS client authentication at the token endpoint.",
+    searchNote:
+      "Selected issuer and resource-server documentation and one operator’s own payment API documentation. Certifications, ecosystem requirements and mTLS client authentication alone did not count as deployment evidence.",
+    implementations: [
+      {
+        kind: "implementation",
+        id: "oauth-mtls-authlete",
+        organization: "Authlete",
+        product: "Authlete",
+        role: "Authorization-server backend",
+        summary:
+          "Documents issuing RFC 8705 certificate-bound access tokens using the client certificate from the token request. Binding can be enabled independently of mTLS client authentication.",
+        limits:
+          "The integrating authorization server passes the certificate to Authlete. This source does not show enforcement by a specific protected resource.",
+        sources: [
+          {
+            publisher: "Authlete",
+            title: "Issuing mutual-TLS certificate-bound access tokens",
+            url: "https://developers.authlete.com/configuration-reference/tokens-and-claims/issuing-mutual-tls-certificate-bound-access-tokens",
+          },
+        ],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a release stage for this capability.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "oauth-mtls-duende",
+        organization: "Duende Software",
+        product: "Duende IdentityServer",
+        role: "Authorization server",
+        summary:
+          "Documents binding an access token to the TLS client certificate and putting its SHA-256 thumbprint into the confirmation claim.",
+        limits:
+          "An API still has to enforce the binding. The setup guide shows the client presenting the certificate to the token endpoint and to the API. It does not establish a deployment or release stage.",
+        sources: [
+          {
+            publisher: "Duende Software",
+            title: "Proof-of-Possession Access Tokens",
+            url: "https://docs.duendesoftware.com/identityserver/tokens/pop/",
+          },
+          {
+            publisher: "Duende Software",
+            title: "mTLS Setup Guide",
+            url: "https://docs.duendesoftware.com/identityserver/tokens/mtls-setup/",
+          },
+        ],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a release stage for this capability.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "oauth-mtls-kong",
+        organization: "Kong",
+        product: "Kong Gateway OpenID Connect plugin",
+        role: "Gateway verifier",
+        summary:
+          "The plugin can require certificate-bound tokens and verify their binding. It separately supports a certificate supplied by a trusted TLS-terminating proxy in 3.15 and later.",
+        limits:
+          "An upstream authorization server must issue bound tokens. The proxy and gateway must be configured to protect the certificate handoff.",
+        sources: [
+          {
+            publisher: "Kong",
+            title: "OpenID Connect plugin",
+            url: "https://developer.konghq.com/plugins/openid-connect/",
+          },
+        ],
+        release: {
+          stage: "supported",
+          label: "Documented for Kong Gateway 3.7+",
+          detail:
+            "Kong includes certificate-bound access tokens in the plugin’s FAPI 3.7+ features. Certificate forwarding in a header is separately documented for 3.15+.",
+        },
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        id: "oauth-mtls-cielo",
+        organization: "Cielo",
+        setting: "Production Pix payments API",
+        summary:
+          "Cielo says its Pix API uses RFC 8705 certificate-bound access tokens. Its integration manual separates the production mTLS API from the sandbox.",
+        limits:
+          "This is operator documentation for one production service. It does not establish a launch date, traffic volume, or use by other payment operators.",
+        sources: [
+          {
+            publisher: "Cielo",
+            title: "API PIX",
+            url: "https://developercielo.github.io/manual/apipix",
+          },
+        ],
+        attribution: "operator-report",
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "oauth-mtls-evidence-added",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "Added the reviewed sources to the field record.",
+        evidenceIds: [
+          "oauth-mtls-authlete",
+          "oauth-mtls-duende",
+          "oauth-mtls-kong",
+          "oauth-mtls-cielo",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "url-elicitation",
+    reviewedOn: "2026-11-13",
+    scope:
+      "MCP URL-mode elicitation for a tool call that needs an out-of-band user interaction. The flow illustrates 2026-07-28 multi-round-trip requests. Earlier server-initiated URL requests are labeled separately.",
+    searchNote:
+      "Reviewed client, server SDK and gateway documentation for explicit URL mode. The search found no qualifying operator account for a tool using the illustrated retry path.",
+    implementations: [
+      {
+        id: "url-elicitation-python",
+        kind: "implementation",
+        organization: "Model Context Protocol project",
+        product: "MCP Python SDK",
+        role: "Server SDK and client retry support",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a feature release stage.",
+        },
+        summary:
+          "The Python SDK documents URL-mode input requests over 2026-07-28 multi-round-trip calls. The client handles the URL and retries the tool call, carrying the opaque request state.",
+        limits:
+          "The SDK’s legacy server-initiated URL request and completion notification are separate APIs. The tool still has to verify that the external action completed.",
+        sources: [
+          {
+            title: "Multi-round-trip requests",
+            url: "https://py.sdk.modelcontextprotocol.io/handlers/multi-round-trip/",
+            publisher: "MCP Python SDK project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "url-elicitation-claude-code",
+        kind: "implementation",
+        organization: "Anthropic",
+        product: "Claude Code",
+        role: "MCP client",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a feature release stage.",
+        },
+        summary:
+          "Claude Code asks the user whether to open the elicitation URL in a browser. Anthropic documents this UI and says its v2 client runtime adds MCP revision 2026-07-28.",
+        limits:
+          "Runtime selection depends on the installed Claude Code version and session. The 2026-07-28 wire path requires the v2 runtime and a server that supports that revision. Older runtimes and connection types have separate elicitation limits in the linked guide.",
+        sources: [
+          {
+            title: "Connect Claude Code to tools via MCP",
+            url: "https://code.claude.com/docs/en/mcp",
+            publisher: "Anthropic",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "url-elicitation-agentcore",
+        kind: "implementation",
+        organization: "Amazon Web Services",
+        product: "Amazon Bedrock AgentCore Gateway",
+        role: "MCP gateway relay",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a feature release stage.",
+        },
+        summary:
+          "AgentCore Gateway matches the client’s declared URL-elicitation capability and relays the exchange. For 2026-07-28 it authorizes and forwards requestState without storing it.",
+        limits:
+          "The downstream server supplies and validates the state and checks completion. The guide also documents the older exception-based retry path.",
+        sources: [
+          {
+            title: "Use elicitation with your AgentCore gateway",
+            url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-mcp-elicitation.html",
+            publisher: "Amazon Web Services",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "url-elicitation-cloudflare-agents",
+        kind: "implementation",
+        organization: "Cloudflare",
+        product: "Cloudflare Agents SDK",
+        role: "MCP client SDK",
+        release: {
+          stage: "unspecified",
+          label: "Announced 13 July 2026",
+          detail:
+            "The dated changelog announces the feature without stating its release stage.",
+        },
+        summary:
+          "The Agents SDK lets a developer register a URL-mode elicitation handler on the MCP client and pass the request to the application’s user interface.",
+        limits:
+          "The announcement shows server-initiated elicitation/create and an optional completion notification. It does not establish the 2026-07-28 multi-round-trip exchange.",
+        sources: [
+          {
+            title: "Agents can respond to MCP elicitation requests",
+            url: "https://developers.cloudflare.com/changelog/post/2026-07-13-mcp-client-elicitation/",
+            publisher: "Cloudflare",
+            publishedOn: "2026-07-13",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "url-elicitation-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "These sources were added to the field record.",
+        evidenceIds: [
+          "url-elicitation-python",
+          "url-elicitation-claude-code",
+          "url-elicitation-agentcore",
+          "url-elicitation-cloudflare-agents",
+        ],
+      },
+      {
+        id: "url-elicitation-cloudflare-announcement",
+        kind: "release",
+        date: "2026-07-13",
+        summary:
+          "Cloudflare announced form and URL-mode handlers for the Agents SDK, using the earlier server-initiated exchange.",
+        evidenceIds: ["url-elicitation-cloudflare-agents"],
+      },
+    ],
+  },
+  {
+    slug: "aauth",
+    reviewedOn: "2026-11-13",
+    scope:
+      "AAuth Internet-Draft -11 Person Server authorization. Record demonstrable parts of the signed request, person-token, resource-token and auth-token path. Separate adjacent access modes and generic HTTP message signatures.",
+    searchNote:
+      "Checked the draft’s implementation notes, project code and examples. Exploratory SDKs provide specific protocol components. No qualifying production account was found in the reviewed sources.",
+    implementations: [
+      {
+        id: "aauth-dotnet",
+        kind: "implementation",
+        organization: "AAuth .NET SDK project",
+        product: "AAuth .NET SDK",
+        role: "Agent and resource SDK; Person Server samples",
+        release: {
+          stage: "experimental",
+          label: "Exploratory SDK",
+          detail:
+            "The -11 draft lists it as exploratory. The SDK repository says it is not yet spec-complete.",
+        },
+        summary:
+          "The SDK documents agent challenge handling and resource middleware for the three-party Person Server flow. Its sample requests a person token, then exchanges the resource and presented person tokens before retrying.",
+        limits:
+          "This is an SDK and sample system. The project describes evolving wire formats and does not establish full -11 conformance, interoperability or a production deployment.",
+        sources: [
+          {
+            title: "AAuth SDK for .NET",
+            url: "https://github.com/aauth-dev/dotnet-samples",
+            publisher: "AAuth .NET SDK project",
+          },
+          {
+            title: "AAuth Protocol -11, section 16",
+            url: "https://www.ietf.org/archive/id/draft-hardt-oauth-aauth-protocol-11.html#section-16",
+            publisher: "Dick Hardt, IETF Internet-Draft",
+            publishedOn: "2026-09-25",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "aauth-js-resource",
+        kind: "implementation",
+        organization: "Hellō",
+        product: "@aauth/resource",
+        role: "Resource-side verification library",
+        release: {
+          stage: "experimental",
+          label: "Exploratory TypeScript package",
+          detail:
+            "The -11 draft describes the TypeScript implementation as exploratory.",
+        },
+        summary:
+          "Pinned verifier code checks agent, person and auth tokens, validates required token claims and compares the token’s confirmation key with the HTTP signature key.",
+        limits:
+          "This is a resource-side component. The verifier source does not establish a deployed Person Server, a complete authorization exchange or full draft conformance.",
+        sources: [
+          {
+            title: "@aauth/resource token verifier at 9002b28",
+            url: "https://raw.githubusercontent.com/aauth-dev/packages-js/9002b289db6fe9614831fe734d142c119139463b/resource/src/verify-token.ts",
+            publisher: "Hellō",
+          },
+          {
+            title: "AAuth Protocol -11, section 16",
+            url: "https://www.ietf.org/archive/id/draft-hardt-oauth-aauth-protocol-11.html#section-16",
+            publisher: "Dick Hardt, IETF Internet-Draft",
+            publishedOn: "2026-09-25",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "aauth-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "These sources were added to the field record.",
+        evidenceIds: ["aauth-dotnet", "aauth-js-resource"],
+      },
+    ],
+  },
+  {
+    slug: "wimse-workload-tokens",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Workload Identity Token (workload credentials draft -03) with a Workload Proof Token (draft -02). Issuance and propagation are recorded as separate components from proof generation and verification.",
+    searchNote:
+      "Reviewed an exact-revision Rust reference implementation, experimental SPIRE issuance and an alpha mesh integration. No qualifying operator deployment or cross-product interoperability evidence was found.",
+    implementations: [
+      {
+        id: "wimse-wimsey",
+        kind: "implementation",
+        organization: "wimsey project",
+        product: "wimsey",
+        role: "Reference issuer, client and verifier",
+        release: {
+          stage: "experimental",
+          label: "Pre-alpha",
+          detail:
+            "The project labels the implementation pre-alpha and says it is not production-ready.",
+        },
+        summary:
+          "The Rust project documents issuing and verifying WITs and creating and verifying WPTs. Its spec map pins workload credentials -03 and WPT -02.",
+        limits:
+          "The documented CLI and reference code exercise those components. The project does not establish production use or interoperability with other products.",
+        sources: [
+          {
+            title: "wimsey README",
+            url: "https://github.com/kanywst/wimsey",
+            publisher: "wimsey project",
+          },
+          {
+            title: "wimsey spec map",
+            url: "https://github.com/kanywst/wimsey/blob/main/SPEC-MAP.md",
+            publisher: "wimsey project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "wimse-spire",
+        kind: "implementation",
+        organization: "SPIFFE project",
+        product: "SPIRE",
+        role: "WIT-SVID issuer and delivery service",
+        release: {
+          stage: "experimental",
+          label: "Experimental in SPIRE 1.16.0",
+          detail:
+            "The 1.16.0 release notes name the experimental feature and its opt-in server and agent settings.",
+        },
+        summary:
+          "SPIRE 1.16.0 adds experimental issuance and Workload API delivery of SPIFFE-profile WIT-SVIDs, with a fetch command and configurable lifetimes.",
+        limits:
+          "This is the SPIFFE credential profile and Workload API. The release notes do not establish HTTP WPT generation, verification or cross-product interoperability.",
+        sources: [
+          {
+            title: "SPIRE 1.16.0 changelog",
+            url: "https://raw.githubusercontent.com/spiffe/spire/v1.16.0/CHANGELOG.md",
+            publisher: "SPIFFE project",
+            publishedOn: "2026-11-05",
+          },
+          {
+            title: "SPIFFE Workload API, WIT-SVID profile",
+            url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_workload_api/#7-wit-svid-profile",
+            publisher: "SPIFFE project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "wimse-solo",
+        kind: "implementation",
+        organization: "Solo.io",
+        product: "Solo Enterprise for Istio with agentgateway",
+        role: "Mesh waypoint and identity propagation",
+        release: {
+          stage: "experimental",
+          label: "Enterprise alpha",
+          detail:
+            "The 1.30.x guide labels WIMSE/WIT support alpha and says it is not supported for production.",
+        },
+        summary:
+          "With agentgateway as the waypoint, the mesh can expose authenticated workload claims to policy and forward or exchange a WIT on outbound HTTP requests.",
+        limits:
+          "The guide describes WIT propagation, including a source authenticated by mTLS. It does not establish a WPT verifier or name the draft revisions.",
+        sources: [
+          {
+            title: "Workload identity tokens (WIMSE)",
+            url: "https://docs.solo.io/istio/1.30.x/ambient/security/wimse/",
+            publisher: "Solo.io",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "wimse-workload-tokens-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "These sources were added to the field record.",
+        evidenceIds: ["wimse-wimsey", "wimse-spire", "wimse-solo"],
+      },
+      {
+        id: "wimse-spire-1-16",
+        kind: "release",
+        date: "2026-11-05",
+        summary:
+          "SPIRE 1.16.0 added experimental WIT-SVID issuance and Workload API delivery.",
+        evidenceIds: ["wimse-spire"],
+      },
+    ],
+  },
+  {
+    slug: "web-bot-auth",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Web Bot Auth signing, key discovery and verification. The site illustrates IETF working-group draft -01, which uses a labeled Signature-Agent member with a direct key-set URL. Older profiles are identified by their documented wire form.",
+    searchNote:
+      "Reviewed primary signer and verifier documentation. The selected products document earlier or differing wire forms. No selected source established full support for the illustrated -01 profile.",
+    implementations: [
+      {
+        id: "web-bot-auth-cloudflare",
+        kind: "implementation",
+        organization: "Cloudflare",
+        product: "Cloudflare Verified Bots",
+        role: "Edge verifier",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The cited documentation does not name a feature release stage.",
+        },
+        summary:
+          "Cloudflare documents checking Web Bot Auth signatures for registered bots and agents. It cites predecessor drafts and accepts a quoted Signature-Agent string.",
+        limits:
+          "The product guide explicitly rejects the dictionary form from later drafts. The separate Cloudflare libraries and examples do not establish support in this hosted verifier.",
+        sources: [
+          {
+            title: "Web Bot Auth",
+            url: "https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/",
+            publisher: "Cloudflare",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "web-bot-auth-google",
+        kind: "implementation",
+        organization: "Google",
+        product: "Google-Agent",
+        role: "Request signer",
+        release: {
+          stage: "experimental",
+          label: "Experimental signing",
+          detail:
+            "Google marks Web Bot Auth signing experimental and limits it to a subset of traffic.",
+        },
+        summary:
+          "Google describes a subset of Google-Agent requests signed with Web Bot Auth and supplies an HTTPS key directory for verification.",
+        limits:
+          "The guide shows a labeled Signature-Agent member containing an origin, with the key directory at a separate URL. That differs from the direct key-set URL in working-group draft -01.",
+        sources: [
+          {
+            title:
+              "Google’s Guide to Authenticating Requests with Web Bot Auth (Experimental)",
+            url: "https://developers.google.com/crawling/docs/crawlers-fetchers/web-bot-auth",
+            publisher: "Google",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+      {
+        id: "web-bot-auth-aws-waf",
+        kind: "implementation",
+        organization: "Amazon Web Services",
+        product: "AWS WAF Bot Control",
+        role: "Edge verifier",
+        release: {
+          stage: "unspecified",
+          label: "Available since November 2025",
+          detail:
+            "AWS states availability from that month, without naming a release stage or giving a day.",
+        },
+        summary:
+          "AWS WAF Bot Control validates signatures and applies labels for use in site rules. The guide names Bot Control rule group 4.0 or later for WBA.",
+        limits:
+          "The source’s example uses an origin URL in Signature-Agent. It does not establish support for the -01 dictionary containing a direct key-set URL.",
+        sources: [
+          {
+            title:
+              "Authenticate legitimate AI agent traffic with AWS WAF Bot Control",
+            url: "https://aws.amazon.com/blogs/security/authenticate-legitimate-ai-agent-traffic-with-aws-waf-bot-control/",
+            publisher: "Amazon Web Services",
+            publishedOn: "2026-07-14",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        id: "web-bot-auth-openai",
+        kind: "deployment",
+        organization: "OpenAI",
+        setting: "ChatGPT Work Cloud browser outbound HTTP",
+        summary:
+          "OpenAI says its Cloud browser signs outbound HTTP requests using Web Bot Auth and documents how sites can verify them.",
+        limits:
+          "The operator shows a quoted origin in Signature-Agent and a separate well-known key directory. The account does not establish current working-group -01 behavior, request volume or how many sites allow the traffic.",
+        sources: [
+          {
+            title: "ChatGPT Work’s Cloud browser allowlisting",
+            url: "https://help.openai.com/en/articles/11845367-chatgpt-works-cloud-browser-allowlisting",
+            publisher: "OpenAI",
+          },
+        ],
+        attribution: "operator-report",
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The named operator describes how its own service signs requests.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "web-bot-auth-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "These sources were added to the field record.",
+        evidenceIds: [
+          "web-bot-auth-cloudflare",
+          "web-bot-auth-google",
+          "web-bot-auth-aws-waf",
+          "web-bot-auth-openai",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "agent-payments",
+    reviewedOn: "2026-11-13",
+    scope:
+      "AP2 v0.2 autonomous payments using linked open and closed Checkout and Payment Mandates and signed receipts. Generic agent checkout, AP2 v0.1 and implementation intent are separate.",
+    searchNote:
+      "Checked the tagged SDK, the project’s reference materials, a Google codelab and provider announcements. The selected SDK is an implementation component. The search found no qualifying named deployment of the v0.2 autonomous path.",
+    implementations: [
+      {
+        id: "agent-payments-ap2-python",
+        kind: "implementation",
+        organization: "AP2 project",
+        product: "AP2 Python reference SDK",
+        role: "Mandate and receipt library",
+        release: {
+          stage: "unspecified",
+          label: "Released in AP2 v0.2.0",
+          detail:
+            "The reference SDK is in the AP2 v0.2.0 release. The release notes do not name a production support stage.",
+        },
+        summary:
+          "The tagged Python SDK exposes APIs to sign open Checkout and Payment Mandates, append a closed mandate as a delegation hop, verify the chain, and build and verify receipts.",
+        limits:
+          "The SDK supplies protocol building blocks. Merchant, credential-provider and payment-network policy, real settlement and operating use require separate evidence.",
+        sources: [
+          {
+            title: "AP2 Python SDK README at v0.2.0",
+            url: "https://github.com/google-agentic-commerce/AP2/blob/v0.2.0/code/sdk/python/ap2/sdk/README.md",
+            publisher: "AP2 project",
+          },
+          {
+            title: "AP2 v0.2.0 release",
+            url: "https://github.com/google-agentic-commerce/AP2/releases/tag/v0.2.0",
+            publisher: "AP2 project",
+            publishedOn: "2026-04-28",
+          },
+          {
+            title: "Google donates Agent Payments Protocol to FIDO Alliance",
+            url: "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/",
+            publisher: "Google",
+            publishedOn: "2026-04-28",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project or vendor documents this mechanism in the named role and scope.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "agent-payments-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "These sources were added to the field record.",
+        evidenceIds: ["agent-payments-ap2-python"],
+      },
+      {
+        id: "agent-payments-ap2-v0-2",
+        kind: "release",
+        date: "2026-04-28",
+        summary:
+          "The AP2 project released v0.2.0 with a focus on human-not-present flows and a tagged Python reference SDK.",
+        evidenceIds: ["agent-payments-ap2-python"],
+      },
+    ],
+  },
+  {
+    slug: "tool-call-authorization",
+    reviewedOn: "2026-11-13",
+    scope:
+      "AuthZEN evaluations for individual requests. A policy enforcement point maps the request and enforces the response. A policy decision point evaluates it. The draft COAZ mapping for MCP is a separate part of the flow.",
+    searchNote:
+      "Gateway and policy engine references, release notes and the working group’s interoperability results were reviewed. The searches found implementations and demonstrations. No named AuthZEN tool-call deployment was established in the sources reviewed.",
+    implementations: [
+      {
+        kind: "implementation",
+        organization: "Traefik Labs",
+        product: "Traefik Hub MCP Gateway and API Gateway",
+        role: "Policy enforcement point",
+        release: {
+          stage: "supported",
+          label: "Generally available in v3.21.0",
+          detail:
+            "Traefik lists AuthZEN authorization among features that graduated to GA on 30 September 2026. The preceding Early Access entry names both gateway surfaces.",
+        },
+        id: "authzen-traefik-hub",
+        summary:
+          "MCP Gateway maps the caller and tool arguments to an external AuthZEN evaluation and enforces the result. API Gateway documents a separate middleware for HTTP requests.",
+        limits:
+          "The MCP guide shows a gateway-configured COAZ mapping. The sources leave the supported binding revision and coverage of tool-declared mappings unverified.",
+        sources: [
+          {
+            title: "AuthZEN for MCP Gateway",
+            url: "https://doc.traefik.io/traefik-hub/mcp-gateway/guides/authzen-mcp",
+            publisher: "Traefik Labs",
+          },
+          {
+            title: "AuthZEN for API Gateway",
+            url: "https://doc.traefik.io/traefik-hub/api-gateway/reference/routing/http/middlewares/ref-authzen",
+            publisher: "Traefik Labs",
+          },
+          {
+            title: "Traefik Hub Gateway v3.21.0 release notes",
+            url: "https://doc.traefik.io/traefik-hub/api-gateway/release-notes#gateway-v3210",
+            publisher: "Traefik Labs",
+            publishedOn: "2026-09-30",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The MCP reference maps a transfer destination to the resource identifier. The HTTP reference maps a refund request. The release notes group both middleware surfaces under AuthZEN authorization.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "OpenFGA project",
+        product: "OpenFGA",
+        role: "Policy decision point",
+        release: {
+          stage: "experimental",
+          label: "Opt-in experimental API",
+          detail:
+            "The project requires the authzen experimental flag and says the API can change.",
+        },
+        id: "authzen-openfga",
+        summary:
+          "Provides single and batch AuthZEN access evaluation against an OpenFGA authorization model, plus search and endpoint discovery.",
+        limits:
+          "The application or gateway still maps requests and enforces decisions. The docs leave the minimum version unspecified.",
+        sources: [
+          {
+            title: "AuthZEN API (Experimental)",
+            url: "https://openfga.dev/docs/interacting/authzen",
+            publisher: "OpenFGA project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project’s documentation links the final AuthZEN specification and explains how to enable its decision endpoints.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Keycloak project",
+        product: "Keycloak",
+        role: "Policy decision point",
+        release: {
+          stage: "experimental",
+          label: "Experimental in 26.7.0",
+          detail:
+            "The 9 July 2026 release notes name both evaluation endpoints and the opt-in authzen feature.",
+        },
+        id: "authzen-keycloak",
+        summary:
+          "Evaluates subject, resource and action against configured Keycloak authorization policies using the AuthZEN 1.0 single and batch evaluation APIs.",
+        limits:
+          "The release covers the policy decision API. A separate caller has to map and enforce each tool request.",
+        sources: [
+          {
+            title: "Keycloak 26.7.0 released",
+            url: "https://www.keycloak.org/2026/07/keycloak-2670-released",
+            publisher: "Keycloak project",
+            publishedOn: "2026-07-09",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The shipped release confirms the experimental policy decision role described in the earlier announcement.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "ID Partners",
+        product: "coaz-pep",
+        role: "Policy enforcement engine",
+        release: {
+          stage: "unspecified",
+          label: "Released image documented",
+          detail:
+            "The setup reference uses image 0.4.2. It leaves the support stage unspecified.",
+        },
+        id: "authzen-id-partners",
+        summary:
+          "Maps MCP tool calls through declared mappings and sends requests to an AuthZEN decision point. The engine exposes an Envoy authorization service and an HTTP check API.",
+        limits:
+          "The project’s demonstration uses stand-in authorization and policy servers. The sources do not identify a deployment or claim conformance to a particular binding revision.",
+        sources: [
+          {
+            title: "Federated Enforcement: AuthZEN for AI agents",
+            url: "https://federated-enforcement.idpartners.global/",
+            publisher: "ID Partners",
+          },
+          {
+            title: "coaz-pep reference",
+            url: "https://federated-enforcement.idpartners.global/docs/coaz-pep.html",
+            publisher: "ID Partners",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project documents released artifacts, individual tool-call mappings and the limits of its demo setup.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [],
+    events: [
+      {
+        id: "tool-call-authorization-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "The reviewed sources were added to the field record.",
+        evidenceIds: [
+          "authzen-traefik-hub",
+          "authzen-openfga",
+          "authzen-keycloak",
+          "authzen-id-partners",
+        ],
+      },
+      {
+        id: "authzen-traefik-ga",
+        kind: "release",
+        date: "2026-09-30",
+        summary:
+          "Traefik Hub listed AuthZEN authorization among features that graduated to general availability in Gateway v3.21.0.",
+        evidenceIds: ["authzen-traefik-hub"],
+      },
+      {
+        id: "authzen-keycloak-release",
+        kind: "release",
+        date: "2026-07-09",
+        summary:
+          "Keycloak 26.7.0 shipped an experimental AuthZEN decision API.",
+        evidenceIds: ["authzen-keycloak"],
+      },
+    ],
+  },
+  {
+    slug: "access-revocation",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Session Revoked events sent over Shared Signals Framework (SSF) using the Continuous Access Evaluation Profile (CAEP). Signal transmission, reception and enforcement are separate roles. OAuth token revocation at the issuer is covered separately in the guide.",
+    searchNote:
+      "The review read transmitter and receiver documentation and the OpenID Foundation’s final-spec report on one interoperability exercise at the Authenticate 2025 conference. The sources reviewed did not establish a named live deployment of the Session Revoked flow.",
+    implementations: [
+      {
+        kind: "implementation",
+        organization: "Okta",
+        product: "Okta SSF Transmitter",
+        role: "Signal transmitter",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "caep-okta-transmitter",
+        summary:
+          "Maps Okta’s user.session.end event to CAEP Session Revoked and delivers it to a configured receiver as a Security Event Token.",
+        limits:
+          "The receiver has to accept the event and apply its own session policy. This reference covers the transmitter.",
+        sources: [
+          {
+            title: "SSF Transmitter API",
+            url: "https://developer.okta.com/docs/api/openapi/okta-management/management/tags/ssftransmitter",
+            publisher: "Okta",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The API reference names the Session Revoked event and the originating Okta event.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Google",
+        product: "Google Workspace Shared Signals",
+        role: "Signal receiver",
+        release: {
+          stage: "preview",
+          label: "Closed Beta",
+          detail:
+            "Google’s guide describes closed enrollment for partner transmitters and Workspace customers.",
+        },
+        id: "caep-google-workspace",
+        summary:
+          "Receives the CAEP Session Revoked signal for a Workspace user. Google describes the expected effect as logging out the user’s Workspace sessions.",
+        limits:
+          "The enrollment guide covers Workspace’s receiver. It gives neither a downstream API denial time nor proof that outstanding access tokens stop working.",
+        sources: [
+          {
+            title:
+              "Google Workspace Shared Signals Framework Integration Guide",
+            url: "https://developers.google.com/workspace/shared-signals/api/ssf-api",
+            publisher: "Google",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The integration guide specifies the receiver’s initial event, sample payload and enrollment stage.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "SailPoint",
+        product: "SailPoint Shared Signals Framework",
+        role: "Signal transmitter and receiver",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "caep-sailpoint",
+        summary:
+          "Supports Session Revoked on both transmitter and receiver streams. Operators configure workflows to act on received events.",
+        limits:
+          "A configured workflow determines what happens after receipt. The guide gives no response time for downstream services.",
+        sources: [
+          {
+            title: "Shared Signals Framework",
+            url: "https://documentation.sailpoint.com/saas/help/shared_signals/index.html",
+            publisher: "SailPoint",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The supported-event lists include Session Revoked in both roles and the workflow section explains how receivers handle events.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Omnissa",
+        product: "Omnissa Access and Security Events Service",
+        role: "Signal transmitter",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "caep-omnissa-access",
+        summary:
+          "Configures the Security Events Service to send Session Revoked and Credential Change from Omnissa Access to Apple Business Manager or Apple School Manager.",
+        limits:
+          "The integration guide documents the Apple pairing. It leaves the deployment setting and timing of downstream session enforcement unspecified.",
+        sources: [
+          {
+            title:
+              "Configuring Omnissa Access as an Identity Provider for Apple Business Manager or Apple School Manager",
+            url: "https://docs.omnissa.com/AccessABM/ConfigureAccessABMintegration/",
+            publisher: "Omnissa",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The operator setup guide names the source events and their CAEP mapping and identifies Apple as the receiver.",
+        },
+      },
+    ],
+    deployments: [],
+    observations: [
+      {
+        kind: "observation",
+        measure: "reported-count",
+        unit: "implementations",
+        numerator: 8,
+        population:
+          "Implementations that passed the transmitter criteria in the OpenID Foundation’s final SSF and CAEP test at Authenticate 2025, held 13–15 October.",
+        id: "caep-interop-2025-transmitters",
+        summary:
+          "The OpenID Foundation’s table lists eight implementations with a transmitter pass. Five also passed as receivers.",
+        limits:
+          "The table gives no event-level breakdown. Two entries are SGNL implementations. This is one interoperability exercise.",
+        sources: [
+          {
+            title: "Top firms test interoperability of final SSF and CAEP",
+            url: "https://openid.net/top-firms-test-interoperability-of-final-ssf-and-caep/",
+            publisher: "OpenID Foundation",
+            publishedOn: "2025-10-30",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The event organizer’s table reports role-specific test outcomes. The count uses implementation rows and the underlying exercise spans three days.",
+        },
+      },
+    ],
+    events: [
+      {
+        id: "access-revocation-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "The reviewed sources were added to the field record.",
+        evidenceIds: [
+          "caep-okta-transmitter",
+          "caep-google-workspace",
+          "caep-sailpoint",
+          "caep-omnissa-access",
+          "caep-interop-2025-transmitters",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "biscuit-delegation",
+    reviewedOn: "2026-11-13",
+    scope:
+      "Biscuit authorization tokens that holders can narrow offline by appending checks, with the receiving service verifying the token and applying those checks.",
+    searchNote:
+      "The review read the project’s library, an agent mesh implementation and reports from two operators. The reports cover separate uses in messaging and data access. Format versions and deployed policy details are limited to what the operators describe.",
+    implementations: [
+      {
+        kind: "implementation",
+        organization: "Eclipse Biscuit project",
+        product: "biscuit-auth Rust library",
+        role: "Token issuer, attenuator and verifier",
+        release: {
+          stage: "unspecified",
+          label: "6.0.0 release documented",
+          detail:
+            "The project publishes a 6.0.0 release for biscuit-auth. It gives no separate support stage for these functions.",
+        },
+        id: "biscuit-rust",
+        summary:
+          "Creates a signed Biscuit, appends narrower checks without the issuer’s private key and evaluates the resulting token with an authorizer.",
+        limits:
+          "The caller supplies its own application facts and policy. The release applies to the Rust library.",
+        sources: [
+          {
+            title: "biscuit-auth 6.0.0 crate documentation",
+            url: "https://docs.rs/crate/biscuit-auth/6.0.0",
+            publisher: "Eclipse Biscuit project",
+          },
+          {
+            title: "biscuit-auth 6.0.0 release",
+            url: "https://github.com/eclipse-biscuit/biscuit-rust/releases/tag/biscuit-auth-6.0.0",
+            publisher: "Eclipse Biscuit project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The Rust project’s example shows both the appended block and request-time authorization.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Google’s open-source Agent Mesh project",
+        product: "Agent Mesh",
+        role: "Credential issuer, delegator and verifier",
+        release: {
+          stage: "unspecified",
+          label: "Pre-1.0 project",
+          detail:
+            "The repository describes Agent Mesh as pre-1.0 and says it is outside Google’s officially supported products.",
+        },
+        id: "biscuit-agent-mesh",
+        summary:
+          "The control plane signs short-lived Biscuit credentials. The agent SDK can append restrictions offline before handing one to a sub-agent.",
+        limits:
+          "The example uses Agent Mesh’s own transport, peer identity and policies. It builds on the Eclipse Biscuit Go library.",
+        sources: [
+          {
+            title: "Agent Mesh architecture and delegation examples",
+            url: "https://google.github.io/agentmesh/",
+            publisher: "Agent Mesh project",
+          },
+          {
+            title: "Agent Mesh repository README",
+            url: "https://raw.githubusercontent.com/google/agentmesh/main/README.md",
+            publisher: "Agent Mesh project",
+          },
+          {
+            title: "Agent Mesh Go dependencies",
+            url: "https://raw.githubusercontent.com/google/agentmesh/main/go.mod",
+            publisher: "Agent Mesh project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project documents offline attenuation for sub-agents, verification at the node and a Biscuit Go dependency.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        organization: "Clever Cloud",
+        setting:
+          "Managed Apache Pulsar and an internal remote administration agent",
+        attribution: "operator-report",
+        id: "biscuit-clever-cloud-pulsar",
+        summary:
+          "Clever Cloud reports using its Java Biscuit plugin for Pulsar. In its internal example, each agent instance receives a narrower token for its own topic and a short-lived token to reply on one temporary topic.",
+        limits:
+          "The post describes Clever Cloud’s own use as a Biscuit originator. The date of first use and the current internal agent setup are unspecified.",
+        sources: [
+          {
+            title: "Biscuit, the foundation for your authorization systems",
+            url: "https://clever-cloud.com/blog/engineering/2021/04/12/introduction-to-biscuit/",
+            publisher: "Clever Cloud",
+            publishedOn: "2021-04-12",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The operator describes actual internal use, including how it attenuated a token and how the Pulsar plugin checks the request.",
+        },
+      },
+      {
+        kind: "deployment",
+        organization: "Space and Time",
+        setting: "Data platform table authorization",
+        attribution: "operator-report",
+        id: "biscuit-space-and-time",
+        summary:
+          "Space and Time reports using Biscuit tokens to authorize access to platform resources. Its developer guide describes verifying requests against a table’s public key and adding checks to narrow an existing Biscuit before sharing it.",
+        limits:
+          "The sources establish platform use for resources such as tables. They do not identify any customer’s use of delegated tokens.",
+        sources: [
+          {
+            title: "Biscuit Authorization Part I",
+            url: "https://www.spaceandtime.io/blog/biscuit-authorization",
+            publisher: "Space and Time",
+            publishedOn: "2025-03-26",
+          },
+          {
+            title: "About Biscuit Authorization",
+            url: "https://docs.spaceandtime.io/docs/biscuit-authorization",
+            publisher: "Space and Time",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The operator states that it uses Biscuit for resource authorization. Its guide describes signature verification and attenuation separately from that report.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "biscuit-delegation-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "The reviewed sources were added to the field record.",
+        evidenceIds: [
+          "biscuit-rust",
+          "biscuit-agent-mesh",
+          "biscuit-clever-cloud-pulsar",
+          "biscuit-space-and-time",
+        ],
+      },
+      {
+        id: "biscuit-space-and-time-report",
+        kind: "report-published",
+        date: "2025-03-26",
+        summary:
+          "Space and Time published its account of Biscuit authorization on its data platform.",
+        evidenceIds: ["biscuit-space-and-time"],
+      },
+      {
+        id: "biscuit-clever-cloud-report",
+        kind: "report-published",
+        date: "2021-04-12",
+        summary:
+          "Clever Cloud published its account of Biscuit authorization in Apache Pulsar.",
+        evidenceIds: ["biscuit-clever-cloud-pulsar"],
+      },
+    ],
+  },
+  {
+    slug: "gnap",
+    reviewedOn: "2026-11-13",
+    scope:
+      "GNAP grant requests and continuation, plus the resource server’s token checks. Implementations may cover a particular profile or part of RFC 9635. RFC 9767 resource-server capabilities need separate evidence.",
+    searchNote:
+      "The review read a server targeting RFC 9635, Open Payments client and server documentation, and the IETF shepherd report. The deployment account covers the GNAP-based Open Payments profile at a public wallet provider. The full interoperability profile illustrated in the guide remains unverified in this setting.",
+    implementations: [
+      {
+        kind: "implementation",
+        organization: "SUNET",
+        product: "SUNET Auth Server",
+        role: "Authorization server",
+        release: {
+          stage: "unspecified",
+          label: "Described as production-ready",
+          detail:
+            "The repository uses production-ready wording and lists features and known limitations. It does not name a support stage.",
+        },
+        id: "gnap-sunet",
+        summary:
+          "Targets RFC 9635 and documents grant requests, transaction continuation and browser interaction for consent.",
+        limits:
+          "The project lists HTTP Message Signatures, key-bound access tokens and RFC 9767 token introspection as unsupported.",
+        sources: [
+          {
+            title: "SUNET Auth Server README",
+            url: "https://raw.githubusercontent.com/SUNET/sunet-auth-server/main/README.md",
+            publisher: "SUNET",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The project documents the endpoints and known limitations of the server. Repository readiness wording alone does not establish a live deployment.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Interledger Foundation",
+        product: "Rafiki auth and backend services",
+        role: "Authorization server and resource-server introspection",
+        release: {
+          stage: "preview",
+          label: "Beta releases documented",
+          detail:
+            "The project tags its 2.x releases beta and describes the auth service as a reference implementation.",
+        },
+        id: "gnap-rafiki",
+        summary:
+          "Rafiki provides a GNAP authorization server for Open Payments grants. Its backend uses a GNAP introspection client to check access tokens with the auth service.",
+        limits:
+          "This is the Open Payments profile. The project’s documentation does not claim the full RFC 9635 interoperability profile or RFC 9767 conformance.",
+        sources: [
+          {
+            title: "Open Payments in Rafiki",
+            url: "https://rafiki.dev/overview/concepts/open-payments/",
+            publisher: "Interledger Foundation",
+          },
+          {
+            title: "Rafiki auth service",
+            url: "https://rafiki.dev/integration/deployment/services/auth-service/",
+            publisher: "Interledger Foundation",
+          },
+          {
+            title: "Rafiki releases",
+            url: "https://github.com/interledger/rafiki/releases",
+            publisher: "Interledger Foundation",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The auth service guide names grants, continuation and the library used by the resource-server side. Release tags provide the beta wording.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Interledger Foundation",
+        product: "Open Payments JavaScript client",
+        role: "Grant client",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "gnap-open-payments-js",
+        summary:
+          "The client can continue an Open Payments GNAP grant after browser interaction, sending the interaction reference and continuation token to the server’s continuation endpoint.",
+        limits:
+          "The SDK uses the Open Payments profile. Its examples do not establish compatibility with other GNAP profiles.",
+        sources: [
+          {
+            title: "Grant negotiation and authorization",
+            url: "https://openpayments.dev/identity/grants/",
+            publisher: "Open Payments project",
+          },
+          {
+            title: "Continue a grant request",
+            url: "https://openpayments.dev/sdk/grant-continue/",
+            publisher: "Open Payments project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The Open Payments grant documentation names GNAP. The SDK guide shows the actual JavaScript continuation call and its arguments.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        organization: "GateHub",
+        setting: "Public Open Payments wallet",
+        attribution: "project-report",
+        id: "gnap-gatehub-open-payments",
+        summary:
+          "The Interledger Foundation reports that GateHub announced a public launch of Open Payments at a 2024 community call. The Foundation’s availability report lists GateHub as an active Open Payments wallet provider in the EU.",
+        limits:
+          "The evidence applies to the GNAP-based Open Payments profile. The launch report predates RFC 9635 and leaves GateHub’s implementation, supported GNAP revision, exact launch day and traffic unspecified.",
+        sources: [
+          {
+            title: "Community Call Explained!",
+            url: "https://community.interledger.org/chiara/community-call-explained-3oh5",
+            publisher: "Interledger Foundation",
+            publishedOn: "2024-05-21",
+          },
+          {
+            title: "Open Payments Availability Report",
+            url: "https://interledger.github.io/reports/availability",
+            publisher: "Interledger Foundation",
+          },
+          {
+            title: "Grant negotiation and authorization",
+            url: "https://openpayments.dev/identity/grants/",
+            publisher: "Open Payments project",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The Foundation relays the operator’s public launch statement and tracks current service availability. The profile documentation establishes Open Payments’ GNAP basis.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "gnap-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "The reviewed sources were added to the field record.",
+        evidenceIds: [
+          "gnap-sunet",
+          "gnap-rafiki",
+          "gnap-open-payments-js",
+          "gnap-gatehub-open-payments",
+        ],
+      },
+      {
+        id: "gnap-gatehub-report",
+        kind: "report-published",
+        date: "2024-05-21",
+        summary:
+          "The Interledger Foundation published its account of GateHub’s public Open Payments launch announcement.",
+        evidenceIds: ["gnap-gatehub-open-payments"],
+      },
+    ],
+  },
+  {
+    slug: "credential-broker",
+    reviewedOn: "2026-11-13",
+    scope:
+      "An intermediary holds the upstream secret outside the agent’s execution environment and attaches it only to selected outbound requests. The intermediary can be a sandbox egress proxy or a service that brokers a specific API.",
+    searchNote:
+      "The review read sandbox and proxy documentation and two accounts of operated systems. The examples differ in where the intermediary runs and which requests it lets through.",
+    implementations: [
+      {
+        kind: "implementation",
+        organization: "Anthropic",
+        product: "Claude Managed Agents vaults",
+        role: "Managed sandbox egress",
+        release: {
+          stage: "preview",
+          label: "Beta",
+          detail:
+            "Anthropic marks vaults Beta in its Managed Agents documentation.",
+        },
+        id: "credential-broker-anthropic",
+        summary:
+          "Places an opaque environment variable in the managed sandbox and substitutes the real secret in configured locations on egress to allowed hosts.",
+        limits:
+          "Environment variable credentials are unavailable for self-hosted sandboxes. Substitution does not cover local request signing, and tokens returned by an upstream exchange can reach the sandbox.",
+        sources: [
+          {
+            title: "Authenticate with vaults",
+            url: "https://platform.claude.com/docs/en/managed-agents/vaults",
+            publisher: "Anthropic",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The beta reference documents placeholders, outbound host restrictions, injection locations and unsupported cases.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Docker",
+        product: "Docker Sandboxes",
+        role: "Local sandbox host proxy",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "credential-broker-docker",
+        summary:
+          "The host-side proxy finds the credential for a matching service and overwrites the outbound authentication header. The agent sees a sentinel or placeholder.",
+        limits:
+          "This entry covers proxy-managed local credentials. A kit can opt into OAuth token passthrough. Custom placeholder replacement applies to headers.",
+        sources: [
+          {
+            title: "Manage credentials in local Docker Sandboxes",
+            url: "https://docs.docker.com/ai/sandboxes/configuration/credentials/",
+            publisher: "Docker",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The local credential guide specifies host-side interception and which modes can pass a real credential through.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Vercel",
+        product: "Vercel Sandbox firewall",
+        role: "Sandbox egress firewall",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "credential-broker-vercel",
+        summary:
+          "Injects credentials into allowed egress requests while keeping them outside the sandbox. A rule can limit injection by path, method, query or header.",
+        limits:
+          "Requests that match no transformation can reach an allowed domain without the credential. Postgres and traffic allowed by IP range bypass credential brokering.",
+        sources: [
+          {
+            title: "Sandbox firewall",
+            url: "https://vercel.com/docs/sandbox/concepts/firewall",
+            publisher: "Vercel",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The firewall reference documents header transformation, request matchers and traffic that bypasses credential injection.",
+        },
+      },
+      {
+        kind: "implementation",
+        organization: "Cloudflare",
+        product: "Cloudflare Sandboxes with Workers",
+        role: "Developer-configured credential intermediary",
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The source documents the feature without naming its release stage.",
+        },
+        id: "credential-broker-cloudflare",
+        summary:
+          "A Container’s HTTPS request can be intercepted by a Worker that checks the request and adds a token stored outside the sandbox. A Dynamic Worker can call a specific method supplied by the host Worker.",
+        limits:
+          "The developer supplies the rules and forwarding code. The example limits the credential to GitHub’s GET /user request.",
+        sources: [
+          {
+            title: "Call an authenticated API from a sandbox",
+            url: "https://developers.cloudflare.com/sandbox/network/call-an-authenticated-api/",
+            publisher: "Cloudflare",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The current integration guide gives separate Container and Dynamic Worker paths, both with the credential held by the host Worker.",
+        },
+      },
+    ],
+    deployments: [
+      {
+        kind: "deployment",
+        organization: "Listen Labs",
+        setting: "Claude Agent SDK file generation in an E2B sandbox",
+        attribution: "operator-report",
+        id: "credential-broker-listen-labs",
+        summary:
+          "Listen Labs reports setting a dummy key and directing the SDK to its own proxy. The proxy checks a sandbox-session credential before adding the real API key and forwarding the request.",
+        limits:
+          "The report describes Listen Labs’ own application proxy for particular services. It gives no publication date or general sandbox escape assessment.",
+        sources: [
+          {
+            title: "We Lied to Our Claude Code Agent (to Make it Safe)",
+            url: "https://listenlabs.ai/blog/we-lied-to-our-claude-code-agent",
+            publisher: "Listen Labs",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "The engineering account describes its deployed architecture, the restricted network path and the upstream key swap.",
+        },
+      },
+      {
+        kind: "deployment",
+        organization: "Postman",
+        setting: "Internal developer and coding-agent API access",
+        attribution: "operator-report",
+        id: "credential-broker-postman",
+        summary:
+          "Postman reports replacing keys on developer machines with credential references. A daemon routes calls to a corporate-network proxy that checks the request’s identity and scope, resolves the reference in a vault and calls the API.",
+        limits:
+          "This is a developer-machine proxy deployment. The report does not describe a sandbox boundary or establish that unrelated traffic is mediated.",
+        sources: [
+          {
+            title: "Postman Passport Case Study",
+            url: "https://www.postman.com/customer-stories/postman-passport/",
+            publisher: "Postman",
+          },
+          {
+            title: "How Postman Ended Credential Sprawl with Passport",
+            url: "https://blog.postman.com/credential-sprawl/",
+            publisher: "Postman",
+            publishedOn: "2026-10-06",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-13",
+          rationale:
+            "Postman’s account describes its own rollout, including actual daemon deployment and call-time credentials kept on the proxy side.",
+        },
+      },
+    ],
+    observations: [],
+    events: [
+      {
+        id: "credential-broker-review",
+        kind: "evidence-added",
+        date: "2026-11-13",
+        summary: "The reviewed sources were added to the field record.",
+        evidenceIds: [
+          "credential-broker-anthropic",
+          "credential-broker-docker",
+          "credential-broker-vercel",
+          "credential-broker-cloudflare",
+          "credential-broker-listen-labs",
+          "credential-broker-postman",
+        ],
+      },
+      {
+        id: "credential-broker-postman-report",
+        kind: "report-published",
+        date: "2026-10-06",
+        summary:
+          "Postman published its account of deploying Passport for internal API access.",
+        evidenceIds: ["credential-broker-postman"],
+      },
+    ],
+  },
 ];

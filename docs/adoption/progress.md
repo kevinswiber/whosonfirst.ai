@@ -1,12 +1,12 @@
 # In the field progress
 
-**13 November 2026 · Integrated the 25-flow catalog from main and verified locally; field directory not deployed.** [Issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84) tracks the directory and flow evidence sections. The [design](review-and-design.md) and [evidence review](evidence-review.md) describe the intended reader tasks, primary sources and decisions.
+**13 November 2026 · Completed and locally verified scoped field records for all 25 published flows.** [Issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84) tracks the directory and flow evidence sections. The [design](review-and-design.md) and [evidence review](evidence-review.md) describe the intended reader tasks, primary sources and decisions.
 
 ## Current implementation
 
 - Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/field/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
 - Keep the standards rating and show role-specific implementation support, named operator reports, observations and dated changes independently. The first release has no adoption score or public survey results. Keep the pilot data available for research.
-- The data covers ten of 25 published flows, with 35 implementation entries and ten operator accounts. The extension adds Device authorization, Client credentials, Token exchange, CIBA and A2A, and brings DPoP to five implementation options. No observation records are selected. The five newly published flows remain unreviewed for field evidence. The research inventory records the bounded AuthZEN review as a candidate.
+- The data covers all 25 published flows, with 80 implementation entries, 19 attributed deployment accounts and one scoped interoperability observation. Entries state their actual roles and any prototype status, revision mismatch or missing production evidence. Coverage is a source-review result, not a prevalence estimate or a claim that the illustrated flow is implemented end to end.
 
 ## Initial validation
 
@@ -33,6 +33,20 @@ Merged `origin/main` at `77bdbff` into the field branch, preserving the existing
 Resolved conflicts in the README and generated source inventory. The repository’s source command regenerated the combined inventory from main’s saved values: 189 sources, with 139 previous entries preserved and 50 field sources requested. The same two eBay URLs and ICA Banken URL returned HTTP 403; these retrieval failures do not change the existing claim review.
 
 All four gates passed in order on the merged site: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (945 passed, six skipped). A focused inspection confirmed the new directory rows, guide links and field summaries. One host, one build and one complete rendered run; no recovery cycle or additional source research. Nothing from this feature branch was pushed or deployed.
+
+## Complete coverage and clear destinations, 13 November 2026
+
+The overview now uses plain flow headings and two explicit actions: **View field evidence** and **View flow diagram**. Diagram links go directly to the guide’s **Step by step** section. This removes the duplicate full-record destination and makes the choice visible without guessing what a flow name opens. Search continues to link to exact entries, including those outside each row’s examples.
+
+Three source-review lanes completed the remaining 15 profiles. The [evidence review](evidence-review.md) retains sources, inclusion decisions and exclusions for each. An independent check corrected the GNAP classification: the play-money test wallet is not a production report, while GateHub’s production account remains attributed and its deployed GNAP revision unspecified. The records also state CAEP pairing limits, Claude Code runtime prerequisites and authgent’s reported missing-scope behavior. All 25 profiles passed model validation.
+
+The source inventory added 75 canonical URLs and preserved the 189 existing entries without requesting them again. Seventy-four new sources answered the retrieval command; the OpenAI operator page returned HTTP 403. It was read through the web reader during the source review. Its empty validator remains a retrieval limitation, separate from the reviewed report. The inventory has 264 sources.
+
+The first ordered gate attempt found missing source-host registrations in the source-review runbook. The source review’s domain list was extended to the actual cited hosts; the failing evidence is retained. No check was weakened.
+
+The final required gates passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (960 passed, six skipped). The navigation regression follows both destinations with JavaScript off. Final built-site inspection covered the overview and a complete record at desktop and phone widths, including dark mode. The progress receipt was updated after those gates and checked separately.
+
+This completion pass used one host, one build, one complete rendered run and one source-list recovery after the early unit failure. Three bounded research lanes and one continuing independent reviewer covered the new records. No product interoperability or production system was tested. Failed and successful logs and screenshots were retained. Human reader evaluation remains pending.
 
 ## Local review
 

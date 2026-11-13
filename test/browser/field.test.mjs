@@ -21,19 +21,22 @@ test("the compact directory, full record and flow guide connect without JavaScri
     .locator(records)
     .evaluateAll((rows) => rows.map((row) => row.id).sort());
   assert.deepEqual(ids, FLOWS.map((path) => path.split("/")[2]).sort());
-  const unreviewed = page.locator("#credential-broker");
-  assert.match(await unreviewed.textContent(), /Not reviewed/);
-  assert.equal(
-    await unreviewed.getByRole("link").getAttribute("href"),
-    "/flows/credential-broker/",
-  );
-
   const dpop = page.locator("#dpop");
+  assert.equal(await dpop.getByRole("heading").getByRole("link").count(), 0);
+  assert.equal(await dpop.getByRole("link").count(), 2);
+  assert.equal(
+    await dpop
+      .getByRole("link", { name: "View flow diagram for DPoP" })
+      .getAttribute("href"),
+    "/flows/dpop/#walkthrough",
+  );
   const snapshot = await dpop.locator(".field-overview").textContent();
   assert.match(snapshot, /\d+ documented options/);
   assert.match(snapshot, /Examples: Keycloak · oauth4webapi/);
   assert.doesNotMatch(snapshot, /Spring Security/);
-  await dpop.getByRole("link", { name: "Full field record for DPoP" }).click();
+  await dpop
+    .getByRole("link", { name: "View field evidence for DPoP" })
+    .click();
   assert.match(page.url(), /\/field\/dpop\/$/);
   assert.ok(
     await page
@@ -60,8 +63,13 @@ test("the compact directory, full record and flow guide connect without JavaScri
     /Norsk helsenett/,
   );
 
-  await page.getByRole("link", { name: "Read the flow guide" }).click();
-  assert.match(page.url(), /\/flows\/dpop\/$/);
+  await page.getByRole("link", { name: "View flow diagram" }).click();
+  assert.match(page.url(), /\/flows\/dpop\/#walkthrough$/);
+  assert.ok(
+    await page
+      .getByRole("heading", { name: "Step by step", exact: true })
+      .isVisible(),
+  );
   const summary = page.locator("#in-the-field");
   assert.equal(
     await summary

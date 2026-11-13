@@ -335,6 +335,37 @@ www.icabanken.se
 a2aproject.github.io
 adk.dev
 aaif.io
+blog.google
+blog.postman.com
+claude.com
+clever-cloud.com
+community.interledger.org
+developer.konghq.com
+developercielo.github.io
+developers.authlete.com
+developers.google.com
+doc.traefik.io
+docs.docker.com
+docs.omnissa.com
+docs.pingidentity.com
+docs.rs
+docs.solo.io
+docs.spaceandtime.io
+documentation.sailpoint.com
+federated-enforcement.idpartners.global
+google.github.io
+help.openai.com
+interledger.github.io
+listenlabs.ai
+openfga.dev
+openpayments.dev
+posthog.com
+py.sdk.modelcontextprotocol.io
+rafiki.dev
+tokenetes.io
+www.ietf.org
+www.postman.com
+www.spaceandtime.io
 ```
 
 Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the flows' `sources` link to, plus what the checks above read: `author-tools.ietf.org` for diffs between draft revisions, `api.github.com` and `raw.githubusercontent.com` for releases and files of projects hosted on GitHub, and `www.agenticcommerce.dev`, where `agenticcommerce.dev` redirects. From `developer.okta.com` on, they are the documentation sites of the vendors on the agent platforms page, which links to them only beside a few facts; they are where that review starts, and a vendor may keep the relevant page elsewhere.
