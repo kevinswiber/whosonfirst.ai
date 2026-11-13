@@ -14,7 +14,7 @@ export const aauth: Flow = {
     "An agent proves which person it acts for, obtains their consent, and signs its calendar request. The API still decides what to allow.",
   summary: `Alice asks an assistant to read her calendar. An **agent provider** names the agent, a **person server (PS)** represents Alice, and the **calendar API** enforces access to her data.
 
-AAuth is a separate protocol from OAuth. This page follows **PS authorization**, one of its five resource access modes. The API has no separate access server: it accepts identity and consent from Alice’s person server, then applies its own policy.`,
+AAuth is a separate protocol from OAuth. An unrelated individual draft, [draft-rosenberg-oauth-aauth](/standards/#aauth-rosenberg), also uses the name: it extends OAuth, and this page does not use it. This page follows **PS authorization**, one of its five resource access modes. The API has no separate access server: it accepts identity and consent from Alice’s person server, then applies its own policy.`,
   fits: [
     "Exploring agents that encounter APIs without being registered as clients at each one.",
     "Understanding what a user-chosen person server asserts, and what an API must still enforce.",
@@ -482,14 +482,7 @@ Signature: sig=:SIGNATURE_BYTES:`,
 Later reads can reuse the unexpired auth token with a new HTTP signature on each request. The PS does not approve or observe every calendar read. The API enforces the allowed scope on every call.`,
     },
   ],
-  standards: [
-    "aauth-hardt",
-    "signature-key",
-    "rfc9421",
-    "rfc7638",
-    "rfc9449",
-    "aauth-rosenberg",
-  ],
+  standards: ["aauth-hardt", "signature-key", "rfc9421", "rfc7638", "rfc9449"],
   basis: ["aauth-hardt"],
   roles: {
     "aauth-hardt": "required",
@@ -497,7 +490,6 @@ Later reads can reuse the unexpired auth token with a new HTTP signature on each
     rfc9421: "required",
     rfc7638: "required",
     rfc9449: "background",
-    "aauth-rosenberg": "background",
   },
   illustrated: {
     steps: `**One scenario: a returning user grants read access to their calendar.** The PS requires fresh consent for this scope.`,
