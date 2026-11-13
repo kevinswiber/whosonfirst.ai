@@ -42,7 +42,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   assert.match(snapshot, /\d+ entries in this review/);
   assert.deepEqual(
     await dpop
-      .getByRole("list", { name: "Reviewed implementation examples" })
+      .getByRole("list", { name: "Implementations from the record" })
       .getByRole("link")
       .allTextContents()
       .then((names) => names.map((name) => name.trim())),
@@ -384,7 +384,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
       const products = examples.getByRole("list", {
         name: path.startsWith("/flows/")
           ? "Reviewed implementations and deployment reports"
-          : "Reviewed implementation examples",
+          : "Implementations from the record",
       });
       assert.equal(
         await products
@@ -443,7 +443,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
       const report = page.locator(selector).getByRole("list", {
         name: path.startsWith("/flows/")
           ? "Reviewed implementations and deployment reports"
-          : "Included deployment report",
+          : "Deployment report from the record",
       });
       assert.ok(
         await report
