@@ -15,7 +15,6 @@ const Name = cards ? "h3" : "div";
 <ul class:list={["field-examples", { grid: cards, "field-example-cards": cards }]} role="list" aria-label={label}>
   {entries.map((entry) => (
     <li>
-      {cards && <span class="chip field-example-kind">{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>}
       <Name class="field-example-name">
         <a href={`/implementations/${slug}/#field-${entry.id}`}>
           {entry.kind === 'implementation' ? entry.product : entry.organization}
@@ -23,7 +22,8 @@ const Name = cards ? "h3" : "div";
       </Name>{' '}
       <span class="field-example-role">
         {entry.kind === 'implementation' ? entry.role : entry.setting}
-      </span>
+      </span>{' '}
+      {cards && <span class="chip field-example-kind">{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>}
     </li>
   ))}
 </ul>
@@ -42,6 +42,8 @@ const Name = cards ? "h3" : "div";
   .field-example-name { margin: 0; font-size: 1rem; }
   .field-example-cards { margin: 0; }
   .field-example-cards li {
+    display: flex;
+    flex-direction: column;
     padding: 0.85rem 1rem 0.95rem;
     background: var(--bg-raised);
     border: 1px solid var(--border);
@@ -50,7 +52,11 @@ const Name = cards ? "h3" : "div";
   }
   .field-example-cards li + li { margin-top: 0; }
   .field-example-cards .field-example-name { font-size: 1.1rem; }
-  .field-example-kind { display: block; margin-bottom: 0.5rem; }
+  .field-example-kind {
+    display: block;
+    margin-top: auto;
+    padding-top: 0.9rem;
+  }
   .field-example-role {
     display: block;
     margin-top: 0.1rem;

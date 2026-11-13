@@ -1,7 +1,7 @@
 import type { FieldProfile } from "../data/field";
 import { deploymentOrganizations } from "../data/field";
 
-/** Coverage counts and bounded entries for the directory and flow summaries. */
+/** Coverage counts and bounded entries for the implementation directory. */
 export function fieldSnapshot(profile: FieldProfile) {
   const options = profile.implementations.length;
   const operators = deploymentOrganizations(profile);

@@ -88,12 +88,27 @@ test("the compact directory, full record and flow guide connect without JavaScri
   const summary = page.locator("#in-the-field");
   assert.equal(
     await summary
-      .getByRole("link", { name: "See implementations, reports and sources →" })
+      .getByRole("link", { name: "See the full record" })
       .getAttribute("href"),
     "/implementations/dpop/",
   );
-  assert.doesNotMatch(await summary.textContent(), /Spring Security/);
+  const springCard = summary.getByRole("link", {
+    name: "Spring Security",
+    exact: true,
+  });
+  assert.equal(
+    await springCard.getAttribute("href"),
+    "/implementations/dpop/#field-dpop-spring",
+  );
   assert.equal(await page.locator("#field-dpop-spring").count(), 0);
+  await springCard.click();
+  assert.match(page.url(), /\/implementations\/dpop\/#field-dpop-spring$/);
+  assert.ok(
+    await page
+      .locator(":target")
+      .getByRole("heading", { name: "Spring Security", exact: true })
+      .isVisible(),
+  );
 });
 
 test("search links to exact entries beyond the sample and keeps product and role together", async (t) => {
@@ -226,7 +241,7 @@ test("flow sections and recommendation results lead to their implementation reco
       name: "Implementations and deployment reports",
       exact: true,
     })
-    .getByRole("link", { name: "See implementations, reports and sources →" })
+    .getByRole("link", { name: "See the full record" })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.equal(
@@ -291,7 +306,7 @@ test("home, flow cards and deployment next steps expose implementations without 
   assert.match(page.url(), /\/implementations\/[^/]+\/$/);
 });
 
-test("flow evidence follows the standards and describes selected records without an adoption count", async (t) => {
+test("flow evidence follows the standards and links to the full review beneath its heading", async (t) => {
   const ctx = await site.context({ javaScriptEnabled: false });
   t.after(() => ctx.close());
   const page = await ctx.newPage();
@@ -323,16 +338,23 @@ test("flow evidence follows the standards and describes selected records without
       }),
     );
     const copy = await summary.textContent();
-    assert.match(copy, /Reviewed examples from this record/);
-    assert.match(copy, /does not measure how widely the flow is used/);
+    assert.doesNotMatch(
+      copy,
+      /Reviewed examples from this record|Evidence reviewed|does not measure how widely|This record includes no/,
+    );
+    assert.ok(
+      await summary.evaluate(
+        (section) =>
+          section.querySelector("h2").nextElementSibling.querySelector("a")
+            ?.textContent === "See the full record",
+      ),
+    );
     assert.doesNotMatch(
       copy,
       /documented options|\d+ (entries|operators|named operators)/,
     );
     assert.match(copy, /Client library/);
-    if (slug === "authorization-code-pkce")
-      assert.match(copy, /This record includes no deployment report/);
-    else assert.match(copy, /Norsk helsenett/);
+    if (slug === "dpop") assert.match(copy, /Norsk helsenett/);
   }
   await open(page, site.url("/implementations/"));
   const pkce = await page
@@ -359,7 +381,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
       const examples = page.locator(selector);
       const products = examples.getByRole("list", {
         name: path.startsWith("/flows/")
-          ? "Reviewed implementation and deployment examples"
+          ? "Reviewed implementations and deployment reports"
           : "Reviewed implementation examples",
       });
       assert.equal(
@@ -393,6 +415,14 @@ test("example cards and compact lists keep roles visible and link to the exact e
         rolePosition.y >= namePosition.y + namePosition.height,
         "role reads beneath its product name",
       );
+      if (path.startsWith("/flows/")) {
+        const kind = workers.locator(".field-example-kind");
+        assert.equal(await kind.textContent(), "Implementation");
+        assert.ok(
+          (await kind.boundingBox()).y >= rolePosition.y + rolePosition.height,
+          "type follows the visible role",
+        );
+      }
       await products
         .getByRole("link", { name: "Claude Code", exact: true })
         .click();
@@ -410,7 +440,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
       await open(page, site.url(path));
       const report = page.locator(selector).getByRole("list", {
         name: path.startsWith("/flows/")
-          ? "Reviewed implementation and deployment examples"
+          ? "Reviewed implementations and deployment reports"
           : "Included deployment report",
       });
       assert.ok(
@@ -430,5 +460,47 @@ test("example cards and compact lists keep roles visible and link to the exact e
           .isVisible(),
       );
     }
+  }
+});
+
+test("flow cards include every implementation and deployment entry from the full record", async (t) => {
+  const ctx = await site.context({ javaScriptEnabled: false });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  for (const slug of ["dpop", "device-authorization"]) {
+    await open(page, site.url(`/implementations/${slug}/`));
+    const entries = await page
+      .locator(
+        'section[aria-labelledby="field-implementations"] .field-entry, section[aria-labelledby="field-production"] .field-entry',
+      )
+      .evaluateAll((items) =>
+        items.map((item) => ({
+          id: item.id,
+          name: item.querySelector("h3").textContent.trim(),
+          kind:
+            item.closest("section").getAttribute("aria-labelledby") ===
+            "field-production"
+              ? "Deployment report"
+              : "Implementation",
+        })),
+      );
+    await open(page, site.url(`/flows/${slug}/`));
+    const cards = page.locator(".field-summary .field-examples li");
+    const actual = await cards.evaluateAll((items) =>
+      items.map((item) => ({
+        id: item.querySelector("a").hash.slice(1),
+        name: item.querySelector("a").textContent.trim(),
+        kind: item.querySelector(".field-example-kind").textContent.trim(),
+      })),
+    );
+    assert.deepEqual(actual, entries, slug);
+    await cards.last().getByRole("link").click();
+    assert.equal(new URL(page.url()).hash, `#${entries.at(-1).id}`);
+    assert.ok(
+      await page
+        .locator(":target")
+        .getByRole("heading", { name: entries.at(-1).name, exact: true })
+        .isVisible(),
+    );
   }
 });

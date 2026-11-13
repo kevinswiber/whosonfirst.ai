@@ -57,3 +57,9 @@ Full-record pages label the directory link **Browse implementations across all f
 Flow summaries present the bounded examples as cards using the surrounding standards and related-flow grid. Each card identifies **Implementation** or **Deployment report**, links the product or organization name directly to its evidence entry, and keeps the role or deployment setting visible. The coverage note, complete-record link and review date follow the cards. Empty categories remain explicit in prose.
 
 The directory retains compact lists inside its comparison rows. It shows the same bounded entries, with direct links and visible roles or settings. Examples retain entry IDs rather than reducing records to names, so links identify the reviewed role or report. This does not change counts or introduce product grouping. Full evidence entries and directory rows use the standards page’s thin accent border and soft offset shadow when targeted, with horizontal padding inside the boundary.
+
+## Complete flow cards, 13 November 2026
+
+The flow-page section now shows every reviewed implementation and deployment entry in one card grid. No fixed limit is imposed. Names and roles or settings lead each card; **Implementation** and **Deployment report** labels sit at the bottom, following the related-flow pattern. The link **See the full record** appears directly beneath the section heading, followed by “for sources and details.”
+
+The flow-page section omits its sample introduction, review date, prevalence disclaimer and empty-category messages. Review context stays in the directory and complete evidence record. The directory retains its bounded compact examples and coverage wording. Sources, dates, evidence entries and direct entry destinations are unchanged.

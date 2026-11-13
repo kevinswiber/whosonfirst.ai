@@ -1,8 +1,6 @@
 ---
 import type { FieldProfile } from "../data/field";
-import { fieldDate } from "../data/field";
 import FieldExamples from "./FieldExamples.astro";
-import { fieldSnapshot } from "../lib/field";
 
 interface Props {
   slug: string;
@@ -10,29 +8,19 @@ interface Props {
 }
 
 const { slug, profile } = Astro.props;
-const snapshot = profile && fieldSnapshot(profile);
-const examples = snapshot?.implementations ?? [];
-const deployment = snapshot?.deployment;
-const entries = [...examples, ...(deployment ? [deployment] : [])];
+const entries = profile
+  ? [...profile.implementations, ...profile.deployments]
+  : [];
 ---
 
 <section id="in-the-field" class="field-summary" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
   <h2 id="implementation-evidence">Implementations and deployment reports</h2>
   {profile ? (
     <>
+      <p class="prose"><a href={`/implementations/${slug}/`}>See the full record</a> for sources and details.</p>
       {entries.length > 0 && (
-        <>
-          <p class="prose">Reviewed examples from this record.</p>
-          <FieldExamples slug={slug} entries={entries} label="Reviewed implementation and deployment examples" cards />
-        </>
+        <FieldExamples slug={slug} entries={entries} label="Reviewed implementations and deployment reports" cards />
       )}
-      <div class="prose field-summary-notes">
-        {examples.length === 0 && <p>This record includes no implementation entry.</p>}
-        {!deployment && <p>This record includes no deployment report.</p>}
-        <p>The selection does not measure how widely the flow is used.</p>
-        <p><a href={`/implementations/${slug}/`}>See implementations, reports and sources →</a></p>
-        <p class="field-summary-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time>.</p>
-      </div>
     </>
   ) : (
     <div class="prose">
@@ -49,10 +37,5 @@ const entries = [...examples, ...(deployment ? [deployment] : [])];
   h2 {
     margin-top: 0;
     font-size: 1.55rem;
-  }
-  .field-summary-notes { margin-top: 1rem; }
-  .field-summary-date {
-    color: var(--fg-muted);
-    font-size: 1rem;
   }
 </style>

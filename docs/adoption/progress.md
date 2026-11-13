@@ -76,6 +76,14 @@ All four required gates passed on the final layout: `npm run check`, `npm test` 
 
 The pass used one host, four short builds and three full rendered runs as the reader requested target styling and then cards during preview. All full rendered runs passed. Formatting failures and their successful corrections, earlier passing logs and screenshots are retained. No new source research, evidence-data change, dependency or review lane was needed. Push and CI verification are authorized; merge remains outside this pass.
 
+## Complete and simplified flow cards, 13 November 2026
+
+Flow pages now show every reviewed implementation and deployment report, without a fixed card limit. The full-record link sits directly below the heading. Names and roles or settings come first; type labels sit at the bottom of each card. The sample introduction, review date, prevalence disclaimer and empty-category messages are omitted from this flow-page section. The directory keeps its compact bounded examples and review context; complete records keep their sources, dates, limits and coverage descriptions.
+
+All required gates passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (969 passed, six existing skips). Focused scriptless checks compare every DPoP and Device authorization card with the full record, including entries beyond the former two-implementation and one-report limits, and follow the final report link. Existing desktop and phone navigation checks confirm visible roles and labels below them. The desktop preview confirms six cards across two rows; narrow-viewport inspection confirms the complete list stacks.
+
+This pass used one host, one build and one full rendered run. One early formatting failure was corrected before types and build; its log is retained with the successful checks and screenshot. No evidence data, sources, dependencies or collection behavior changed. The progress receipt was checked separately. Push and CI verification are authorized; merge remains outside this pass.
+
 ## Local review
 
 The implementation is on `feat/in-the-field`. Run `npm run dev` in that worktree, then open `/implementations/` and `/implementations/dpop/`. Search for a product plus role, such as “spring resource-server verifier”, and follow its exact evidence link for the sources and limits. The full record links back to `/flows/dpop/` for the mechanism. There is no new service, dependency, collection schedule or network request from a reader’s browser.
