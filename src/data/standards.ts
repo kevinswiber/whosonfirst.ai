@@ -810,7 +810,8 @@ export const standards: Standard[] = [
     topics: ["proof-of-possession"],
     summary:
       "Defines algorithms and identifiers used by JSON Web Signatures, Encryption and Keys.",
-    agents: "GNAP’s web profile uses the PS256 signature algorithm.",
+    agents:
+      "GNAP’s web profile requires support for the PS256 signature algorithm.",
     url: rfc(7518),
   },
   {
