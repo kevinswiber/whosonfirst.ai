@@ -504,7 +504,7 @@ Later reads can reuse the unexpired auth token with a new HTTP signature on each
     references:
       "The diagram follows protocol -11: agent, person, resource and auth tokens, HTTP request signatures, and a JWK thumbprint binding. Enrollment is shown conceptually, without choosing a bootstrap mechanism. The access-mode comparison describes the other arrangements; this diagram follows only PS authorization.",
   },
-  related: ["web-bot-auth", "dpop", "ciba", "mcp-authorization"],
+  related: ["web-bot-auth", "dpop", "ciba", "mcp-authorization", "gnap"],
   comparison: {
     title: "The five arrangements",
     intro:

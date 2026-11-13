@@ -14,6 +14,7 @@ import { credentialBroker } from "./credential-broker";
 import { crossAppAccess } from "./cross-app-access";
 import { deviceAuthorization } from "./device-authorization";
 import { dpop } from "./dpop";
+import { gnap } from "./gnap";
 import { identityChaining } from "./identity-chaining";
 import { mcpAuthorization } from "./mcp-authorization";
 import { spiffeWorkloadIdentity } from "./spiffe-workload-identity";
@@ -29,6 +30,7 @@ import { workloadIdentityFederation } from "./workload-identity-federation";
 export const flows: Flow[] = [
   authorizationCodePkce,
   deviceAuthorization,
+  gnap,
   mcpAuthorization,
   stepUpAuthorization,
   ciba,

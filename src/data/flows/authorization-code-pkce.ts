@@ -224,6 +224,7 @@ Authorization: Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6ImF0K2p3dCJ9…`,
     "device-authorization",
     "dpop",
     "step-up-authorization",
+    "gnap",
   ],
   sections: [
     {

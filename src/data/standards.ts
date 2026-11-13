@@ -326,18 +326,30 @@ export const standards: Standard[] = [
     detail: "October 2024.",
     related: [
       {
-        name: "RFC 9767, GNAP Resource Server Connections",
-        url: rfc(9767),
+        entry: "rfc9767",
         kind: "companion",
-        note: "For resource servers. April 2025.",
       },
     ],
     topics: ["core", "delegation"],
     summary:
       "Grant Negotiation and Authorization Protocol: a ground-up redesign with key-bound clients, negotiated interaction and continuation.",
     agents:
-      "Little deployment, but several newer agent proposals borrow its ideas.",
+      "An agent can prove it holds its own key, ask for access and continue the same grant after a person acts.",
     url: rfc(9635),
+  },
+  {
+    id: "rfc9767",
+    name: "GNAP Resource Server Connections",
+    ref: "RFC 9767",
+    body: "IETF",
+    status: "rfc",
+    detail: "April 2025.",
+    topics: ["core", "delegation"],
+    summary:
+      "How resource servers connect to a GNAP authorization server for token introspection and other services.",
+    agents:
+      "An API can ask whether an agent’s access token is active for that API and obtain the public key to verify its proof.",
+    url: rfc(9767),
   },
 
   /* ───────────── Discovery and client identity ───────────── */
@@ -777,6 +789,31 @@ export const standards: Standard[] = [
     url: rfc(8705),
   },
   {
+    id: "rfc7517",
+    name: "JSON Web Key",
+    ref: "RFC 7517",
+    body: "IETF",
+    status: "rfc",
+    detail: "May 2015.",
+    topics: ["proof-of-possession"],
+    summary: "A JSON representation of a cryptographic key and its properties.",
+    agents: "One way an agent can send a public key when it requests access.",
+    url: rfc(7517),
+  },
+  {
+    id: "rfc7518",
+    name: "JSON Web Algorithms",
+    ref: "RFC 7518",
+    body: "IETF",
+    status: "rfc",
+    detail: "May 2015.",
+    topics: ["proof-of-possession"],
+    summary:
+      "Defines algorithms and identifiers used by JSON Web Signatures, Encryption and Keys.",
+    agents: "GNAP’s web profile uses the PS256 signature algorithm.",
+    url: rfc(7518),
+  },
+  {
     id: "rfc9421",
     name: "HTTP Message Signatures",
     ref: "RFC 9421",
@@ -787,8 +824,22 @@ export const standards: Standard[] = [
     summary:
       "A general way to sign selected parts of an HTTP request or response.",
     agents:
-      "The building block under Web Bot Auth, the WIMSE HTTP signature profile, AAuth, and the card networks’ agent protocols.",
+      "The building block under GNAP’s web profile, Web Bot Auth, the WIMSE HTTP signature profile, AAuth, and the card networks’ agent protocols.",
     url: rfc(9421),
+  },
+  {
+    id: "rfc9530",
+    name: "Digest Fields",
+    ref: "RFC 9530",
+    body: "IETF",
+    status: "rfc",
+    detail: "February 2024.",
+    topics: ["proof-of-possession"],
+    summary:
+      "Defines HTTP fields for carrying a digest of message content or a representation.",
+    agents:
+      "A message signature can cover Content-Digest to protect the request body.",
+    url: rfc(9530),
   },
   {
     id: "rfc7638",
@@ -1420,6 +1471,20 @@ export const standards: Standard[] = [
   },
 
   /* ───────────── Signals ───────────── */
+  {
+    id: "rfc9493",
+    name: "Subject Identifiers for Security Event Tokens",
+    ref: "RFC 9493",
+    body: "IETF",
+    status: "rfc",
+    detail: "December 2023.",
+    topics: ["signals"],
+    summary:
+      "Defines structured formats for identifying subjects in security events, including opaque IDs and issuer-and-subject pairs.",
+    agents:
+      "Gives cooperating services a way to name the session or account a security event concerns.",
+    url: rfc(9493),
+  },
   {
     id: "shared-signals",
     name: "Shared Signals Framework, CAEP, RISC",

@@ -191,6 +191,7 @@ grant_type=urn:openid:params:grant-type:ciba
     "device-authorization",
     "url-elicitation",
     "authorization-code-pkce",
+    "gnap",
   ],
   notes: [
     {
