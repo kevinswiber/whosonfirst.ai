@@ -1,9 +1,15 @@
 # Runs what CONTRIBUTING.md asks a contributor to run, on every pull request
 # and on every change to main. Two jobs, side by side:
 #
-#   checks    formatting and lint (Biome), types, the rating rule, the contrast audit
+#   checks    formatting and lint (Biome), types, and the tests in test/unit/:
+#             the rating rule, the contrast audit and the list of sources
 #   rendered  the build, which refuses a broken cross-reference, and then the
-#             built site read as files and opened in a browser
+#             tests in test/build/, which read the built site as files, and in
+#             test/browser/, which open it in a browser
+#
+# The tests are run by Node's own test runner, a file in a process of its own
+# and several files at once. Every check runs on every change: a change to any
+# file under src/ can move what some page draws.
 #
 # Nothing here deploys the site or needs a secret, so it runs the same on a
 # pull request from a fork.
@@ -45,13 +51,14 @@ jobs:
       # on the lines of the pull request.
       - name: Format, lint and import order
         run: npx biome ci
-      - name: Types, rating rule and contrast audit
+      - name: Types, rating rule, contrast audit and sources
         run: npm test
 
   rendered:
     name: Build and rendered checks
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The build and the checks take about two minutes between them.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

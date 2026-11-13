@@ -253,7 +253,7 @@ Commit `docs/source-validators.json` with the changes. Recording says “checked
 
 ### What keeps this document and the data together
 
-This document names sources by where they are in the data, and does not repeat their addresses. `npm test` runs `scripts/source-check.mjs`, which fails when the two have come apart:
+This document names sources by where they are in the data, and does not repeat their addresses. `npm test` runs `test/unit/sources.test.mjs`, which fails when the two have come apart:
 
 - a source the data links to has no entry in `docs/source-validators.json`, or the file has one that nothing links to
 - a host the data links to is not in the list under [Domains a run needs](#domains-a-run-needs)

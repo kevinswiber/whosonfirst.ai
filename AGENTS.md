@@ -21,7 +21,9 @@ Node 22 or later. Install with `npm ci`.
 | `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name              |
 | `npm run check:rendered` | Reads the built site, then opens it in a browser. Refuses a build older than its sources |
 
-`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes about two minutes. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
+`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes under a minute. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
+
+The checks are tests for Node's own test runner, in `test/`. While working on one thing, run its file after a build, such as `node --test test/browser/print.test.mjs`. [docs/development.md](docs/development.md#checks) says what each directory holds.
 
 ## Before you say a change is done
 
@@ -63,6 +65,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Nothing loads from another origin.** The content security policy in `public/_headers` allows this origin only. Do not add analytics, an embed, a hosted font or a CDN script.
 - **No client-side framework, and no new dependency without asking.** Interactive pieces are small custom elements over HTML rendered at build time, and every page reads correctly with JavaScript off.
 - **Biome does not format `.mdx`.** Keep those files tidy by hand.
+- **A new check is a test.** It goes in the file under `test/` for what it reads. A browser test opens a page with `open()` from `test/support/browser.mjs`, not with a fixed wait. Tests in a suite may share a page, but each sets up the state it needs and does not count on the test before it, so any one passes when run by its name alone. The content security policy sweep waits for network idle, longer than `open()`, and has to. Run suites side by side only where each has a page of its own and nothing waits on a clock.
 - **Generated files are not edited.** `dist/` is not committed. The two pictures in `docs/images/` come from `npm run readme:figure`. The pictures for a post come from `npm run social:assets`, into `social/`, which is not committed either. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
 
 ## Branches, commits and pull requests

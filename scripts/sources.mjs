@@ -1,6 +1,7 @@
-// The sources the site's data links to, for the two scripts that read the list:
-// source-changes.mjs asks each one whether it has changed, and source-check.mjs
-// checks that the recorded values and docs/source-review.md still match it.
+// The sources the site's data links to, for the two files that read the list:
+// source-changes.mjs asks each one whether it has changed, and
+// test/unit/sources.test.mjs checks that the recorded values and
+// docs/source-review.md still match it.
 //
 // Node strips the types from the data files as it loads them.
 import { readdirSync } from "node:fs";

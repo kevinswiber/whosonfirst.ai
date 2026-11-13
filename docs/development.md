@@ -34,7 +34,7 @@ npm test
 npm run check:rendered
 ```
 
-`npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule and the color contrast audit. `npm run check:rendered` reads the built site, then opens it in a browser. It does not build the site: run `npm run build` first, and again after a change, or it stops and names a file that is newer than the build.
+`npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule, the color contrast audit and the list of sources. `npm run check:rendered` reads the built site, then opens it in a browser. It does not build the site: run `npm run build` first, and again after a change, or it stops and names a file that is newer than the build.
 
 `npm run build` writes a fully static site to `dist/client/`. There is no server component and no client-side framework: interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
 
@@ -48,6 +48,34 @@ Biome's settings are in `biome.json`. Two things about this repository shape the
 - **Import order in `.astro` files is not sorted.** Astro emits component styles in the order components are imported, so sorting the imports changes the cascade.
 
 Biome does not handle `.mdx`, so the deployment guides and the About page are not formatted.
+
+### Checks
+
+The checks are tests for Node's own test runner, `node:test`, in `test/`. Each file runs in a process of its own, and several run at once.
+
+| Directory       | What its tests read                               | Run by                   |
+| --------------- | ------------------------------------------------- | ------------------------ |
+| `test/unit/`    | The data and the color tokens. No build is needed | `npm test`               |
+| `test/build/`   | The built site, as files                          | `npm run check:rendered` |
+| `test/browser/` | The built site, opened in Chromium                | `npm run check:rendered` |
+
+What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves `dist/client/` with the site's own headers and starts a browser, one for each test file. It also opens pages: `open()` waits for the load event, the fonts and a drawn frame: enough to measure what is drawn, and no longer. The content security policy sweep, `test/browser/csp.test.mjs`, waits longer, until a page has sent nothing for half a second. A script can ask for something from another origin a moment after the load event, and a request the policy refuses is never sent, so only the console shows it, and only once the script has asked. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to.
+
+While working on one thing, run the test file for it. It still needs a current build:
+
+```bash
+node --test test/browser/print.test.mjs
+```
+
+Or run the tests whose names match a pattern. The pattern goes before the files:
+
+```bash
+node --test --test-name-pattern="sideways" "test/browser/*.test.mjs"
+```
+
+Before a pull request, run the four commands [CONTRIBUTING.md](../CONTRIBUTING.md) names. Continuous integration runs every check on every change, because a change to any file under `src/` can move what some page draws.
+
+A new check is a test in the file for what it reads. Tests in a suite run in order and may share a page, but each sets up the state it needs: it opens the page, or does the clicks and key presses itself, and does not count on a test before it. So any test passes when it runs by its name alone, as the pattern above runs it. A file can run suites side by side with `{ concurrency: true }`, as the files that measure every page do. It does that only where each suite has a page of its own and nothing waits on a clock, and each suite inside then sets `{ concurrency: 1 }`, since a suite's tests take its setting.
 
 ### Continuous integration
 
@@ -88,6 +116,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `scripts/readme-figure.mjs`           | Draws the picture at the top of the README from the built site, in each theme                      |
 | `scripts/social-assets.mjs`           | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
 | `scripts/built-site.mjs`              | Stops a script that reads the built site when the build is older than its sources                  |
+| `test/`                               | The checks, as tests: see [Checks](#checks)                                                        |
 | `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
 
 ## Editing content
@@ -126,7 +155,7 @@ They restate the flow's own page. Do not put a fact in an overview that the page
 
 **Add or update a standard.** Edit `src/data/standards.ts`. Flows refer to standards by `id`. The first standard a flow lists is shown at the top of its page as the primary specification, with its status and revision, so list the one the flow follows most closely first. A pattern that no specification defines sets `noBasis` to a few words saying so, and its page names no primary specification.
 
-The lookup on the tracker searches an entry's name, reference, summary, notes and `otherNames`. Give an entry `otherNames`, a list of strings, for a name people type that its text does not contain: an abbreviation such as “mTLS”, or a common short form such as “device flow”. Case, spaces and hyphens do not matter, so give each name once. The names are searched and not shown, and are data on the entry for any later search to read. Add only a name that is really used for that thing, and not one the text already has. `npm run check:rendered` types a list of names into the lookup (`TYPED_NAMES` in `scripts/rendered-check.mjs`), each of which must find an entry: add a name there when you add one here.
+The lookup on the tracker searches an entry's name, reference, summary, notes and `otherNames`. Give an entry `otherNames`, a list of strings, for a name people type that its text does not contain: an abbreviation such as “mTLS”, or a common short form such as “device flow”. Case, spaces and hyphens do not matter, so give each name once. The names are searched and not shown, and are data on the entry for any later search to read. Add only a name that is really used for that thing, and not one the text already has. `npm run check:rendered` types a list of names into the lookup (`TYPED_NAMES` in `test/browser/standards.test.mjs`), each of which must find an entry: add a name there when you add one here.
 
 A fact about another document goes in the entry's `related`, not in its `detail`, and so does a second page one of the entry's facts is read from. Each item has a `kind`, which the tracker shows as a label: `updated-by`, `version` (a later one), `companion`, `replaces`, `builds-on` or `source`. A `note` of one short sentence is for what the kind does not say, such as the document's stage and date. A document with its own entry is named by `entry`, that entry's `id`, and the tracker links to it; the build fails on an unknown `id`. Any other is given a `name` and the `url` of the document itself, which is the source for the note. The tracker shows the list under “Related”, and the lookup searches it. `docs/source-review.md` reads the same list, so a link is written once.
 
@@ -188,8 +217,8 @@ Three rules hold throughout:
 
 Two checks cover this:
 
-- `npm test` includes a token audit (`scripts/contrast-check.mjs`) that fails if any declared text pairing falls below 4.5:1 in either theme.
-- `npm run check:rendered` (after `npm run build`, `scripts/rendered-check.mjs`) first reads every built page: each internal link leads to a page and each anchor to something on it, no word runs into the inline element after it, every lesson is listed, every page has its card, its Markdown copy and structured data that parses, `llms.txt` lists every copy, the README names every lesson, flow and deployment guide and every address it gives is on the site, the right answer to a lesson's questions cannot be guessed from its place or its length, a figure choice that must not be built is marked on its button, in its panel and in its table, and the response headers are in place. Then it loads every page under those headers and fails if one breaks its own content security policy. Then it opens the site in a browser and measures what is drawn: contrast and size of every diagram label in each step state, size and line length of running text, sideways overflow (also at 320px, on every flow and every lesson), accessibility violations (axe-core, WCAG 2.1 A and AA), and whether the things a reader depends on are present and work:
+- `npm test` includes a token audit (`test/unit/contrast.test.mjs`) that fails if any declared text pairing falls below 4.5:1 in either theme.
+- `npm run check:rendered` (after `npm run build`, the tests in `test/build/` and `test/browser/`) first reads every built page: each internal link leads to a page and each anchor to something on it, no word runs into the inline element after it, every lesson is listed, every page has its card, its Markdown copy and structured data that parses, `llms.txt` lists every copy, the README names every lesson, flow and deployment guide and every address it gives is on the site, the right answer to a lesson's questions cannot be guessed from its place or its length, a figure choice that must not be built is marked on its button, in its panel and in its table, and the response headers are in place. Then it loads every page under those headers and fails if one breaks its own content security policy. Then it opens the site in a browser and measures what is drawn: contrast and size of every diagram label in each step state, size and line length of running text, sideways overflow (also at 320px, on every flow and every lesson), accessibility violations (axe-core, WCAG 2.1 A and AA), and whether the things a reader depends on are present and work:
   - halfway down a long page the header still says which page it is and, on a wide screen, which section; a short page has no such line
   - the home page's figure makes its point before a click, fits about one screen and switches; there are three ways in; every lesson is listed in order; both answers to "whose authority" appear before either list of flows
   - a lesson's figure shows one complete variation, the table beneath covers them all, a choice changes what is shown, no explanation appears before an answer is chosen, each question has one right answer, and the page runs in the order every lesson shares
