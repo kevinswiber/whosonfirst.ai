@@ -1410,6 +1410,21 @@ export const standards: Standard[] = [
         note: "Names the stable specification and lists feature support by implementation.",
       },
       {
+        name: "Biscuit’s Datalog dialect",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md#logic-language",
+        kind: "source",
+      },
+      {
+        name: "Biscuit’s Protocol Buffers schema",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto",
+        kind: "source",
+      },
+      {
+        name: "Protocol Buffers encoding",
+        url: "https://protobuf.dev/programming-guides/encoding/",
+        kind: "source",
+      },
+      {
         name: "Eclipse Biscuit project",
         url: "https://projects.eclipse.org/projects/technology.biscuit",
         kind: "source",

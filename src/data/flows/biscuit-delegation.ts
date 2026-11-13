@@ -43,14 +43,14 @@ The original token still works. The worker’s copy cannot shed its restrictions
   },
   illustrated: {
     steps:
-      "Alice’s agent delegates a calendar-reading task to one worker. The API understands Biscuit’s 3.x format and its policy language, Datalog, through version 3.3. No third-party blocks or custom trust scopes are used.",
+      "Alice’s agent delegates a calendar-reading task to one worker. The API reads Biscuit’s 3.x Protocol Buffers format and evaluates its Datalog dialect through version 3.3. No third-party blocks or custom trust scopes are used.",
     preconditions: [
       "Alice has authorized the agent to access these calendar events, and the issuer has authenticated the agent and approved the original permissions. That setup is outside this diagram; Biscuit does not define login or consent.",
       "The Calendar API has the issuer’s public key and a policy for interpreting these permissions. The worker cannot read the orchestrator’s original token.",
       "The API derives one canonical resource and operation from each request. It supplies its own service name and current time.",
     ],
     examples:
-      "The listings show the token’s readable Datalog contents, not its serialized bytes. Resource names, policy predicates and dates are illustrative application choices. The API example carries a base64url-encoded token in a header chosen by this application.",
+      "The Datalog listings are readable text. Token blocks are stored as Protocol Buffers bytes; the API’s own facts and policy are not part of the token. Resource names, predicates and dates are application choices. The HTTP example wraps the binary token in base64url text for a header chosen by this application.",
     references:
       "The diagram follows the project’s stable Biscuit specification, pinned to the source revision linked in the tracker. The rating describes that specification, not every library that implements it.",
   },
@@ -163,6 +163,44 @@ allow if resource($event), operation($op), right($event, $op);`,
     biscuit: "required", // authority and appended blocks, signatures, scopes, checks and policy evaluation
   },
   related: ["token-exchange", "credential-broker", "dpop"],
+  sections: [
+    {
+      id: "language-and-format",
+      title: "The rule language and the token format",
+      intro:
+        "Biscuit specifies both how permissions are expressed and how tokens are encoded.",
+      parts: [
+        {
+          title: "Biscuit’s Datalog dialect",
+          body: `Datalog is a logic language built from facts, rules and queries. Biscuit defines its own dialect, including checks, allow/deny policies and trust scopes. The API must implement those semantics to authorize a request; decoding the token and verifying its signatures is not enough.`,
+          sources: [
+            {
+              label: "Biscuit’s logic language",
+              href: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md#logic-language",
+            },
+          ],
+        },
+        {
+          title: "The Protocol Buffers encoding",
+          body: `Biscuit uses Protocol Buffers for the outer token and the Datalog data inside each block. Biscuit’s schema defines the fields. Protocol Buffers supplies the binary encoding; Biscuit supplies the signature and authorization rules. Base64url makes those bytes suitable for text transport.`,
+          sources: [
+            {
+              label: "Biscuit’s token format",
+              href: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md#format",
+            },
+            {
+              label: "Biscuit’s Protocol Buffers schema",
+              href: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto",
+            },
+            {
+              label: "Protocol Buffers encoding",
+              href: "https://protobuf.dev/programming-guides/encoding/",
+            },
+          ],
+        },
+      ],
+    },
+  ],
   comparison: {
     title: "What the worker’s token permits",
     intro:
