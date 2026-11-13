@@ -225,7 +225,12 @@ Content-Type: application/json
     "coaz-framework": "optional", // mapping framework described below, not used by the steps
     "coaz-mcp": "optional", // a separate mapping; the HTTP tool in the steps does not use it
   },
-  related: ["mcp-authorization", "step-up-authorization", "token-exchange"],
+  related: [
+    "mcp-authorization",
+    "step-up-authorization",
+    "token-exchange",
+    "biscuit-delegation",
+  ],
   sections: [
     {
       id: "mcp",

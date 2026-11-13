@@ -354,7 +354,9 @@ The application’s calendar rules still decide which events this request can re
 
 [Backchannel approval (CIBA)](/flows/ciba/) starts with a direct request too. CIBA lets the authorization server reach the user separately. The GNAP profile here takes the browser there and back.
 
-[AAuth](/flows/aauth/) also uses signed requests. Its calendar example starts at the resource, and a person server supplies the user’s identity and consent. Here the agent starts at the GNAP authorization server, which runs the interaction and issues the tokens.`,
+[AAuth](/flows/aauth/) also uses signed requests. Its calendar example starts at the resource, and a person server supplies the user’s identity and consent. Here the agent starts at the GNAP authorization server, which runs the interaction and issues the tokens.
+
+The key proof happens at a different layer in [OAuth mTLS](/flows/oauth-mtls/). There, the TLS endpoint verifies possession of the certificate’s private key, and the API checks the token’s certificate binding. This GNAP example instead has the API verify a signature on the HTTP request.`,
     },
     {
       title: "What the profile requires beyond this example",
