@@ -114,7 +114,7 @@ Content-Type: application/json
       title: "The Calendar API assembles the facts",
       body: `The Calendar API checks the token against the trusted issuer’s records: it must be active, issued for this service and valid for the agent to act for Alice in the Northwind tenant. If that check fails, the service rejects the call before asking for a decision. It takes the agent ID, represented user and tenant from the issuer’s record. The agent ID says which client the issuer gave the token to. A bearer token alone cannot prove who presented it.
 
-The API takes the action from its route and resolves the supplied calendar ID within Alice’s account in Northwind. It uses the calendar’s canonical ID, parses the start time as UTC and checks that the duration is a positive whole number of minutes. It keeps these inputs together for both evaluation and execution, along with the calendar version it read.`,
+The API takes the action from its route and resolves the supplied calendar ID within Alice’s account in Northwind. It uses the calendar’s canonical ID, parses the start time as UTC and checks that the duration is a positive whole number of minutes. It keeps these inputs together for both evaluation and execution.`,
     },
     {
       from: "tool",
@@ -156,7 +156,7 @@ Content-Type: application/json
       kind: "resp",
       label: "200 · allow",
       title: "The policy allows the 30-minute event",
-      body: `In this application, the scheduling agent may add focus blocks for Alice on a Northwind calendar she can write to, up to 60 minutes per block. The policy service checks the agent and Alice against its delegation rules, checks Alice’s write permission for this calendar and applies the duration limit. It returns the AuthZEN Boolean \`decision\`; here it is \`true\`.`,
+      body: `In this application, the scheduling agent may add focus blocks for Alice on a Northwind calendar she can write to, up to 60 minutes per block. That limits how much time a single tool call can mark as busy. The policy service checks the agent and Alice against its delegation rules, checks Alice’s write permission for this calendar and applies the duration limit. It returns the AuthZEN Boolean \`decision\`; here it is \`true\`.`,
       code: {
         lang: "http",
         text: `HTTP/1.1 200 OK
@@ -171,9 +171,9 @@ Content-Type: application/json
       kind: "resp",
       label: "Add the event; return result",
       title: "The Calendar API adds the event it evaluated",
-      body: `The API matches the answer to the pending evaluation. It uses the same calendar, action, start time and 30-minute duration to write the event. The write checks that the calendar version still matches the one the API read. A version change stops the write.
+      body: `The API matches the answer to the pending evaluation. It uses the same calendar, action, start time and 30-minute duration to write the event.
 
-The API uses the answer only for the pending call and within a short window set by the application. A changed calendar, start time or duration needs a new evaluation. If the answer expires or the API learns that a fact used for the decision changed, it discards the answer and evaluates again before it can proceed.`,
+The API uses the answer only for the pending call and within a short window set by the application. A changed calendar, start time or duration needs a new evaluation. If the answer expires or the API learns that a fact used for the decision changed, such as Alice’s write permission, it discards the answer and evaluates again before it can proceed.`,
     },
     {
       from: "agent",
@@ -231,7 +231,9 @@ Content-Type: application/json
       parts: [
         {
           title: "A draft way to map MCP calls",
-          body: `The COAZ binding for MCP is an AuthZEN working group draft. It reads claims from a validated JWT access token. Its default mapping uses the user’s token subject (\`sub\`) as the AuthZEN subject and puts the agent’s client ID, if present, in \`context.agent\`.
+          body: `The COAZ binding for MCP is an AuthZEN working group draft. Its default mapping takes the AuthZEN subject from \`sub\` in the validated JWT access token. If \`sub\` names the agent, the issuer and enforcement point can agree on a different token claim that names the user the agent acts for.
+
+With Alice’s identity selected, the COAZ mapping puts her in \`subject.id\` and the agent’s client ID, if present, in \`context.agent\`. Step 3 uses the reverse arrangement. The agent is the subject, and Alice is in \`subject.properties.represented_user_id\`. The policy has to read the fields its enforcement point sends.
 
 For a tool call, the default names the tool and leaves out its arguments. To include an event’s duration in the evaluation, the server can declare a mapping for that tool in its input schema.`,
           sources: [

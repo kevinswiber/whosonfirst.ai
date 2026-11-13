@@ -138,7 +138,6 @@
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
-  "https://github.com/openid/authzen": {},
   "https://github.com/spiffe/spire": {},
   "https://github.com/visa/trusted-agent-protocol": {},
   "https://github.com/x402-foundation/x402": {},
