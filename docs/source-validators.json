@@ -134,6 +134,9 @@
   "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto": {},
   "https://github.com/kubernetes-sigs/agent-sandbox": {},
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
@@ -226,6 +229,12 @@
   "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
+  "https://projects.eclipse.org/projects/technology.biscuit": {
+    "etag": "\"1794545138-gzip\""
+  },
+  "https://protobuf.dev/programming-guides/encoding/": {
+    "etag": "W/\"6af6b72f-18682\""
+  },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },

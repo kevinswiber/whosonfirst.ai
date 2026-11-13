@@ -97,9 +97,11 @@ A published specification pins the draft revision it was written against. The si
 
 ### Projects with releases
 
-`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`. Check the latest release, the API version or stage the `detail` names, and the foundation the project sits under.
+`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`, `biscuit`. Check the latest release, the API version or stage the `detail` names, and the foundation the project sits under.
 
 A project entry has a maturity level only if `level` is set on it, with its evidence in a comment. If a project's own statement of stability has changed, say so: it can change a flow's rating.
+
+The Biscuit entry pins a specification revision. Compare it with the project’s current stable specification and README before advancing it; then recheck the Datalog examples and the stability evidence in `flows/biscuit-delegation.ts` and `standards.ts` (`biscuit`).
 
 ### Related documents on a tracker entry
 
@@ -285,6 +287,8 @@ kubernetes.io
 github.com
 api.github.com
 raw.githubusercontent.com
+projects.eclipse.org
+protobuf.dev
 docs.github.com
 ap2-protocol.org
 verifiableintent.dev

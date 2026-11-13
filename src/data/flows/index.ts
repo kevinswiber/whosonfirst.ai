@@ -9,6 +9,7 @@ import { accessRevocation } from "./access-revocation";
 import { agentPayments } from "./agent-payments";
 import { agentToAgent } from "./agent-to-agent";
 import { authorizationCodePkce } from "./authorization-code-pkce";
+import { biscuitDelegation } from "./biscuit-delegation";
 import { ciba } from "./ciba";
 import { clientCredentials } from "./client-credentials";
 import { credentialBroker } from "./credential-broker";
@@ -38,6 +39,7 @@ export const flows: Flow[] = [
   urlElicitation,
   aauth,
   tokenExchange,
+  biscuitDelegation,
   crossAppAccess,
   identityChaining,
   transactionTokens,
