@@ -26,7 +26,13 @@ const bodies = [...new Set(standards.map((s) => s.body))].sort(
 );
 const count = (fn: (s: (typeof standards)[number]) => boolean) =>
   standards.filter(fn).length;
-const usedIn = (id: string) => flows.filter((f) => f.standards.includes(id));
+// A flow uses an entry it requires. One it lists as optional or background, or whose role is not
+// settled, it only mentions: a draft named for context is not something the flow depends on.
+const listedIn = (id: string) => flows.filter((f) => f.standards.includes(id));
+const usedIn = (id: string) =>
+  listedIn(id).filter((f) => !f.roles || f.roles[id] === "required");
+const mentionedIn = (id: string) =>
+  listedIn(id).filter((f) => f.roles && f.roles[id] !== "required");
 const published = count((x) => x.status === "rfc" || x.status === "final");
 const draftCount = count(
   (x) => x.status === "wg-draft" || x.status === "draft",
@@ -173,6 +179,7 @@ const moved = [
             {
               standards.map((s) => {
                 const used = usedIn(s.id);
+                const mentioned = mentionedIn(s.id);
                 // A related document with its own entry links to that entry
                 // on this page. Any other links to the document itself.
                 const related = (s.related ?? []).map((r) => {
@@ -248,6 +255,17 @@ const moved = [
                         <span class="sx-used">
                           Used in{' '}
                           {used.map((f, i) => (
+                            <>
+                              {i > 0 && ', '}
+                              <a href={`/flows/${f.slug}/`}>{f.short}</a>
+                            </>
+                          ))}
+                        </span>
+                      )}
+                      {mentioned.length > 0 && (
+                        <span class="sx-used">
+                          Mentioned in{' '}
+                          {mentioned.map((f, i) => (
                             <>
                               {i > 0 && ', '}
                               <a href={`/flows/${f.slug}/`}>{f.short}</a>
