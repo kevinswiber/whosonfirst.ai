@@ -17,7 +17,13 @@ import { PAGES } from "../support/site.mjs";
 
 // The long pages say where the reader is on a line under the bar. The home
 // page and the index pages are short, or are lists, and have none.
-const LINED = ["lesson", "flow", "concepts", "deployment guide"];
+const LINED = [
+  "lesson",
+  "flow",
+  "concepts",
+  "deployment guide",
+  "field record",
+];
 
 const site = useBrowser();
 

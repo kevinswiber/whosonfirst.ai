@@ -8,7 +8,6 @@ import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
 import FieldSummary from "../../components/FieldSummary.astro";
-import FieldEvidence from "../../components/FieldEvidence.astro";
 import { fieldProfile } from "../../data/field";
 import {
   flow as flowBySlug,
@@ -462,8 +461,6 @@ const details = [
         </>
       ))
     }
-
-    {inTheField && <FieldEvidence profile={inTheField} />}
 
     <section aria-labelledby="standards">
       <h2 id="standards">Standards in play</h2>

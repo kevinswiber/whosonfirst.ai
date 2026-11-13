@@ -1,21 +1,19 @@
 ---
 import Base from "../../layouts/Base.astro";
-import {
-  deploymentOrganizations,
-  EVENT_LABEL,
-  fieldDate,
-  fieldProfile,
-} from "../../data/field";
+import { fieldDate, fieldProfile } from "../../data/field";
 import { byGroup, flows, maturityLabel } from "../../data/flows";
+import { fieldSnapshot } from "../../lib/field";
 
 const groups = byGroup().map((group) => ({
   ...group,
   entries: group.flows.map((flow) => {
     const profile = fieldProfile(flow.slug);
-    const latest = profile?.events
-      .filter((event) => event.kind !== "evidence-added")
-      .sort((a, b) => b.date.localeCompare(a.date))[0];
-    return { flow, profile, latest };
+    return {
+      flow,
+      profile,
+      snapshot: profile && fieldSnapshot(profile),
+      href: profile ? `/field/${flow.slug}/` : `/flows/${flow.slug}/`,
+    };
   }),
 }));
 const reviewed = groups
@@ -35,6 +33,7 @@ const reviewed = groups
       <p class="field-coverage">
         <strong>{reviewed} of {flows.length} flows reviewed</strong> · <a href="#methodology">How we review evidence</a>
       </p>
+      <p class="field-note">Counts reflect the sources reviewed for each flow. Market prevalence is unknown.</p>
     </div>
   </div>
 
@@ -65,15 +64,16 @@ const reviewed = groups
         <section class="field-group" aria-labelledby={`field-${group.id}`}>
           <h2 id={`field-${group.id}`}>{group.title}</h2>
           <ul class="field-list" role="list">
-            {group.entries.map(({ flow, profile, latest }) => (
+            {group.entries.map(({ flow, profile, snapshot, href }) => (
               <li
                 class="field-record"
                 id={flow.slug}
                 data-review={profile ? 'reviewed' : 'unreviewed'}
                 data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
+                data-flow-identity={`${flow.title} ${flow.short} ${flow.slug}`}
               >
                 <div class="field-identity">
-                  <h3><a href={`/flows/${flow.slug}/${profile ? '#in-the-field' : ''}`}>{flow.short}</a></h3>
+                  <h3><a href={href}>{flow.short}</a></h3>
                   <dl>
                     <div>
                       <dt class="visually-hidden">Standards maturity</dt>
@@ -89,50 +89,56 @@ const reviewed = groups
                     </div>
                   </dl>
                 </div>
-                {profile && (
-                  <div class="field-overview">
-                    <div>
-                      <h4>Implementation options</h4>
-                      {profile.implementations.length ? (
-                        <ul role="list">
-                          {profile.implementations.map((entry) => (
-                            <li data-entry-text={`${entry.organization} ${entry.product} ${entry.role}`}>
-                              <strong>{entry.product}</strong>
-                              <p class="field-detail">{entry.role} · {entry.release.label}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p class="field-detail">None found in reviewed sources.</p>
-                      )}
-                    </div>
-                    <div>
-                      <h4>Production reports</h4>
-                      {profile.deployments.length ? (
-                        <>
-                          <p class="field-detail field-operators">
-                            {deploymentOrganizations(profile)} named {deploymentOrganizations(profile) === 1 ? 'operator' : 'operators'}
-                          </p>
-                          <ul role="list">
-                            {profile.deployments.map((entry) => (
-                              <li data-entry-text={`${entry.organization} ${entry.setting}`}>
-                                <strong>{entry.organization}</strong>
-                                <p class="field-detail">{entry.setting}</p>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      ) : (
-                        <p class="field-detail">None found in reviewed sources.</p>
-                      )}
-                    </div>
-                    {latest && (
-                      <p class="field-latest">
-                        <strong>{EVENT_LABEL[latest.kind]}.</strong>{' '}
-                        <time datetime={latest.date}>{fieldDate(latest.date)}</time>. {latest.summary}
-                      </p>
-                    )}
-                  </div>
+                {profile && snapshot && (
+                  <>
+                    <dl class="field-overview">
+                      <div>
+                        <dt>Implementation options</dt>
+                        <dd>
+                          {snapshot.productExamples ? (
+                            <>
+                              <strong>{snapshot.optionsLabel}</strong>
+                              <p class="field-examples">
+                                {snapshot.products.length === 1 ? 'Example: ' : 'Examples: '}{snapshot.productExamples}
+                              </p>
+                            </>
+                          ) : 'None found in reviewed sources.'}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Production reports</dt>
+                        <dd>
+                          {snapshot.operator ? (
+                            <>
+                              <strong>{snapshot.operatorsLabel}</strong>
+                              <p class="field-examples">Example: {snapshot.operator}</p>
+                            </>
+                          ) : 'None found in reviewed sources.'}
+                        </dd>
+                      </div>
+                    </dl>
+                    <p class="field-record-link"><a href={href}>Full field record<span class="visually-hidden"> for {flow.short}</span></a></p>
+                    <template>
+                      {profile.implementations.map((entry) => (
+                        <a
+                          href={`${href}#field-${entry.id}`}
+                          data-name={entry.product}
+                          data-owner={entry.organization}
+                          data-role={entry.role}
+                          data-example={snapshot.products.includes(entry.product) ? '' : undefined}
+                        >{entry.product} · {entry.role}</a>
+                      ))}
+                      {profile.deployments.map((entry) => (
+                        <a
+                          href={`${href}#field-${entry.id}`}
+                          data-name={entry.organization}
+                          data-role={entry.setting}
+                          data-example={snapshot.operator === entry.organization ? '' : undefined}
+                        >{entry.organization} · {entry.setting}</a>
+                      ))}
+                    </template>
+                    <div class="field-matches" hidden></div>
+                  </>
                 )}
               </li>
             ))}
@@ -188,30 +194,61 @@ const reviewed = groups
         element,
         entries: [...element.querySelectorAll<HTMLElement>('.field-record')].map((record) => {
           const flow = record.dataset.flowText ?? '';
-          const parts = [...record.querySelectorAll<HTMLElement>('[data-entry-text]')];
+          const identity = record.dataset.flowIdentity ?? '';
+          const source = record.querySelector('template');
+          const matches = record.querySelector<HTMLElement>('.field-matches');
           return {
             record,
-            // Match words against a flow and one named option or operator.
-            // Names and roles from different options do not establish a match.
-            candidates: [
-              searchText(flow),
-              ...parts.map((part) => searchText(`${flow} ${part.dataset.entryText}`)),
-            ],
+            matches,
+            flowText: searchText(flow),
+            // A product or operator and its role belong to the same entry.
+            candidates: Array.from(source?.content.querySelectorAll('a') ?? [], (link) => ({
+              text: searchText(`${identity} ${link.dataset.name} ${link.dataset.owner ?? ''} ${link.dataset.role}`),
+              link,
+            })).sort((a, b) => Number(a.link.hasAttribute('data-example')) - Number(b.link.hasAttribute('data-example'))),
           };
         }),
       }));
 
       const filter = () => {
         const words = searchText(input.value).split(/\s+/).filter(Boolean);
+        const contains = (text: string) => words.every((word) => text.includes(word));
         let shown = 0;
         for (const { element, entries } of groups) {
           let hasMatch = false;
-          for (const { record, candidates } of entries) {
+          for (const { record, matches, flowText, candidates } of entries) {
             const matchesReview = !review.value || record.dataset.review === review.value;
-            const matchesText = candidates.some((candidate) => words.every((word) => candidate.includes(word)));
-            const matches = matchesReview && matchesText;
-            record.toggleAttribute('data-filtered', !matches);
+            const matchesFlow = contains(flowText);
+            const matchingEntries = matchesReview && !matchesFlow
+              ? candidates.filter((candidate) => contains(candidate.text))
+              : [];
+            const show = matchesReview && (matchesFlow || matchingEntries.length > 0);
+            record.toggleAttribute('data-filtered', !show);
             if (matches) {
+              matches.replaceChildren();
+              matches.hidden = matchingEntries.length === 0;
+              if (matchingEntries.length) {
+                const label = document.createElement('strong');
+                label.textContent = 'Matching evidence';
+                const list = document.createElement('ul');
+                for (const { link } of matchingEntries.slice(0, 2)) {
+                  const item = document.createElement('li');
+                  const anchor = document.createElement('a');
+                  anchor.href = link.getAttribute('href')!;
+                  anchor.textContent = link.textContent;
+                  item.append(anchor);
+                  list.append(item);
+                }
+                const remaining = matchingEntries.length - 2;
+                if (remaining > 0) {
+                  const item = document.createElement('li');
+                  item.textContent = `${remaining} more ${remaining === 1 ? 'match' : 'matches'} in the full record.`;
+                  list.append(item);
+                }
+                matches.append(label, list);
+              }
+            }
+            if (show) {
               shown++;
               hasMatch = true;
             }
@@ -245,6 +282,11 @@ const reviewed = groups
     font-size: 0.95rem;
   }
   .field-coverage strong { color: var(--fg); }
+  .field-note {
+    margin: 0.25rem 0 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
   field-directory { display: block; }
   .field-controls {
     margin-top: 1.4rem;
@@ -294,8 +336,7 @@ const reviewed = groups
     margin: 0 0 0.65rem;
     font-size: 1.48rem;
   }
-  .field-list,
-  .field-overview ul {
+  .field-list {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -303,7 +344,7 @@ const reviewed = groups
   .field-list { border-top: 1px solid var(--fg); }
   .field-record {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.65fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 2.65fr) minmax(7rem, auto);
     gap: 0.75rem 1.4rem;
     margin: 0;
     padding: 0.8rem 0;
@@ -315,16 +356,8 @@ const reviewed = groups
   }
   .field-record h3 { margin: 0 0 0.2rem; font-size: 1.12rem; }
   .field-record h3 a { color: var(--accent); }
-  .field-record h4 {
-    margin: 0 0 0.45rem;
-    color: var(--fg-muted);
-    font: 500 0.76rem/1.35 var(--font-label);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
   .field-record dl { margin: 0; }
-  .field-record dd,
-  .field-detail {
+  .field-record dd {
     margin: 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
@@ -332,22 +365,31 @@ const reviewed = groups
   }
   .field-overview {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    gap: 0.75rem 1.25rem;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 0.6rem 1.25rem;
     min-width: 0;
-    line-height: 1.45;
   }
-  .field-overview li { margin-bottom: 0; }
-  .field-overview li + li { margin-top: 0.4rem; }
-  .field-operators { margin-bottom: 0.35rem; }
-  .field-latest {
-    grid-column: 1 / -1;
-    margin: 0;
-    padding-top: 0.6rem;
-    border-top: 1px solid var(--border);
+  .field-overview dt {
+    margin: 0 0 0.25rem;
     color: var(--fg-muted);
+    font: 500 0.76rem/1.35 var(--font-label);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .field-overview dd strong { color: var(--fg); }
+  .field-examples { margin: 0.12rem 0 0; }
+  .field-record-link {
+    margin: 0;
     font-size: 0.95rem;
   }
+  .field-matches {
+    grid-column: 2 / -1;
+    padding: 0.55rem 0 0 0.8rem;
+    border-inline-start: 2px solid var(--accent);
+    font-size: 0.95rem;
+  }
+  .field-matches ul { margin: 0.25rem 0 0; }
+  .field-matches li { margin: 0.2rem 0; }
   .field-method {
     margin-top: 2.2rem;
     padding-top: 1.2rem;
@@ -362,6 +404,7 @@ const reviewed = groups
   }
   @media (max-width: 52rem) {
     .field-record { grid-template-columns: minmax(0, 1fr); }
+    .field-matches { grid-column: 1 / -1; }
     .field-identity dl {
       display: flex;
       flex-wrap: wrap;
@@ -372,7 +415,7 @@ const reviewed = groups
     .field-overview { grid-template-columns: minmax(0, 1fr); }
   }
   @media print {
-    .field-controls, .field-empty { display: none; }
+    .field-controls, .field-empty, .field-matches { display: none; }
     .field-record { break-inside: avoid; }
   }
 </style>

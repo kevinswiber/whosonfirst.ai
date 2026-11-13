@@ -265,9 +265,11 @@ test("every page gives its own address as canonical and describes itself in stru
 // attribute that limited review to the site author or the standards review date.
 test("pages with field evidence make no whole-page reviewer claim", () => {
   const pages = built.filter(
-    (p) => p.path === "/field/" || p.html.includes('class="field-evidence"'),
+    (p) =>
+      p.path.startsWith("/field/") || p.html.includes("data-field-reviewed"),
   );
   assert.ok(pages.some((p) => p.path === "/field/"));
+  assert.ok(pages.some((p) => p.path === "/field/dpop/"));
   assert.ok(pages.some((p) => p.path === "/flows/dpop/"));
   for (const page of pages) {
     const scripts = [

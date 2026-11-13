@@ -1,6 +1,7 @@
 ---
 import type { FieldProfile } from "../data/field";
-import { EVENT_LABEL, fieldDate } from "../data/field";
+import { fieldDate } from "../data/field";
+import { fieldSnapshot } from "../lib/field";
 
 interface Props {
   slug: string;
@@ -8,44 +9,31 @@ interface Props {
 }
 
 const { slug, profile } = Astro.props;
-const names = new Intl.ListFormat("en", { type: "conjunction" });
-const latest = profile?.events
-  .filter((event) => event.kind !== "evidence-added")
-  .sort((a, b) => b.date.localeCompare(a.date))[0];
+const snapshot = profile && fieldSnapshot(profile);
 ---
 
-<div class="field-summary">
+<div class="field-summary" id="in-the-field" data-field-reviewed={profile ? '' : undefined}>
   <p class="field-summary-head">
-    <strong><a href={profile ? '#in-the-field' : `/field/#${slug}`}>In the field</a></strong>
+    <strong><a href={profile ? `/field/${slug}/` : `/field/#${slug}`}>In the field</a></strong>
     {profile && (
       <span class="field-summary-date">Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></span>
     )}
   </p>
-  {profile ? (
-    <dl>
-      <div>
-        <dt>Documented options</dt>
-        <dd>{names.format([...new Set(profile.implementations.map((entry) => entry.product))]) || 'None found in reviewed sources.'}</dd>
-      </div>
-      <div>
-        <dt>Production reports</dt>
-        <dd>{names.format([...new Set(profile.deployments.map((entry) => entry.organization))]) || 'None found in reviewed sources.'}</dd>
-      </div>
-      {latest && (
-        <div>
-          <dt>{EVENT_LABEL[latest.kind]}</dt>
-          <dd><time datetime={latest.date}>{fieldDate(latest.date)}</time>. {latest.summary}</dd>
-        </div>
-      )}
-      {profile.observations.length > 0 && (
-        <div>
-          <dt>Observations</dt>
-          <dd>See the <a href="#field-observations">counts and populations</a> in the field record.</dd>
-        </div>
-      )}
-    </dl>
+  {snapshot ? (
+    <>
+      <p class="field-summary-line">
+        {snapshot.productExamples
+          ? <><strong>{snapshot.optionsLabel}.</strong> {snapshot.products.length === 1 ? 'Example: ' : 'Examples: '}{snapshot.productExamples}</>
+          : 'No implementation option found in reviewed sources.'}
+      </p>
+      <p class="field-summary-line">
+        {snapshot.operator
+          ? <><strong>{snapshot.operatorsLabel} in production reports.</strong> For example, {snapshot.operator}.</>
+          : 'No production report found in reviewed sources.'}
+      </p>
+    </>
   ) : (
-    <p class="field-summary-empty">Field evidence for this flow has yet to be reviewed.</p>
+    <p class="field-summary-line">Field evidence for this flow has yet to be reviewed.</p>
   )}
 </div>
 
@@ -57,6 +45,7 @@ const latest = profile?.events
     font-size: 0.95rem;
     line-height: 1.45;
   }
+  .field-summary:target { border-inline-start-color: var(--accent); }
   .field-summary-head {
     display: flex;
     flex-wrap: wrap;
@@ -68,23 +57,9 @@ const latest = profile?.events
     color: var(--fg-muted);
     font-size: 0.88rem;
   }
-  dl {
-    display: grid;
-    gap: 0.4rem;
-    margin: 0.5rem 0 0;
-  }
-  dl > div {
-    display: grid;
-    grid-template-columns: minmax(0, 9.4rem) minmax(0, 1fr);
-    gap: 0.05rem 0.75rem;
-  }
-  dt { font-weight: 600; }
-  dd { margin: 0; }
-  .field-summary-empty {
-    margin: 0.25rem 0 0;
+  .field-summary-line {
+    margin: 0.3rem 0 0;
     color: var(--fg-muted);
   }
-  @media (max-width: 34rem) {
-    dl > div { grid-template-columns: minmax(0, 1fr); }
-  }
+  .field-summary-line strong { color: var(--fg); }
 </style>

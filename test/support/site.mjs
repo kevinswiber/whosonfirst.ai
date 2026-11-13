@@ -32,6 +32,7 @@ export const PAGES = [
   { path: "/concepts/", name: "concepts" },
   { path: "/flows/", name: "flows index" },
   { path: "/field/", name: "field directory" },
+  { path: "/field/dpop/", name: "field record" },
   { path: "/guide/", name: "decision guide" },
   { path: "/deployments/kubernetes/", name: "deployment guide" },
 ];
