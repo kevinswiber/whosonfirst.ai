@@ -87,6 +87,9 @@ describe("phone flow", () => {
     );
   });
   test("Forward after Back opens the diagram again", async () => {
+    await arrive();
+    await pressStep(4);
+    await back();
     await page.goForward();
     await settle();
     const seen = await now();

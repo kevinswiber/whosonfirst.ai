@@ -1,7 +1,7 @@
 // A lesson, in each theme, on a desktop and on a phone: its figure, its
 // questions, and the shape every lesson shares.
 import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { after, before, beforeEach, describe, test } from "node:test";
 import {
   device,
   open,
@@ -24,13 +24,19 @@ for (const theme of THEMES) {
           device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
         );
         page = await ctx.newPage();
-        await open(page, site.url(LESSON));
       });
       after(() => ctx.close());
+      // Each test starts from the page as it arrives, and does its own steps.
+      let measured;
+      let answered;
+      let shaped;
+      beforeEach(async () => {
+        measured = answered = shaped = undefined;
+        await open(page, site.url(LESSON));
+      });
 
       // the figure: a complete first state, every variation in the table beneath,
       // and a choice that changes what is shown
-      let measured;
       const fig = () =>
         (measured ??= page.evaluate(() => {
           const sc = document.querySelector(".lesson .sc");
@@ -67,9 +73,13 @@ for (const theme of THEMES) {
           `${f.glanceRows} of ${f.options.length} rows, ${f.glanceMarks} answers`,
         );
       });
-      test("choosing a variation shows it, and only it", async () => {
+      const chooseLast = async () => {
         const last = (await fig()).options.at(-1);
         await page.check(`.lesson .sc input[value="${last}"]`, { force: true });
+        return last;
+      };
+      test("choosing a variation shows it, and only it", async () => {
+        const last = await chooseLast();
         const after = await page.evaluate(() =>
           [...document.querySelectorAll(".lesson .sc-panel")]
             .filter((p) => p.offsetParent)
@@ -78,13 +88,13 @@ for (const theme of THEMES) {
         assert.deepEqual(after, [last]);
       });
       test("figure path: no label overlaps a box or another label, or leaves the figure", async () => {
+        await chooseLast();
         const clean = await page.evaluate(pathClean, ".lesson .sc");
         assert.equal(clean, 0, `${clean} collisions`);
       });
 
       // check yourself: nothing is given away until an answer is chosen, and the
       // explanation that then appears is the chosen answer's own
-      let answered;
       const quiz = () =>
         (answered ??= page.evaluate(() => {
           const q = document.querySelector(".ck.closing fieldset");
@@ -129,7 +139,6 @@ for (const theme of THEMES) {
       });
 
       // the shape every lesson shares
-      let shaped;
       const shape = () =>
         (shaped ??= page.evaluate(() => {
           const top = (sel) => {

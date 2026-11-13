@@ -75,7 +75,7 @@ node --test --test-name-pattern="sideways" "test/browser/*.test.mjs"
 
 Before a pull request, run the four commands [CONTRIBUTING.md](../CONTRIBUTING.md) names. Continuous integration runs every check on every change, because a change to any file under `src/` can move what some page draws.
 
-A new check is a test in the file for what it reads. Tests in a suite run in order and may share a page. A file can run suites side by side with `{ concurrency: true }`, as the files that measure every page do. It does that only where each suite has a page of its own and nothing waits on a clock, and each suite inside then sets `{ concurrency: 1 }`, since a suite's tests take its setting.
+A new check is a test in the file for what it reads. Tests in a suite run in order and may share a page, but each sets up the state it needs: it opens the page, or does the clicks and key presses itself, and does not count on a test before it. So any test passes when it runs by its name alone, as the pattern above runs it. A file can run suites side by side with `{ concurrency: true }`, as the files that measure every page do. It does that only where each suite has a page of its own and nothing waits on a clock, and each suite inside then sets `{ concurrency: 1 }`, since a suite's tests take its setting.
 
 ### Continuous integration
 

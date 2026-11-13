@@ -111,9 +111,9 @@ for (const theme of THEMES) {
           "a marked term does not lead to the glossary",
         );
       });
-      let term;
-      test("focusing a glossary term previews its definition inside the window", async () => {
-        term = await page.evaluate(async () => {
+      // Focuses the first term in the introduction, and says what its preview shows.
+      const preview = () =>
+        page.evaluate(async () => {
           const settle = () => new Promise((r) => setTimeout(r, 60));
           const a = document.querySelector(".intro a.term");
           if (!a) return null;
@@ -137,6 +137,8 @@ for (const theme of THEMES) {
             terms: document.querySelectorAll("main a.term").length,
           };
         });
+      test("focusing a glossary term previews its definition inside the window", async () => {
+        const term = await preview();
         assert.ok(term, "no term marked in the introduction");
         assert.ok(
           term.shown &&
@@ -148,6 +150,8 @@ for (const theme of THEMES) {
         );
       });
       test("Escape dismisses the definition without moving focus", async () => {
+        const term = await preview();
+        assert.ok(term?.shown, "the definition was not shown to begin with");
         await page.keyboard.press("Escape");
         await page.waitForTimeout(80);
         const dismissed = await page.evaluate(() => ({
@@ -160,7 +164,6 @@ for (const theme of THEMES) {
           focused:
             document.activeElement === document.querySelector(".intro a.term"),
         }));
-        assert.ok(term, "no term marked in the introduction");
         assert.deepEqual(dismissed, {
           closed: true,
           collapsed: "false",
@@ -309,8 +312,10 @@ for (const theme of THEMES) {
           );
         });
         // keyboard: Left and Right step, Down is left to scrolling, and focus is never stranded
-        // (the test before ends on the last step, where Next is disabled and Previous is not)
         test("arrow keys: Left steps back, Down does not change the step", async () => {
+          // from the last step, where Next is disabled and Previous is not
+          await at(count);
+          await page.waitForTimeout(80);
           await page.focus('[data-act="prev"]');
           await page.keyboard.press("ArrowLeft");
           const afterLeft = await stepText(page);
@@ -322,6 +327,8 @@ for (const theme of THEMES) {
           );
         });
         test("last step: focus moves from the disabled Next to Previous", async () => {
+          await at(count - 1);
+          await page.waitForTimeout(80);
           await page.click('[data-act="next"]');
           const handed = await page.evaluate(() => ({
             disabled: document.querySelector('[data-act="next"]').disabled,

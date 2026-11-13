@@ -1,7 +1,7 @@
 // The home page, in each theme, on a desktop and on a phone: the header and its
 // menu, the figure in the hero, the question of whose authority, and the ways in.
 import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { after, before, beforeEach, describe, test } from "node:test";
 import {
   device,
   open,
@@ -33,9 +33,10 @@ for (const theme of THEMES) {
           device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
         );
         page = await ctx.newPage();
-        await open(page, site.url("/"));
       });
       after(() => ctx.close());
+      // Each test starts from the page as it arrives, and does its own steps.
+      beforeEach(() => open(page, site.url("/")));
 
       const visibleLinks = () =>
         page.evaluate(() =>
@@ -47,14 +48,18 @@ for (const theme of THEMES) {
             .map((a) => a.getAttribute("href")),
         );
 
+      const openMenu = async () => {
+        await page.focus(".menu-toggle");
+        await page.keyboard.press("Enter");
+      };
+
       if (vp.name === "phone") {
         test("header keeps the lessons in view", async () => {
           const closed = await visibleLinks();
           assert.ok(closed.includes("/learn/"), closed.join(" "));
         });
         test("menu opens from the keyboard and shows every destination", async () => {
-          await page.focus(".menu-toggle");
-          await page.keyboard.press("Enter");
+          await openMenu();
           const shown = await visibleLinks();
           assert.deepEqual(
             DESTINATIONS.filter((d) => !shown.includes(d)),
@@ -63,6 +68,7 @@ for (const theme of THEMES) {
           );
         });
         test("menu targets are at least 44px tall", async () => {
+          await openMenu();
           const size = await page.evaluate(() =>
             Math.min(
               ...[
@@ -75,6 +81,7 @@ for (const theme of THEMES) {
           assert.ok(size >= 44, `smallest ${Math.round(size)}px`);
         });
         test("first menu link takes focus next, with a visible ring", async () => {
+          await openMenu();
           await page.keyboard.press("Tab");
           const focused = await page.evaluate(() => {
             const el = document.activeElement;
@@ -88,6 +95,9 @@ for (const theme of THEMES) {
           assert.deepEqual(focused, { href: "/learn/", outline: true });
         });
         test("Escape closes the menu and returns focus to its button", async () => {
+          // from the first link in the open menu
+          await openMenu();
+          await page.keyboard.press("Tab");
           await page.keyboard.press("Escape");
           const back = await page.evaluate(() => ({
             expanded: document
@@ -111,9 +121,8 @@ for (const theme of THEMES) {
 
       // The figure in the hero is lesson 1's, without its listings. It has to make
       // its point before anything is clicked, and without a page of scrolling.
-      let measured;
       const first = () =>
-        (measured ??= page.evaluate(() => {
+        page.evaluate(() => {
           const fig = document.querySelector(".hero .sc");
           const panel = [...fig.querySelectorAll(".sc-panel")].find(
             (p) => p.offsetParent,
@@ -128,7 +137,7 @@ for (const theme of THEMES) {
                 height: fig.getBoundingClientRect().height,
               }
             : null;
-        }));
+        });
       test("explainer shows a complete first state", async () => {
         const f = await first();
         assert.ok(f, "not visible");
@@ -145,10 +154,7 @@ for (const theme of THEMES) {
           `${Math.round(f.height)}px, allowed ${Math.round(room)}px`,
         );
       });
-      let keyPath;
       test("choosing another credential changes the panel", async () => {
-        await first();
-        keyPath = await page.evaluate(pathClean, ".hero .sc");
         await page.check('.hero .sc input[value="token"]', { force: true });
         const second = await page.evaluate(() =>
           [...document.querySelectorAll(".hero .sc-panel")]
@@ -158,14 +164,15 @@ for (const theme of THEMES) {
         assert.deepEqual(second, ["token"]);
       });
       test("explainer path: no label overlaps a box or another label, or leaves the figure, in either state", async () => {
+        const keyPath = await page.evaluate(pathClean, ".hero .sc");
+        await page.check('.hero .sc input[value="token"]', { force: true });
         const tokenPath = await page.evaluate(pathClean, ".hero .sc");
         assert.deepEqual({ keyPath, tokenPath }, { keyPath: 0, tokenPath: 0 });
       });
 
       // both answers to "whose authority" are on screen together, before either list of flows
-      let au;
-      test("both authority answers shown before either branch", async () => {
-        au = await page.evaluate(() => {
+      const authority = () =>
+        page.evaluate(() => {
           const choices = [
             ...document.querySelectorAll(".au-choices label"),
           ].map((l) => l.getBoundingClientRect());
@@ -182,6 +189,8 @@ for (const theme of THEMES) {
               .map((b) => b.dataset.authority),
           };
         });
+      test("both authority answers shown before either branch", async () => {
+        const au = await authority();
         assert.ok(
           au.n === 2 &&
             au.lastChoiceBottom <= au.branchTop &&
@@ -190,6 +199,7 @@ for (const theme of THEMES) {
         );
       });
       test("one branch at a time, switched by the answer", async () => {
+        const au = await authority();
         await page.check('.au-choices input[value="agent"]', { force: true });
         const shown = await page.evaluate(() =>
           [...document.querySelectorAll(".au-branch")]
@@ -197,7 +207,7 @@ for (const theme of THEMES) {
             .map((b) => b.dataset.authority),
         );
         assert.deepEqual(
-          { before: au?.shown, after: shown },
+          { before: au.shown, after: shown },
           { before: ["person"], after: ["agent"] },
         );
       });
