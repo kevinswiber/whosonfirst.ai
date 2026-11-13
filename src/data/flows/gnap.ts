@@ -26,7 +26,7 @@ That exchange gives the **Grant Negotiation and Authorization Protocol** (GNAP) 
   credentials: {
     title: "Two tokens for two endpoints",
     intro:
-      "The backend keeps both tokens. This example binds both to the same agent key.",
+      "The agent keeps each token at its backend until it is no longer needed. This example binds both to the same agent key.",
     items: [
       {
         name: "Continuation access token",
@@ -36,7 +36,7 @@ That exchange gives the **Grant Negotiation and Authorization Protocol** (GNAP) 
         meaning:
           "Lets the agent continue this pending grant after Alice finishes the interaction.",
         binding:
-          "The agent’s private key signs the request, including the token",
+          "The agent signs the request with its private key, covering the token",
       },
       {
         name: "Calendar API access token",
@@ -45,7 +45,7 @@ That exchange gives the **Grant Negotiation and Authorization Protocol** (GNAP) 
         recipient: "Calendar API",
         meaning: "Carries the approved calendar read right.",
         binding:
-          "The agent’s private key signs the request, including the token",
+          "The agent signs the request with its private key, covering the token",
       },
     ],
   },
@@ -138,7 +138,7 @@ Signature: sig1=:…:
       kind: "resp",
       label: "Redirect and continue token",
       title: "The server says how to proceed",
-      body: `The server accepts the signed request and leaves the grant pending. It sends the interaction URL and a nonce of its own in \`interact.finish\`. In \`continue\` it sends the exact URL to call later, a five-second minimum wait and a continuation access token bound to the agent’s key.
+      body: `The server accepts the signed request and leaves the grant pending. It sends the browser URL in \`interact.redirect\` and its own nonce in \`interact.finish\`. In \`continue\` it sends the exact URL to call later, a five-second minimum wait and a continuation access token bound to the agent’s key.
 
 The agent stores both interaction nonces, the original grant endpoint, and the continuation instructions against the pending grant and Alice’s browser session. The continuation token stays at the backend.`,
       code: {
@@ -293,7 +293,7 @@ Signature: sig1=:…:
       kind: "resp",
       label: "Active, rights and bound key",
       title: "The issuer returns the token’s rights and public key",
-      body: `An active answer means this issuer issued the token, it is within its validity window and has not been revoked, and it is appropriate for the calendar API, the proof method and the requested access. The issuer also returns the bound key so the API can verify the agent’s signature itself. An inactive or unusable reply does not authorize the call.`,
+      body: `An active answer means this issuer issued the token, it is within its validity window and has not been revoked, and it is appropriate for the calendar API, the proof method and the requested access. The issuer also returns the public key bound to the token so the API can verify the agent’s signature itself. An inactive or unusable reply does not authorize the call.`,
       code: {
         lang: "http",
         text: `HTTP/1.1 200 OK
