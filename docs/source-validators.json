@@ -10,6 +10,9 @@
   "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/": {
     "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
   },
+  "https://code.claude.com/docs/en/mcp": {
+    "lastModified": "Fri, 13 Nov 2026 02:19:31 GMT"
+  },
   "https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd": {},
   "https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/doc.json": {
     "etag": "W/\"ee61fffff3b11b238faf42befba1ae03\""
@@ -120,17 +123,31 @@
     "etag": "\"TEtdXWBsgrNeH7N/goRFY6WFAWw=-gzip\"",
     "lastModified": "Wed, 11 Nov 2026 10:48:04 GMT"
   },
+  "https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html": {
+    "etag": "\"5WRCLs1BKVSz1pUO/Cnov3rp7W4=-gzip\"",
+    "lastModified": "Fri, 13 Nov 2026 01:14:09 GMT"
+  },
   "https://docs.cloud.google.com/docs/authentication": {},
   "https://docs.cloud.google.com/iam/docs/auth-agent-own-identity-external": {},
   "https://docs.cloud.google.com/iam/docs/workload-identity-federation": {},
   "https://docs.cloud.google.com/iam/docs/workload-identity-federation-with-x509-certificates": {},
   "https://docs.github.com/en/actions/concepts/security/openid-connect": {},
+  "https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/server/resource/authentication/DPoPAuthenticationProvider.html": {
+    "lastModified": "Thu, 12 Nov 2026 15:54:16 GMT"
+  },
+  "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/dpop-tokens.html": {
+    "lastModified": "Thu, 12 Nov 2026 15:54:10 GMT"
+  },
+  "https://docs.stripe.com/mcp": {},
+  "https://engineering.indeedblog.com/blog/2024/07/workload-identity-with-spire-oidc-for-k8s-istio/": {},
   "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/": {},
+  "https://github.blog/changelog/2025-07-14-pkce-support-for-oauth-and-github-app-authentication/": {},
   "https://github.com/aauth-dev/explorer/blob/e6d79137cda1a6a650d4394a37095393e1cc62ba/lib/scenarios/ps-asserted.json": {},
   "https://github.com/aauth-dev/packages-js/blob/9002b289db6fe9614831fe734d142c119139463b/README.md": {},
   "https://github.com/aauth-dev/packages-js/blob/9002b289db6fe9614831fe734d142c119139463b/resource/src/verify-token.ts": {},
   "https://github.com/agentgateway/agentgateway": {},
   "https://github.com/agntcy/identity": {},
+  "https://github.com/cloudflare/workers-oauth-provider": {},
   "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md": {},
@@ -139,9 +156,14 @@
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
   "https://github.com/openid/authzen": {},
+  "https://github.com/panva/oauth4webapi/blob/main/README.md": {},
+  "https://github.com/panva/oauth4webapi/blob/main/docs/README.md": {},
   "https://github.com/spiffe/spire": {},
   "https://github.com/visa/trusted-agent-protocol": {},
   "https://github.com/x402-foundation/x402": {},
+  "https://istio.io/latest/docs/ops/integrations/spire/": {
+    "etag": "W/\"f9a76cb0f2f08595155cf1c9cd63347d-ssl\""
+  },
   "https://kubernetes.io/docs/reference/access-authn-authz/authentication/": {
     "etag": "W/\"e0b8312102c3511c6e3b8a7ab7138b96-ssl\""
   },
@@ -210,8 +232,22 @@
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },
+  "https://spiffe.io/docs/latest/spire-about/spire-concepts/": {
+    "etag": "W/\"6dd9905c04c3b6e528eb5fac4f8c400f-ssl\""
+  },
+  "https://utviklerportal.nhn.no/informasjonstjenester/helseid/planlagde-endringar/vegkart/docs/planlagde_endringar_enmd": {},
   "https://verifiableintent.dev": {
     "lastModified": "Mon, 20 Apr 2026 19:06:54 GMT"
+  },
+  "https://www.keycloak.org/2025/09/keycloak-2640-released": {
+    "etag": "W/\"6af68d12-16cad\""
+  },
+  "https://www.keycloak.org/securing-apps/mcp-authz-server": {
+    "etag": "W/\"6af68d12-eea9\""
+  },
+  "https://www.pulumi.com/blog/eliminating-ci-secrets-with-pulumi-esc/": {
+    "etag": "W/\"7ce5567f9f626a6e372d13a742450b04\"",
+    "lastModified": "Fri, 13 Nov 2026 00:54:57 GMT"
   },
   "https://www.rfc-editor.org/rfc/rfc10017.json": {
     "etag": "\"9480003fab1f5427f54d6874f2ddcbce\""

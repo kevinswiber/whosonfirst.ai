@@ -1,0 +1,378 @@
+---
+import Base from "../../layouts/Base.astro";
+import {
+  deploymentOrganizations,
+  EVENT_LABEL,
+  fieldDate,
+  fieldProfile,
+} from "../../data/field";
+import { byGroup, flows, maturityLabel } from "../../data/flows";
+
+const groups = byGroup().map((group) => ({
+  ...group,
+  entries: group.flows.map((flow) => {
+    const profile = fieldProfile(flow.slug);
+    const latest = profile?.events
+      .filter((event) => event.kind !== "evidence-added")
+      .sort((a, b) => b.date.localeCompare(a.date))[0];
+    return { flow, profile, latest };
+  }),
+}));
+const reviewed = groups
+  .flatMap((group) => group.entries)
+  .filter(({ profile }) => profile).length;
+---
+
+<Base
+  title="In the field"
+  reviewMetadata={false}
+  description="Find documented implementation options and named production reports for agent authentication and authorization flows."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <h1>In the field</h1>
+      <p class="lede">Find products that implement part of a flow and accounts of how named organizations have used it in production.</p>
+      <p class="field-coverage">
+        <strong>{reviewed} of {flows.length} flows reviewed</strong> · <a href="#methodology">How we review evidence</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <field-directory>
+      <form class="field-controls" role="search" aria-label="Field directory" hidden>
+        <div class="field-inputs">
+          <label class="field-search">
+            Search by flow, product or role
+            <input type="search" placeholder="e.g. Keycloak or client library" autocomplete="off" />
+          </label>
+          <label class="field-review">
+            Field review
+            <select>
+              <option value="">All flows</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="unreviewed">Not reviewed</option>
+            </select>
+          </label>
+          <button class="btn ghost" type="button">Clear filters</button>
+        </div>
+        <p class="field-count" role="status">{flows.length} flows shown</p>
+      </form>
+
+      <p class="field-empty" hidden>No flows match. Try a different term or clear the filters.</p>
+
+      {groups.map((group) => (
+        <section class="field-group" aria-labelledby={`field-${group.id}`}>
+          <h2 id={`field-${group.id}`}>{group.title}</h2>
+          <ul class="field-list" role="list">
+            {group.entries.map(({ flow, profile, latest }) => (
+              <li
+                class="field-record"
+                id={flow.slug}
+                data-review={profile ? 'reviewed' : 'unreviewed'}
+                data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
+              >
+                <div class="field-identity">
+                  <h3><a href={`/flows/${flow.slug}/${profile ? '#in-the-field' : ''}`}>{flow.short}</a></h3>
+                  <dl>
+                    <div>
+                      <dt class="visually-hidden">Standards maturity</dt>
+                      <dd>{maturityLabel(flow)}</dd>
+                    </div>
+                    <div>
+                      <dt class="visually-hidden">Field review</dt>
+                      <dd>
+                        {profile
+                          ? <>Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></>
+                          : 'Not reviewed'}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                {profile && (
+                  <div class="field-overview">
+                    <div>
+                      <h4>Implementation options</h4>
+                      {profile.implementations.length ? (
+                        <ul role="list">
+                          {profile.implementations.map((entry) => (
+                            <li data-entry-text={`${entry.organization} ${entry.product} ${entry.role}`}>
+                              <strong>{entry.product}</strong>
+                              <p class="field-detail">{entry.role} · {entry.release.label}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p class="field-detail">None found in reviewed sources.</p>
+                      )}
+                    </div>
+                    <div>
+                      <h4>Production reports</h4>
+                      {profile.deployments.length ? (
+                        <>
+                          <p class="field-detail field-operators">
+                            {deploymentOrganizations(profile)} named {deploymentOrganizations(profile) === 1 ? 'operator' : 'operators'}
+                          </p>
+                          <ul role="list">
+                            {profile.deployments.map((entry) => (
+                              <li data-entry-text={`${entry.organization} ${entry.setting}`}>
+                                <strong>{entry.organization}</strong>
+                                <p class="field-detail">{entry.setting}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : (
+                        <p class="field-detail">None found in reviewed sources.</p>
+                      )}
+                    </div>
+                    {latest && (
+                      <p class="field-latest">
+                        <strong>{EVENT_LABEL[latest.kind]}.</strong>{' '}
+                        <time datetime={latest.date}>{fieldDate(latest.date)}</time>. {latest.summary}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </field-directory>
+
+    <section class="field-method prose" aria-labelledby="methodology">
+      <h2 id="methodology">How we review evidence</h2>
+      <p>
+        Each reviewed flow lists the sources consulted, what they establish, and the limits of that evidence.
+        Coverage varies by flow. “Not reviewed” means the flow is still outside that review.
+      </p>
+      <dl>
+        <div>
+          <dt>Standards maturity</dt>
+          <dd>Comes from the flow’s specifications. <a href="/about/#how-flows-are-rated">How flows are rated</a>.</dd>
+        </div>
+        <div>
+          <dt>Implementation options</dt>
+          <dd>Primary sources describe each product’s role and support. Where they give a release stage, the record uses their wording. Interoperability requires its own evidence.</dd>
+        </div>
+        <div>
+          <dt>Production reports</dt>
+          <dd>Accounts of specific deployments name the operator, who reported the use, and the setting. A review that finds no such account leaves production use unknown.</dd>
+        </div>
+        <div>
+          <dt>Observations</dt>
+          <dd>Counts of advertised support or other measurements retain their unit, population and date when known. They are kept out of the count of production operators.</dd>
+        </div>
+        <div>
+          <dt>Dates</dt>
+          <dd>A report’s publication, a product release, and the date evidence was added or checked each describe different events. A report can describe earlier use.</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+</Base>
+
+<script>
+  const searchText = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ');
+
+  class FieldDirectory extends HTMLElement {
+    connectedCallback() {
+      const form = this.querySelector('form')!;
+      const input = form.querySelector('input')!;
+      const review = form.querySelector('select')!;
+      const clear = form.querySelector('button')!;
+      const count = form.querySelector<HTMLElement>('.field-count')!;
+      const empty = this.querySelector<HTMLElement>('.field-empty')!;
+      const groups = [...this.querySelectorAll<HTMLElement>('.field-group')].map((element) => ({
+        element,
+        entries: [...element.querySelectorAll<HTMLElement>('.field-record')].map((record) => {
+          const flow = record.dataset.flowText ?? '';
+          const parts = [...record.querySelectorAll<HTMLElement>('[data-entry-text]')];
+          return {
+            record,
+            // Match words against a flow and one named option or operator.
+            // Names and roles from different options do not establish a match.
+            candidates: [
+              searchText(flow),
+              ...parts.map((part) => searchText(`${flow} ${part.dataset.entryText}`)),
+            ],
+          };
+        }),
+      }));
+
+      const filter = () => {
+        const words = searchText(input.value).split(/\s+/).filter(Boolean);
+        let shown = 0;
+        for (const { element, entries } of groups) {
+          let hasMatch = false;
+          for (const { record, candidates } of entries) {
+            const matchesReview = !review.value || record.dataset.review === review.value;
+            const matchesText = candidates.some((candidate) => words.every((word) => candidate.includes(word)));
+            const matches = matchesReview && matchesText;
+            record.toggleAttribute('data-filtered', !matches);
+            if (matches) {
+              shown++;
+              hasMatch = true;
+            }
+          }
+          element.toggleAttribute('data-filtered', !hasMatch);
+        }
+        count.textContent = `${shown} ${shown === 1 ? 'flow' : 'flows'} shown`;
+        empty.hidden = shown > 0;
+      };
+
+      form.addEventListener('submit', (event) => event.preventDefault());
+      input.addEventListener('input', filter);
+      review.addEventListener('change', filter);
+      clear.addEventListener('click', () => {
+        form.reset();
+        filter();
+        input.focus();
+      });
+      filter();
+      form.hidden = false;
+    }
+  }
+
+  customElements.define('field-directory', FieldDirectory);
+</script>
+
+<style>
+  .field-coverage {
+    margin: 1rem 0 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+  .field-coverage strong { color: var(--fg); }
+  field-directory { display: block; }
+  .field-controls {
+    margin-top: 1.4rem;
+    padding: 0.95rem 1.05rem 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--bg-sunken);
+  }
+  .field-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem 0.9rem;
+  }
+  .field-inputs label {
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .field-search { flex: 1 1 16rem; }
+  .field-review { flex: 0 1 9rem; }
+  .field-inputs :is(input, select) {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+  .field-inputs input::placeholder { color: var(--fg-subtle); }
+  .field-inputs button { min-height: 2.5rem; }
+  .field-count,
+  .field-empty {
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+  .field-count { margin: 0.55rem 0 0; }
+  .field-empty { margin: 1rem 0 0; }
+  .field-group { margin-top: 2rem; }
+  .field-group h2,
+  .field-method h2 {
+    margin: 0 0 0.65rem;
+    font-size: 1.48rem;
+  }
+  .field-list,
+  .field-overview ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .field-list { border-top: 1px solid var(--fg); }
+  .field-record {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.65fr);
+    gap: 0.75rem 1.4rem;
+    margin: 0;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+    overflow-wrap: anywhere;
+  }
+  .field-record:target {
+    box-shadow: -0.45rem 0 0 var(--accent);
+  }
+  .field-record h3 { margin: 0 0 0.2rem; font-size: 1.12rem; }
+  .field-record h3 a { color: var(--accent); }
+  .field-record h4 {
+    margin: 0 0 0.45rem;
+    color: var(--fg-muted);
+    font: 500 0.76rem/1.35 var(--font-label);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .field-record dl { margin: 0; }
+  .field-record dd,
+  .field-detail {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .field-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 0.75rem 1.25rem;
+    min-width: 0;
+    line-height: 1.45;
+  }
+  .field-overview li { margin-bottom: 0; }
+  .field-overview li + li { margin-top: 0.4rem; }
+  .field-operators { margin-bottom: 0.35rem; }
+  .field-latest {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+  .field-method {
+    margin-top: 2.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--fg);
+  }
+  .field-method dl { margin: 0; }
+  .field-method dt { font-weight: 600; }
+  .field-method dd { margin: 0 0 0.75rem; }
+
+  @media screen {
+    [data-filtered] { display: none; }
+  }
+  @media (max-width: 52rem) {
+    .field-record { grid-template-columns: minmax(0, 1fr); }
+    .field-identity dl {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.1rem 1rem;
+    }
+  }
+  @media (max-width: 34rem) {
+    .field-overview { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media print {
+    .field-controls, .field-empty { display: none; }
+    .field-record { break-inside: avoid; }
+  }
+</style>

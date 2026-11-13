@@ -119,6 +119,14 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `test/`                               | The checks, as tests: see [Checks](#checks)                                                        |
 | `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
 
+## Field evidence
+
+`src/data/field/records.ts` holds reviewed implementation support, named deployment reports and scoped observations separately. `model.ts` validates their sources, units, dates and event references; `index.ts` admits accepted evidence for published flows. The directory at `/field/` includes every published flow in the existing group order. A missing profile means “Not reviewed”.
+
+Before adding a claim, read its primary source and record the exact product or operator, role, release wording, limitations and review decision. Keep source publication and evidence-added dates separate; preserve earlier evidence-added dates on re-review. A release or report event must cite evidence of the right kind with a matching source date. New event types or different date semantics need an explicit source model first. Nothing derives production use from advertised support, projects or certification.
+
+See [the initial evidence review](adoption/evidence-review.md) for scope and exclusions. Field sources join the existing source inventory; run `npm run sources:changed -- --add` after reading new sources. A quote or retrieval check cannot replace review of what a source actually establishes. `test/unit/field.test.mjs` checks publication boundaries and `test/browser/field.test.mjs` checks scriptless reading, filters and print.
+
 ## Editing content
 
 Most changes are data changes.

@@ -7,6 +7,9 @@ import FlowCredentials from "../../components/FlowCredentials.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
+import FieldSummary from "../../components/FieldSummary.astro";
+import FieldEvidence from "../../components/FieldEvidence.astro";
+import { fieldProfile } from "../../data/field";
 import {
   flow as flowBySlug,
   flows,
@@ -41,6 +44,7 @@ interface Props {
   flow: Flow;
 }
 const { flow } = Astro.props;
+const inTheField = fieldProfile(flow.slug);
 // One reading of the page's own text: a glossary term is marked the first time it appears in it.
 const g = gloss(Astro.url.pathname);
 const group = must(
@@ -234,6 +238,7 @@ const details = [
 
 <Base
   title={flow.title}
+  reviewMetadata={!inTheField}
   description={flow.tagline}
   article
   here={{ trail: [{ label: 'Flows', href: '/flows/' }, { label: group.title }], current: flow.short }}
@@ -251,6 +256,7 @@ const details = [
       <div class="prose">
         <Fragment set:html={block(flow.summary, g)} />
         <DocMeta based={based} lead={flow.noBasis} reviewed={REVIEWED} subject="Guide" details={details} />
+        <FieldSummary slug={flow.slug} profile={inTheField} />
         {
           (taught || likened) && (
             <ul class="ways-in">
@@ -456,6 +462,8 @@ const details = [
         </>
       ))
     }
+
+    {inTheField && <FieldEvidence profile={inTheField} />}
 
     <section aria-labelledby="standards">
       <h2 id="standards">Standards in play</h2>

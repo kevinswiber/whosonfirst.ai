@@ -1,0 +1,90 @@
+---
+import type { FieldProfile } from "../data/field";
+import { EVENT_LABEL, fieldDate } from "../data/field";
+
+interface Props {
+  slug: string;
+  profile?: FieldProfile;
+}
+
+const { slug, profile } = Astro.props;
+const names = new Intl.ListFormat("en", { type: "conjunction" });
+const latest = profile?.events
+  .filter((event) => event.kind !== "evidence-added")
+  .sort((a, b) => b.date.localeCompare(a.date))[0];
+---
+
+<div class="field-summary">
+  <p class="field-summary-head">
+    <strong><a href={profile ? '#in-the-field' : `/field/#${slug}`}>In the field</a></strong>
+    {profile && (
+      <span class="field-summary-date">Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></span>
+    )}
+  </p>
+  {profile ? (
+    <dl>
+      <div>
+        <dt>Documented options</dt>
+        <dd>{names.format([...new Set(profile.implementations.map((entry) => entry.product))]) || 'None found in reviewed sources.'}</dd>
+      </div>
+      <div>
+        <dt>Production reports</dt>
+        <dd>{names.format([...new Set(profile.deployments.map((entry) => entry.organization))]) || 'None found in reviewed sources.'}</dd>
+      </div>
+      {latest && (
+        <div>
+          <dt>{EVENT_LABEL[latest.kind]}</dt>
+          <dd><time datetime={latest.date}>{fieldDate(latest.date)}</time>. {latest.summary}</dd>
+        </div>
+      )}
+      {profile.observations.length > 0 && (
+        <div>
+          <dt>Observations</dt>
+          <dd>See the <a href="#field-observations">counts and populations</a> in the field record.</dd>
+        </div>
+      )}
+    </dl>
+  ) : (
+    <p class="field-summary-empty">Field evidence for this flow has yet to be reviewed.</p>
+  )}
+</div>
+
+<style>
+  .field-summary {
+    margin: 1rem 0 0;
+    padding: 0.65rem 0 0.7rem 0.9rem;
+    border-inline-start: 2px solid var(--border-strong);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .field-summary-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.8rem;
+    margin: 0;
+  }
+  .field-summary-date {
+    color: var(--fg-muted);
+    font-size: 0.88rem;
+  }
+  dl {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+  }
+  dl > div {
+    display: grid;
+    grid-template-columns: minmax(0, 9.4rem) minmax(0, 1fr);
+    gap: 0.05rem 0.75rem;
+  }
+  dt { font-weight: 600; }
+  dd { margin: 0; }
+  .field-summary-empty {
+    margin: 0.25rem 0 0;
+    color: var(--fg-muted);
+  }
+  @media (max-width: 34rem) {
+    dl > div { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
