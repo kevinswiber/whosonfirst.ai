@@ -179,7 +179,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
       kind: "resp",
       label: "Result",
       title: "The application responds",
-      body: `When the employee leaves, or the administrator withdraws the agent’s access to this application, the identity provider stops issuing grants. Access tokens an application has already issued keep working until they expire. Keep them short, issue no refresh tokens for this grant, and revoke at the application as well when the cut-off has to be immediate.`,
+      body: `When the employee leaves, or the administrator withdraws the agent’s access to this application, the identity provider stops issuing grants. Access tokens an application has already issued can keep working until they expire. Keep them short, issue no refresh tokens for this grant, and have the application [enforce the withdrawal](/flows/access-revocation/) when it must cut off access sooner.`,
     },
   ],
   standards: [

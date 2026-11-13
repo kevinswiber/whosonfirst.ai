@@ -71,7 +71,7 @@ Also report:
 
 ### Other drafts and versioned specifications
 
-Entries that are neither IETF documents nor finished: `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
+Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
 
 And the specifications that publish dated or numbered revisions:
 
@@ -202,7 +202,7 @@ An RFC being updated does not change its status or a flow's rating. It may chang
 
 ### Final specifications from other bodies
 
-Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
+Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `caep`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
 
 ### Guidance
 
@@ -278,6 +278,7 @@ datatracker.ietf.org
 author-tools.ietf.org
 www.rfc-editor.org
 openid.net
+openid.github.io
 www.w3.org
 modelcontextprotocol.io
 a2a-protocol.org

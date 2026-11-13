@@ -184,6 +184,11 @@ export const lessons: Lesson[] = [
         note: "Binding a token to a key, step by step.",
       },
       {
+        href: "/flows/oauth-mtls/",
+        label: "OAuth access tokens bound to a TLS certificate",
+        note: "How the API matches a token’s binding to the certificate presented over TLS.",
+      },
+      {
         href: "/flows/credential-broker/",
         label: "Credential broker",
         note: "Keeping the secret outside the agent altogether.",
@@ -192,6 +197,11 @@ export const lessons: Lesson[] = [
         href: "/flows/step-up-authorization/",
         label: "Step-up authorization",
         note: "A fresh approval for one sensitive action.",
+      },
+      {
+        href: "/flows/tool-call-authorization/",
+        label: "Tool-call authorization",
+        note: "How a service checks a tool call and its arguments after validating the token.",
       },
       {
         href: "/concepts/#rules",
