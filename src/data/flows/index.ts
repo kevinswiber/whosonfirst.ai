@@ -100,7 +100,17 @@ for (const f of flows) {
       `[${f.slug}] roles do not match standards: missing ${missing.join(", ") || "none"}; unknown ${extra.join(", ") || "none"}`,
     );
   }
-  for (const id of f.basis ?? [f.standards[0]]) {
+  // A flow that requires nothing has no basis to name, and says so in `noBasis`.
+  const requiresNone = !f.standards.some((id) => roles[id] === "required");
+  if (requiresNone !== Boolean(f.noBasis))
+    throw new Error(
+      requiresNone
+        ? `[${f.slug}] requires none of its references, so it must say in noBasis what stands where its basis would be`
+        : `[${f.slug}] says it has no basis, but requires a reference`,
+    );
+  if (f.noBasis && f.basis)
+    throw new Error(`[${f.slug}] says it has no basis, and also names one`);
+  for (const id of f.noBasis ? [] : (f.basis ?? [f.standards[0]])) {
     if (roles[id] !== "required")
       throw new Error(`[${f.slug}] basis "${id}" must be a required reference`);
   }
@@ -118,7 +128,7 @@ for (const f of flows) {
   }
   if (rating.level !== f.maturity) {
     throw new Error(
-      `[${f.slug}] is declared ${f.maturity}, but its least mature required reference makes it ${rating.level}`,
+      `[${f.slug}] is declared ${f.maturity}, but its required references make it ${rating.level}`,
     );
   }
   ratings.set(f.slug, rating);

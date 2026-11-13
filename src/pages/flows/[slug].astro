@@ -64,10 +64,8 @@ const next = flows[i + 1];
 
 // What the page says the flow implements: `basis` if given, otherwise the first standard listed.
 // A pattern that no specification defines names none, and says so in `noBasis`.
-if (flow.noBasis && (flow.basis || flow.roles))
-  throw new Error(
-    `[${flow.slug}] says it has no basis, and also names one or classifies its references`,
-  );
+if (flow.noBasis && flow.basis)
+  throw new Error(`[${flow.slug}] says it has no basis, and also names one`);
 const basis = flow.noBasis ? [] : (flow.basis ?? [flow.standards[0]]).map(std);
 const primary: Standard | undefined = basis[0];
 const firstSentence = primary?.detail
@@ -128,10 +126,13 @@ const pendingNames = new Intl.ListFormat("en", { type: "conjunction" }).format(
 const unsettled = roles
   ? standards.filter((s) => roles[s.id] === "unresolved").length
   : 0;
+const unrated = flow.maturity === "unrated";
 const unsettledNote =
-  pending.length > 0
-    ? `Requiring ${pendingNames} would lower this flow’s rating, so the rating is provisional until ${pending.length === 1 ? "its role is" : "their roles are"} settled.`
-    : "None of them is less mature than the flow’s rating, so none could lower it.";
+  pending.length > 0 && unrated
+    ? `If ${pendingNames} turned out to be required, this flow would have a rating, so “not rated” is provisional until ${pending.length === 1 ? "its role is" : "their roles are"} settled.`
+    : pending.length > 0
+      ? `Requiring ${pendingNames} would lower this flow’s rating, so the rating is provisional until ${pending.length === 1 ? "its role is" : "their roles are"} settled.`
+      : "None of them is less mature than the flow’s rating, so none could lower it.";
 
 const nDraft = counted.filter(
   (s) => s.status === "wg-draft" || s.status === "draft",
@@ -176,37 +177,49 @@ const details = [
   ...(flow.noBasis
     ? [{ label: "Primary specification", value: "None", note: flow.noBasis }]
     : []),
-  flow.roles
+  flow.roles && counted.length === 0
     ? {
-        label: `${counted.length} required ${counted.length === 1 ? "reference" : "references"}`,
-        value: makeup,
+        label: "Required references",
+        value: "None",
         href: "#standards",
         note:
-          [
-            drawn && "Required by the flow the diagram draws",
-            others > 0 &&
-              (unsettled > 0
-                ? `${others} more listed: ${unsettled} with ${unsettled === 1 ? "a role" : "roles"} not settled, the rest optional or background`
-                : `${others} more listed as optional or background`),
-          ]
-            .filter(Boolean)
-            .join(". ") || undefined,
+          unsettled > 0
+            ? `${others} listed: ${unsettled} with ${unsettled === 1 ? "a role" : "roles"} not settled, the rest optional or background`
+            : `${others} listed as optional or background`,
       }
-    : {
-        label: `All ${standards.length} specifications`,
-        value: makeup,
-        href: "#standards",
-      },
+    : flow.roles
+      ? {
+          label: `${counted.length} required ${counted.length === 1 ? "reference" : "references"}`,
+          value: makeup,
+          href: "#standards",
+          note:
+            [
+              drawn && "Required by the flow the diagram draws",
+              others > 0 &&
+                (unsettled > 0
+                  ? `${others} more listed: ${unsettled} with ${unsettled === 1 ? "a role" : "roles"} not settled, the rest optional or background`
+                  : `${others} more listed as optional or background`),
+            ]
+              .filter(Boolean)
+              .join(". ") || undefined,
+        }
+      : {
+          label: `All ${standards.length} specifications`,
+          value: makeup,
+          href: "#standards",
+        },
   {
     label: "Flow maturity",
     value: maturityLabel(flow),
     note: rated?.provisional
       ? `Provisional until the role of ${pendingNames} is settled: what the rating means`
-      : flow.roles
-        ? drawn
-          ? "For the flow the diagram draws, from its required references: what the rating means"
-          : "From its required references: what the rating means"
-        : "What the rating means",
+      : unrated
+        ? "None of its references is required, so there is no level to take: what the rating means"
+        : flow.roles
+          ? drawn
+            ? "For the flow the diagram draws, from its required references: what the rating means"
+            : "From its required references: what the rating means"
+          : "What the rating means",
     noteHref: "/about/#how-flows-are-rated",
   },
   { label: "Human involvement", value: HUMAN_LABEL[flow.human] },
@@ -447,6 +460,13 @@ const details = [
     <section aria-labelledby="standards">
       <h2 id="standards">Standards in play</h2>
       <p><a href="/standards/">See the full tracker</a> for status and links.</p>
+      {unrated && (
+        <p>
+          {flow.noBasis}, and no step on this page depends on any of the references below. So the flow has no required
+          reference, and it is not rated: there is no level to take.{' '}
+          <a href="/about/#how-flows-are-rated">How flows are rated</a>
+        </p>
+      )}
       {
         byRole.length > 0 ? (
           byRole.map((g) => (

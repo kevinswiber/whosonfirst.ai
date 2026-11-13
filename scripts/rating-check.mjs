@@ -119,12 +119,25 @@ check(
   },
 );
 
-check("a flow with nothing required cannot be rated", () => {
-  assert.throws(
-    () => rate([ref("a", "optional", "rfc"), ref("b", "unresolved", "draft")]),
-    /no required reference/,
-  );
-});
+check(
+  "a flow with nothing required is not rated, and not assumed stable",
+  () => {
+    assert.deepEqual(
+      rate([ref("a", "optional", "rfc"), ref("b", "background", "draft")]),
+      { level: "unrated", provisional: false, pending: [] },
+    );
+  },
+);
+
+check(
+  "with nothing required, an unsettled reference keeps it provisional",
+  () => {
+    assert.deepEqual(
+      rate([ref("a", "optional", "rfc"), ref("b", "unresolved", "rfc")]),
+      { level: "unrated", provisional: true, pending: ["b"] },
+    );
+  },
+);
 
 let failed = 0;
 for (const [name, fn] of cases) {

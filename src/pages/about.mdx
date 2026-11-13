@@ -103,11 +103,13 @@ The same holds in the other direction. Where a published specification says that
 
 **The rating.** A flow takes the level of its least mature required reference. One working-group draft among them makes the flow emerging; one individual draft makes it experimental. Optional extensions and background references never change it.
 
+**When nothing is required.** A flow that requires none of its references has no level to take, and is shown as not rated. It is not called stable for having no draft among its references, and it is not rated from a product’s release stage. The [credential broker](/flows/credential-broker/) is the one such page today: no standard defines the pattern, the products that implement it differ, and no step depends on any one of them. How ready it is depends on the product you choose.
+
 **When a role is not settled.** A reference whose role is not settled is not counted, and it is not assumed to be optional. If it is less mature than the flow's rating, or its level is unknown, requiring it would lower the rating. The rating is then provisional, and shown as such, until that reference is classified. If it could not lower the rating, the rating stands. No reviewed flow has an unsettled reference today, so none is provisional.
 
 **What the rating is not.** It describes the dependencies of the arrangement the page draws. Where a page covers more than it draws, as the pages on workload identity federation, AAuth and agent payments do, it says so above the diagram and beside its required references: those references and the rating belong to the arrangement drawn, not to every implementation. The rating does not say the flow is secure, or ready for production where you run it. A stable flow can be deployed badly, and an emerging one can be the right choice.
 
-**Coverage.** Every flow but one has been reviewed under this rule. In a review, each reference a flow lists is read and given a role: required, optional or background, or marked as not settled. A reviewed flow’s page groups its references under those roles, and its rating is worked out from the required ones. The exception is the [credential broker](/flows/credential-broker/): no standard defines that pattern and none of its references is required by a step, so the rule has nothing to rate it from. Its page shows its references as one list, and its rating was assigned before the rule.
+**Coverage.** Every flow has been reviewed under this rule. In a review, each reference a flow lists is read and given a role: required, optional or background, or marked as not settled. Every flow’s page groups its references under those roles, and its rating is worked out from the required ones.
 
 ## Examples are illustrative
 
