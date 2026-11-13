@@ -220,6 +220,7 @@ Authorization: Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6ImF0K2p3dCJ9…`,
     "oauth-2-1": "background", // a related draft; this page does not implement it
   },
   related: [
+    "access-revocation",
     "mcp-authorization",
     "device-authorization",
     "dpop",

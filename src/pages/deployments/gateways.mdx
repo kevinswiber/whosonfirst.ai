@@ -116,7 +116,7 @@ The guidance requires the gateway to ask the user itself, on a page of its own, 
 
 ### Rules at the gateway
 
-The core MCP specification has no permissions for individual tools. A token that is good for the gateway is good for every tool behind it, until the gateway's own policy says otherwise. That policy is the authorization, so what it reads matters.
+The core MCP specification has no permissions for individual tools. A token that is good for the gateway is good for every tool behind it, until the gateway's own policy says otherwise. That policy is the authorization, so what it reads matters. The [AuthZEN flow](/flows/tool-call-authorization/) shows how a tool service can ask a separate policy service about the exact arguments and enforce its answer.
 
 - **The user and the client come from the token** the gateway validated. Never from a header the agent set, and never from an argument the model wrote.
 - **The tool comes from the request.** Since the 2026-07-28 revision, an MCP request over HTTP repeats its method and its tool name in the `Mcp-Method` and `Mcp-Name` headers, so that a proxy can route without reading the body. The body is still what the server acts on, so an agent can name one tool in the header and another in the body. A rule that reads the header is only as good as the check that the two agree.

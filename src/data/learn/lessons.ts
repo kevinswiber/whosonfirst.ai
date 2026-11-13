@@ -199,6 +199,11 @@ export const lessons: Lesson[] = [
         note: "A fresh approval for one sensitive action.",
       },
       {
+        href: "/flows/tool-call-authorization/",
+        label: "Tool-call authorization",
+        note: "How a service checks a tool call and its arguments after validating the token.",
+      },
+      {
         href: "/concepts/#rules",
         label: "Rules of thumb",
         note: "Seven habits that follow from all six lessons.",

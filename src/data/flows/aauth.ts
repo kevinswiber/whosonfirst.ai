@@ -11,7 +11,7 @@ export const aauth: Flow = {
   human: "reachable",
   maturity: "experimental",
   tagline:
-    "An agent proves which person it acts for, obtains their consent, and signs its calendar request. The API still decides what to allow.",
+    "An agent proves which person it acts for, obtains their consent, and signs its request. The API still decides what to allow.",
   summary: `Alice asks an assistant to read her calendar. An **agent provider** names the agent, a **person server (PS)** represents Alice, and the **calendar API** enforces access to her data.
 
 AAuth is a separate protocol from OAuth. An unrelated individual draft, [draft-rosenberg-oauth-aauth](/standards/#aauth-rosenberg), also uses the name: it extends OAuth, and this page does not use it. This page follows **PS authorization**, one of its five resource access modes. The API has no separate access server: it accepts identity and consent from Alice’s person server, then applies its own policy.`,
