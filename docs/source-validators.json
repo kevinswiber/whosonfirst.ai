@@ -262,6 +262,12 @@
   "https://www.rfc-editor.org/rfc/rfc7515.json": {
     "etag": "\"3876ba9f806cd6d1898cb6c6f388a148\""
   },
+  "https://www.rfc-editor.org/rfc/rfc7517.json": {
+    "etag": "\"14fda4519f6e03130874910b60919586\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7518.json": {
+    "etag": "\"6d9101ea4c58d6bf4f181259e95b3a74\""
+  },
   "https://www.rfc-editor.org/rfc/rfc7519.json": {
     "etag": "\"77d3a837744df1a380e85fabe059c42f\""
   },
@@ -345,6 +351,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc9493.json": {
     "etag": "\"79f8a332ff28dc5a10207393cc788ad4\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9530.json": {
+    "etag": "\"01fa71d869b8f50a103e0b1ed04a6de6\""
   },
   "https://www.rfc-editor.org/rfc/rfc9635.json": {
     "etag": "\"f5ed04e46bda06558a53ea6fd89212b5\""

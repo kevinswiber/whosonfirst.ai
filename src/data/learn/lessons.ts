@@ -95,6 +95,11 @@ export const lessons: Lesson[] = [
         label: "Device authorization",
         note: "For an agent with no browser where it runs.",
       },
+      {
+        href: "/flows/gnap/",
+        label: "GNAP",
+        note: "A separate protocol for getting a token after browser consent.",
+      },
     ],
   },
   {
