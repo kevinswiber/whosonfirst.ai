@@ -281,7 +281,7 @@ const checks: CheckQuestion[] = [
   <p>Four parties and eight steps, in four parts:</p>
   <ol class="parts">
     {
-      PARTS.map(([title, , says]) => (
+      PARTS.map(([title, _from, says]) => (
         <li>
           <strong>{title}.</strong> <Fragment set:html={inline(says)} />
         </li>
