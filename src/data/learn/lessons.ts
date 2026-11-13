@@ -196,7 +196,7 @@ export const lessons: Lesson[] = [
       {
         href: "/flows/tool-call-authorization/",
         label: "Tool-call authorization",
-        note: "A policy check on the calendar and event duration, even when the token is valid.",
+        note: "How a service checks a tool call and its arguments after validating the token.",
       },
       {
         href: "/concepts/#rules",

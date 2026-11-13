@@ -105,7 +105,10 @@ Content-Type: application/json
   "duration_minutes": 30
 }`,
       },
-      gain: [["agent", "access token for the Calendar API"]],
+      gain: [
+        ["agent", "access token for the Calendar API"],
+        ["tool", "access token for the Calendar API"],
+      ],
     },
     {
       from: "tool",
