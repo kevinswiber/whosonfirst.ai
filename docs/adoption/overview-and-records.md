@@ -51,3 +51,9 @@ The overview labels its counts as entries or operators covered **in this review*
 Flow review disclosures use independent **About this guide** and **Specification basis** columns. Each reads top to bottom and the columns stack in that order on a phone. All basis references stay together, labeled by their references rather than numbered as steps. Diagram-specific basis and rating qualifications, no-basis patterns and unsettled references retain their original meanings. The short based-on/review line stays outside the disclosure.
 
 Full-record pages label the directory link **Browse implementations across all flows**, distinguishing it from the current flow’s record.
+
+## Linked examples and consistent targets, 13 November 2026
+
+Flow summaries present the bounded examples as cards using the surrounding standards and related-flow grid. Each card identifies **Implementation** or **Deployment report**, links the product or organization name directly to its evidence entry, and keeps the role or deployment setting visible. The coverage note, complete-record link and review date follow the cards. Empty categories remain explicit in prose.
+
+The directory retains compact lists inside its comparison rows. It shows the same bounded entries, with direct links and visible roles or settings. Examples retain entry IDs rather than reducing records to names, so links identify the reviewed role or report. This does not change counts or introduce product grouping. Full evidence entries and directory rows use the standards page’s thin accent border and soft offset shadow when targeted, with horizontal padding inside the boundary.

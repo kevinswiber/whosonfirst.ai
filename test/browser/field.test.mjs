@@ -25,7 +25,10 @@ test("the compact directory, full record and flow guide connect without JavaScri
   assert.deepEqual(ids, FLOWS.map((path) => path.split("/")[2]).sort());
   const dpop = page.locator("#dpop");
   assert.equal(await dpop.getByRole("heading").getByRole("link").count(), 0);
-  assert.equal(await dpop.getByRole("link").count(), 2);
+  assert.equal(
+    await dpop.locator(".field-actions").getByRole("link").count(),
+    2,
+  );
   assert.equal(
     await dpop
       .getByRole("link", { name: "View flow diagram for DPoP" })
@@ -34,7 +37,14 @@ test("the compact directory, full record and flow guide connect without JavaScri
   );
   const snapshot = await dpop.locator(".field-overview").textContent();
   assert.match(snapshot, /\d+ entries in this review/);
-  assert.match(snapshot, /Examples: Keycloak · oauth4webapi/);
+  assert.deepEqual(
+    await dpop
+      .getByRole("list", { name: "Reviewed implementation examples" })
+      .getByRole("link")
+      .allTextContents()
+      .then((names) => names.map((name) => name.trim())),
+    ["Keycloak", "oauth4webapi"],
+  );
   assert.doesNotMatch(snapshot, /Spring Security/);
   await dpop
     .getByRole("link", { name: "View implementations for DPoP" })
@@ -313,7 +323,7 @@ test("flow evidence follows the standards and describes selected records without
       }),
     );
     const copy = await summary.textContent();
-    assert.match(copy, /Reviewed examples include/);
+    assert.match(copy, /Reviewed examples from this record/);
     assert.match(copy, /does not measure how widely the flow is used/);
     assert.doesNotMatch(
       copy,
@@ -322,7 +332,7 @@ test("flow evidence follows the standards and describes selected records without
     assert.match(copy, /Client library/);
     if (slug === "authorization-code-pkce")
       assert.match(copy, /This record includes no deployment report/);
-    else assert.match(copy, /deployment report about Norsk helsenett/);
+    else assert.match(copy, /Norsk helsenett/);
   }
   await open(page, site.url("/implementations/"));
   const pkce = await page
@@ -331,4 +341,94 @@ test("flow evidence follows the standards and describes selected records without
   assert.match(pkce, /3 entries in this review/);
   assert.match(pkce, /No report included in this review/);
   assert.doesNotMatch(pkce, /None found|No production report found/);
+});
+
+test("example cards and compact lists keep roles visible and link to the exact entries without scripts", async (t) => {
+  for (const width of [1280, 390]) {
+    const ctx = await site.context({
+      viewport: { width, height: 900 },
+      javaScriptEnabled: false,
+    });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    for (const [path, selector] of [
+      ["/flows/mcp-authorization/", ".field-summary"],
+      ["/implementations/", "#mcp-authorization"],
+    ]) {
+      await open(page, site.url(path));
+      const examples = page.locator(selector);
+      const products = examples.getByRole("list", {
+        name: path.startsWith("/flows/")
+          ? "Reviewed implementation and deployment examples"
+          : "Reviewed implementation examples",
+      });
+      assert.equal(
+        await products
+          .getByRole("link", { name: /^(Claude Code|Workers OAuth Provider)$/ })
+          .count(),
+        2,
+      );
+      const workers = products.getByRole("listitem").filter({
+        has: page.getByRole("link", {
+          name: "Workers OAuth Provider",
+          exact: true,
+        }),
+      });
+      assert.ok(
+        await workers
+          .getByText("Authorization and resource-server library", {
+            exact: true,
+          })
+          .isVisible(),
+      );
+      assert.equal(
+        await workers.getByRole("link").getAttribute("href"),
+        "/implementations/mcp-authorization/#field-mcp-cloudflare",
+      );
+      const rolePosition = await workers
+        .locator(".field-example-role")
+        .boundingBox();
+      const namePosition = await workers.getByRole("link").boundingBox();
+      assert.ok(
+        rolePosition.y >= namePosition.y + namePosition.height,
+        "role reads beneath its product name",
+      );
+      await products
+        .getByRole("link", { name: "Claude Code", exact: true })
+        .click();
+      assert.match(
+        page.url(),
+        /\/implementations\/mcp-authorization\/#field-mcp-claude-code$/,
+      );
+      assert.ok(
+        await page
+          .locator(":target")
+          .getByRole("heading", { name: "Claude Code", exact: true })
+          .isVisible(),
+      );
+
+      await open(page, site.url(path));
+      const report = page.locator(selector).getByRole("list", {
+        name: path.startsWith("/flows/")
+          ? "Reviewed implementation and deployment examples"
+          : "Included deployment report",
+      });
+      assert.ok(
+        await report
+          .getByText("Hosted remote MCP service", { exact: true })
+          .isVisible(),
+      );
+      await report.getByRole("link", { name: "Stripe", exact: true }).click();
+      assert.match(
+        page.url(),
+        /\/implementations\/mcp-authorization\/#field-mcp-stripe$/,
+      );
+      assert.ok(
+        await page
+          .locator(":target")
+          .getByRole("heading", { name: "Stripe", exact: true })
+          .isVisible(),
+      );
+    }
+  }
 });

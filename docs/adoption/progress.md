@@ -68,6 +68,14 @@ The final required gates passed in order: `npm run check`, `npm test` (99 passed
 
 This pass used one host, three builds, two complete rendered runs and one continuing reviewer. The final rebuild and rendered run include the two reader-requested presentation corrections made during visual review. Logs and screenshots are retained. No source research or evidence-data change was needed. Push and CI verification are authorized; merge remains outside this pass.
 
+## Linked examples and card presentation, 13 November 2026
+
+Flow summaries now use small labeled cards, matching the surrounding standards and related-flow sections. The directory uses compact lists. Both retain visible roles or deployment settings and link each product or organization name to its exact evidence entry. A shared component renders both forms; bounded selection keeps the entry ID. Coverage counts, accepted evidence, sources and review dates are unchanged. Targeted evidence entries and directory rows use a thin accent border and soft shadow, with padding, matching the standards pattern.
+
+All four required gates passed on the final layout: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (968 passed, six existing skips). Scriptless navigation follows product and deployment examples from both surfaces at desktop and phone widths; the full rendered suite checks internal fragments, overflow, accessibility, print and reading formats. The generated Markdown preserves the card classifications, names, roles and links. Desktop previews confirm the cards, compact directory and target border; a narrow-viewport inspection confirms the cards stack. The progress receipt was checked separately after the gates.
+
+The pass used one host, four short builds and three full rendered runs as the reader requested target styling and then cards during preview. All full rendered runs passed. Formatting failures and their successful corrections, earlier passing logs and screenshots are retained. No new source research, evidence-data change, dependency or review lane was needed. Push and CI verification are authorized; merge remains outside this pass.
+
 ## Local review
 
 The implementation is on `feat/in-the-field`. Run `npm run dev` in that worktree, then open `/implementations/` and `/implementations/dpop/`. Search for a product plus role, such as “spring resource-server verifier”, and follow its exact evidence link for the sources and limits. The full record links back to `/flows/dpop/` for the mechanism. There is no new service, dependency, collection schedule or network request from a reader’s browser.

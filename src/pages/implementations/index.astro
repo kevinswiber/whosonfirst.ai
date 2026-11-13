@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import FieldExamples from "../../components/FieldExamples.astro";
 import { fieldDate, fieldProfile } from "../../data/field";
 import { byGroup, flows, maturityLabel } from "../../data/flows";
 import { fieldSnapshot } from "../../lib/field";
@@ -102,12 +103,11 @@ const reviewed = groups
                       <div>
                         <dt>Implementation evidence</dt>
                         <dd>
-                          {snapshot.productExamples ? (
+                          {snapshot.implementations.length > 0 ? (
                             <>
                               <strong>{snapshot.optionsLabel}</strong>
-                              <p class="field-examples">
-                                {snapshot.products.length === 1 ? 'Example: ' : 'Examples: '}{snapshot.productExamples}
-                              </p>
+                              <p class="field-example-label">{snapshot.implementations.length === 1 ? 'Example' : 'Examples'}</p>
+                              <FieldExamples slug={flow.slug} entries={snapshot.implementations} label="Reviewed implementation examples" />
                             </>
                           ) : 'No entry included in this review.'}
                         </dd>
@@ -115,10 +115,11 @@ const reviewed = groups
                       <div>
                         <dt>Deployment reports</dt>
                         <dd>
-                          {snapshot.operator ? (
+                          {snapshot.deployment ? (
                             <>
                               <strong>{snapshot.operatorsLabel}</strong>
-                              <p class="field-examples">Example: {snapshot.operator}</p>
+                              <p class="field-example-label">Example report</p>
+                              <FieldExamples slug={flow.slug} entries={[snapshot.deployment]} label="Included deployment report" />
                             </>
                           ) : 'No report included in this review.'}
                         </dd>
@@ -131,7 +132,7 @@ const reviewed = groups
                           data-name={entry.product}
                           data-owner={entry.organization}
                           data-role={entry.role}
-                          data-example={snapshot.products.includes(entry.product) ? '' : undefined}
+                          data-example={snapshot.implementations.some((example) => example.id === entry.id) ? '' : undefined}
                         >{entry.product} · {entry.role}</a>
                       ))}
                       {profile.deployments.map((entry) => (
@@ -139,7 +140,7 @@ const reviewed = groups
                           href={`${href}#field-${entry.id}`}
                           data-name={entry.organization}
                           data-role={entry.setting}
-                          data-example={snapshot.operator === entry.organization ? '' : undefined}
+                          data-example={snapshot.deployment?.id === entry.id ? '' : undefined}
                         >{entry.organization} · {entry.setting}</a>
                       ))}
                     </template>
@@ -347,12 +348,14 @@ const reviewed = groups
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 2.65fr) minmax(7rem, auto);
     gap: 0.75rem 1.4rem;
     margin: 0;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 1.25rem;
+    border: 1px solid transparent;
+    border-bottom-color: var(--border);
     overflow-wrap: anywhere;
   }
   .field-record:target {
-    box-shadow: -0.45rem 0 0 var(--accent);
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--accent-soft);
   }
   .field-record h3 { margin: 0 0 0.2rem; font-size: 1.12rem; }
   .field-record dl { margin: 0; }
@@ -378,7 +381,7 @@ const reviewed = groups
     text-transform: uppercase;
   }
   .field-overview dd strong { color: var(--fg); }
-  .field-examples { margin: 0.12rem 0 0; }
+  .field-example-label { margin: 0.5rem 0 0; }
   .field-actions {
     grid-column: 3;
     grid-row: 1;

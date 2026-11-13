@@ -188,10 +188,13 @@ const evidenceNames = new Map(
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     gap: 0.85rem 2rem;
-    padding: 1rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid transparent;
+    border-bottom-color: var(--border);
   }
   .field-entry:target {
-    box-shadow: -0.45rem 0 0 var(--accent);
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--accent-soft);
   }
   .field-claim { max-width: var(--prose); }
   .field-claim p { margin-top: 0.45rem; }

@@ -1,0 +1,59 @@
+---
+import type { ImplementationEvidence, DeploymentEvidence } from "../data/field";
+
+interface Props {
+  slug: string;
+  entries: (ImplementationEvidence | DeploymentEvidence)[];
+  label: string;
+  cards?: boolean;
+}
+
+const { slug, entries, label, cards = false } = Astro.props;
+const Name = cards ? "h3" : "div";
+---
+
+<ul class:list={["field-examples", { grid: cards, "field-example-cards": cards }]} role="list" aria-label={label}>
+  {entries.map((entry) => (
+    <li>
+      {cards && <span class="chip field-example-kind">{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>}
+      <Name class="field-example-name">
+        <a href={`/implementations/${slug}/#field-${entry.id}`}>
+          {entry.kind === 'implementation' ? entry.product : entry.organization}
+        </a>
+      </Name>{' '}
+      <span class="field-example-role">
+        {entry.kind === 'implementation' ? entry.role : entry.setting}
+      </span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .field-examples {
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .field-examples li { margin: 0; }
+  .field-examples li + li { margin-top: 0.6rem; }
+  .field-examples a { font-weight: 600; }
+  .field-example-name { margin: 0; font-size: 1rem; }
+  .field-example-cards { margin: 0; }
+  .field-example-cards li {
+    padding: 0.85rem 1rem 0.95rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    break-inside: avoid;
+  }
+  .field-example-cards li + li { margin-top: 0; }
+  .field-example-cards .field-example-name { font-size: 1.1rem; }
+  .field-example-kind { display: block; margin-bottom: 0.5rem; }
+  .field-example-role {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--fg-muted);
+  }
+</style>
