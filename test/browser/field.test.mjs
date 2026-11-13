@@ -155,7 +155,7 @@ test("search links to exact entries beyond the sample and keeps product and role
   );
 });
 
-test("review status filters search, keyboard reset restores all, and print shows the overview", async (t) => {
+test("directory search resets from the keyboard and print shows the full overview", async (t) => {
   const ctx = await site.context({
     viewport: { width: 320, height: 650 },
     colorScheme: "dark",
@@ -167,15 +167,14 @@ test("review status filters search, keyboard reset restores all, and print shows
   const input = page.getByRole("searchbox", {
     name: "Search by flow, product or role",
   });
-  const review = page.getByRole("combobox", { name: "Evidence review" });
+  assert.equal(await page.getByRole("combobox").count(), 0);
   const count = page.getByRole("status");
-  await input.fill("dpop spring");
-  await review.selectOption("unreviewed");
+  await input.fill("no matching implementation");
   assert.equal(await count.textContent(), "0 flows shown");
-  await page.getByRole("button", { name: "Clear filters" }).press("Enter");
+  await page.getByRole("button", { name: "Clear search" }).press("Enter");
   assert.equal(await count.textContent(), `${FLOWS.length} flows shown`);
   assert.equal(await input.inputValue(), "");
-  assert.equal(await review.inputValue(), "");
+  assert.equal(await page.locator(".field-empty").isVisible(), false);
   assert.ok(await input.evaluate((el) => el === document.activeElement));
 
   await input.fill("dpop spring");

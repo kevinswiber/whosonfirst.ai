@@ -127,7 +127,7 @@ Keep directory examples bounded as the records grow. Flow guides show every revi
 
 Before adding a claim, read its primary source and record the exact product or operator, role, release wording, limitations and review decision. Keep source publication and evidence-added dates separate; preserve earlier evidence-added dates on re-review. A release or report event must cite evidence of the right kind with a matching source date. New event types or different date semantics need an explicit source model first. Nothing derives production use from advertised support, projects or certification.
 
-See [the initial evidence review](adoption/evidence-review.md) for scope and exclusions. Field sources join the existing source inventory; run `npm run sources:changed -- --add` after reading new sources. A quote or retrieval check cannot replace review of what a source actually establishes. `test/unit/field.test.mjs` checks publication boundaries and `test/browser/field.test.mjs` checks scriptless reading, filters and print.
+See [the initial evidence review](adoption/evidence-review.md) for scope and exclusions. Field sources join the existing source inventory; run `npm run sources:changed -- --add` after reading new sources. A quote or retrieval check cannot replace review of what a source actually establishes. `test/unit/field.test.mjs` checks publication boundaries and `test/browser/field.test.mjs` checks scriptless reading, search and print.
 
 ## Editing content
 

@@ -46,21 +46,13 @@ const reviewed = groups
             Search by flow, product or role
             <input type="search" placeholder="e.g. Keycloak or client library" autocomplete="off" />
           </label>
-          <label class="field-review">
-            Evidence review
-            <select>
-              <option value="">All flows</option>
-              <option value="reviewed">Reviewed</option>
-              <option value="unreviewed">Not reviewed</option>
-            </select>
-          </label>
-          <button class="btn ghost" type="button">Clear filters</button>
+          <button class="btn ghost" type="button">Clear search</button>
         </div>
         <p class="field-count" role="status">{flows.length} flows shown</p>
       </form>
 
       <noscript><p>Product and role search needs JavaScript. Browse by flow below; each record includes all reviewed entries.</p></noscript>
-      <p class="field-empty" hidden>No flows match. Try a different term or clear the filters.</p>
+      <p class="field-empty" hidden>No flows match. Try a different term or clear the search.</p>
 
       {groups.map((group) => (
         <section class="field-group" aria-labelledby={`field-${group.id}`}>
@@ -70,7 +62,6 @@ const reviewed = groups
               <li
                 class="field-record"
                 id={flow.slug}
-                data-review={profile ? 'reviewed' : 'unreviewed'}
                 data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
                 data-flow-identity={`${flow.title} ${flow.short} ${flow.slug}`}
               >
@@ -158,7 +149,7 @@ const reviewed = groups
       <h2 id="methodology">How we review evidence</h2>
       <p>
         Each reviewed flow lists the sources consulted, what they establish, and the limits of that evidence.
-        Coverage varies by flow. “Not reviewed” means the flow is still outside that review.
+        Coverage varies by flow.
       </p>
       <dl>
         <div>
@@ -193,7 +184,6 @@ const reviewed = groups
     connectedCallback() {
       const form = this.querySelector('form')!;
       const input = form.querySelector('input')!;
-      const review = form.querySelector('select')!;
       const clear = form.querySelector('button')!;
       const count = form.querySelector<HTMLElement>('.field-count')!;
       const empty = this.querySelector<HTMLElement>('.field-empty')!;
@@ -224,12 +214,11 @@ const reviewed = groups
         for (const { element, entries } of groups) {
           let hasMatch = false;
           for (const { record, matches, flowText, candidates } of entries) {
-            const matchesReview = !review.value || record.dataset.review === review.value;
             const matchesFlow = contains(flowText);
-            const matchingEntries = matchesReview && words.length > 0
+            const matchingEntries = words.length > 0
               ? candidates.filter((candidate) => contains(candidate.text))
               : [];
-            const show = matchesReview && (matchesFlow || matchingEntries.length > 0);
+            const show = matchesFlow || matchingEntries.length > 0;
             record.toggleAttribute('data-filtered', !show);
             if (matches) {
               matches.replaceChildren();
@@ -262,7 +251,6 @@ const reviewed = groups
 
       form.addEventListener('submit', (event) => event.preventDefault());
       input.addEventListener('input', filter);
-      review.addEventListener('change', filter);
       clear.addEventListener('click', () => {
         form.reset();
         filter();
@@ -309,8 +297,7 @@ const reviewed = groups
     font-weight: 600;
   }
   .field-search { flex: 1 1 16rem; }
-  .field-review { flex: 0 1 9rem; }
-  .field-inputs :is(input, select) {
+  .field-inputs input {
     width: 100%;
     min-width: 0;
     min-height: 2.5rem;
