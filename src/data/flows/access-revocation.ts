@@ -8,7 +8,7 @@ export const accessRevocation: Flow = {
   human: "any",
   maturity: "stable",
   tagline:
-    "Follow a session revocation from the server that ends it to the API that enforces it.",
+    "A server reports that a session has ended. The API applies the change and refuses the agent’s existing token.",
   summary: `Alice has authorized her agent to read her company calendar. An administrator ends the company session that access depends on. The agent is still running and has a signed access token that has not expired. The calendar API starts refusing calls with that token once it has the session’s new state.
 
 The Shared Signals Framework (SSF) delivers security events between services set up to share them. The Continuous Access Evaluation Profile (CAEP) defines event types and what each one reports. Here, the company’s authorization server sends a Session Revoked event and the calendar service closes its matching local sessions.`,
@@ -18,7 +18,7 @@ The Shared Signals Framework (SSF) delivers security events between services set
   ],
   watchOut: [
     "A call can still succeed while an event is in transit or waiting to be applied. The API needs a policy for how old its view of the session may be.",
-    "The event reaches configured receivers. A different service’s existing credentials have their own lifetime and revocation rules. That service must learn and enforce a withdrawal itself. Revocation cannot undo a completed write or take back data already disclosed.",
+    "The transmitter sends the event only to configured receivers. A different service’s existing credentials have their own lifetime and revocation rules. That service must learn and enforce a withdrawal itself. Revocation cannot undo a completed write or take back data already disclosed.",
   ],
   lesson: "tokens",
   illustrated: {
@@ -42,7 +42,7 @@ The Shared Signals Framework (SSF) delivers security events between services set
         name: "Calendar access token",
         type: "Signed OAuth JWT access token, used as a bearer token",
         issuer: "Company authorization server",
-        recipient: "Agent, then calendar API",
+        recipient: "Calendar API",
         meaning:
           "Carries the scope and lifetime of calendar access. In this deployment it also names the company session.",
         binding:
@@ -67,11 +67,11 @@ The Shared Signals Framework (SSF) delivers security events between services set
   ],
   parts: {
     company:
-      "End the company session and stop issuing tokens under it. Send a signed event to the configured receiver for that session.",
+      "Ends the company session and stops issuing tokens under it. Sends a signed event to the configured receiver for that session.",
     calendar:
-      "Validate and save the event before acknowledging delivery. Close the matching local sessions, and consult their current state every time the API receives an access token.",
+      "Validates and saves the event before acknowledging delivery. Closes the matching local sessions, and consults their current state every time the API receives an access token.",
     agent:
-      "Present the access token to the calendar API. Treat the rejection as a failed call and stop using that token. Continued access requires a new authorization.",
+      "Presents the access token to the calendar API. Treats the rejection as a failed call and stops using that token. Continued access requires a new authorization.",
   },
   participants: [
     {
