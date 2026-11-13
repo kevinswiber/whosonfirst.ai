@@ -54,9 +54,9 @@ The authorization server also uses the certificate to authenticate the client. C
   ],
   parts: {
     agent:
-      "Keep the private key and present the same client certificate on both connections. Send the access token with the API request.",
-    as: "Check the certificate against the client’s registration and decide what scope to grant. Bind the token to the exact certificate from the connection.",
-    api: "Request a client certificate during TLS, verify the token and match its certificate hash to the one from the connection. Then decide whether the call is allowed.",
+      "Keeps the private key and presents the same client certificate on both connections. Sends the access token with the API request.",
+    as: "Checks the certificate against the client’s registration and decides what scope to grant. Binds the token to the exact certificate from the connection.",
+    api: "Requests a client certificate during TLS, verifies the token and matches its certificate hash to the one from the connection. Then decides whether the call is allowed.",
   },
   participants: [
     { id: "agent", label: "Agent", sub: "OAuth client", role: "agent" },

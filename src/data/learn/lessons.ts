@@ -186,7 +186,7 @@ export const lessons: Lesson[] = [
       {
         href: "/flows/oauth-mtls/",
         label: "OAuth access tokens bound to a TLS certificate",
-        note: "How the TLS handshake proves the caller holds the key for a bound token.",
+        note: "How the API matches a token’s binding to the certificate presented over TLS.",
       },
       {
         href: "/flows/credential-broker/",
