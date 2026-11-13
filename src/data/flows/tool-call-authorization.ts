@@ -8,7 +8,7 @@ export const toolCallAuthorization: Flow = {
   human: "any",
   maturity: "stable",
   tagline:
-    "The Calendar API checks the token, then asks a policy service whether this agent can add a focus block of the requested length.",
+    "The API checks the agent’s token, then asks a policy service whether to allow this call with these arguments.",
   summary: `Alice asks her scheduling agent to block 30 minutes on her work calendar. The agent has a valid token and can see the tool for adding a focus block, an event with no invitees. The Calendar API still has to decide whether the agent may add this particular event.
 
 The Calendar API acts as the **policy enforcement point** (PEP). It asks the **policy decision point** (PDP) to evaluate the call, then either writes the event or refuses it. AuthZEN defines the messages between them. The application decides how to describe the call and what its policy allows.`,
