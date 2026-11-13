@@ -19,6 +19,7 @@ import { mcpAuthorization } from "./mcp-authorization";
 import { spiffeWorkloadIdentity } from "./spiffe-workload-identity";
 import { stepUpAuthorization } from "./step-up-authorization";
 import { tokenExchange } from "./token-exchange";
+import { toolCallAuthorization } from "./tool-call-authorization";
 import { transactionTokens } from "./transaction-tokens";
 import { urlElicitation } from "./url-elicitation";
 import { webBotAuth } from "./web-bot-auth";
@@ -46,6 +47,7 @@ export const flows: Flow[] = [
   webBotAuth,
   agentPayments,
   dpop,
+  toolCallAuthorization,
   credentialBroker,
 ];
 

@@ -276,6 +276,7 @@ datatracker.ietf.org
 author-tools.ietf.org
 www.rfc-editor.org
 openid.net
+openid.github.io
 www.w3.org
 modelcontextprotocol.io
 a2a-protocol.org

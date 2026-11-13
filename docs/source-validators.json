@@ -176,6 +176,10 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },
+  "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
+    "etag": "W/\"6af37b29-204c6\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
   "https://openid.net/specs/authorization-api-1_0-final.html": {
     "etag": "\"3bb64-6482a0d30732a-gzip\"",
     "lastModified": "Mon, 12 Jan 2026 05:21:47 GMT"
