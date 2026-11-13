@@ -156,8 +156,9 @@ export const frames = (page) =>
 
 /**
  * Goes to a page and waits until it is ready to be measured: loaded, its
- * fonts in, and a frame drawn after its scripts have run. The site loads
- * nothing once the page has, so this is the state a reader sees.
+ * fonts in, and a frame drawn after its scripts have run. That is enough to
+ * measure what is drawn. It is not enough to see everything a script asks for
+ * after the load event: csp.test.mjs waits for network idle for that.
  */
 export async function open(page, url) {
   await page.goto(url, { waitUntil: "load" });
