@@ -82,10 +82,10 @@ const reviewed = groups
                     </div>
                   </dl>
                   <div class="field-actions">
+                    <p><a href={`/flows/${flow.slug}/`}>See the flow<span class="visually-hidden"> for {flow.short}</span></a></p>
                     {profile && (
                       <p><a class="field-evidence-link" href={href}>See the full record<span class="visually-hidden"> for {flow.short}</span></a></p>
                     )}
-                    <p><a href={`/flows/${flow.slug}/`}>See the flow<span class="visually-hidden"> for {flow.short}</span></a></p>
                   </div>
                 </div>
                 {profile && snapshot && (
