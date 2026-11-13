@@ -1,0 +1,41 @@
+---
+import type { FieldProfile } from "../data/field";
+import FieldExamples from "./FieldExamples.astro";
+
+interface Props {
+  slug: string;
+  profile?: FieldProfile;
+}
+
+const { slug, profile } = Astro.props;
+const entries = profile
+  ? [...profile.implementations, ...profile.deployments]
+  : [];
+---
+
+<section id="in-the-field" class="field-summary" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
+  <h2 id="implementation-evidence">Implementations and deployment reports</h2>
+  {profile ? (
+    <>
+      <p class="prose"><a href={`/implementations/${slug}/`}>See the full record</a> for sources and details.</p>
+      {entries.length > 0 && (
+        <FieldExamples slug={slug} entries={entries} label="Reviewed implementations and deployment reports" cards />
+      )}
+    </>
+  ) : (
+    <div class="prose">
+      <p>Implementation evidence for this flow has yet to be reviewed.</p>
+      <p><a href={`/implementations/#${slug}`}>Browse implementations →</a></p>
+    </div>
+  )}
+</section>
+
+<style>
+  .field-summary {
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
+  }
+  h2 {
+    margin-top: 0;
+    font-size: 1.55rem;
+  }
+</style>

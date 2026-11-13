@@ -1,0 +1,250 @@
+---
+import type { FieldProfile } from "../data/field";
+import { ATTRIBUTION_LABEL, EVENT_LABEL, fieldDate } from "../data/field";
+
+interface Props {
+  profile: FieldProfile;
+}
+
+const { profile } = Astro.props;
+const categories = [
+  {
+    id: "field-implementations",
+    title: "Implementation evidence",
+    entries: profile.implementations,
+    empty: "This record includes no implementation entry.",
+  },
+  {
+    id: "field-production",
+    title: "Deployment reports",
+    entries: profile.deployments,
+    empty:
+      "This record includes no deployment report. The selection does not measure how widely the flow is used.",
+  },
+  ...(profile.observations.length > 0
+    ? [
+        {
+          id: "field-observations",
+          title: "Observations",
+          entries: profile.observations,
+          empty: "",
+        },
+      ]
+    : []),
+];
+const events = [...profile.events].sort((a, b) => b.date.localeCompare(a.date));
+const evidenceNames = new Map(
+  categories.flatMap(({ entries }) =>
+    entries.map(
+      (entry) =>
+        [
+          entry.id,
+          entry.kind === "implementation"
+            ? entry.product
+            : entry.kind === "deployment"
+              ? entry.organization
+              : `${entry.numerator.toLocaleString("en")} ${entry.unit}`,
+        ] as const,
+    ),
+  ),
+);
+---
+
+<div class="field-evidence">
+  <section class="prose field-evidence-scope" aria-labelledby="field-scope">
+    <h2 id="field-scope">Scope</h2>
+    <p>{profile.scope}</p>
+    <p>{profile.searchNote}</p>
+    <p><a href="/implementations/#methodology">How we review evidence</a></p>
+  </section>
+
+  {categories.map(({ id, title, entries, empty }) => (
+    <section class="field-category" aria-labelledby={id}>
+      <h2 id={id}>{title}</h2>
+      {entries.length ? (
+        <ul class="field-entries" role="list">
+          {entries.map((entry) => (
+            <li class="field-entry" id={`field-${entry.id}`}>
+              <div class="field-claim">
+                {entry.kind === 'implementation' && (
+                  <>
+                    <h3>{entry.product}</h3>
+                    <p class="field-entry-role">{entry.role}</p>
+                  </>
+                )}
+                {entry.kind === 'deployment' && (
+                  <>
+                    <h3>{entry.organization}</h3>
+                    <p class="field-entry-role">{entry.setting} · {ATTRIBUTION_LABEL[entry.attribution]}</p>
+                  </>
+                )}
+                {entry.kind === 'observation' && (
+                  <>
+                    <h3>
+                      {entry.numerator.toLocaleString('en')}{entry.denominator !== undefined ? ` of ${entry.denominator.toLocaleString('en')}` : ''} {entry.unit}
+                    </h3>
+                    <p class="field-entry-role">
+                      {entry.measure === 'advertised-support' ? 'Advertised support' : 'Reported count'} · {entry.population}
+                    </p>
+                    <p>
+                      {entry.observedOn
+                        ? <>Observed <time datetime={entry.observedOn}>{fieldDate(entry.observedOn)}</time>.</>
+                        : 'Observation date unspecified.'}
+                    </p>
+                  </>
+                )}
+                <p>{entry.summary}</p>
+                {entry.kind === 'implementation' && (
+                  <p class="field-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
+                )}
+                <p class="field-limits"><strong>Limits.</strong> {entry.limits}</p>
+              </div>
+              <div class="field-sources">
+                <p class="doc-key">{entry.sources.length === 1 ? 'Source' : 'Sources'}</p>
+                <ul role="list">
+                  {entry.sources.map((source) => (
+                    <li>
+                      <a href={source.url}>{source.title}</a>
+                      <p>
+                        {source.publisher}{source.publishedOn && (
+                          <>{' · Published '}<time datetime={source.publishedOn}>{fieldDate(source.publishedOn)}</time></>
+                        )}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <p class="field-checked">Checked <time datetime={entry.review.checkedOn}>{fieldDate(entry.review.checkedOn)}</time></p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="prose field-none">{empty}</p>
+      )}
+    </section>
+  ))}
+
+  {events.length > 0 && (
+    <section class="field-category" aria-labelledby="field-dates">
+      <h2 id="field-dates">Dated record</h2>
+      <ul class="field-events" role="list">
+        {events.map((event) => (
+          <li>
+            <div class="field-event-date">
+              <time datetime={event.date}>{fieldDate(event.date)}</time>
+              <p>{EVENT_LABEL[event.kind]}</p>
+            </div>
+            <div>
+              <p>{event.summary}</p>
+              {event.kind !== 'evidence-added' && (
+                <ul class="field-event-links" role="list">
+                  {event.evidenceIds.map((id) => (
+                    <li><a href={`#field-${id}`}>{evidenceNames.get(id)}</a></li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</div>
+
+<style>
+  .field-evidence {
+    max-width: 62rem;
+    overflow-wrap: anywhere;
+  }
+  h2, h3, p { margin: 0; }
+  h2 { font-size: 1.55rem; margin-bottom: 0.65rem; }
+  h3 { font-size: 1.12rem; }
+  .field-entry-role,
+  .field-event-date,
+  .field-checked { color: var(--fg-muted); }
+  .field-event-date {
+    font-family: var(--font-label);
+    font-size: 0.78rem;
+  }
+  .field-evidence-scope p + p { margin-top: 0.55rem; }
+  .field-category { margin-top: 1.8rem; }
+  .field-none { color: var(--fg-muted); }
+  .field-entries,
+  .field-events,
+  .field-sources ul,
+  .field-event-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .field-entries,
+  .field-events { border-top: 1px solid var(--border-strong); }
+  .field-entry,
+  .field-events > li {
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .field-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 0.85rem 2rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid transparent;
+    border-bottom-color: var(--border);
+  }
+  .field-entry:target {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--accent-soft);
+  }
+  .field-claim { max-width: var(--prose); }
+  .field-claim p { margin-top: 0.45rem; }
+  .field-claim .field-entry-role {
+    margin: 0.12rem 0 0.5rem;
+    font-size: 0.95rem;
+  }
+  .field-limits {
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+  }
+  .field-sources {
+    border-inline-start: 1px solid var(--border);
+    padding-inline-start: 1rem;
+    align-self: start;
+    font-size: 0.95rem;
+  }
+  .field-sources li { margin: 0.35rem 0 0; }
+  .field-sources li p,
+  .field-checked { font-size: 0.86rem; }
+  .field-sources li p { color: var(--fg-muted); }
+  .field-checked { margin-top: 0.55rem; }
+  .field-events > li {
+    display: grid;
+    grid-template-columns: minmax(0, 10rem) minmax(0, var(--prose));
+    gap: 0.3rem 1rem;
+    padding: 0.75rem 0;
+  }
+  .field-event-date p { font-weight: 600; }
+  .field-event-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.8rem;
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+  }
+  .field-event-links li { margin: 0; }
+  @media (max-width: 45rem) {
+    .field-entry { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 34rem) {
+    .field-events > li { grid-template-columns: minmax(0, 1fr); }
+    .field-event-date {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.1rem 0.7rem;
+    }
+  }
+  @media print {
+    .field-entry,
+    .field-events > li { break-inside: avoid; }
+  }
+</style>

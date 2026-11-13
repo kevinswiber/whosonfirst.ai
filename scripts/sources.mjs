@@ -6,6 +6,8 @@
 // Node strips the types from the data files as it loads them.
 import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { publishProfile } from "../src/data/field/model.ts";
+import { profiles } from "../src/data/field/records.ts";
 import { standards } from "../src/data/standards.ts";
 
 export const RECORDED = fileURLToPath(
@@ -50,6 +52,16 @@ export const sources = async () => {
   for (const f of await flows()) {
     const hrefs = JSON.stringify(f).match(/"href":"https:[^"]+/g) ?? [];
     for (const h of hrefs) add(h.slice(8), `flows/${f.slug}`);
+  }
+  for (const record of profiles.map(publishProfile)) {
+    for (const entry of [
+      ...record.implementations,
+      ...record.deployments,
+      ...record.observations,
+    ]) {
+      for (const source of entry.sources)
+        add(source.url, `field/${record.slug}/${entry.id}`);
+    }
   }
   return all;
 };

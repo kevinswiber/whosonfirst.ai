@@ -260,3 +260,74 @@ test("every page gives its own address as canonical and describes itself in stru
   }
   assert.deepEqual(some(data), []);
 });
+
+// Field records have their own review scope/date; generic page metadata must not
+// attribute that limited review to the site author or the standards review date.
+test("pages with field evidence make no whole-page reviewer claim", () => {
+  const pages = built.filter(
+    (p) =>
+      p.path.startsWith("/implementations/") ||
+      p.html.includes("data-field-reviewed"),
+  );
+  assert.ok(pages.some((p) => p.path === "/implementations/"));
+  assert.ok(pages.some((p) => p.path === "/implementations/dpop/"));
+  assert.ok(pages.some((p) => p.path === "/flows/dpop/"));
+  for (const page of pages) {
+    const scripts = [
+      ...head(page).matchAll(
+        /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+      ),
+    ];
+    const graph = scripts.flatMap(
+      (match) => JSON.parse(match[1])["@graph"] ?? [],
+    );
+    const webpage = graph.find((node) => node["@type"] === "WebPage");
+    assert.ok(webpage, page.path);
+    assert.equal(webpage.reviewedBy, undefined, page.path);
+    assert.equal(webpage.lastReviewed, undefined, page.path);
+  }
+});
+
+test("Implementations uses its published name and URLs in page metadata and Markdown navigation", () => {
+  const records = built.filter((p) => p.path.startsWith("/implementations/"));
+  assert.ok(records.length > 1);
+  assert.ok(!built.some((p) => p.path.startsWith("/field/")));
+  for (const page of records) {
+    const title = plain(
+      /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main(page))?.[1] ?? "",
+    );
+    assert.match(
+      title,
+      page.path === "/implementations/"
+        ? /^Implementations$/
+        : / implementations and deployment reports$/,
+    );
+    assert.match(
+      head(page),
+      /Implementations|implementations and deployment reports/,
+    );
+    assert.ok(file(copyOf(page)).startsWith(`# ${title}\n`), page.path);
+    assert.ok(!page.html.includes('href="/field/'), page.path);
+  }
+  const navigation = file("llms.txt");
+  assert.match(navigation, /^## Implementations$/m);
+  assert.ok(
+    navigation.includes("https://whosonfirst.ai/implementations/dpop/index.md"),
+  );
+  assert.doesNotMatch(navigation, /https:\/\/whosonfirst\.ai\/field\//);
+});
+
+// Parameterized pages are not discovered by the sitemap’s filesystem glob.
+test("the sitemap includes every indexable page, including implementation records", () => {
+  const urls = [...file("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+    (match) => match[1],
+  );
+  assert.equal(new Set(urls).size, urls.length, "duplicate sitemap addresses");
+  const missing = indexed.filter(
+    (page) => !urls.includes(`${ORIGIN}${page.path}`),
+  );
+  assert.deepEqual(
+    missing.map((page) => page.path),
+    [],
+  );
+});

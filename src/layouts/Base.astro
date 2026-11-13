@@ -40,6 +40,8 @@ interface Props {
   noindex?: boolean;
   /** Whether the page has a copy in Markdown beside it. Off where there is nothing to read as text. */
   markdown?: boolean;
+  /** Omit whole-page reviewer claims where only separately dated records were checked. */
+  reviewMetadata?: boolean;
   /** Further schema.org nodes about this page, added to the ones every page carries. */
   schema?: Record<string, unknown>[];
 }
@@ -55,6 +57,7 @@ const {
   noindex = false,
   markdown = !noindex,
   schema = [],
+  reviewMetadata = true,
   description = `${DESCRIPTOR}: the flows, the deployments and the standards, with and without a human in the loop.`,
 } = Astro.props;
 // Seen outside the site, a title has to say what the page is about and where it is from.
@@ -115,8 +118,9 @@ const graph = [
       width: 1200,
       height: 630,
     },
-    lastReviewed: REVIEWED_ISO,
-    reviewedBy: { "@id": authorId },
+    ...(reviewMetadata
+      ? { lastReviewed: REVIEWED_ISO, reviewedBy: { "@id": authorId } }
+      : {}),
     ...(crumbs.length
       ? { breadcrumb: { "@id": `${canonical.href}#breadcrumb` } }
       : {}),
@@ -168,6 +172,7 @@ const nav = [
   QUICK,
   { href: "/guide/", label: "Choose a flow" },
   { href: "/flows/", label: "Flows" },
+  { href: "/implementations/", label: "Implementations" },
   { href: "/deployments/", label: "Deployments" },
   { href: "/standards/", label: "Standards" },
   { href: "/glossary/", label: "Glossary" },
@@ -340,11 +345,22 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             queued = false;
             // a section jumped to lands a little below the header, so the line it has
             // to have passed is lower still: otherwise the one before stays marked
-            const line = bar.getBoundingClientRect().bottom + 48;
+            const bottom = bar.getBoundingClientRect().bottom;
+            const line = bottom + 48;
             let at = -1;
+            let nearest = -Infinity;
+            let targetAt = -1;
             heads.forEach((h, i) => {
-              if (h.getBoundingClientRect().top <= line) at = i;
+              const top = h.getBoundingClientRect().top;
+              if (top <= line && top >= nearest) {
+                at = i;
+                nearest = top;
+              }
+              // Side-by-side sections can share a row. Honor the fragment's
+              // heading while it is at the header, including a jump with no scroll.
+              if (h.id === location.hash.slice(1) && top >= bottom - 1 && top <= line) targetAt = i;
             });
+            if (targetAt >= 0) at = targetAt;
             const current = at < 0 ? '' : links[at].textContent!;
             if (name.textContent !== current) name.textContent = current;
             links.forEach((a, i) => a.toggleAttribute('aria-current', i === at));
@@ -370,6 +386,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             },
             { passive: true },
           );
+          addEventListener('hashchange', update);
           update();
         } else if (menu && !popovers) {
           // without popovers the list would sit open on the page: put it away

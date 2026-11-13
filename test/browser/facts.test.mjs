@@ -97,3 +97,69 @@ for (const theme of THEMES) {
     }
   }
 }
+
+for (const vp of VIEWPORTS) {
+  test(`${vp.name}: review details keep the specification basis together and read down each group without scripts`, async (t) => {
+    const ctx = await site.context(device(vp, { javaScriptEnabled: false }));
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    for (const [slug, references] of [
+      [
+        "authorization-code-pkce",
+        ["OAuth 2.0 Authorization Framework", "PKCE"],
+      ],
+      ["dpop", ["DPoP"]],
+    ]) {
+      await open(page, site.url(`/flows/${slug}/`));
+      await page.locator(".doc-details summary").click();
+      const about = page.getByRole("group", {
+        name: "About this guide",
+        exact: true,
+      });
+      const basis = page.getByRole("group", {
+        name: "Specification basis",
+        exact: true,
+      });
+      assert.match(await about.textContent(), /Implementation guide/);
+      assert.match(await about.textContent(), /Flow maturity/);
+      assert.equal(await about.locator('a[href^="/standards/"]').count(), 0);
+      assert.deepEqual(
+        await basis.locator('a[href^="/standards/"]').allTextContents(),
+        references,
+      );
+      assert.doesNotMatch(await basis.textContent(), /Basis \d+ of/);
+      const positions = await page
+        .locator(".doc-groups .doc-group")
+        .evaluateAll((groups) =>
+          groups.map((group) => {
+            const { x, y, right, bottom } = group.getBoundingClientRect();
+            const items = [...group.querySelectorAll("dl > div")].map(
+              (item) => {
+                const { x, y, bottom } = item.getBoundingClientRect();
+                return { x, y, bottom };
+              },
+            );
+            return { x, y, right, bottom, items };
+          }),
+        );
+      assert.equal(positions.length, 2);
+      for (const group of positions) {
+        assert.ok(
+          group.items.every(
+            (item, i) =>
+              i === 0 ||
+              (Math.abs(item.x - group.items[0].x) < 1 &&
+                item.y >= group.items[i - 1].bottom),
+          ),
+          slug,
+        );
+      }
+      if (vp.name === "desktop") {
+        assert.ok(positions[1].x >= positions[0].right, slug);
+        assert.ok(Math.abs(positions[1].y - positions[0].y) < 1, slug);
+      } else {
+        assert.ok(positions[1].y >= positions[0].bottom, slug);
+      }
+    }
+  });
+}

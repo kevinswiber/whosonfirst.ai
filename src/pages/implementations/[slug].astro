@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+import FieldEvidence from "../../components/FieldEvidence.astro";
+import { fieldDate, fieldProfiles } from "../../data/field";
+import type { FieldProfile } from "../../data/field";
+import { flow } from "../../data/flows";
+
+export function getStaticPaths() {
+  return fieldProfiles.map((profile) => ({
+    params: { slug: profile.slug },
+    props: { profile },
+  }));
+}
+
+interface Props {
+  profile: FieldProfile;
+}
+
+const { profile } = Astro.props;
+const guide = flow(profile.slug);
+const title = `${guide.short} implementations and deployment reports`;
+---
+
+<Base
+  title={title}
+  description={`Reviewed implementation entries, deployment reports and sources for ${guide.short}.`}
+  article
+  reviewMetadata={false}
+  here={{ trail: [{ label: 'Implementations', href: '/implementations/' }], current: guide.short }}
+>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>{title}</h1>
+        <p class="field-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
+        <p class="field-links">
+          <a href={`/flows/${guide.slug}/`}>How {guide.short} works</a> · <a href="/implementations/">Browse implementations across all flows</a>
+        </p>
+      </div>
+    </div>
+    <div class="wrap field-body">
+      <FieldEvidence profile={profile} />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .field-date {
+    margin: 0.9rem 0 0.5rem;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+  .field-links { margin: 0; }
+  .field-body { margin-top: clamp(1.6rem, 4vw, 2.5rem); }
+</style>

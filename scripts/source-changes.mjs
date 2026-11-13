@@ -48,7 +48,7 @@ const conditions = (v) => ({
   ...(v.lastModified ? { "if-modified-since": v.lastModified } : {}),
 });
 
-const result = { same: [], look: [], unknown: [], failed: [] };
+const result = { same: [], look: [], unknown: [], failed: [], skipped: [] };
 const next = {};
 
 const check = async (url) => {
@@ -59,6 +59,10 @@ const check = async (url) => {
   const writing = record || (addNew && !listed);
   // Every source keeps an entry, empty until a value is found for it.
   next[url] = known[url] ?? {};
+  if (addNew && !record && listed) {
+    result.skipped.push(url);
+    return;
+  }
   try {
     let res = await get(url, had ? conditions(had) : {});
     await res.arrayBuffer();
@@ -124,7 +128,7 @@ const list = (title, urls) => {
 };
 
 console.log(
-  `${sources.size} sources: ${result.same.length} not modified, ${result.look.length} changed since recorded, ${result.unknown.length} with nothing recorded, ${result.failed.length} not reached.`,
+  `${sources.size} sources: ${result.same.length} not modified, ${result.look.length} changed since recorded, ${result.unknown.length} with nothing recorded, ${result.failed.length} not reached, ${result.skipped.length} already recorded and not requested.`,
 );
 list("Changed since recorded: read these", result.look);
 list(
