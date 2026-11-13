@@ -71,7 +71,7 @@ Also report:
 
 ### Other drafts and versioned specifications
 
-Entries that are neither IETF documents nor finished: `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
+Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
 
 And the specifications that publish dated or numbered revisions:
 

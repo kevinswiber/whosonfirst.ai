@@ -175,6 +175,10 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },
+  "https://openid.github.io/authzen/authzen-coaz-framework-1_0": {
+    "etag": "W/\"6af37b29-1a0bf\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
   "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
     "etag": "W/\"6af37b29-204c6\"",
     "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
@@ -207,6 +211,7 @@
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
   },
+  "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wg/sharedsignals/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},

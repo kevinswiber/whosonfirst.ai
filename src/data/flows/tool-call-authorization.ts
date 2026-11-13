@@ -218,10 +218,11 @@ Content-Type: application/json
       body: `The Calendar API refuses to add the 90-minute event even though the token is valid. It also refuses to write if it gets no usable decision: for example, the evaluation times out or the reply has no Boolean decision. That is this application’s fail-closed rule. An unavailable policy service and a policy denial both stop execution, but they are different outcomes to report.`,
     },
   ],
-  standards: ["authzen", "rfc6750", "coaz-mcp"],
+  standards: ["authzen", "rfc6750", "coaz-framework", "coaz-mcp"],
   roles: {
     authzen: "required", // Access Evaluation API and HTTPS binding in steps 3–4 and 7–8
     rfc6750: "required", // the illustrated bearer header in step 1
+    "coaz-framework": "optional", // mapping framework described below, not used by the steps
     "coaz-mcp": "optional", // a separate mapping; the HTTP tool in the steps does not use it
   },
   related: ["mcp-authorization", "step-up-authorization", "token-exchange"],
@@ -233,8 +234,20 @@ Content-Type: application/json
         "An MCP server or gateway can be the enforcement point. The numbered steps use an application’s own mapping from its HTTP tool call.",
       parts: [
         {
+          title: "How COAZ relates to AuthZEN",
+          body: `The AuthZEN Authorization API defines the request an enforcement point sends and the decision it receives. The COAZ Framework (Compatible with OpenID AuthZEN) defines how to build that request from an operation’s inputs, using fixed values or expressions. It leaves the inputs and protocol-specific rules to a binding.
+
+The COAZ-MCP binding applies those rules to MCP messages. Both COAZ specifications are working group drafts. The numbered steps above use the application’s own mapping; neither COAZ specification is required for that example.`,
+          sources: [
+            {
+              label: "COAZ Framework",
+              href: "https://openid.github.io/authzen/authzen-coaz-framework-1_0",
+            },
+          ],
+        },
+        {
           title: "A draft way to map MCP calls",
-          body: `The COAZ binding for MCP is an AuthZEN working group draft. Its default mapping takes the AuthZEN subject from \`sub\` in the validated JWT access token. If \`sub\` names the agent, the issuer and enforcement point can agree on a different token claim that names the user the agent acts for.
+          body: `The binding’s default mapping takes the AuthZEN subject from \`sub\` in the validated JWT access token. If \`sub\` names the agent, the issuer and enforcement point can agree on a different token claim that names the user the agent acts for.
 
 With Alice’s identity selected, the COAZ mapping puts her in \`subject.id\` and the agent’s client ID, if present, in \`context.agent\`. Step 3 uses the reverse arrangement. The agent is the subject, and Alice is in \`subject.properties.represented_user_id\`. The policy has to read the fields its enforcement point sends.
 
