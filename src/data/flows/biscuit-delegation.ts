@@ -9,9 +9,9 @@ export const biscuitDelegation: Flow = {
   maturity: "stable",
   tagline:
     "Give a worker a token with fewer permissions, without asking the issuer for a new one.",
-  summary: `An orchestrator can read two of a project’s documents and edit one of them. It asks a worker to summarize just one. Handing over its own token would give that worker more access than the task needs.
+  summary: `Alice asks her agent to summarize one calendar event. The agent can read two events in her calendar and edit one of them. It delegates the summary to a worker, but handing over its own token would give that worker more access than the task needs.
 
-With Biscuit, the orchestrator appends restrictions to the token: read this document, before this deadline. This is called **attenuation**. It happens locally, without the issuer. The worker receives the restricted token, and the API checks both its signatures and its restrictions before allowing a request.
+With Biscuit, the agent acts as an orchestrator and appends restrictions to the token: read this event, before this deadline. This is called **attenuation**. It happens locally, without the issuer. The worker receives the restricted token, and the API checks both its signatures and its restrictions before allowing a request.
 
 The original token still works. The worker’s copy cannot shed its restrictions, but the orchestrator keeps its broader access. And the restricted token is still a bearer credential: anyone who copies it can use the permissions that remain.`,
   fits: [
@@ -43,10 +43,10 @@ The original token still works. The worker’s copy cannot shed its restrictions
   },
   illustrated: {
     steps:
-      "One orchestrator delegates a document-reading task to one worker. The API understands Biscuit’s 3.x format and its policy language, Datalog, through version 3.3. No third-party blocks or custom trust scopes are used.",
+      "Alice’s agent delegates a calendar-reading task to one worker. The API understands Biscuit’s 3.x format and its policy language, Datalog, through version 3.3. No third-party blocks or custom trust scopes are used.",
     preconditions: [
-      "The issuer has authenticated the orchestrator and approved the original document permissions. That setup is outside this diagram.",
-      "The document API has the issuer’s public key and a policy for interpreting these permissions. The worker cannot read the orchestrator’s original token.",
+      "Alice has authorized the agent to access these calendar events, and the issuer has authenticated the agent and approved the original permissions. That setup is outside this diagram; Biscuit does not define login or consent.",
+      "The Calendar API has the issuer’s public key and a policy for interpreting these permissions. The worker cannot read the orchestrator’s original token.",
       "The API derives one canonical resource and operation from each request. It supplies its own service name and current time.",
     ],
     examples:
@@ -56,9 +56,9 @@ The original token still works. The worker’s copy cannot shed its restrictions
   },
   participants: [
     { id: "issuer", label: "Token issuer", role: "authz" },
-    { id: "parent", label: "Orchestrator", role: "agent" },
+    { id: "parent", label: "Agent", sub: "Orchestrator", role: "agent" },
     { id: "worker", label: "Worker", role: "agent" },
-    { id: "api", label: "Document API", role: "resource" },
+    { id: "api", label: "Calendar API", role: "resource" },
   ],
   steps: [
     {
@@ -66,13 +66,13 @@ The original token still works. The worker’s copy cannot shed its restrictions
       kind: "self",
       label: "Sign the original rights",
       title: "The issuer writes the original permissions",
-      body: `The first block is the **authority block**. Only the issuer can sign it with the root signing key. Here it permits reading two documents and editing one, and limits use to this document service before 20:00 UTC. The predicate names are this application’s vocabulary, not reserved Biscuit claims.`,
+      body: `The first block is the **authority block**. Only the issuer can sign it with the root signing key. Here it permits reading two calendar events and editing one, and limits use to this Calendar API before 20:00 UTC. The predicate names are this application’s vocabulary, not reserved Biscuit claims.`,
       code: {
         lang: "text",
-        text: `right("project-7/doc-1", "read");
-right("project-7/doc-1", "write");
-right("project-7/doc-2", "read");
-check if service("documents.example");
+        text: `right("alice/event-1", "read");
+right("alice/event-1", "write");
+right("alice/event-2", "read");
+check if service("calendar.example");
 check if time($now), $now < 2026-11-13T20:00:00Z;`,
       },
       gain: [["issuer", "original Biscuit token"]],
@@ -91,10 +91,10 @@ check if time($now), $now < 2026-11-13T20:00:00Z;`,
       kind: "self",
       label: "Append restrictions",
       title: "The orchestrator makes a copy for one task",
-      body: `A Biscuit library appends a block that restricts the token to reads of document 1 before the deadline. The library links the new block to the existing signature chain. Someone holding only this new token cannot remove its checks without invalidating the token’s proof. No request goes to the issuer. The orchestrator still holds the original token as well.`,
+      body: `A Biscuit library appends a block that restricts the token to reads of event 1 before the deadline. The library links the new block to the existing signature chain. Someone holding only this new token cannot remove its checks without invalidating the token’s proof. No request goes to the issuer. The orchestrator still holds the original token as well.`,
       code: {
         lang: "text",
-        text: `check if resource("project-7/doc-1");
+        text: `check if resource("alice/event-1");
 check if operation("read");
 check if time($now), $now < 2026-11-13T18:00:00Z;`,
       },
@@ -106,7 +106,7 @@ check if time($now), $now < 2026-11-13T18:00:00Z;`,
       kind: "back",
       label: "Task + restricted token",
       title: "Only the restricted copy reaches the worker",
-      body: `The task is to summarize document 1. The worker receives the restricted token over a protected channel. It gets no access to the parent’s token store. Biscuit does not enforce that separation: the host running these processes must provide it.`,
+      body: `The task is to summarize event 1. The worker receives the restricted token over a protected channel. It gets no access to the parent’s token store. Biscuit does not enforce that separation: the host running these processes must provide it.`,
       gain: [["worker", "restricted Biscuit token"]],
     },
     {
@@ -118,8 +118,8 @@ check if time($now), $now < 2026-11-13T18:00:00Z;`,
       body: `The request travels over HTTPS. This application uses \`Biscuit-Token\` as its credential header; Biscuit defines the token, not a required HTTP authentication scheme. The token proves the permission chain, not the identity of the worker presenting it.`,
       code: {
         lang: "http",
-        text: `GET /projects/7/documents/1 HTTP/1.1
-Host: documents.example
+        text: `GET /calendars/alice/events/1 HTTP/1.1
+Host: calendar.example
 Biscuit-Token: <base64url-encoded restricted token>`,
       },
       gain: [["api", "restricted Biscuit token"]],
@@ -138,24 +138,24 @@ Biscuit-Token: <base64url-encoded restricted token>`,
       title: "The API evaluates every restriction and its policy",
       body: `The API builds a fresh **authorizer**, Biscuit’s evaluation context, for this request. It derives the resource and operation from the route, and the time from its own clock. Every token check must pass, and an allow policy must match without an earlier matching deny.
 
-The policy uses the default trust scopes: it accepts rights from the issuer’s authority block and the API itself, not rights invented in a later block. Adding \`right("project-7/doc-2", "write")\` downstream cannot grant that permission.`,
+The policy uses the default trust scopes: it accepts rights from the issuer’s authority block and the API itself, not rights invented in a later block. Adding \`right("alice/event-2", "write")\` downstream cannot grant that permission.`,
       code: {
         lang: "text",
-        text: `service("documents.example");
-resource("project-7/doc-1");
+        text: `service("calendar.example");
+resource("alice/event-1");
 operation("read");
 time(2026-11-13T17:50:00Z);
 
-allow if resource($doc), operation($op), right($doc, $op);`,
+allow if resource($event), operation($op), right($event, $op);`,
       },
     },
     {
       from: "api",
       to: "worker",
       kind: "resp",
-      label: "Document or refusal",
+      label: "Event or refusal",
       title: "The API returns only what this request permits",
-      body: `Reading document 1 before the deadline passes both the token’s checks and the API’s policy. Editing it, reading document 2, or calling at or after the deadline fails a check. The API executes the same operation on the same resource it evaluated; it does not reuse the result for a different request.`,
+      body: `Reading event 1 before the deadline passes both the token’s checks and the API’s policy. Editing it, reading event 2, or calling at or after the deadline fails a check. The API executes the same operation on the same resource it evaluated; it does not reuse the result for a different request.`,
     },
   ],
   standards: ["biscuit"],
@@ -174,25 +174,22 @@ allow if resource($doc), operation($op), right($doc, $op);`,
     ],
     rows: [
       {
-        name: "Read document 1 at 17:50 UTC on November 13, 2026",
+        name: "Read event 1 at 17:50 UTC on November 13, 2026",
         values: [
           "Allowed",
           "The original right matches the policy, and every check passes.",
         ],
       },
       {
-        name: "Edit document 1 before the deadline",
+        name: "Edit event 1 before the deadline",
         values: ["Denied", "The appended check requires a read."],
       },
       {
-        name: "Read document 2 before the deadline",
-        values: [
-          "Denied",
-          "The appended block restricts access to document 1.",
-        ],
+        name: "Read event 2 before the deadline",
+        values: ["Denied", "The appended block restricts access to event 1."],
       },
       {
-        name: "Read document 1 at or after 18:00 UTC on November 13, 2026",
+        name: "Read event 1 at or after 18:00 UTC on November 13, 2026",
         values: [
           "Denied",
           "The time check requires a time before the deadline.",
