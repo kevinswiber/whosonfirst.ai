@@ -240,11 +240,13 @@ allow if resource($event), operation($op), right($event, $op);`,
       title: "Expiry and revocation are checks the API enforces",
       body: `Each deadline here is a Datalog check, evaluated against the API’s current time. The worker’s earlier deadline narrows the issuer’s original one. Biscuit does not add an expiry merely because a token was issued. Set one deliberately when the task should end.
 
-The specification also defines a revocation identifier for each block: its signature serialized as a byte array. An API can compare those identifiers with a revocation list. Rejecting the authority block’s identifier can reject that token and all its restricted descendants; rejecting a later block’s identifier targets the branch containing it. Distributing and refreshing that list is a deployment responsibility. A disconnected API cannot learn a new revocation from signature verification alone.`,
+The specification also defines a revocation identifier for each block: its signature serialized as a byte array. An API can compare those identifiers with a revocation list. Rejecting the authority block’s identifier can reject that token and all its restricted descendants; rejecting a later block’s identifier targets the branch containing it. Distributing and refreshing that list is a deployment responsibility. A disconnected API cannot learn a new revocation from signature verification alone.
+
+The [access revocation flow](/flows/access-revocation/) shows a session-based case of the same freshness problem: the API must learn and enforce changed state to stop accepting an existing token. That example uses session events; this one uses Biscuit block identifiers.`,
     },
     {
       title: "Choose where the restriction happens",
-      body: `With [token exchange](/flows/token-exchange/), a server authorizes an exchange and issues a new token. With Biscuit, a holder restricts an existing credential locally, and the API evaluates it. With a [credential broker](/flows/credential-broker/), a proxy can keep the downstream credential out of the worker altogether.
+      body: `With [token exchange](/flows/token-exchange/), a server authorizes an exchange and issues a new token. With Biscuit, a holder restricts an existing credential locally, and the API evaluates it. With a [credential broker](/flows/credential-broker/), a proxy can keep the downstream credential out of the worker altogether. With [AuthZEN tool-call authorization](/flows/tool-call-authorization/), the API sends facts about the call to a policy service and enforces its decision.
 
 These arrangements protect different boundaries. Biscuit limits what the worker’s credential permits, but a stolen copy still works within those limits. Neither the restrictions nor the signature chain records user consent unless the application explicitly supplies and verifies evidence of it.`,
     },

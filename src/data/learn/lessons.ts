@@ -157,6 +157,11 @@ export const lessons: Lesson[] = [
         note: "The exchange step by step, with the request and the token that comes back.",
       },
       {
+        href: "/flows/biscuit-delegation/",
+        label: "Biscuit delegation",
+        note: "When the credential is already meant for the receiving API, narrow a worker’s access without asking for a new token.",
+      },
+      {
         href: "/concepts/#delegation",
         label: "Delegation or impersonation",
         note: "Five ways of carrying authority down a chain, compared on five questions.",

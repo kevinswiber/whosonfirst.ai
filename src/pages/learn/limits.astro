@@ -10,7 +10,7 @@ import type {
 /**
  * Three things that go wrong, and five controls, each asked the same question:
  * does it help here? No control helps with all three, which is the point.
- * The controls are the flows DPoP, credential broker, step-up and CIBA;
+ * The controls are the flows DPoP, OAuth mTLS, credential broker, step-up and CIBA;
  * nothing here may contradict those pages.
  */
 const failures: ScenarioData = {
@@ -48,7 +48,7 @@ const failures: ScenarioData = {
         },
         {
           verdict: "yes",
-          note: "An API that checks for the key refuses the token alone, and the key was never in the log. A proof caught beside it can be reused at that one address, briefly.",
+          note: "An API that checks proof of the bound key refuses the token alone, and the key was never in the log. With DPoP, a captured proof may briefly be replayed at the same address unless the API detects it.",
         },
         {
           verdict: "partly",
@@ -131,11 +131,11 @@ const checks: CheckQuestion[] = [
       {
         text: "Nothing, at an API that checks the binding: it wants proof of the key.",
         correct: true,
-        why: "Every request carries a signature made with the private key. The token names the matching public key, so a copy sent alone fails the check. The check is the API’s job: one that ignores the binding would accept the copy.",
+        why: "The caller must prove possession of the private key the token is bound to. A copy sent alone fails that check. The API must enforce the proof and binding: one that ignores them would accept the copy.",
       },
       {
         text: "Use it at that API until it expires, like any other token.",
-        why: "That is true of a plain bearer token. A bound token has to arrive with a fresh signature made by the private key.",
+        why: "That is true of a plain bearer token. A bound token also requires proof that the caller holds the associated private key.",
       },
       {
         text: "Use it once, since each proof is single-use.",
@@ -200,7 +200,7 @@ const checks: CheckQuestion[] = [
   names={[
     ["Text written to be taken as instructions", "Prompt injection"],
     ["A token only the holder of a key can use", "Sender-constrained token"],
-    ["Showing, on each request, that you hold the key", "Proof of possession"],
+    ["Showing that you hold the key the token is bound to", "Proof of possession"],
     ["One common way of doing that", "DPoP"],
     ["The API sending the agent back for a fresh sign-in or a wider approval", "Step-up"],
   ]}
@@ -247,10 +247,11 @@ const checks: CheckQuestion[] = [
     written by strangers, and send messages out.
   </p>
   <p>
-    <strong>Bind the token to a key.</strong> The agent makes a key pair and keeps the private half. The token names
-    the public half, and every request carries a fresh signature made with the private one. An API that checks for
-    that signature then refuses a copy of the token sent alone. This is a <strong>sender-constrained token</strong>. The signature is called{' '}
-    <strong>proof of possession</strong>, and one common way to do it is DPoP. The private key is held by your code or
+    <strong>Bind the token to a key.</strong> A <strong>sender-constrained token</strong> requires the caller to prove
+    it holds the associated private key. This is called <strong>proof of possession</strong>. With DPoP, every HTTP
+    request carries a signed proof. With <a href="/flows/oauth-mtls/">OAuth mTLS</a>, the caller proves key possession
+    during TLS, and the API matches the token’s binding to the certificate used on that connection. An API that checks
+    the proof and binding refuses a copy of the token sent alone. The private key is held by your code or
     by the platform’s key store, never where the model can read it: a key the model could repeat would be no better
     than a token it could repeat.
   </p>
