@@ -325,6 +325,9 @@
   "https://www.rfc-editor.org/rfc/rfc9421.json": {
     "etag": "\"ae4f6d10b76a6dfa61d8f04ffa11dc0d\""
   },
+  "https://www.rfc-editor.org/rfc/rfc9440.json": {
+    "etag": "\"d3e2468c6a960a1f48803c742d367aff\""
+  },
   "https://www.rfc-editor.org/rfc/rfc9449.json": {
     "etag": "\"c3d136ebe7dbdd7c7f841865ac37a421\""
   },

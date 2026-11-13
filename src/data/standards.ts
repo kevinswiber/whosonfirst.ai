@@ -777,6 +777,20 @@ export const standards: Standard[] = [
     url: rfc(8705),
   },
   {
+    id: "rfc9440",
+    name: "Client-Cert HTTP Header Field",
+    ref: "RFC 9440",
+    body: "IETF",
+    status: "rfc",
+    detail: "July 2023. Informational.",
+    topics: ["proof-of-possession"],
+    summary:
+      "How a trusted proxy forwards a client certificate from mutual TLS to a backend server.",
+    agents:
+      "The backend can check a certificate-bound token when a trusted proxy terminates the client’s TLS connection.",
+    url: rfc(9440),
+  },
+  {
     id: "rfc9421",
     name: "HTTP Message Signatures",
     ref: "RFC 9421",

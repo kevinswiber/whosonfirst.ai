@@ -13,15 +13,16 @@ export const spiffeWorkloadIdentity: Flow = {
 
 The workload does not log in to get it. It asks a local agent over a Unix socket, and the local agent works out who is asking by inspecting the calling process: which pod, which service account, which container image. Identity is derived from what the workload *is*, checked by something outside it.
 
-For agent systems this gives you a per-workload identity that works the same across clusters and clouds, authenticates both sides of a connection, and rotates without anyone noticing. Service meshes use the same identities under the hood.`,
+For agent systems this gives you a per-workload identity that works the same across clusters and clouds. The certificate authenticates the workload to its peer and renews automatically. Service meshes use the same identities under the hood.`,
   fits: [
     "Agent-to-tool and agent-to-agent calls inside your own infrastructure.",
     "Multi-cluster or multi-cloud deployments that need one identity scheme.",
-    "A foundation for other flows: an SVID can authenticate an OAuth client or be exchanged for a token.",
+    "A foundation for other flows. An SVID can authenticate an OAuth client where the authorization server supports it. A JWT-SVID can be exchanged for another token by a service configured to accept it. An X.509-SVID can supply the certificate for [OAuth mTLS token binding](/flows/oauth-mtls/) where both servers support it.",
   ],
   watchOut: [
     "SPIFFE says **who a workload is**. It says nothing about which user the workload is acting for. For that you still need a token carrying the user’s delegation, alongside the workload identity.",
     "Authentication is not authorization. Mutual TLS with no policy means every workload in the trust domain can call every other.",
+    "X.509-SVIDs rotate automatically. When the agent starts using the new certificate for TLS, it needs a new certificate-bound token. The previous token still requires the previous certificate and key, while the token is valid and the API accepts that certificate.",
     "Registration entries decide which workloads get which IDs. Loose selectors (a whole namespace) hand the same identity to things that should differ.",
     "An LLM agent that spawns sub-agents in one process shares one SVID among them. Workload identity names the workload and nothing inside it.",
     "Anything running in the agent’s container can ask for the agent’s certificate and key, including code the agent was asked to run. Run untrusted code in a separate pod that cannot reach the socket.",
@@ -141,15 +142,24 @@ Validity:
       body: `If the call is on behalf of a user, the request carries an access token as well. Workload identity for the hop, user delegation for the request: the two layers answer different questions and are stronger together.`,
     },
   ],
-  standards: ["spiffe", "spire", "rfc8705", "spiffe-client-auth", "wimse-arch"],
+  standards: [
+    "spiffe",
+    "spire",
+    "rfc8705",
+    "spiffe-client-auth",
+    "rfc8693",
+    "wimse-arch",
+  ],
   roles: {
     spiffe: "required", // SPIFFE ID, X.509-SVID, Workload API, trust bundle: steps 3, 5, 6, 7
     spire: "required", // the implementation drawn: attestation and registration in steps 1, 2, 4
-    rfc8705: "optional", // an SVID authenticating an OAuth client is offered under "Use it when"; no step shows it
+    rfc8705: "optional", // mTLS client authentication and certificate-bound tokens, outside the steps
     "spiffe-client-auth": "optional", // the same use, as an IETF draft
+    rfc8693: "optional", // exchanging a JWT-SVID for another token, outside the steps
     "wimse-arch": "background", // named once in a note about related IETF work
   },
   related: [
+    "oauth-mtls",
     "workload-identity-federation",
     "wimse-workload-tokens",
     "transaction-tokens",

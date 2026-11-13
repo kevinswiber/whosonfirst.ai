@@ -160,6 +160,7 @@ grant_type=client_credentials
     "mcp-client-credentials": "background", // MCP's profile of this grant; not named or used on this page
   },
   related: [
+    "oauth-mtls",
     "workload-identity-federation",
     "spiffe-workload-identity",
     "dpop",

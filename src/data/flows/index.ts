@@ -17,6 +17,7 @@ import { deviceAuthorization } from "./device-authorization";
 import { dpop } from "./dpop";
 import { identityChaining } from "./identity-chaining";
 import { mcpAuthorization } from "./mcp-authorization";
+import { oauthMtls } from "./oauth-mtls";
 import { spiffeWorkloadIdentity } from "./spiffe-workload-identity";
 import { stepUpAuthorization } from "./step-up-authorization";
 import { tokenExchange } from "./token-exchange";
@@ -48,6 +49,7 @@ export const flows: Flow[] = [
   webBotAuth,
   agentPayments,
   dpop,
+  oauthMtls,
   toolCallAuthorization,
   accessRevocation,
   credentialBroker,

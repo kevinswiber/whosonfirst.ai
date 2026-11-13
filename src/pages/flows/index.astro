@@ -57,6 +57,10 @@ const COMPARE: Record<string, [subject: string, proof: string]> = {
   "web-bot-auth": ["Agent operator", "HTTP message signature"],
   "agent-payments": ["User’s signed intent", "A key named in the mandate"],
   dpop: ["Unchanged", "A signed proof on every request"],
+  "oauth-mtls": [
+    "Set by the grant (the agent here)",
+    "The key for the bound certificate, in TLS",
+  ],
   "tool-call-authorization": [
     "Agent acting for a user",
     "Existing bearer token",
