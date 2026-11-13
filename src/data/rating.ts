@@ -4,12 +4,14 @@
  * under "How flows are rated".
  *
  *   - A flow takes the level of its least mature required reference.
+ *   - A flow with no required reference has nothing to take a level from, and is
+ *     not rated. It is not assumed stable for having no draft among its references.
  *   - Optional and background references never change it.
  *   - A reference whose role is not settled is not counted, and is not assumed
  *     to be optional or stable either. If requiring it would lower the level,
  *     the rating is provisional until the reference is classified.
  */
-import type { Maturity, RefRole, StdStatus } from "./types";
+import type { FlowRating, Maturity, RefRole, StdStatus } from "./types";
 
 /** Least mature first. */
 const ORDER: Maturity[] = ["experimental", "emerging", "stable"];
@@ -40,17 +42,27 @@ export interface RatedRef {
 }
 
 export interface Rating {
-  level: Maturity;
-  /** True while a reference whose role is not settled could lower the level. */
+  /** "unrated" when no reference is required. */
+  level: FlowRating;
+  /** True while a reference whose role is not settled could lower the level, or give an unrated flow one. */
   provisional: boolean;
-  /** Those references: role not settled, and less mature than the level or of unknown maturity. */
+  /**
+   * Those references: role not settled, and less mature than the level or of unknown maturity.
+   * For an unrated flow, every reference whose role is not settled.
+   */
   pending: string[];
 }
 
 export function rate(refs: RatedRef[]): Rating {
   const required = refs.filter((r) => r.role === "required");
-  if (required.length === 0)
-    throw new Error("no required reference to rate from");
+  if (required.length === 0) {
+    // Nothing to rate from. Any reference whose role is not settled could, if it turned out
+    // to be required, give the flow a rating, so each one keeps the result provisional.
+    const pending = refs
+      .filter((r) => r.role === "unresolved")
+      .map((r) => r.id);
+    return { level: "unrated", provisional: pending.length > 0, pending };
+  }
   const ranks: number[] = [];
   const unknown: string[] = [];
   for (const r of required) {

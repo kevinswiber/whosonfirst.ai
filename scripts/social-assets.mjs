@@ -592,6 +592,7 @@ code {
 .rating { flex: none; width: 15px; height: 15px; border: 2px solid var(--fg); }
 .rating.r0 { background: var(--fg); }
 .rating.r1 { background: linear-gradient(to right, var(--fg) 50%, transparent 50%); }
+.rating.rx { border-style: dashed; }
 .key { display: flex; gap: 40px; margin-top: 10px; }
 .key span { font-size: 25px; color: var(--fg-muted); }
 
@@ -782,11 +783,15 @@ function pages({ home, figure, flows, standards }, flow) {
   const ratings = [
     ...new Set(flows.groups.flatMap((g) => g.flows.map((f) => f.rating))),
   ];
-  if (ratings.length > 3)
+  // A flow that requires no standard is not rated: a dashed square, whatever its place in the list.
+  const UNRATED = "Not rated";
+  const levels = ratings.filter((r) => !r.startsWith(UNRATED));
+  if (levels.length > 3)
     throw new Error(
-      `the flows page has ${ratings.length} ratings, and there are markers for three`,
+      `the flows page has ${levels.length} ratings, and there are markers for three`,
     );
-  const rating = (r) => `<i class="rating r${ratings.indexOf(r)}"></i>`;
+  const rating = (r) =>
+    `<i class="rating ${r.startsWith(UNRATED) ? "rx" : `r${levels.indexOf(r)}`}"></i>`;
   const half = Math.ceil(flows.groups.length / 2);
   list.push({
     name: "flows",

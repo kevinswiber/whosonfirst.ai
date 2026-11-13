@@ -6,7 +6,7 @@ export const credentialBroker: Flow = {
   short: "Credential broker",
   group: "cross-cutting",
   human: "any",
-  maturity: "emerging",
+  maturity: "unrated",
   tagline:
     "The agent never holds the secret. A proxy outside the sandbox adds it to outgoing requests, and only for the hosts it was meant for.",
   summary: `Every other page on this site is about getting the right credential to an agent. This one is about not giving it one at all.
@@ -169,8 +169,15 @@ key=__PLACEHOLDER_REPORTS_KEY__`,
       body: `The host is not on the allow-list. Even if it were, no credential is scoped to it, so the placeholder would have gone out as a meaningless string.`,
     },
   ],
-  standards: ["rfc9449", "spiffe", "k8s-agent-sandbox", "agentgateway"],
-  // None of these defines the pattern, so the page names no primary specification.
+  standards: ["agentgateway", "k8s-agent-sandbox", "spiffe", "rfc9449"],
+  // None of these defines the pattern and no step depends on one, so the page names no primary
+  // specification and none is required. With nothing required, the flow is not rated.
+  roles: {
+    agentgateway: "optional", // one implementation: an egress proxy with a destination allow-list, TLS termination and a key added per backend; not named, and it swaps no placeholder
+    "k8s-agent-sandbox": "optional", // no broker of its own; its execution-scoped token example is where that variation in the notes comes from
+    spiffe: "optional", // one source of the workload identity the proxy shows the vault in step 5; not named
+    rfc9449: "background", // DPoP, a related flow: another way to make a copied token useless; no step uses it
+  },
   noBasis: "No standard defines this pattern",
   related: [
     "url-elicitation",

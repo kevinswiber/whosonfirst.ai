@@ -60,6 +60,12 @@ export type HumanPresence = "present" | "reachable" | "absent" | "any";
 export type Maturity = "stable" | "emerging" | "experimental";
 
 /**
+ * What a flow is rated: a level, or "unrated" where none of its references is
+ * required, so there is nothing to take a level from. See data/rating.ts.
+ */
+export type FlowRating = Maturity | "unrated";
+
+/**
  * What a flow page needs from a reference it lists.
  * - required: the page names it as what the flow implements, a numbered step shows
  *   something it defines, the page teaches a security or validation rule it sets, or
@@ -68,7 +74,8 @@ export type Maturity = "stable" | "emerging" | "experimental";
  *   on the page requires it
  * - background: named for context only
  * - unresolved: its role could not be settled from the sources available
- * A flow's maturity is that of its least mature required reference. An unresolved
+ * A flow's maturity is that of its least mature required reference, and a flow that
+ * requires none is not rated. An unresolved
  * reference is not counted, and is not assumed to be optional: if requiring it would
  * lower the rating, the rating is provisional. See data/rating.ts and /about/.
  */
@@ -99,7 +106,7 @@ export interface Flow {
   short: string;
   group: FlowGroup;
   human: HumanPresence;
-  maturity: Maturity;
+  maturity: FlowRating;
   /** One sentence for cards. */
   tagline: string;
   /** Opening paragraph(s) on the flow page. */
@@ -123,7 +130,8 @@ export interface Flow {
   /**
    * For a pattern that no specification defines: what the page says where its basis would be,
    * e.g. "No standard defines this pattern". The page then names no primary specification.
-   * Not for a flow with `roles` or a `basis`: those have required references.
+   * Not for a flow with a `basis` or a required reference. A flow whose `roles` require
+   * nothing must have it, and is shown as not rated.
    */
   noBasis?: string;
   related: string[];
@@ -293,10 +301,11 @@ export const HUMAN_TONE: Record<HumanPresence, string> = {
   any: "",
 };
 
-export const MATURITY_LABEL: Record<Maturity, string> = {
+export const MATURITY_LABEL: Record<FlowRating, string> = {
   stable: "Stable standards",
   emerging: "Emerging",
   experimental: "Experimental",
+  unrated: "Not rated",
 };
 
 /* ---------- standards tracker ---------- */
