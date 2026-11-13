@@ -9,7 +9,7 @@ export const accessRevocation: Flow = {
   maturity: "stable",
   tagline:
     "Follow a session revocation from the server that ends it to the API that enforces it.",
-  summary: `An administrator ends the session an agent is using to read an employee’s company calendar. The agent is still running and has a signed access token that has not expired. The calendar API starts refusing calls with that token once it has the session’s new state.
+  summary: `Alice has authorized her agent to read her company calendar. An administrator ends the company session that access depends on. The agent is still running and has a signed access token that has not expired. The calendar API starts refusing calls with that token once it has the session’s new state.
 
 The Shared Signals Framework (SSF) delivers security events between services set up to share them. The Continuous Access Evaluation Profile (CAEP) defines event types and what each one reports. Here, the company’s authorization server sends a Session Revoked event and the calendar service closes its matching local sessions.`,
   fits: [
@@ -25,7 +25,7 @@ The Shared Signals Framework (SSF) delivers security events between services set
     steps:
       "A company authorization server pushes a CAEP event to a calendar service over SSF. The calendar service receives the event and runs the API that enforces it.",
     preconditions: [
-      "The agent already holds a signed bearer access token for the calendar API. Its subject is the employee the agent acts for. A field this issuer and API agreed on, `company_session`, names the employee’s company session `cs-418`. The API links each local calendar session to that ID and its issuer.",
+      "The agent already holds a signed bearer access token for the calendar API. Its subject is Alice. A field this issuer and API agreed on, `company_session`, names Alice’s company session `cs-418`. The API links each local calendar session to that ID and its issuer.",
       "The company server and the calendar service have set up a push stream for Session Revoked events about the shared sessions. The calendar service knows the trusted transmitter and issuer, the issuer’s event-signing keys, and the event audience that identifies this receiver. The company server knows the receiver’s HTTPS endpoint.",
     ],
     examples:
@@ -94,7 +94,7 @@ The Shared Signals Framework (SSF) delivers security events between services set
       kind: "self",
       label: "End company session",
       title: "The company ends the session",
-      body: `An administrator withdraws access for session \`cs-418\`. Under company policy, the server marks that session revoked and stops issuing or renewing tokens under it. The agent still holds the token it received earlier, with its original signature and expiry.`,
+      body: `An administrator withdraws access for Alice’s session \`cs-418\`. Under company policy, the server marks that session revoked and stops issuing or renewing tokens under it. The agent still holds the token it received earlier, with its original signature and expiry.`,
     },
     {
       from: "company",
@@ -107,7 +107,7 @@ The Shared Signals Framework (SSF) delivers security events between services set
         lang: "json",
         text: `{
   "iss": "https://identity.example.com",
-  "aud": "https://calendar.example.com/signals",
+  "aud": "https://calendar.example/signals",
   "iat": 1794268830,
   "jti": "evt-8f40",
   "txn": "withdrawal-8f40",
@@ -152,8 +152,8 @@ The Shared Signals Framework (SSF) delivers security events between services set
       body: `The agent has received no event. It calls the calendar API with the same bearer access token it already held.`,
       code: {
         lang: "http",
-        text: `GET /api/events HTTP/1.1
-Host: calendar.example.com
+        text: `GET /events HTTP/1.1
+Host: calendar.example
 Authorization: Bearer eyJ…`,
       },
     },
