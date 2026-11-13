@@ -138,7 +138,6 @@
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
-  "https://github.com/openid/authzen": {},
   "https://github.com/spiffe/spire": {},
   "https://github.com/visa/trusted-agent-protocol": {},
   "https://github.com/x402-foundation/x402": {},
@@ -175,6 +174,14 @@
   },
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
+  },
+  "https://openid.github.io/authzen/authzen-coaz-framework-1_0": {
+    "etag": "W/\"6af37b29-1a0bf\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
+  "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
+    "etag": "W/\"6af37b29-204c6\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
   },
   "https://openid.net/specs/authorization-api-1_0-final.html": {
     "etag": "\"3bb64-6482a0d30732a-gzip\"",
@@ -216,6 +223,7 @@
     "etag": "\"3c527-63d827e8b3b9d-gzip\"",
     "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
   },
+  "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {

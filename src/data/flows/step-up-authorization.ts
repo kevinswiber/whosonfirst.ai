@@ -212,6 +212,7 @@ WWW-Authenticate: Bearer error="insufficient_user_authentication",
     "ciba",
     "authorization-code-pkce",
     "mcp-authorization",
+    "tool-call-authorization",
     "url-elicitation",
   ],
 };
