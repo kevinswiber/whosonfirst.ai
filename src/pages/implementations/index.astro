@@ -97,7 +97,7 @@ const reviewed = groups
                           {snapshot.implementations.length > 0 ? (
                             <>
                               <strong>{snapshot.optionsLabel}</strong>
-                              <p class="field-example-label">From the record</p>
+                              <p class="field-example-label">From the record:</p>
                               <FieldExamples slug={flow.slug} entries={snapshot.implementations} label="Implementations from the record" />
                             </>
                           ) : 'No entry included in this review.'}
@@ -109,7 +109,7 @@ const reviewed = groups
                           {snapshot.deployment ? (
                             <>
                               <strong>{snapshot.operatorsLabel}</strong>
-                              <p class="field-example-label">From the record</p>
+                              <p class="field-example-label">From the record:</p>
                               <FieldExamples slug={flow.slug} entries={[snapshot.deployment]} label="Deployment report from the record" />
                             </>
                           ) : 'No report included in this review.'}
@@ -368,7 +368,12 @@ const reviewed = groups
     text-transform: uppercase;
   }
   .field-overview dd strong { color: var(--fg); }
-  .field-example-label { margin: 0.5rem 0 0; }
+  .field-example-label {
+    margin: 0.5rem 0 0;
+    font: 500 0.72rem/1.35 var(--font-label);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
   .field-actions {
     display: grid;
     gap: 0.45rem;
