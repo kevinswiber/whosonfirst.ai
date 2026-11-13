@@ -202,7 +202,7 @@ allow if resource($event), operation($op), right($event, $op);`,
       title: "Expiry and revocation are checks the API enforces",
       body: `Each deadline here is a Datalog check, evaluated against the API’s current time. The worker’s earlier deadline narrows the issuer’s original one. Biscuit does not add an expiry merely because a token was issued. Set one deliberately when the task should end.
 
-The specification also defines a revocation identifier for each block, derived from its signature. An API can compare those identifiers with a revocation list. Rejecting the authority block’s identifier can reject that token and all its restricted descendants; rejecting a later block’s identifier targets the branch containing it. Distributing and refreshing that list is a deployment responsibility. A disconnected API cannot learn a new revocation from signature verification alone.`,
+The specification also defines a revocation identifier for each block: its signature serialized as a byte array. An API can compare those identifiers with a revocation list. Rejecting the authority block’s identifier can reject that token and all its restricted descendants; rejecting a later block’s identifier targets the branch containing it. Distributing and refreshing that list is a deployment responsibility. A disconnected API cannot learn a new revocation from signature verification alone.`,
     },
     {
       title: "Choose where the restriction happens",

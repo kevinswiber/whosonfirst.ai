@@ -1393,19 +1393,27 @@ export const standards: Standard[] = [
     id: "biscuit",
     name: "Biscuit",
     ref: "Biscuit 3.x · Datalog 3.3",
-    body: "Eclipse Biscuit",
+    body: "Eclipse Foundation",
     status: "project",
-    // The project's README marks main/SPECIFICATIONS.md as stable.
-    // Its source is linked below; the specification snapshot supports Datalog through v3.3.
+    // Evidence for the level: the README at b3d3fe2 says
+    // "The stable version of the specification is at SPECIFICATIONS.md".
+    // Eclipse lists the project as Incubating; that process stage is distinct
+    // from the stability of this pinned specification.
     level: "stable",
     detail:
-      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README calls for a security audit of the design and implementations and lists varying support for 3.3 across libraries.",
+      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README says it is seeking an audit of token design, cryptographic primitives and implementations, and lists varying support for 3.3 across libraries. The project is incubating at the Eclipse Foundation; the level here follows the specification’s own stability statement.",
     related: [
       {
         name: "Biscuit project status and implementation support",
         url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md",
         kind: "source",
         note: "Names the stable specification and lists feature support by implementation.",
+      },
+      {
+        name: "Eclipse Biscuit project",
+        url: "https://projects.eclipse.org/projects/technology.biscuit",
+        kind: "source",
+        note: "Lists the project’s foundation process stage as Incubating.",
       },
     ],
     topics: ["delegation", "authorization"],

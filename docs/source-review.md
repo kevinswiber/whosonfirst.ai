@@ -286,6 +286,7 @@ kubernetes.io
 github.com
 api.github.com
 raw.githubusercontent.com
+projects.eclipse.org
 docs.github.com
 ap2-protocol.org
 verifiableintent.dev

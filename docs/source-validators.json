@@ -209,6 +209,9 @@
   "https://openid.net/wg/sharedsignals/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
+  "https://projects.eclipse.org/projects/technology.biscuit": {
+    "etag": "\"1794545138-gzip\""
+  },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },
