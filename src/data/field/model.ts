@@ -17,6 +17,8 @@ interface Evidence {
   id: string;
   summary: string;
   limits: string;
+  /** Brief, source-backed condition that must accompany the name in compact views. */
+  qualification?: string;
   sources: FieldSource[];
   review: EvidenceReview;
 }
@@ -118,6 +120,8 @@ export function validateProfiles(
       require(!ids.has(entry.id), `duplicate evidence ${entry.id}`);
       ids.add(entry.id);
       require(entry.sources.length > 0, `${entry.id}: a claim needs a source`);
+      if (entry.qualification !== undefined)
+        require(entry.qualification.trim(), `${entry.id}: qualification must not be empty`);
       require(entry.summary.trim() &&
         entry.limits.trim(), `${entry.id}: describe claim and limits`);
       require(["accepted", "pending", "excluded"].includes(

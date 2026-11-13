@@ -6,6 +6,7 @@ import {
   validateProfiles,
 } from "../../src/data/field/model.ts";
 import { profiles } from "../../src/data/field/records.ts";
+import { fieldQualification } from "../../src/lib/field.ts";
 
 const dpop = () => structuredClone(profiles.find((p) => p.slug === "dpop"));
 
@@ -131,4 +132,33 @@ test("bad source addresses and inherited label names are rejected", () => {
   const badEvent = dpop();
   badEvent.events[0].kind = "constructor";
   assert.throws(() => validateProfiles([badEvent]), /name and date the event/);
+});
+
+test("compact qualifications retain early release wording and material limitations", () => {
+  const entries = profiles.flatMap((profile) => [
+    ...profile.implementations,
+    ...profile.deployments,
+  ]);
+  const entry = (id) => entries.find((candidate) => candidate.id === id);
+  assert.equal(fieldQualification(entry("dpop-keycloak")), "");
+  assert.equal(fieldQualification(entry("mcp-keycloak")), "Experimental");
+  assert.equal(
+    fieldQualification(entry("caep-google-workspace")),
+    "Closed Beta",
+  );
+  assert.match(
+    fieldQualification(entry("gnap-rafiki")),
+    /^Beta releases documented · Open Payments profile/,
+  );
+  assert.match(
+    fieldQualification(entry("web-bot-auth-cloudflare")),
+    /rejects the format this guide illustrates/,
+  );
+  assert.equal(fieldQualification(entry("a2a-eon")), "A2A 0.3 when reported.");
+  const invalid = dpop();
+  invalid.implementations[0].qualification = " ";
+  assert.throws(
+    () => validateProfiles([invalid]),
+    /qualification must not be empty/,
+  );
 });

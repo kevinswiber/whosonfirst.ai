@@ -316,3 +316,18 @@ test("Implementations uses its published name and URLs in page metadata and Mark
   );
   assert.doesNotMatch(navigation, /https:\/\/whosonfirst\.ai\/field\//);
 });
+
+// Parameterized pages are not discovered by the sitemap’s filesystem glob.
+test("the sitemap includes every indexable page, including implementation records", () => {
+  const urls = [...file("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+    (match) => match[1],
+  );
+  assert.equal(new Set(urls).size, urls.length, "duplicate sitemap addresses");
+  const missing = indexed.filter(
+    (page) => !urls.includes(`${ORIGIN}${page.path}`),
+  );
+  assert.deepEqual(
+    missing.map((page) => page.path),
+    [],
+  );
+});

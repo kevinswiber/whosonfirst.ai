@@ -138,7 +138,7 @@ test("search links to exact entries beyond the sample and keeps product and role
   assert.equal(await count.textContent(), "1 flow shown");
   assert.equal(
     await page
-      .getByRole("link", { name: "openid-client · Client library" })
+      .getByRole("link", { name: "openid-client", exact: true })
       .getAttribute("href"),
     "/implementations/ciba/#field-ciba-openid-client",
   );
@@ -147,7 +147,7 @@ test("search links to exact entries beyond the sample and keeps product and role
   assert.equal(await count.textContent(), "1 flow shown");
   assert.equal(await page.locator(records).first().getAttribute("id"), "dpop");
   await page
-    .getByRole("link", { name: "Spring Security · Resource-server verifier" })
+    .getByRole("link", { name: "Spring Security", exact: true })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/#field-dpop-spring$/);
   assert.ok(
@@ -186,6 +186,10 @@ test("directory search resets from the keyboard and print shows the full overvie
   await page.emulateMedia({ media: "print" });
   assert.equal(await page.locator(records).count(), FLOWS.length);
   assert.equal(await page.locator(".field-matches:visible").count(), 0);
+  assert.equal(
+    await page.locator(".field-overview:visible").count(),
+    FLOWS.length,
+  );
   assert.equal(await input.isVisible(), false);
   assert.equal(await count.isVisible(), false);
 });
@@ -200,11 +204,12 @@ test("search shows every matching entry, including when the query names the flow
   });
   await input.fill("dpop authorization server");
   const matches = page.locator("#dpop .field-matches");
-  assert.deepEqual((await matches.getByRole("link").allTextContents()).sort(), [
-    "Auth0 · Authorization server",
-    "Curity Identity Server · Authorization server",
-    "Keycloak · Authorization server",
-  ]);
+  assert.deepEqual(
+    (await matches.getByRole("link").allTextContents())
+      .map((name) => name.trim())
+      .sort(),
+    ["Auth0", "Curity Identity Server", "Keycloak"],
+  );
   await input.fill("dpop");
   for (const product of [
     "Keycloak",
@@ -503,4 +508,116 @@ test("flow cards include every implementation and deployment entry from the full
         .isVisible(),
     );
   }
+});
+
+for (const viewport of [
+  { width: 1280, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`${viewport.width}px: product search replaces samples with qualified matches and restores them when cleared`, async (t) => {
+    const ctx = await site.context({ viewport });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/implementations/"));
+    await page
+      .getByRole("searchbox", { name: "Search by flow, product or role" })
+      .fill("keycloak");
+    const mcp = page.locator("#mcp-authorization");
+    assert.ok(!(await mcp.locator(".field-overview").isVisible()));
+    assert.equal(
+      await mcp.getByRole("link", { name: "Claude Code", exact: true }).count(),
+      0,
+    );
+    assert.equal(
+      await mcp.getByRole("link", { name: "Stripe", exact: true }).count(),
+      0,
+    );
+    assert.ok(
+      await mcp
+        .getByRole("link", { name: "See the flow for MCP authorization" })
+        .isVisible(),
+    );
+    assert.ok(
+      await mcp
+        .getByRole("link", {
+          name: "See the full record for MCP authorization",
+        })
+        .isVisible(),
+    );
+    const match = mcp.locator(".field-matches");
+    assert.equal(await match.getByRole("link").count(), 1);
+    assert.ok(await match.locator(".field-example-qualification").isVisible());
+    assert.match(
+      await match.textContent(),
+      /Keycloak[\s\S]*Authorization server[\s\S]*Experimental/,
+    );
+    await match.getByRole("link", { name: "Keycloak", exact: true }).click();
+    assert.match(
+      page.url(),
+      /\/implementations\/mcp-authorization\/#field-mcp-keycloak$/,
+    );
+    assert.match(await page.locator(":target").textContent(), /Experimental/);
+
+    await open(page, site.url("/implementations/"));
+    const input = page.getByRole("searchbox", {
+      name: "Search by flow, product or role",
+    });
+    await input.fill("keycloak");
+    await page.getByRole("button", { name: "Clear search" }).click();
+    assert.equal(await page.locator(records).count(), FLOWS.length);
+    assert.equal(await page.locator(".field-matches:visible").count(), 0);
+    assert.ok(
+      await mcp
+        .getByRole("link", { name: "Claude Code", exact: true })
+        .isVisible(),
+    );
+    assert.ok(
+      await mcp.getByRole("link", { name: "Stripe", exact: true }).isVisible(),
+    );
+    assert.equal(await mcp.getAttribute("data-matching"), null);
+  });
+}
+
+test("material qualifications accompany product and report names without JavaScript", async (t) => {
+  const ctx = await site.context({ javaScriptEnabled: false });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  for (const path of ["/flows/web-bot-auth/", "/implementations/"]) {
+    await open(page, site.url(path));
+    const scope = path.startsWith("/flows/")
+      ? page.locator(".field-summary")
+      : page.locator("#web-bot-auth");
+    const cloudflare = scope.getByRole("listitem").filter({
+      has: page.getByRole("link", {
+        name: "Cloudflare Verified Bots",
+        exact: true,
+      }),
+    });
+    assert.ok(
+      await cloudflare.locator(".field-example-qualification").isVisible(),
+    );
+    assert.match(
+      await cloudflare.textContent(),
+      /Earlier wire format; rejects the format this guide illustrates/,
+    );
+    const google = scope.getByRole("listitem").filter({
+      has: page.getByRole("link", { name: "Google-Agent", exact: true }),
+    });
+    assert.ok(await google.locator(".field-example-qualification").isVisible());
+    assert.match(await google.textContent(), /Experimental signing/);
+    assert.match(
+      await google.textContent(),
+      /Uses an origin where this guide uses the key-set URL/,
+    );
+  }
+  await open(page, site.url("/flows/gnap/"));
+  assert.match(
+    await page.locator(".field-summary").textContent(),
+    /No HTTP Message Signatures, key-bound access tokens or RFC 9767 introspection/,
+  );
+  await open(page, site.url("/flows/agent-to-agent/"));
+  const eon = page
+    .locator(".field-summary li")
+    .filter({ has: page.getByRole("link", { name: "Eon", exact: true }) });
+  assert.match(await eon.textContent(), /A2A 0.3 when reported/);
 });

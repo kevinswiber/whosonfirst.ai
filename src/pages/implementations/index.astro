@@ -117,23 +117,12 @@ const reviewed = groups
                       </div>
                     </dl>
                     <template>
-                      {profile.implementations.map((entry) => (
-                        <a
-                          href={`${href}#field-${entry.id}`}
-                          data-name={entry.product}
-                          data-owner={entry.organization}
-                          data-role={entry.role}
-                          data-example={snapshot.implementations.some((example) => example.id === entry.id) ? '' : undefined}
-                        >{entry.product} · {entry.role}</a>
-                      ))}
-                      {profile.deployments.map((entry) => (
-                        <a
-                          href={`${href}#field-${entry.id}`}
-                          data-name={entry.organization}
-                          data-role={entry.setting}
-                          data-example={snapshot.deployment?.id === entry.id ? '' : undefined}
-                        >{entry.organization} · {entry.setting}</a>
-                      ))}
+                      <FieldExamples
+                        slug={flow.slug}
+                        entries={[...profile.implementations, ...profile.deployments]}
+                        label="Matching evidence"
+                        searchable
+                      />
                     </template>
                     <div class="field-matches" hidden></div>
                   </>
@@ -192,17 +181,18 @@ const reviewed = groups
         entries: [...element.querySelectorAll<HTMLElement>('.field-record')].map((record) => {
           const flow = record.dataset.flowText ?? '';
           const identity = record.dataset.flowIdentity ?? '';
-          const source = record.querySelector('template');
+          const source = record.querySelector('template')?.content.querySelector('ul');
           const matches = record.querySelector<HTMLElement>('.field-matches');
           return {
             record,
             matches,
+            source,
             flowText: searchText(flow),
             // A product or operator and its role belong to the same entry.
-            candidates: Array.from(source?.content.querySelectorAll('a') ?? [], (link) => ({
-              text: searchText(`${identity} ${link.dataset.name} ${link.dataset.owner ?? ''} ${link.dataset.role}`),
-              link,
-            })).sort((a, b) => Number(a.link.hasAttribute('data-example')) - Number(b.link.hasAttribute('data-example'))),
+            candidates: Array.from(source?.querySelectorAll<HTMLElement>('li') ?? [], (item) => ({
+              text: searchText(`${identity} ${item.dataset.name} ${item.dataset.owner ?? ''} ${item.dataset.role}`),
+              item,
+            })),
           };
         }),
       }));
@@ -213,28 +203,22 @@ const reviewed = groups
         let shown = 0;
         for (const { element, entries } of groups) {
           let hasMatch = false;
-          for (const { record, matches, flowText, candidates } of entries) {
+          for (const { record, matches, source, flowText, candidates } of entries) {
             const matchesFlow = contains(flowText);
             const matchingEntries = words.length > 0
               ? candidates.filter((candidate) => contains(candidate.text))
               : [];
             const show = matchesFlow || matchingEntries.length > 0;
             record.toggleAttribute('data-filtered', !show);
+            record.toggleAttribute('data-matching', matchingEntries.length > 0);
             if (matches) {
               matches.replaceChildren();
               matches.hidden = matchingEntries.length === 0;
-              if (matchingEntries.length) {
+              if (matchingEntries.length && source) {
                 const label = document.createElement('strong');
                 label.textContent = 'Matching evidence';
-                const list = document.createElement('ul');
-                for (const { link } of matchingEntries) {
-                  const item = document.createElement('li');
-                  const anchor = document.createElement('a');
-                  anchor.href = link.getAttribute('href')!;
-                  anchor.textContent = link.textContent;
-                  item.append(anchor);
-                  list.append(item);
-                }
+                const list = source.cloneNode(false);
+                for (const { item } of matchingEntries) list.appendChild(item.cloneNode(true));
                 matches.append(label, list);
               }
             }
@@ -386,7 +370,8 @@ const reviewed = groups
   .field-evidence-link { font-weight: 600; }
   .field-matches {
     grid-column: 2 / -1;
-    padding: 0.55rem 0 0 0.8rem;
+    grid-row: 1;
+    padding: 0 0 0 0.8rem;
     border-inline-start: 2px solid var(--accent);
     font-size: 0.95rem;
   }
@@ -402,12 +387,13 @@ const reviewed = groups
   .field-method dd { margin: 0 0 0.75rem; }
 
   @media screen {
-    [data-filtered] { display: none; }
+    [data-filtered],
+    [data-matching] .field-overview { display: none; }
   }
   @media (max-width: 52rem) {
     .field-record { grid-template-columns: minmax(0, 1fr); }
     .field-overview { grid-column: 1; grid-row: 2; }
-    .field-matches { grid-column: 1 / -1; }
+    .field-matches { grid-column: 1 / -1; grid-row: 2; }
     .field-identity dl {
       display: flex;
       flex-wrap: wrap;

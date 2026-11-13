@@ -67,3 +67,11 @@ The flow-page section omits its sample introduction, review date, prevalence dis
 ## Directory navigation, 13 November 2026
 
 Each comparison row keeps its onward links beneath the flow name and review metadata, in the first column. The links read **See the flow** followed by **See the full record**, without repeated explanatory prose. The full-record link is the final, bold action; the flow link and individual product or report links use regular weight. Flow-page cards keep bold names as headings, and the flow-page full-record link keeps “for sources and details.” **See the flow** opens the guide from the top. There is no separate action column; the remaining width belongs to implementation evidence and deployment reports. On a phone, the identity and links precede the evidence. Both links retain the flow name in their accessible text.
+
+## Final review corrections, 13 November 2026
+
+Short entries retain material qualifications from their full records: preview and experimental release labels are derived from the existing release field, while an optional source-backed qualification identifies a relevant profile difference, unverified capability or availability condition. Flow cards, directory examples and matching search entries share the same presentation. The full records retain the supporting sources and explanation.
+
+An active entry search replaces ordinary examples with all matching entries, preserving their editorial order, roles, qualifications and implementation/report labels. Flow identity and onward links remain in place. Queries that match only a flow’s description retain that flow’s overview. Clear search and print restore the full overview. This does not add the static product browser assigned to #87.
+
+The sitemap includes every published implementation record, and a build check compares it against all indexable pages.

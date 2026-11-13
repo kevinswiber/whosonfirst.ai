@@ -82,6 +82,7 @@ export const profiles: FieldProfile[] = [
             "GitHub labels the announcement a release; it describes an enforcement exception for existing apps.",
         },
         id: "pkce-github",
+        qualification: "Secretless native-client support not established.",
         summary:
           "Announced S256 PKCE for user authorization in both app types. A sent challenge requires the verifier at code exchange, with the rollout exception described in the announcement.",
         limits:
@@ -244,6 +245,7 @@ export const profiles: FieldProfile[] = [
             "The 11 March 2026 changelog identifies the Enterprise plan and the token-issuer feature.",
         },
         id: "dpop-auth0",
+        qualification: "Enterprise plans.",
         summary:
           "Auth0 issues RFC 9449 tokens bound to a client-held key and can require DPoP for public clients or all clients.",
         limits:
@@ -821,6 +823,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "device-aws-cli",
+        qualification: "IAM Identity Center only.",
         organization: "Amazon Web Services",
         product: "AWS CLI",
         role: "CLI client",
@@ -978,6 +981,8 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-entra",
+        qualification:
+          "Uses /.default scope; the illustrated resource parameter is unverified.",
         organization: "Microsoft",
         product: "Microsoft identity platform",
         role: "Authorization server",
@@ -1009,6 +1014,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-okta",
+        qualification: "Access to Okta APIs.",
         organization: "Okta",
         product: "Okta OAuth service apps",
         role: "Authorization server",
@@ -1106,6 +1112,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "deployment",
         id: "client-creds-ebay",
+        qualification: "Client-secret authentication.",
         organization: "eBay",
         setting: "Production Browse API and OAuth token endpoint",
         summary:
@@ -1162,6 +1169,8 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "exchange-keycloak-v2",
+        qualification:
+          "Same-realm exchange; actor delegation is Preview; no resource parameter.",
         organization: "Keycloak",
         product: "Keycloak Standard Token Exchange V2",
         role: "Authorization server",
@@ -1198,6 +1207,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "exchange-okta",
+        qualification: "Actor-token delegation not established.",
         organization: "Okta",
         product: "Okta On-Behalf-Of Token Exchange",
         role: "Authorization server",
@@ -1302,6 +1312,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "deployment",
         id: "exchange-snowflake",
+        qualification: "Impersonation profile; no actor_token.",
         organization: "Snowflake",
         setting: "Hosted Snowflake OAuth token endpoint and sessions",
         summary:
@@ -1408,6 +1419,7 @@ export const profiles: FieldProfile[] = [
             "Auth0 announced general availability for Enterprise plan customers on 21 May 2025.",
         },
         id: "ciba-auth0",
+        qualification: "Enterprise plans.",
         summary:
           "Auth0 documents decoupled CIBA with a Guardian SDK mobile app for the user and Rich Authorization Requests (RFC 9396) for supplying context.",
         limits:
@@ -1439,6 +1451,7 @@ export const profiles: FieldProfile[] = [
             "The guide lists Standard, Advanced, Custom and legacy Enterprise editions, with a compatible license key needed for legacy customers.",
         },
         id: "ciba-duende",
+        qualification: "Poll mode; edition restrictions apply.",
         summary:
           "IdentityServer exposes a backchannel authentication endpoint and supports poll-mode retrieval at the token endpoint.",
         limits:
@@ -1604,6 +1617,7 @@ export const profiles: FieldProfile[] = [
             "The guides document the A2A runtime integration without naming its feature stage.",
         },
         id: "a2a-agentcore",
+        qualification: "A2A 0.3.0 example; 1.0 support unverified.",
         summary:
           "The runtime hosts an A2A JSON-RPC server with Agent Card discovery and SigV4 or OAuth 2.0 inbound authentication. Its protocol contract describes a 401 challenge when OAuth credentials are missing.",
         limits:
@@ -1701,6 +1715,7 @@ export const profiles: FieldProfile[] = [
         setting: "Buzz assistant and three specialist agents",
         attribution: "operator-report",
         id: "a2a-eon",
+        qualification: "A2A 0.3 when reported.",
         summary:
           "Eon reported using A2A 0.3 to delegate tasks from its Buzz assistant to three separately deployed specialists. The orchestrator reads Agent Cards to import skills and route requests.",
         limits:
@@ -1766,6 +1781,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "step-up-pingone",
+        qualification: "Transaction-specific consent not established.",
         organization: "Ping Identity",
         product: "PingOne SSO and API Access Management",
         role: "Authorization server and resource-server challenge",
@@ -1860,6 +1876,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "deployment",
         id: "step-up-mozilla",
+        qualification: "Authorization-server side only.",
         organization: "Mozilla",
         setting: "Mozilla Accounts authorization service",
         summary:
@@ -1917,6 +1934,8 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "xaa-okta",
+        qualification:
+          "Org authorization server does not accept external ID-JAGs.",
         organization: "Okta",
         product: "Okta Cross App Access",
         role: "Identity provider and resource authorization server",
@@ -1954,6 +1973,8 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "xaa-claude",
+        qualification:
+          "Team and Enterprise; Claude-issued assertions are beta.",
         organization: "Anthropic",
         product: "Claude",
         role: "MCP client",
@@ -2014,6 +2035,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "xaa-keycloak",
+        qualification: "Draft -01 receiver.",
         organization: "Keycloak",
         product: "Keycloak ID-JAG receiver",
         role: "Resource authorization server",
@@ -2046,6 +2068,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "deployment",
         id: "xaa-posthog",
+        qualification: "Scale or Enterprise platform add-on.",
         organization: "PostHog",
         setting: "Hosted PostHog authorization service for API and MCP access",
         summary:
@@ -2145,6 +2168,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "identity-chain-authgent",
+        qualification: "Overview names draft -14; later revisions unverified.",
         organization: "authgent project",
         product: "authgent",
         role: "Reference authorization server",
@@ -2241,6 +2265,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "txn-kontxt",
+        qualification: "Draft -08; later revisions unverified.",
         organization: "kontxt project",
         product: "kontxt",
         role: "Transaction-token service, client and verifier",
@@ -2271,6 +2296,8 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "txn-authgent",
+        qualification:
+          "Scope-subset check skipped when the subject token has no scope.",
         organization: "authgent project",
         product: "authgent",
         role: "Reference transaction-token issuer",
@@ -2499,6 +2526,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "url-elicitation-claude-code",
+        qualification: "The 2026-07-28 exchange requires the v2 runtime.",
         kind: "implementation",
         organization: "Anthropic",
         product: "Claude Code",
@@ -2559,6 +2587,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "url-elicitation-cloudflare-agents",
+        qualification: "Earlier server-initiated exchange.",
         kind: "implementation",
         organization: "Cloudflare",
         product: "Cloudflare Agents SDK",
@@ -2752,6 +2781,8 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "wimse-spire",
+        qualification:
+          "WIT issuance; HTTP proof generation and verification unverified.",
         kind: "implementation",
         organization: "SPIFFE project",
         product: "SPIRE",
@@ -2788,6 +2819,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "wimse-solo",
+        qualification: "WIT propagation; proof verification unverified.",
         kind: "implementation",
         organization: "Solo.io",
         product: "Solo Enterprise for Istio with agentgateway",
@@ -2847,6 +2879,8 @@ export const profiles: FieldProfile[] = [
     implementations: [
       {
         id: "web-bot-auth-cloudflare",
+        qualification:
+          "Earlier wire format; rejects the format this guide illustrates.",
         kind: "implementation",
         organization: "Cloudflare",
         product: "Cloudflare Verified Bots",
@@ -2877,6 +2911,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "web-bot-auth-google",
+        qualification: "Uses an origin where this guide uses the key-set URL.",
         kind: "implementation",
         organization: "Google",
         product: "Google-Agent",
@@ -2908,6 +2943,8 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "web-bot-auth-aws-waf",
+        qualification:
+          "Support for the illustrated draft -01 profile unverified.",
         kind: "implementation",
         organization: "Amazon Web Services",
         product: "AWS WAF Bot Control",
@@ -2942,6 +2979,7 @@ export const profiles: FieldProfile[] = [
     deployments: [
       {
         id: "web-bot-auth-openai",
+        qualification: "Earlier header and key-discovery format.",
         kind: "deployment",
         organization: "OpenAI",
         setting: "ChatGPT Work Cloud browser outbound HTTP",
@@ -3072,6 +3110,7 @@ export const profiles: FieldProfile[] = [
             "Traefik lists AuthZEN authorization among features that graduated to GA on 30 September 2026. The preceding Early Access entry names both gateway surfaces.",
         },
         id: "authzen-traefik-hub",
+        qualification: "COAZ binding revision unverified.",
         summary:
           "MCP Gateway maps the caller and tool arguments to an external AuthZEN evaluation and enforces the result. API Gateway documents a separate middleware for HTTP requests.",
         limits:
@@ -3463,6 +3502,8 @@ export const profiles: FieldProfile[] = [
             "The repository describes Agent Mesh as pre-1.0 and says it is outside Google’s officially supported products.",
         },
         id: "biscuit-agent-mesh",
+        qualification:
+          "Pre-1.0; outside Google’s officially supported products.",
         summary:
           "The control plane signs short-lived Biscuit credentials. The agent SDK can append restrictions offline before handing one to a sub-agent.",
         limits:
@@ -3602,6 +3643,8 @@ export const profiles: FieldProfile[] = [
             "The repository uses production-ready wording and lists features and known limitations. It does not name a support stage.",
         },
         id: "gnap-sunet",
+        qualification:
+          "No HTTP Message Signatures, key-bound access tokens or RFC 9767 introspection.",
         summary:
           "Targets RFC 9635 and documents grant requests, transaction continuation and browser interaction for consent.",
         limits:
@@ -3632,6 +3675,8 @@ export const profiles: FieldProfile[] = [
             "The project tags its 2.x releases beta and describes the auth service as a reference implementation.",
         },
         id: "gnap-rafiki",
+        qualification:
+          "Open Payments profile; full RFC interoperability unverified.",
         summary:
           "Rafiki provides a GNAP authorization server for Open Payments grants. Its backend uses a GNAP introspection client to check access tokens with the auth service.",
         limits:
@@ -3672,6 +3717,7 @@ export const profiles: FieldProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "gnap-open-payments-js",
+        qualification: "Open Payments profile.",
         summary:
           "The client can continue an Open Payments GNAP grant after browser interaction, sending the interaction reference and continuation token to the server’s continuation endpoint.",
         limits:
@@ -3703,6 +3749,7 @@ export const profiles: FieldProfile[] = [
         setting: "Public Open Payments wallet",
         attribution: "project-report",
         id: "gnap-gatehub-open-payments",
+        qualification: "Open Payments profile; report predates RFC 9635.",
         summary:
           "The Interledger Foundation reports that GateHub announced a public launch of Open Payments at a 2024 community call. The Foundation’s availability report lists GateHub as an active Open Payments wallet provider in the EU.",
         limits:
@@ -3777,6 +3824,8 @@ export const profiles: FieldProfile[] = [
             "Anthropic marks vaults Beta in its Managed Agents documentation.",
         },
         id: "credential-broker-anthropic",
+        qualification:
+          "Environment-variable credentials require managed sandboxes.",
         summary:
           "Places an opaque environment variable in the managed sandbox and substitutes the real secret in configured locations on egress to allowed hosts.",
         limits:
@@ -3917,6 +3966,7 @@ export const profiles: FieldProfile[] = [
         setting: "Internal developer and coding-agent API access",
         attribution: "operator-report",
         id: "credential-broker-postman",
+        qualification: "Developer-machine proxy; no sandbox boundary claimed.",
         summary:
           "Postman reports replacing keys on developer machines with credential references. A daemon routes calls to a corporate-network proxy that checks the request’s identity and scope, resolves the reference in a vault and calls the API.",
         limits:

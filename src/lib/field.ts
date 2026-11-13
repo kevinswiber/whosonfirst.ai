@@ -1,5 +1,22 @@
-import type { FieldProfile } from "../data/field";
-import { deploymentOrganizations } from "../data/field";
+import type {
+  DeploymentEvidence,
+  FieldProfile,
+  ImplementationEvidence,
+} from "../data/field/model.ts";
+import { deploymentOrganizations } from "../data/field/model.ts";
+
+/** Carry early-release wording and material scope limits into every compact view. */
+export function fieldQualification(
+  entry: ImplementationEvidence | DeploymentEvidence,
+): string {
+  const release =
+    entry.kind === "implementation" &&
+    (entry.release.stage === "experimental" ||
+      entry.release.stage === "preview")
+      ? entry.release.label
+      : undefined;
+  return [release, entry.qualification].filter(Boolean).join(" · ");
+}
 
 /** Coverage counts and bounded entries for the implementation directory. */
 export function fieldSnapshot(profile: FieldProfile) {
