@@ -32,6 +32,10 @@ const COMPARE: Record<string, [subject: string, proof: string]> = {
     "User, with the actor named",
     "Client authentication and the token it received",
   ],
+  "biscuit-delegation": [
+    "Permissions; no caller identity in this example",
+    "Possession of a restricted bearer token",
+  ],
   "cross-app-access": ["User", "A grant issued by the identity provider"],
   "identity-chaining": [
     "User or agent, mapped per domain",
@@ -58,6 +62,18 @@ const COMPARE: Record<string, [subject: string, proof: string]> = {
   "web-bot-auth": ["Agent operator", "HTTP message signature"],
   "agent-payments": ["User’s signed intent", "A key named in the mandate"],
   dpop: ["Unchanged", "A signed proof on every request"],
+  "oauth-mtls": [
+    "Set by the grant (the agent here)",
+    "The key for the bound certificate, in TLS",
+  ],
+  "tool-call-authorization": [
+    "Agent acting for a user",
+    "Existing bearer token",
+  ],
+  "access-revocation": [
+    "Employee, plus the company session ID",
+    "Existing bearer access token",
+  ],
   "credential-broker": ["Unchanged", "Nothing: the proxy holds the secret"],
 };
 for (const f of flows) {
@@ -95,12 +111,12 @@ const filters = [
 
 <Base
   title="Agent authentication and authorization flows"
-  description="Step-by-step interactive walkthroughs of every way an AI agent can authenticate and be authorized, from OAuth with a human at the keyboard to workload identity with no human at all."
+  description="Step-by-step walkthroughs of how AI agents get, use and lose access, from user consent to workload identity and revocation."
 >
   <div class="page-head">
     <div class="wrap">
       <p class="eyebrow">Flows</p>
-      <h1>Every way an agent gets access</h1>
+      <h1>How agents get, use and lose access</h1>
       <p class="lede">
         {flows.length} flows, each as a sequence diagram you can step through. They are grouped by the question that
         matters most when choosing between them: is there a person involved, and when?
@@ -113,7 +129,7 @@ const filters = [
       <div class="section-head">
         <h2 id="start">Start with these</h2>
         <p>
-          Six flows cover most of the ground, and the others are variations on them. If the vocabulary is new,{' '}
+          Six flows cover the common ways to get access. If the vocabulary is new,{' '}
           <a href="/learn/">the lessons</a> come first.
         </p>
       </div>

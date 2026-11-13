@@ -134,11 +134,13 @@
   "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto": {},
   "https://github.com/kubernetes-sigs/agent-sandbox": {},
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
-  "https://github.com/openid/authzen": {},
   "https://github.com/spiffe/spire": {},
   "https://github.com/visa/trusted-agent-protocol": {},
   "https://github.com/x402-foundation/x402": {},
@@ -176,6 +178,14 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },
+  "https://openid.github.io/authzen/authzen-coaz-framework-1_0": {
+    "etag": "W/\"6af37b29-1a0bf\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
+  "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
+    "etag": "W/\"6af37b29-204c6\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
   "https://openid.net/specs/authorization-api-1_0-final.html": {
     "etag": "\"3bb64-6482a0d30732a-gzip\"",
     "lastModified": "Mon, 12 Jan 2026 05:21:47 GMT"
@@ -192,6 +202,10 @@
     "etag": "\"7dd49-63994268300de-gzip\"",
     "lastModified": "Thu, 10 Jul 2025 14:38:44 GMT"
   },
+  "https://openid.net/specs/openid-caep-1_0-final.html": {
+    "etag": "\"1abcf-63d827e8b242d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
   "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html": {
     "etag": "\"1b12d-5caf39dbfa700-gzip\"",
     "lastModified": "Wed, 01 Sep 2021 18:55:56 GMT"
@@ -204,9 +218,23 @@
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
   },
-  "https://openid.net/wg/sharedsignals/": {},
+  "https://openid.net/specs/openid-risc-1_0-final.html": {
+    "etag": "\"119a4-63d827e8b2fe5-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
+  "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html": {
+    "etag": "\"3c527-63d827e8b3b9d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
+  "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
+  "https://projects.eclipse.org/projects/technology.biscuit": {
+    "etag": "\"1794545138-gzip\""
+  },
+  "https://protobuf.dev/programming-guides/encoding/": {
+    "etag": "W/\"6af6b72f-18682\""
+  },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },
@@ -267,6 +295,9 @@
   "https://www.rfc-editor.org/rfc/rfc8414.json": {
     "etag": "\"a58c82ee5977949ef56219d8b8824ec6\""
   },
+  "https://www.rfc-editor.org/rfc/rfc8417.json": {
+    "etag": "\"076ef4683ad4a44176ee8e5c02652b6b\""
+  },
   "https://www.rfc-editor.org/rfc/rfc8628.json": {
     "etag": "\"b4d10c5c7795c4d5264bb5fdb72ffab0\""
   },
@@ -284,6 +315,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc8785.json": {
     "etag": "\"e0aa47c0fc88580e86d63959d6535cd9\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8935.json": {
+    "etag": "\"247566f93b6d4628bbb68c20c889f6f6\""
   },
   "https://www.rfc-editor.org/rfc/rfc8996.json": {
     "etag": "\"e9e03cd48501408d6af6e357392876c5\""
@@ -305,6 +339,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc9421.json": {
     "etag": "\"ae4f6d10b76a6dfa61d8f04ffa11dc0d\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9440.json": {
+    "etag": "\"d3e2468c6a960a1f48803c742d367aff\""
   },
   "https://www.rfc-editor.org/rfc/rfc9449.json": {
     "etag": "\"c3d136ebe7dbdd7c7f841865ac37a421\""

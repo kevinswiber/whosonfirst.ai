@@ -71,7 +71,7 @@ Also report:
 
 ### Other drafts and versioned specifications
 
-Entries that are neither IETF documents nor finished: `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
+Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
 
 And the specifications that publish dated or numbered revisions:
 
@@ -97,9 +97,11 @@ A published specification pins the draft revision it was written against. The si
 
 ### Projects with releases
 
-`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`. Check the latest release, the API version or stage the `detail` names, and the foundation the project sits under.
+`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`, `biscuit`. Check the latest release, the API version or stage the `detail` names, and the foundation the project sits under.
 
 A project entry has a maturity level only if `level` is set on it, with its evidence in a comment. If a project's own statement of stability has changed, say so: it can change a flow's rating.
+
+The Biscuit entry pins a specification revision. Compare it with the project’s current stable specification and README before advancing it; then recheck the Datalog examples and the stability evidence in `flows/biscuit-delegation.ts` and `standards.ts` (`biscuit`).
 
 ### Related documents on a tracker entry
 
@@ -200,7 +202,7 @@ An RFC being updated does not change its status or a flow's rating. It may chang
 
 ### Final specifications from other bodies
 
-Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
+Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `caep`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
 
 ### Guidance
 
@@ -276,6 +278,7 @@ datatracker.ietf.org
 author-tools.ietf.org
 www.rfc-editor.org
 openid.net
+openid.github.io
 www.w3.org
 modelcontextprotocol.io
 a2a-protocol.org
@@ -284,6 +287,8 @@ kubernetes.io
 github.com
 api.github.com
 raw.githubusercontent.com
+projects.eclipse.org
+protobuf.dev
 docs.github.com
 ap2-protocol.org
 verifiableintent.dev

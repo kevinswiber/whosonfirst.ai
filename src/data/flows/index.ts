@@ -5,9 +5,11 @@ import { std } from "../standards";
 import type { Flow, FlowGroup } from "../types";
 import { GROUPS, MATURITY_LABEL } from "../types";
 import { aauth } from "./aauth";
+import { accessRevocation } from "./access-revocation";
 import { agentPayments } from "./agent-payments";
 import { agentToAgent } from "./agent-to-agent";
 import { authorizationCodePkce } from "./authorization-code-pkce";
+import { biscuitDelegation } from "./biscuit-delegation";
 import { ciba } from "./ciba";
 import { clientCredentials } from "./client-credentials";
 import { credentialBroker } from "./credential-broker";
@@ -17,9 +19,11 @@ import { dpop } from "./dpop";
 import { gnap } from "./gnap";
 import { identityChaining } from "./identity-chaining";
 import { mcpAuthorization } from "./mcp-authorization";
+import { oauthMtls } from "./oauth-mtls";
 import { spiffeWorkloadIdentity } from "./spiffe-workload-identity";
 import { stepUpAuthorization } from "./step-up-authorization";
 import { tokenExchange } from "./token-exchange";
+import { toolCallAuthorization } from "./tool-call-authorization";
 import { transactionTokens } from "./transaction-tokens";
 import { urlElicitation } from "./url-elicitation";
 import { webBotAuth } from "./web-bot-auth";
@@ -37,6 +41,7 @@ export const flows: Flow[] = [
   urlElicitation,
   aauth,
   tokenExchange,
+  biscuitDelegation,
   crossAppAccess,
   identityChaining,
   transactionTokens,
@@ -48,6 +53,9 @@ export const flows: Flow[] = [
   webBotAuth,
   agentPayments,
   dpop,
+  oauthMtls,
+  toolCallAuthorization,
+  accessRevocation,
   credentialBroker,
 ];
 

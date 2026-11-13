@@ -149,7 +149,7 @@ export const credentials: Credential[] = [
       revoke:
         "A client asks the authorization server to revoke a token ([RFC 7009](/standards/#rfc7009)). That is the authorization server’s mechanism, separate from the API’s policy.",
       learns:
-        "Local token validation alone does not reveal a later revocation. Without an additional revocation mechanism, the API may continue accepting the token until it expires. Introspection is one such mechanism. RFC 7009 also describes communication between the authorization server and the API, and short-lived tokens that limit the exposure.",
+        "Local token validation alone does not reveal a later revocation. Without an additional revocation mechanism, the API may continue accepting the token until it expires. Introspection is one such mechanism. The [access revocation flow](/flows/access-revocation/) shows how a session event can prompt an API to refuse a token sooner.",
     },
     flow: {
       href: "/flows/authorization-code-pkce/",

@@ -13,7 +13,7 @@ export const dpop: Flow = {
 
 Demonstrating Proof of Possession (DPoP) fixes the cash problem at the application layer. The agent generates a key pair, and the authorization server binds each token to the public key. Every request then carries a small signed proof made with the private key. A stolen token without the key is rejected.
 
-Mutual TLS does the same job at the transport layer and is a good fit where a service mesh or workload identity system already manages certificates. DPoP works where the agent cannot control TLS: public clients, desktop apps, anything behind a proxy that terminates connections.`,
+[OAuth mutual TLS](/flows/oauth-mtls/) can bind a token to a client certificate. It fits where the client can present a certificate and both servers support the binding. DPoP carries its proof in HTTP, so the API can check it after a proxy terminates TLS if the API can verify the original request method and URL.`,
   fits: [
     "Any flow on this site that ends with an access token. DPoP is an add-on, not a grant type.",
     "Public clients (desktop, CLI, mobile) that cannot hold a client secret but can hold a key.",
@@ -154,6 +154,7 @@ DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7…`,
   },
   related: [
     "authorization-code-pkce",
+    "oauth-mtls",
     "spiffe-workload-identity",
     "wimse-workload-tokens",
     "credential-broker",
@@ -161,7 +162,7 @@ DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7…`,
   notes: [
     {
       title: "DPoP, mutual TLS, or message signatures",
-      body: `All three prove that the caller holds a key. **Mutual TLS** (RFC 8705) binds the token to a client certificate; it is strong and invisible to application code, but breaks when something in the path terminates TLS. **DPoP** signs a small proof per request and survives proxies. **HTTP Message Signatures** (RFC 9421) sign chosen parts of the request itself, and cover the body when a digest of it is one of them. They are the basis for newer work such as [Web Bot Auth](/flows/web-bot-auth/), the WIMSE HTTP signature profile and [AAuth](/flows/aauth/). WIMSE’s other application-layer proof, the [workload proof token](/flows/wimse-workload-tokens/), is inspired by DPoP.`,
+      body: `All three prove that the caller holds a key. With [OAuth mutual TLS](/flows/oauth-mtls/), the TLS endpoint verifies the client’s proof and the API checks the certificate against the token. A TLS-terminating proxy needs to enforce the binding or pass trusted certificate information to the API. With **DPoP**, the API verifies a signed proof carried in HTTP. **HTTP Message Signatures** (RFC 9421) sign chosen parts of the request itself, and cover the body when a digest of it is one of them. They are the basis for newer work such as [Web Bot Auth](/flows/web-bot-auth/), the WIMSE HTTP signature profile and [AAuth](/flows/aauth/). WIMSE’s other application-layer proof, the [workload proof token](/flows/wimse-workload-tokens/), is inspired by DPoP.`,
     },
   ],
 };
