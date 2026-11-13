@@ -175,6 +175,14 @@ For the binding check, the API can rely on the TLS proof and the match to the si
   ],
   notes: [
     {
+      title: "Registration and endpoint metadata",
+      body: `For CA-based client authentication, the client registration uses \`tls_client_auth\` as the \`token_endpoint_auth_method\`. Set exactly one expected certificate identity field. Here \`tls_client_auth_san_dns\` names \`calendar-agent.example\`.
+
+The optional \`tls_client_certificate_bound_access_tokens\` flag has two uses. Set to \`true\` in server metadata, it advertises support for binding. Set to \`true\` in the client registration, it signals that the client intends to use bound tokens.
+
+The agent must use the \`token_endpoint\` URL from \`mtls_endpoint_aliases\` if the server publishes that alias. Otherwise it uses the ordinary token endpoint shown in step 2.`,
+    },
+    {
       title: "When the certificate changes",
       body: "A renewed certificate has a different thumbprint, even if it keeps the same name and key. A live token bound to the old certificate will fail the comparison on a connection using the new one. Obtain a fresh access token using the new certificate before switching traffic to it. During overlap, use an old token only with the old certificate and key, while the old token is still valid and the API still accepts that certificate.",
     },
@@ -227,6 +235,8 @@ For the binding check, the API can rely on the TLS proof and the match to the si
     "rfc9068",
     "rfc7662",
     "rfc9440",
+    "rfc7591",
+    "rfc8414",
     "rfc9449",
     "spiffe",
   ],
@@ -237,6 +247,8 @@ For the binding check, the API can rely on the TLS proof and the match to the si
     rfc9068: "required", // JWT access-token example and validation.
     rfc7662: "optional", // Opaque token alternative.
     rfc9440: "optional", // Client-Cert forwarding is a deployment option.
+    rfc7591: "optional", // Dynamic registration metadata vocabulary, outside the illustrated flow.
+    rfc8414: "optional", // Server metadata and endpoint discovery, outside the illustrated flow.
     rfc9449: "background", // Compared with the application-layer alternative.
     spiffe: "background", // Compared with a workload identity system.
   },

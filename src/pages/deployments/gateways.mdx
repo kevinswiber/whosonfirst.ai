@@ -127,7 +127,7 @@ Who makes that check depends on what the gateway does with the request.
 - **It sends the request on unchanged**, headers and body exactly as they arrived. The server behind it compares the two, which the specification requires of every server that reads the body, and rejects a mismatch. The specification also advises a proxy to refuse a request whose protocol version is too old to require that comparison.
 - **It reads the body and writes a new request.** A gateway in front of several servers usually does, to choose the server and to rename the tool. It is then a server that reads the body, and the comparison is its own to make: on the request as it arrived, before it relies on the headers or the body. The server behind it cannot make it. The headers the gateway sends on are its own, written from the body, so they agree at the server whatever the agent sent.
 
-The gateway also ends the agent's TLS connection. A client certificate does not arrive at the server, which now authenticates the gateway. If the server has to know which workload called as well, that is what [workload identity tokens](/flows/wimse-workload-tokens/) are being standardized for.
+The gateway also ends the agent's TLS connection. The server authenticates the gateway on its own connection. If the server has to know which workload called as well, that is what [workload identity tokens](/flows/wimse-workload-tokens/) are being standardized for.
 
 ### A gateway that only forwards
 
@@ -135,8 +135,12 @@ Some gateways can pass requests through untouched to a server that runs OAuth it
 
 The test is whose address is in the token's audience.
 
-- **One server behind one public address.** The token is addressed to that address, and the server checks it. The gateway is a hop on the network, like a load balancer. It can log and block, and it is not a party to the authorization. This is sound.
-- **Several servers behind one audience.** The gateway accepts the token as its own and then sends it on. This is token passthrough. Every server behind the gateway receives a token it could present at the gateway, to call the other servers as that user.
+- **One server behind one public address.** The token is addressed to that address, and the server applies its own resource policy. The gateway is a hop on the network, like a load balancer. It can log and block traffic.
+- **Several servers behind one audience.** The gateway accepts the token as its own and then sends it on. This is token passthrough. With a bearer token, every server behind the gateway receives a credential it could present at the gateway to call the other servers as that user.
+
+In the one-server case, the gateway can terminate mutual TLS and forward a [certificate-bound OAuth token](/flows/oauth-mtls/) addressed to that server. The agent proves possession of its key to the gateway. The gateway can validate the token and check its binding there. If the server behind it checks the binding, it must accept the certificate from the original handshake only from the trusted gateway over a protected path. [RFC 9440](/standards/#rfc9440) defines the `Client-Cert` header for that handoff and requires the gateway to remove or overwrite any client-supplied certificate headers before forwarding.
+
+When the gateway uses a stored key or exchanges the agent’s token for a new one, the server behind it receives that separate credential. If the incoming token is certificate-bound, the gateway must match its binding against the certificate from the agent’s TLS connection before accepting the token.
 
 ## The LLM gateway
 
@@ -215,8 +219,6 @@ On Kubernetes, [gateways and policy](/deployments/kubernetes/#gateways-and-polic
 - **The path is closed.** Only the gateway can reach the server, as a network policy arranges on [Kubernetes](/deployments/kubernetes/#gateways-and-policy).
 - **The server accepts the gateway and nobody else.** It verifies that the gateway is the caller, by the gateway's [workload identity](/flows/spiffe-workload-identity/) on the connection or by a token [bound to a key](/flows/dpop/) that only the gateway holds. Requiring the gateway in the `act` [claim](/glossary/#claim) helps as well, with a limit: that claim says who was authorized to act, not who is holding the token.
 - **The server applies the same rules itself**, so that a direct call gets the answer the gateway would have given.
-
-For [certificate-bound OAuth tokens](/flows/oauth-mtls/), the client proves possession of its key on the TLS connection to the gateway. If the backend checks the token binding, it must accept the original client certificate only from the trusted gateway over a protected path. The gateway must strip or overwrite client-supplied certificate headers before forwarding.
 
 On a person's machine nothing forces a call through the gateway at all, and a [local server started over stdio](/deployments/local/#local-mcp-servers-over-stdio) never touches it.
 
