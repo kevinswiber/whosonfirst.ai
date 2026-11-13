@@ -27,7 +27,7 @@ It is an independent reference, not a specification. Every page says which month
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | are new to this                                 | **[The lessons](https://whosonfirst.ai/learn/)**: 6 short lessons, about 40 minutes, starting from an API key. No OAuth knowledge needed.                                               |
 | are designing an agent                          | **[The decision guide](https://whosonfirst.ai/guide/)**: six questions that turn your agent’s situation into a short list of flows, with reasons.                                       |
-| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 20 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.                    |
+| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 25 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.                    |
 | are looking for an implementation               | **[In the field](https://whosonfirst.ai/field/)**: documented product roles, named production reports, sources and dates. Browse the overview, then open a flow’s full evidence record. |
 | need to know what changes where your agent runs | **[The deployment guides](https://whosonfirst.ai/deployments/)**: hosted apps, Kubernetes, managed agent platforms, local machines and CI, sandboxes, and gateways.                     |
 | need to know how settled a specification is     | **[The standards tracker](https://whosonfirst.ai/standards/)**: more than 90 RFCs, drafts, specifications and projects, each with its status and why it matters for agents.             |
@@ -54,6 +54,7 @@ Grouped by the question that matters most when choosing between them: is a perso
 
 - [Authorization code with PKCE](https://whosonfirst.ai/flows/authorization-code-pkce/): the baseline. A person signs in, approves specific scopes, and the agent receives a token that says so.
 - [Device authorization](https://whosonfirst.ai/flows/device-authorization/): for agents with no browser of their own.
+- [GNAP](https://whosonfirst.ai/flows/gnap/): sign a grant request, send the user to approve it, and continue the grant for a token bound to the agent’s key.
 - [MCP authorization](https://whosonfirst.ai/flows/mcp-authorization/): how an MCP client that has never seen a server before discovers where to sign in, identifies itself, and gets a token good for that server alone.
 
 **A person is in the loop**
@@ -66,6 +67,7 @@ Grouped by the question that matters most when choosing between them: is a perso
 **Delegation chains**
 
 - [Token exchange](https://whosonfirst.ai/flows/token-exchange/): trade the token you were given for one that names both the user and the service now acting for them.
+- [Biscuit delegation](https://whosonfirst.ai/flows/biscuit-delegation/): give a worker a token with fewer permissions, without asking the issuer for a new one.
 - [Enterprise-managed authorization (ID-JAG)](https://whosonfirst.ai/flows/cross-app-access/): the company identity provider decides which agents may reach which apps for which employees.
 - [Identity chaining](https://whosonfirst.ai/flows/identity-chaining/): carry who-is-this-for across an organizational boundary.
 - [Transaction tokens](https://whosonfirst.ai/flows/transaction-tokens/): a short-lived token that pins down one transaction and travels the whole call chain.
@@ -86,6 +88,9 @@ Grouped by the question that matters most when choosing between them: is a perso
 **Cross-cutting**
 
 - [DPoP](https://whosonfirst.ai/flows/dpop/): bind a token to a key, so that stealing the token is not enough to use it.
+- [OAuth mTLS](https://whosonfirst.ai/flows/oauth-mtls/): bind an access token to a client certificate and check that certificate when the caller uses the token.
+- [Tool-call authorization](https://whosonfirst.ai/flows/tool-call-authorization/): after checking the token, the tool service asks whether it may run this call with these arguments.
+- [Access revocation](https://whosonfirst.ai/flows/access-revocation/): the API learns which session ended and refuses requests that still use it.
 - [Credential broker](https://whosonfirst.ai/flows/credential-broker/): the agent never holds the secret. A proxy outside the sandbox adds it to outgoing requests.
 
 ### Deployment guides

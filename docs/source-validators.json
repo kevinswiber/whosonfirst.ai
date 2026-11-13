@@ -25,14 +25,16 @@
     "lastModified": "Tue, 28 Apr 2026 12:33:34 GMT"
   },
   "https://auth0.com/changelog": {
-    "etag": "W/\"cin0zwj7n72nuk0\""
+    "etag": "W/\"15xl5t2tho12nv9t\""
   },
-  "https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-agentcore/": {},
+  "https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-agentcore/": {
+    "lastModified": "Fri, 13 Nov 2026 04:13:34 GMT"
+  },
   "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/": {
     "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
   },
   "https://code.claude.com/docs/en/mcp": {
-    "lastModified": "Fri, 13 Nov 2026 02:19:31 GMT"
+    "lastModified": "Fri, 13 Nov 2026 06:15:46 GMT"
   },
   "https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd": {},
   "https://curity.io/blog/curity-identity-server-11-4/": {},
@@ -169,15 +171,15 @@
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html": {
     "etag": "\"eOgr3dEtZJqw9t6Il/18hlhhxZo=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 00:23:20 GMT"
+    "lastModified": "Fri, 13 Nov 2026 05:01:08 GMT"
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a-protocol-contract.html": {
     "etag": "\"DlLfpdGCqniE6QYQi+qzMBUix7g=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 00:23:13 GMT"
+    "lastModified": "Fri, 13 Nov 2026 05:01:10 GMT"
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a.html": {
     "etag": "\"Jc2lchANHUzVv2qOyUmQE99Zp4I=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 00:23:18 GMT"
+    "lastModified": "Fri, 13 Nov 2026 05:01:07 GMT"
   },
   "https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html": {
     "etag": "\"D8C8TP3M5YO0BJ/rNJzt82Mm5UQ=-gzip\"",
@@ -185,7 +187,7 @@
   },
   "https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html": {
     "etag": "\"5WRCLs1BKVSz1pUO/Cnov3rp7W4=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 01:14:09 GMT"
+    "lastModified": "Fri, 13 Nov 2026 05:23:09 GMT"
   },
   "https://docs.cloud.google.com/docs/authentication": {},
   "https://docs.cloud.google.com/iam/docs/auth-agent-own-identity-external": {},
@@ -194,7 +196,7 @@
   "https://docs.duendesoftware.com/identityserver/ui/ciba/": {},
   "https://docs.github.com/en/actions/concepts/security/openid-connect": {},
   "https://docs.snowflake.com/en/user-guide/oauth-token-exchange": {
-    "etag": "\"soa370998l49ue\""
+    "etag": "\"7y36ip9wgr49ue\""
   },
   "https://docs.spring.io/spring-authorization-server/reference/overview.html": {
     "lastModified": "Tue, 09 Jun 2026 17:20:11 GMT"
@@ -224,11 +226,13 @@
   "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md": {},
+  "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto": {},
   "https://github.com/kubernetes-sigs/agent-sandbox": {},
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
-  "https://github.com/openid/authzen": {},
   "https://github.com/panva/oauth4webapi/blob/main/README.md": {},
   "https://github.com/panva/oauth4webapi/blob/main/docs/README.md": {},
   "https://github.com/panva/openid-client": {},
@@ -276,6 +280,14 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },
+  "https://openid.github.io/authzen/authzen-coaz-framework-1_0": {
+    "etag": "W/\"6af37b29-1a0bf\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
+  "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
+    "etag": "W/\"6af37b29-204c6\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
   "https://openid.net/specs/authorization-api-1_0-final.html": {
     "etag": "\"3bb64-6482a0d30732a-gzip\"",
     "lastModified": "Mon, 12 Jan 2026 05:21:47 GMT"
@@ -292,6 +304,10 @@
     "etag": "\"7dd49-63994268300de-gzip\"",
     "lastModified": "Thu, 10 Jul 2025 14:38:44 GMT"
   },
+  "https://openid.net/specs/openid-caep-1_0-final.html": {
+    "etag": "\"1abcf-63d827e8b242d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
   "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html": {
     "etag": "\"1b12d-5caf39dbfa700-gzip\"",
     "lastModified": "Wed, 01 Sep 2021 18:55:56 GMT"
@@ -304,9 +320,23 @@
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
   },
-  "https://openid.net/wg/sharedsignals/": {},
+  "https://openid.net/specs/openid-risc-1_0-final.html": {
+    "etag": "\"119a4-63d827e8b2fe5-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
+  "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html": {
+    "etag": "\"3c527-63d827e8b3b9d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
+  "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
+  "https://projects.eclipse.org/projects/technology.biscuit": {
+    "etag": "\"1794545138-gzip\""
+  },
+  "https://protobuf.dev/programming-guides/encoding/": {
+    "etag": "W/\"6af6b72f-18682\""
+  },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
   },
@@ -315,33 +345,33 @@
   },
   "https://utviklerportal.nhn.no/informasjonstjenester/helseid/planlagde-endringar/vegkart/docs/planlagde_endringar_enmd": {},
   "https://vercel.com/changelog/new-vercel-cli-login-flow": {
-    "etag": "W/\"13klmari2geamty\""
+    "etag": "W/\"ytsc1fvpo3amty\""
   },
   "https://verifiableintent.dev": {
     "lastModified": "Mon, 20 Apr 2026 19:06:54 GMT"
   },
   "https://www.icabanken.se/open-banking/latest-news-open-banking/": {},
   "https://www.keycloak.org/2025/04/keycloak-2620-released": {
-    "etag": "W/\"6af68d10-15c15\""
+    "etag": "W/\"6af6bb0f-15c15\""
   },
   "https://www.keycloak.org/2025/09/keycloak-2640-released": {
-    "etag": "W/\"6af68d12-16cad\""
+    "etag": "W/\"6af6baf4-16cad\""
   },
   "https://www.keycloak.org/docs/latest/server_admin/": {
-    "etag": "W/\"6af68d11-1faae9\""
+    "etag": "W/\"6af6bb14-1faae9\""
   },
   "https://www.keycloak.org/securing-apps/mcp-authz-server": {
-    "etag": "W/\"6af68d12-eea9\""
+    "etag": "W/\"6af6baf4-eea9\""
   },
   "https://www.keycloak.org/securing-apps/specifications": {
-    "etag": "W/\"6af68d12-915b\""
+    "etag": "W/\"6af6bb0f-915b\""
   },
   "https://www.keycloak.org/securing-apps/token-exchange": {
-    "etag": "W/\"6af68d10-21e4d\""
+    "etag": "W/\"6af6bb0f-21e4d\""
   },
   "https://www.pulumi.com/blog/eliminating-ci-secrets-with-pulumi-esc/": {
-    "etag": "W/\"7ce5567f9f626a6e372d13a742450b04\"",
-    "lastModified": "Fri, 13 Nov 2026 00:54:57 GMT"
+    "etag": "W/\"f22c86678abbfe3e627cf124e56bb8e9\"",
+    "lastModified": "Fri, 13 Nov 2026 07:07:42 GMT"
   },
   "https://www.rfc-editor.org/rfc/rfc10017.json": {
     "etag": "\"9480003fab1f5427f54d6874f2ddcbce\""
@@ -363,6 +393,12 @@
   },
   "https://www.rfc-editor.org/rfc/rfc7515.json": {
     "etag": "\"3876ba9f806cd6d1898cb6c6f388a148\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7517.json": {
+    "etag": "\"14fda4519f6e03130874910b60919586\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc7518.json": {
+    "etag": "\"6d9101ea4c58d6bf4f181259e95b3a74\""
   },
   "https://www.rfc-editor.org/rfc/rfc7519.json": {
     "etag": "\"77d3a837744df1a380e85fabe059c42f\""
@@ -391,6 +427,9 @@
   "https://www.rfc-editor.org/rfc/rfc8414.json": {
     "etag": "\"a58c82ee5977949ef56219d8b8824ec6\""
   },
+  "https://www.rfc-editor.org/rfc/rfc8417.json": {
+    "etag": "\"076ef4683ad4a44176ee8e5c02652b6b\""
+  },
   "https://www.rfc-editor.org/rfc/rfc8628.json": {
     "etag": "\"b4d10c5c7795c4d5264bb5fdb72ffab0\""
   },
@@ -408,6 +447,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc8785.json": {
     "etag": "\"e0aa47c0fc88580e86d63959d6535cd9\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8935.json": {
+    "etag": "\"247566f93b6d4628bbb68c20c889f6f6\""
   },
   "https://www.rfc-editor.org/rfc/rfc8996.json": {
     "etag": "\"e9e03cd48501408d6af6e357392876c5\""
@@ -430,11 +472,20 @@
   "https://www.rfc-editor.org/rfc/rfc9421.json": {
     "etag": "\"ae4f6d10b76a6dfa61d8f04ffa11dc0d\""
   },
+  "https://www.rfc-editor.org/rfc/rfc9440.json": {
+    "etag": "\"d3e2468c6a960a1f48803c742d367aff\""
+  },
   "https://www.rfc-editor.org/rfc/rfc9449.json": {
     "etag": "\"c3d136ebe7dbdd7c7f841865ac37a421\""
   },
   "https://www.rfc-editor.org/rfc/rfc9470.json": {
     "etag": "\"26765f7f7fa3481bce26340734197c7f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9493.json": {
+    "etag": "\"79f8a332ff28dc5a10207393cc788ad4\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9530.json": {
+    "etag": "\"01fa71d869b8f50a103e0b1ed04a6de6\""
   },
   "https://www.rfc-editor.org/rfc/rfc9635.json": {
     "etag": "\"f5ed04e46bda06558a53ea6fd89212b5\""

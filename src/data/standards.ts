@@ -326,18 +326,30 @@ export const standards: Standard[] = [
     detail: "October 2024.",
     related: [
       {
-        name: "RFC 9767, GNAP Resource Server Connections",
-        url: rfc(9767),
+        entry: "rfc9767",
         kind: "companion",
-        note: "For resource servers. April 2025.",
       },
     ],
     topics: ["core", "delegation"],
     summary:
       "Grant Negotiation and Authorization Protocol: a ground-up redesign with key-bound clients, negotiated interaction and continuation.",
     agents:
-      "Little deployment, but several newer agent proposals borrow its ideas.",
+      "An agent can prove it holds its own key, ask for access and continue the same grant after a person acts.",
     url: rfc(9635),
+  },
+  {
+    id: "rfc9767",
+    name: "GNAP Resource Server Connections",
+    ref: "RFC 9767",
+    body: "IETF",
+    status: "rfc",
+    detail: "April 2025.",
+    topics: ["core", "delegation"],
+    summary:
+      "How resource servers connect to a GNAP authorization server for token introspection and other services.",
+    agents:
+      "An API can ask whether an agent’s access token is active for that API and obtain the public key to verify its proof.",
+    url: rfc(9767),
   },
 
   /* ───────────── Discovery and client identity ───────────── */
@@ -777,6 +789,46 @@ export const standards: Standard[] = [
     url: rfc(8705),
   },
   {
+    id: "rfc9440",
+    name: "Client-Cert HTTP Header Field",
+    ref: "RFC 9440",
+    body: "IETF",
+    status: "rfc",
+    detail: "July 2023. Informational.",
+    topics: ["proof-of-possession"],
+    summary:
+      "How a trusted proxy forwards a client certificate from mutual TLS to a backend server.",
+    agents:
+      "The backend can check a certificate-bound token when a trusted proxy terminates the client’s TLS connection.",
+    url: rfc(9440),
+  },
+  {
+    id: "rfc7517",
+    name: "JSON Web Key",
+    ref: "RFC 7517",
+    body: "IETF",
+    status: "rfc",
+    detail: "May 2015.",
+    topics: ["proof-of-possession"],
+    summary: "A JSON representation of a cryptographic key and its properties.",
+    agents: "One way an agent can send a public key when it requests access.",
+    url: rfc(7517),
+  },
+  {
+    id: "rfc7518",
+    name: "JSON Web Algorithms",
+    ref: "RFC 7518",
+    body: "IETF",
+    status: "rfc",
+    detail: "May 2015.",
+    topics: ["proof-of-possession"],
+    summary:
+      "Defines algorithms and identifiers used by JSON Web Signatures, Encryption and Keys.",
+    agents:
+      "GNAP’s web profile requires support for the PS256 signature algorithm.",
+    url: rfc(7518),
+  },
+  {
     id: "rfc9421",
     name: "HTTP Message Signatures",
     ref: "RFC 9421",
@@ -787,8 +839,22 @@ export const standards: Standard[] = [
     summary:
       "A general way to sign selected parts of an HTTP request or response.",
     agents:
-      "The building block under Web Bot Auth, the WIMSE HTTP signature profile, AAuth, and the card networks’ agent protocols.",
+      "The building block under GNAP’s web profile, Web Bot Auth, the WIMSE HTTP signature profile, AAuth, and the card networks’ agent protocols.",
     url: rfc(9421),
+  },
+  {
+    id: "rfc9530",
+    name: "Digest Fields",
+    ref: "RFC 9530",
+    body: "IETF",
+    status: "rfc",
+    detail: "February 2024.",
+    topics: ["proof-of-possession"],
+    summary:
+      "Defines HTTP fields for carrying a digest of message content or a representation.",
+    agents:
+      "A message signature can cover Content-Digest to protect the request body.",
+    url: rfc(9530),
   },
   {
     id: "rfc7638",
@@ -1390,6 +1456,55 @@ export const standards: Standard[] = [
 
   /* ───────────── Fine-grained authorization ───────────── */
   {
+    id: "biscuit",
+    name: "Biscuit",
+    ref: "Biscuit 3.x · Datalog 3.3",
+    body: "Eclipse Foundation",
+    status: "project",
+    // Evidence for the level: the README at b3d3fe2 says
+    // "The stable version of the specification is at SPECIFICATIONS.md".
+    // Eclipse lists the project as Incubating; that process stage is distinct
+    // from the stability of this pinned specification.
+    level: "stable",
+    detail:
+      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README says it is seeking an audit of token design, cryptographic primitives and implementations, and lists varying support for 3.3 across libraries. The project is incubating at the Eclipse Foundation; the level here follows the specification’s own stability statement.",
+    related: [
+      {
+        name: "Biscuit project status and implementation support",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md",
+        kind: "source",
+        note: "Names the stable specification and lists feature support by implementation.",
+      },
+      {
+        name: "Biscuit’s Datalog dialect",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md#logic-language",
+        kind: "source",
+      },
+      {
+        name: "Biscuit’s Protocol Buffers schema",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/schema.proto",
+        kind: "source",
+      },
+      {
+        name: "Protocol Buffers encoding",
+        url: "https://protobuf.dev/programming-guides/encoding/",
+        kind: "source",
+      },
+      {
+        name: "Eclipse Biscuit project",
+        url: "https://projects.eclipse.org/projects/technology.biscuit",
+        kind: "source",
+        note: "Lists the project’s foundation process stage as Incubating.",
+      },
+    ],
+    topics: ["delegation", "authorization"],
+    summary:
+      "A bearer token whose holder can append restrictions without contacting its issuer. The receiving service verifies the token, evaluates every check, and applies its own authorization policy.",
+    agents:
+      "Lets an orchestrator give a worker a narrower credential. The original token keeps its authority, and the restricted token does not by itself identify the worker.",
+    url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md",
+  },
+  {
     id: "authzen",
     name: "AuthZEN Authorization API",
     ref: "OpenID AuthZEN Authorization API 1.0",
@@ -1404,35 +1519,126 @@ export const standards: Standard[] = [
     url: "https://openid.net/specs/authorization-api-1_0-final.html",
   },
   {
+    id: "coaz-framework",
+    name: "COAZ Framework",
+    ref: "OpenID AuthZEN COAZ Framework 1.0",
+    body: "OpenID Foundation",
+    status: "wg-draft",
+    detail:
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
+    topics: ["authorization"],
+    summary:
+      "Defines how mappings turn an operation’s inputs into AuthZEN authorization requests, using fixed values or expressions.",
+    agents:
+      "Provides the common mapping rules. A binding defines the inputs and behavior for a particular protocol.",
+    url: "https://openid.github.io/authzen/authzen-coaz-framework-1_0",
+    related: [
+      { kind: "builds-on", entry: "authzen" },
+      { kind: "companion", entry: "coaz-mcp" },
+      {
+        kind: "source",
+        name: "AuthZEN working group specifications",
+        url: "https://openid.net/wg/authzen/specifications/",
+      },
+    ],
+  },
+  {
     id: "coaz-mcp",
     name: "COAZ Binding for MCP",
     ref: "OpenID AuthZEN COAZ-MCP",
     body: "OpenID Foundation",
     status: "wg-draft",
     detail:
-      "Draft 1. The AuthZEN working group approved a single COAZ profile for MCP as a working group draft in June 2026, then split it in two. This binding and the protocol-neutral COAZ Framework were announced in July 2026.",
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     topics: ["authorization", "agent-protocol"],
     summary:
-      "Maps MCP requests to AuthZEN authorization requests for parameter-level decisions, with mappings declared per tool.",
+      "Maps MCP messages to AuthZEN authorization requests. Defines default mappings and lets servers declare per-tool mappings that include arguments.",
     agents:
       "Addresses the gap MCP itself leaves open: there is no per-tool permission model in the core specification.",
-    url: "https://github.com/openid/authzen",
+    url: "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0",
+    related: [{ kind: "builds-on", entry: "coaz-framework" }],
   },
 
   /* ───────────── Signals ───────────── */
   {
     id: "shared-signals",
-    name: "Shared Signals Framework, CAEP, RISC",
-    ref: "OpenID SSF 1.0 · CAEP 1.0 · RISC 1.0",
+    name: "Shared Signals Framework",
+    ref: "OpenID SSF 1.0",
     body: "OpenID Foundation",
     status: "final",
-    detail: "All three reported final in September 2025.",
+    detail: "Final specification published in August 2025.",
+    related: [
+      { entry: "caep", kind: "companion" },
+      {
+        name: "Risk Incident Sharing and Coordination (RISC) 1.0",
+        url: "https://openid.net/specs/openid-risc-1_0-final.html",
+        kind: "companion",
+        note: "A final specification that defines event types for sharing risk incidents.",
+      },
+    ],
     topics: ["signals"],
     summary:
-      "A framework for pushing security events between systems: session revoked, credential changed, device non-compliant.",
+      "A framework for pushing or polling for security events over streams configured between cooperating services.",
     agents:
-      "The mechanism for telling everything an agent has touched that its access just ended, without waiting for tokens to expire.",
-    url: "https://openid.net/wg/sharedsignals/",
+      "Carries events to participating receivers. Each receiver decides how to apply what it learns to the access it controls.",
+    url: "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html",
+  },
+  {
+    id: "caep",
+    name: "Continuous Access Evaluation Profile",
+    ref: "OpenID CAEP 1.0",
+    body: "OpenID Foundation",
+    status: "final",
+    detail: "Final specification published in August 2025.",
+    related: [{ entry: "shared-signals", kind: "builds-on" }],
+    topics: ["signals"],
+    summary:
+      "Defines event types for Shared Signals, including session revoked, credential change and device compliance change.",
+    agents:
+      "A participating service can use a Session Revoked event to close the local sessions that match its subject.",
+    url: "https://openid.net/specs/openid-caep-1_0-final.html",
+  },
+  {
+    id: "rfc8417",
+    name: "Security Event Token",
+    ref: "RFC 8417",
+    body: "IETF",
+    status: "rfc",
+    detail: "July 2018.",
+    topics: ["signals"],
+    summary:
+      "A JWT that carries an issuer’s statements about a security event.",
+    agents:
+      "The envelope a Shared Signals receiver validates before using an event to change local access.",
+    url: rfc(8417),
+  },
+  {
+    id: "rfc9493",
+    name: "Subject Identifiers for Security Event Tokens",
+    ref: "RFC 9493",
+    body: "IETF",
+    status: "rfc",
+    detail: "December 2023.",
+    topics: ["signals"],
+    summary:
+      "Defines structured formats for identifying subjects in security events, including opaque IDs and issuer-and-subject pairs.",
+    agents:
+      "Gives cooperating services a way to name the session or account a security event concerns.",
+    url: rfc(9493),
+  },
+  {
+    id: "rfc8935",
+    name: "Push-Based Security Event Token Delivery",
+    ref: "RFC 8935",
+    body: "IETF",
+    status: "rfc",
+    detail: "Document dated November 2020.",
+    topics: ["signals"],
+    summary:
+      "Defines delivery of a Security Event Token by HTTP POST over TLS, with a response reporting acceptance or an error.",
+    agents:
+      "A service can acknowledge a revocation event before it applies the change to the API’s session state.",
+    url: rfc(8935),
   },
   {
     id: "status-list",

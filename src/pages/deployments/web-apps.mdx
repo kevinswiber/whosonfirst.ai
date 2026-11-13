@@ -57,7 +57,7 @@ Refresh tokens need a little care in use:
 
 - An authorization server may hand back a **new refresh token** each time one is used. Save the new one before doing anything else. Two workers refreshing the same grant at once is the usual way to lose it.
 - A refresh can fail for good: the user withdrew consent, or an administrator revoked the grant. Treat that as "ask the user to connect again," not as an error to retry.
-- When a user disconnects a service, [revoke](/standards/#rfc7009) the tokens at the authorization server and delete the row.
+- When a user disconnects a service, stop using the connection, [revoke](/standards/#rfc7009) its tokens at the authorization server, and delete the row. [When the API stops accepting an existing token](/flows/access-revocation/#oauth-revocation) depends on how it checks the token’s current state.
 
 ## Keeping tokens away from the model
 

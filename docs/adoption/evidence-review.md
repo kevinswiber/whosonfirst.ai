@@ -1,6 +1,6 @@
 # In the field evidence review
 
-The source reviews were checked on **12 November 2026 (America/Los_Angeles)**. They cover ten published flows and research for the planned AuthZEN flow. The [evidence records](../../src/data/field/records.ts) select 35 implementation entries and ten operator accounts. The initial pass covered five flows, 13 implementation entries and four operator accounts; the extension below adds five flow profiles and two DPoP implementations. Other published flows carry the state **Not reviewed**. Coding agents performed the source review and a separate check of the selected claims and publication rules; this record does not assert independent human or operator verification.
+The source reviews were checked on **12 November 2026 (America/Los_Angeles)**. They cover ten published flows and research for the AuthZEN tool-call flow. The [evidence records](../../src/data/field/records.ts) select 35 implementation entries and ten operator accounts. The initial pass covered five flows, 13 implementation entries and four operator accounts; the extension below adds five flow profiles and two DPoP implementations. Other published flows carry the state **Not reviewed**. Coding agents performed the source review and a separate check of the selected claims and publication rules; this record does not assert independent human or operator verification.
 
 The review started with the [design and pilot findings](review-and-design.md), the pilot ledger and the site’s flow definitions. It opened product documentation, release announcements and first-party operator accounts. Targeted searches filled gaps in roles and operator evidence. The initial public selection used two or three actionable implementation entries and at most one operator account per flow. The extension broadens those records; compact overview examples link to complete field pages. Further candidates and exclusions remain research context. The resulting records are examples. No new endpoint survey, operational test, independent certification or prevalence measurement took place.
 
@@ -67,11 +67,11 @@ The first release publishes no observed-support records. The following pilot cla
 
 The [pilot design review](review-and-design.md) records the collection and publication limits. The pilot artifacts are retained on the pilot branch.
 
-## Planned flows
+## Newly published flows
 
-The issues below track proposed flows outside the published catalog. This pass researched AuthZEN. The other four proposals remain unreviewed for field evidence.
+These five flows joined the published catalog in the 13 November 2026 integration from `main`. The issues below record their original proposals. The earlier AuthZEN research remains a candidate for a field profile; none of these five has an accepted field profile yet.
 
-| Proposal                                                                                                         | Evidence review |
+| Flow and original issue                                                                                          | Evidence review |
 | ---------------------------------------------------------------------------------------------------------------- | --------------- |
 | [Authorize an individual tool call with AuthZEN #72](https://github.com/kevinswiber/whosonfirst.ai/issues/72)    | Research below  |
 | [Show how an agent’s access is withdrawn #73](https://github.com/kevinswiber/whosonfirst.ai/issues/73)           | Not reviewed    |
@@ -81,7 +81,7 @@ The issues below track proposed flows outside the published catalog. This pass r
 
 ### AuthZEN tool-call authorization
 
-The proposal asks whether an authenticated agent may take a particular action on a particular resource. Its core is the Access Evaluation API in OpenID AuthZEN Authorization API 1.0, published as Final on 11 January 2026. A policy enforcement point (PEP) asks a policy decision point (PDP) for a decision. Application policy, identity mapping, and enforcement are additional responsibilities. MCP/COAZ binding support needs separate evidence. [Issue #72](https://github.com/kevinswiber/whosonfirst.ai/issues/72) · [Authorization API 1.0](https://openid.net/specs/authorization-api-1_0-final.html)
+The flow asks whether an authenticated agent may take a particular action on a particular resource. Its core is the Access Evaluation API in OpenID AuthZEN Authorization API 1.0, published as Final on 11 January 2026. A policy enforcement point (PEP) asks a policy decision point (PDP) for a decision. Application policy, identity mapping, and enforcement are additional responsibilities. MCP/COAZ binding support needs separate evidence. [Issue #72](https://github.com/kevinswiber/whosonfirst.ai/issues/72) · [Authorization API 1.0](https://openid.net/specs/authorization-api-1_0-final.html)
 
 - **Accept for research · OpenFGA, PDP.** _Enabling AuthZEN_ and _Endpoints_ document opt-in experimental evaluation, batch evaluation, search and discovery endpoints. The product docs link the final AuthZEN 1.0 text. Product release date and minimum version are unspecified. Certification and tool-call deployment are unverified. [AuthZEN API (Experimental)](https://openfga.dev/docs/interacting/authzen)
 - **Accept for research · Traefik Hub MCP Gateway, PEP.** In _Configuration Example_, its AuthZEN middleware matches `tools/call` for `transfer_funds` and maps the destination account argument into the AuthZEN resource ID for evaluation. It illustrates OpenFGA as the PDP. The guide names the COAZ mapping and AuthZEN-MCP binding without a draft number or release stage. The page was updated on 2 November 2026. [AuthZEN for MCP Gateway](https://doc.traefik.io/traefik-hub/mcp-gateway/guides/authzen-mcp)
@@ -91,7 +91,7 @@ The reviewed sources contain no qualifying operator report for an AuthZEN-backed
 
 ## Published flows pending review
 
-Device authorization, Step-up authorization, CIBA, URL elicitation, AAuth, Token exchange, Cross-app access, Identity chaining, Transaction tokens, Client credentials, WIMSE workload tokens, Agent-to-agent, Web Bot Auth, Agent payments, and Credential broker remain unreviewed for this directory.
+Step-up authorization, URL elicitation, AAuth, Cross-app access, Identity chaining, Transaction tokens, WIMSE workload tokens, Web Bot Auth, Agent payments, Credential broker, Tool-call authorization, Access revocation, OAuth mTLS, Biscuit delegation and GNAP remain unreviewed for this directory. The ten accepted profiles are listed above and in the expanded review below.
 
 ## Expanded review
 

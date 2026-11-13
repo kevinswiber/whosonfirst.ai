@@ -397,6 +397,18 @@ export const rules: Rule[] = [
 
   // ── hardening ──
   {
+    flow: "tool-call-authorization",
+    role: "consider",
+    weight: 5,
+    when: {
+      principal: ["user"],
+      target: ["api", "mcp", "internal"],
+      boundary: ["same"],
+      risk: ["write", "irreversible"],
+    },
+    why: "The service you run can ask a policy service about the specific action, record and arguments before it changes anything.",
+  },
+  {
     flow: "credential-broker",
     role: "start",
     weight: 12,

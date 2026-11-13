@@ -301,6 +301,7 @@ Mcp-Name: search_files
     "url-elicitation",
     "cross-app-access",
     "step-up-authorization",
+    "tool-call-authorization",
   ],
   sections: [
     {
@@ -338,7 +339,7 @@ The specification requires it to implement OAuth 2.1, publish its metadata and s
 
 **A metadata document** (step 3). A small JSON file that names your authorization server and the scopes a client needs to get started.
 
-**Token validation on every request** (step 14). Signature, issuer, expiry and scope, and above all that the token was issued for your server. Reject anything else. [Lesson 2](/learn/tokens/) takes those checks one at a time. If the tokens are JWTs, a library does the cryptography, with the public keys your authorization server publishes at the address its metadata gives. If they are opaque, your server asks the authorization server what each one stands for. Either way, the audience and scope checks are the part to get right.`,
+**Token validation on every request** (step 14). Signature, issuer, expiry and scope, and above all that the token was issued for your server. Reject anything else. [Lesson 2](/learn/tokens/) takes those checks one at a time. If the tokens are JWTs, a library does the cryptography, with the public keys your authorization server publishes at the address its metadata gives. If they are opaque, your server asks the authorization server what each one stands for. Either way, the audience and scope checks are the part to get right. A valid token still leaves the server to decide whether to run this tool with these arguments. [Tool-call authorization](/flows/tool-call-authorization/) shows one way to make that decision.`,
         },
         {
           title: "What you must not do",

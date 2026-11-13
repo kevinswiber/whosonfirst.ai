@@ -11,7 +11,7 @@ export const aauth: Flow = {
   human: "reachable",
   maturity: "experimental",
   tagline:
-    "An agent proves which person it acts for, obtains their consent, and signs its calendar request. The API still decides what to allow.",
+    "An agent proves which person it acts for, obtains their consent, and signs its request. The API still decides what to allow.",
   summary: `Alice asks an assistant to read her calendar. An **agent provider** names the agent, a **person server (PS)** represents Alice, and the **calendar API** enforces access to her data.
 
 AAuth is a separate protocol from OAuth. An unrelated individual draft, [draft-rosenberg-oauth-aauth](/standards/#aauth-rosenberg), also uses the name: it extends OAuth, and this page does not use it. This page follows **PS authorization**, one of its five resource access modes. The API has no separate access server: it accepts identity and consent from Alice’s person server, then applies its own policy.`,
@@ -504,7 +504,7 @@ Later reads can reuse the unexpired auth token with a new HTTP signature on each
     references:
       "The diagram follows protocol -11: agent, person, resource and auth tokens, HTTP request signatures, and a JWK thumbprint binding. Enrollment is shown conceptually, without choosing a bootstrap mechanism. The access-mode comparison describes the other arrangements; this diagram follows only PS authorization.",
   },
-  related: ["web-bot-auth", "dpop", "ciba", "mcp-authorization"],
+  related: ["web-bot-auth", "dpop", "ciba", "mcp-authorization", "gnap"],
   comparison: {
     title: "The five arrangements",
     intro:

@@ -1,12 +1,12 @@
 # In the field progress
 
-**12 November 2026 · Overview, full field records and expanded evidence complete locally; not deployed.** [Issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84) tracks the directory and flow evidence sections. The [design](review-and-design.md) and [evidence review](evidence-review.md) describe the intended reader tasks, primary sources and decisions.
+**13 November 2026 · Integrated the 25-flow catalog from main and verified locally; field directory not deployed.** [Issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84) tracks the directory and flow evidence sections. The [design](review-and-design.md) and [evidence review](evidence-review.md) describe the intended reader tasks, primary sources and decisions.
 
 ## Current implementation
 
-- Show all 20 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/field/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
+- Show all 25 published flows in the overview in the existing group order. Keep its examples bounded and link to full evidence pages at `/field/<slug>/`. Flow guides retain a compact summary and the existing `#in-the-field` anchor. Use **Not reviewed** for coverage still pending.
 - Keep the standards rating and show role-specific implementation support, named operator reports, observations and dated changes independently. The first release has no adoption score or public survey results. Keep the pilot data available for research.
-- The data covers ten of 20 published flows, with 35 implementation entries and ten operator accounts. The extension adds Device authorization, Client credentials, Token exchange, CIBA and A2A, and brings DPoP to five implementation options. No observation records are selected. The research inventory lists five planned flows and records the bounded AuthZEN review.
+- The data covers ten of 25 published flows, with 35 implementation entries and ten operator accounts. The extension adds Device authorization, Client credentials, Token exchange, CIBA and A2A, and brings DPoP to five implementation options. No observation records are selected. The five newly published flows remain unreviewed for field evidence. The research inventory records the bounded AuthZEN review as a candidate.
 
 ## Initial validation
 
@@ -25,6 +25,14 @@ The source-validator command considered 34 new URLs: 31 answered and three retur
 Focused type, evidence, source, navigation, search, scriptless and print checks passed. Visual inspection covered the overview, full DPoP record, exact search target and mechanism summary at desktop and phone widths in both themes. One complete rendered run found that the newly registered field page also needed to be classified as a long read in the shared browser suite. It now receives the stronger persistent-header and section-navigation checks; all 30 focused checks passed before the final run. The required gates then passed in order: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (895 passed, six skipped). No check was removed or weakened. A README table formatting failure and the initial rendered failure were retained with the recovery logs.
 
 The extension used one host, four builds, two complete rendered runs and one independent review with bounded corrections. Source and browser checks use the installed toolchain. No collection campaign or interoperability test was added. Reader evaluation remains pending: ask readers to find a product for a given role, explain the difference between an implementation and an operator account, and distinguish a dated release from an older report newly added to the directory.
+
+## Main integration, 13 November 2026
+
+Merged `origin/main` at `77bdbff` into the field branch, preserving the existing signed implementation commits. This brings in Tool-call authorization, Access revocation, OAuth mTLS, Biscuit delegation and GNAP, plus the related-flow and sender-constraint corrections. The directory now includes all 25 flows; its ten accepted profiles and their evidence-review dates are unchanged. The five new entries say **Not reviewed**, link to their mechanism guides, and have compact field summaries. The AuthZEN research remains a candidate for a full field profile.
+
+Resolved conflicts in the README and generated source inventory. The repository’s source command regenerated the combined inventory from main’s saved values: 189 sources, with 139 previous entries preserved and 50 field sources requested. The same two eBay URLs and ICA Banken URL returned HTTP 403; these retrieval failures do not change the existing claim review.
+
+All four gates passed in order on the merged site: `npm run check`, `npm test` (99 passed), `npm run build`, and `npm run check:rendered` (945 passed, six skipped). A focused inspection confirmed the new directory rows, guide links and field summaries. One host, one build and one complete rendered run; no recovery cycle or additional source research. Nothing from this feature branch was pushed or deployed.
 
 ## Local review
 
