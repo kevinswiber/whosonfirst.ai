@@ -1390,6 +1390,32 @@ export const standards: Standard[] = [
 
   /* ───────────── Fine-grained authorization ───────────── */
   {
+    id: "biscuit",
+    name: "Biscuit",
+    ref: "Biscuit 3.x · Datalog 3.3",
+    body: "Eclipse Biscuit",
+    status: "project",
+    // The project's README marks main/SPECIFICATIONS.md as stable.
+    // Its source is linked below; the specification snapshot supports Datalog through v3.3.
+    level: "stable",
+    detail:
+      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README calls for a security audit of the design and implementations and lists varying support for 3.3 across libraries.",
+    related: [
+      {
+        name: "Biscuit project status and implementation support",
+        url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/README.md",
+        kind: "source",
+        note: "Names the stable specification and lists feature support by implementation.",
+      },
+    ],
+    topics: ["delegation", "authorization"],
+    summary:
+      "A bearer token whose holder can append restrictions without contacting its issuer. The receiving service verifies the token, evaluates every check, and applies its own authorization policy.",
+    agents:
+      "Lets an orchestrator give a worker a narrower credential. The original token keeps its authority, and the restricted token does not by itself identify the worker.",
+    url: "https://github.com/eclipse-biscuit/biscuit/blob/b3d3fe2d744ea8ee964ab0eba96dbc8c9bde1639/SPECIFICATIONS.md",
+  },
+  {
     id: "authzen",
     name: "AuthZEN Authorization API",
     ref: "OpenID AuthZEN Authorization API 1.0",

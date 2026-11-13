@@ -27,7 +27,7 @@ It is an independent reference, not a specification. Every page says which month
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | are new to this                                 | **[The lessons](https://whosonfirst.ai/learn/)**: 6 short lessons, about 40 minutes, starting from an API key. No OAuth knowledge needed.                                   |
 | are designing an agent                          | **[The decision guide](https://whosonfirst.ai/guide/)**: six questions that turn your agent’s situation into a short list of flows, with reasons.                           |
-| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 20 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.        |
+| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 21 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.        |
 | need to know what changes where your agent runs | **[The deployment guides](https://whosonfirst.ai/deployments/)**: hosted apps, Kubernetes, managed agent platforms, local machines and CI, sandboxes, and gateways.         |
 | need to know how settled a specification is     | **[The standards tracker](https://whosonfirst.ai/standards/)**: more than 90 RFCs, drafts, specifications and projects, each with its status and why it matters for agents. |
 | met a word you do not know                      | **[The glossary](https://whosonfirst.ai/glossary/)**, or the whole model on one page in **[Concepts](https://whosonfirst.ai/concepts/)**.                                   |
@@ -65,6 +65,7 @@ Grouped by the question that matters most when choosing between them: is a perso
 **Delegation chains**
 
 - [Token exchange](https://whosonfirst.ai/flows/token-exchange/): trade the token you were given for one that names both the user and the service now acting for them.
+- [Biscuit delegation](https://whosonfirst.ai/flows/biscuit-delegation/): give a worker a token with fewer permissions, without asking the issuer for a new one.
 - [Enterprise-managed authorization (ID-JAG)](https://whosonfirst.ai/flows/cross-app-access/): the company identity provider decides which agents may reach which apps for which employees.
 - [Identity chaining](https://whosonfirst.ai/flows/identity-chaining/): carry who-is-this-for across an organizational boundary.
 - [Transaction tokens](https://whosonfirst.ai/flows/transaction-tokens/): a short-lived token that pins down one transaction and travels the whole call chain.

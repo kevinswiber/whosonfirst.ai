@@ -1,0 +1,217 @@
+import type { Flow } from "../types";
+
+export const biscuitDelegation: Flow = {
+  slug: "biscuit-delegation",
+  title: "Delegating narrower permissions with Biscuit",
+  short: "Biscuit delegation",
+  group: "delegation",
+  human: "any",
+  maturity: "stable",
+  tagline:
+    "Give a worker a token with fewer permissions, without asking the issuer for a new one.",
+  summary: `An orchestrator can read two of a project’s documents and edit one of them. It asks a worker to summarize just one. Handing over its own token would give that worker more access than the task needs.
+
+With Biscuit, the orchestrator appends restrictions to the token: read this document, before this deadline. This is called **attenuation**. It happens locally, without the issuer. The worker receives the restricted token, and the API checks both its signatures and its restrictions before allowing a request.
+
+The original token still works. The worker’s copy cannot shed its restrictions, but the orchestrator keeps its broader access. And the restricted token is still a bearer credential: anyone who copies it can use the permissions that remain.`,
+  fits: [
+    "An orchestrator delegates a small part of its access to a worker or tool.",
+    "The receiving API supports Biscuit and can evaluate its restrictions against the actual request.",
+    "The issuer need not be contacted for each delegation; the API already trusts its public key.",
+  ],
+  watchOut: [
+    "Attenuation does not revoke the parent token. Keep that token out of the worker’s process, environment and logs. A worker that can read it can bypass the narrower copy.",
+    "Biscuit is a bearer token. It does not prove which worker sent a request, or that a person approved it. Add separate authentication where caller identity matters.",
+    "The API supplies the facts about the request: the resource, operation, service and time. Model output is not an authority for those facts.",
+    "Verification needs the expected issuer’s public key. Accepting a key supplied by the caller would let the caller mint its own permissions.",
+    "Offline verification does not discover revocation. Each API needs an explicit way to obtain and enforce current revocation information, or must accept the remaining lifetime of a token.",
+  ],
+  lesson: "chains",
+  phases: [
+    { title: "The issuer grants access to the orchestrator", from: 1 },
+    { title: "The orchestrator gives the worker a restricted copy", from: 3 },
+    { title: "The API checks the token and the requested operation", from: 5 },
+  ],
+  parts: {
+    issuer:
+      "Decides the original permissions and signs the first block. Its authentication and approval process is a prerequisite here, not something Biscuit defines. Keeps the signing key private and distributes the public key to the API through a trusted channel.",
+    parent:
+      "Appends restrictions using a Biscuit library and gives only the resulting token to the worker. Keeps the broader token outside the worker’s reach. It does not need the issuer’s signing key to add restrictions.",
+    worker:
+      "Calls the API with the restricted token. It can copy that token or restrict it further, but cannot remove its existing restrictions. The token alone does not authenticate the worker.",
+    api: "Verifies the token against the expected issuer key, supplies facts from the actual request and its own clock, and evaluates every check plus its own policy. Rejects if any check fails or the first matching policy is a deny. With no matching policy, it also rejects.",
+  },
+  illustrated: {
+    steps:
+      "One orchestrator delegates a document-reading task to one worker. The API understands Biscuit’s 3.x format and its policy language, Datalog, through version 3.3. No third-party blocks or custom trust scopes are used.",
+    preconditions: [
+      "The issuer has authenticated the orchestrator and approved the original document permissions. That setup is outside this diagram.",
+      "The document API has the issuer’s public key and a policy for interpreting these permissions. The worker cannot read the orchestrator’s original token.",
+      "The API derives one canonical resource and operation from each request. It supplies its own service name and current time.",
+    ],
+    examples:
+      "The listings show the token’s readable Datalog contents, not its serialized bytes. Resource names, policy predicates and dates are illustrative application choices. The API example carries a base64url-encoded token in a header chosen by this application.",
+    references:
+      "The diagram follows the project’s stable Biscuit specification, pinned to the source revision linked in the tracker. The rating describes that specification, not every library that implements it.",
+  },
+  participants: [
+    { id: "issuer", label: "Token issuer", role: "authz" },
+    { id: "parent", label: "Orchestrator", role: "agent" },
+    { id: "worker", label: "Worker", role: "agent" },
+    { id: "api", label: "Document API", role: "resource" },
+  ],
+  steps: [
+    {
+      from: "issuer",
+      kind: "self",
+      label: "Sign the original rights",
+      title: "The issuer writes the original permissions",
+      body: `The first block is the **authority block**. Only the issuer can sign it with the root signing key. Here it permits reading two documents and editing one, and limits use to this document service before 20:00 UTC. The predicate names are this application’s vocabulary, not reserved Biscuit claims.`,
+      code: {
+        lang: "text",
+        text: `right("project-7/doc-1", "read");
+right("project-7/doc-1", "write");
+right("project-7/doc-2", "read");
+check if service("documents.example");
+check if time($now), $now < 2026-11-13T20:00:00Z;`,
+      },
+      gain: [["issuer", "original Biscuit token"]],
+    },
+    {
+      from: "issuer",
+      to: "parent",
+      kind: "resp",
+      label: "Original token",
+      title: "The orchestrator receives its access",
+      body: `The issuer delivers the token over the protected channel established during setup. The orchestrator can now use the listed permissions. It holds a credential it can restrict; it never receives the issuer’s signing key.`,
+      gain: [["parent", "original Biscuit token"]],
+    },
+    {
+      from: "parent",
+      kind: "self",
+      label: "Append restrictions",
+      title: "The orchestrator makes a copy for one task",
+      body: `A Biscuit library appends a block that restricts the token to reads of document 1 before the deadline. The library links the new block to the existing signature chain. Someone holding only this new token cannot remove its checks without invalidating the token’s proof. No request goes to the issuer. The orchestrator still holds the original token as well.`,
+      code: {
+        lang: "text",
+        text: `check if resource("project-7/doc-1");
+check if operation("read");
+check if time($now), $now < 2026-11-13T18:00:00Z;`,
+      },
+      gain: [["parent", "restricted Biscuit token"]],
+    },
+    {
+      from: "parent",
+      to: "worker",
+      kind: "back",
+      label: "Task + restricted token",
+      title: "Only the restricted copy reaches the worker",
+      body: `The task is to summarize document 1. The worker receives the restricted token over a protected channel. It gets no access to the parent’s token store. Biscuit does not enforce that separation: the host running these processes must provide it.`,
+      gain: [["worker", "restricted Biscuit token"]],
+    },
+    {
+      from: "worker",
+      to: "api",
+      kind: "back",
+      label: "Read + restricted token",
+      title: "The worker presents the token to the API",
+      body: `The request travels over HTTPS. This application uses \`Biscuit-Token\` as its credential header; Biscuit defines the token, not a required HTTP authentication scheme. The token proves the permission chain, not the identity of the worker presenting it.`,
+      code: {
+        lang: "http",
+        text: `GET /projects/7/documents/1 HTTP/1.1
+Host: documents.example
+Biscuit-Token: <base64url-encoded restricted token>`,
+      },
+      gain: [["api", "restricted Biscuit token"]],
+    },
+    {
+      from: "api",
+      kind: "self",
+      label: "Verify the token",
+      title: "The API checks where the permissions came from",
+      body: `Starting with the issuer’s public key, the API verifies the signature chain. It checks the final proof against the key named by the last block. These checks establish that the blocks have not been altered. It does not yet mean this request is allowed: the API must evaluate the checks and its own policy next.`,
+    },
+    {
+      from: "api",
+      kind: "self",
+      label: "Check the actual request",
+      title: "The API evaluates every restriction and its policy",
+      body: `The API builds a fresh **authorizer**, Biscuit’s evaluation context, for this request. It derives the resource and operation from the route, and the time from its own clock. Every token check must pass, and an allow policy must match without an earlier matching deny.
+
+The policy uses the default trust scopes: it accepts rights from the issuer’s authority block and the API itself, not rights invented in a later block. Adding \`right("project-7/doc-2", "write")\` downstream cannot grant that permission.`,
+      code: {
+        lang: "text",
+        text: `service("documents.example");
+resource("project-7/doc-1");
+operation("read");
+time(2026-11-13T17:50:00Z);
+
+allow if resource($doc), operation($op), right($doc, $op);`,
+      },
+    },
+    {
+      from: "api",
+      to: "worker",
+      kind: "resp",
+      label: "Document or refusal",
+      title: "The API returns only what this request permits",
+      body: `Reading document 1 before the deadline passes both the token’s checks and the API’s policy. Editing it, reading document 2, or calling at or after the deadline fails a check. The API executes the same operation on the same resource it evaluated; it does not reuse the result for a different request.`,
+    },
+  ],
+  standards: ["biscuit"],
+  roles: {
+    biscuit: "required", // authority and appended blocks, signatures, scopes, checks and policy evaluation
+  },
+  related: ["token-exchange", "credential-broker", "dpop"],
+  comparison: {
+    title: "What the worker’s token permits",
+    intro:
+      "These outcomes use the token and API policy shown above, with no additional grant or policy change.",
+    rowHeading: "Request",
+    fields: [
+      { heading: "Result", label: "Result" },
+      { heading: "Why", label: "Why" },
+    ],
+    rows: [
+      {
+        name: "Read document 1 at 17:50 UTC on November 13, 2026",
+        values: [
+          "Allowed",
+          "The original right matches the policy, and every check passes.",
+        ],
+      },
+      {
+        name: "Edit document 1 before the deadline",
+        values: ["Denied", "The appended check requires a read."],
+      },
+      {
+        name: "Read document 2 before the deadline",
+        values: [
+          "Denied",
+          "The appended block restricts access to document 1.",
+        ],
+      },
+      {
+        name: "Read document 1 at or after 18:00 UTC on November 13, 2026",
+        values: [
+          "Denied",
+          "The time check requires a time before the deadline.",
+        ],
+      },
+    ],
+  },
+  notes: [
+    {
+      title: "Expiry and revocation are checks the API enforces",
+      body: `Each deadline here is a Datalog check, evaluated against the API’s current time. The worker’s earlier deadline narrows the issuer’s original one. Biscuit does not add an expiry merely because a token was issued. Set one deliberately when the task should end.
+
+The specification also defines a revocation identifier for each block, derived from its signature. An API can compare those identifiers with a revocation list. Rejecting the authority block’s identifier can reject that token and all its restricted descendants; rejecting a later block’s identifier targets the branch containing it. Distributing and refreshing that list is a deployment responsibility. A disconnected API cannot learn a new revocation from signature verification alone.`,
+    },
+    {
+      title: "Choose where the restriction happens",
+      body: `With [token exchange](/flows/token-exchange/), a server authorizes an exchange and issues a new token. With Biscuit, a holder restricts an existing credential locally, and the API evaluates it. With a [credential broker](/flows/credential-broker/), a proxy can keep the downstream credential out of the worker altogether.
+
+These arrangements protect different boundaries. Biscuit limits what the worker’s credential permits, but a stolen copy still works within those limits. Neither the restrictions nor the signature chain records user consent unless the application explicitly supplies and verifies evidence of it.`,
+    },
+  ],
+};

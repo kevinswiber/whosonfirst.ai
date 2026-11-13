@@ -166,6 +166,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     rfc8707: "background", // RFC 8693 defines `resource` for the exchange request itself (section 2.1) and cites this only for background
   },
   related: [
+    "biscuit-delegation",
     "cross-app-access",
     "identity-chaining",
     "transaction-tokens",
