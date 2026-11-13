@@ -1404,19 +1404,44 @@ export const standards: Standard[] = [
     url: "https://openid.net/specs/authorization-api-1_0-final.html",
   },
   {
+    id: "coaz-framework",
+    name: "COAZ Framework",
+    ref: "OpenID AuthZEN COAZ Framework 1.0",
+    body: "OpenID Foundation",
+    status: "wg-draft",
+    detail:
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
+    topics: ["authorization"],
+    summary:
+      "Defines how mappings turn an operation’s inputs into AuthZEN authorization requests, using fixed values or expressions.",
+    agents:
+      "Provides the common mapping rules. A binding defines the inputs and behavior for a particular protocol.",
+    url: "https://openid.github.io/authzen/authzen-coaz-framework-1_0",
+    related: [
+      { kind: "builds-on", entry: "authzen" },
+      { kind: "companion", entry: "coaz-mcp" },
+      {
+        kind: "source",
+        name: "AuthZEN working group specifications",
+        url: "https://openid.net/wg/authzen/specifications/",
+      },
+    ],
+  },
+  {
     id: "coaz-mcp",
     name: "COAZ Binding for MCP",
     ref: "OpenID AuthZEN COAZ-MCP",
     body: "OpenID Foundation",
     status: "wg-draft",
     detail:
-      "Draft 1. The AuthZEN working group approved a single COAZ profile for MCP as a working group draft in June 2026, then split it in two. This binding and the protocol-neutral COAZ Framework were announced in July 2026.",
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     topics: ["authorization", "agent-protocol"],
     summary:
-      "Maps MCP requests to AuthZEN authorization requests for parameter-level decisions, with mappings declared per tool.",
+      "Maps MCP messages to AuthZEN authorization requests. Defines default mappings and lets servers declare per-tool mappings that include arguments.",
     agents:
       "Addresses the gap MCP itself leaves open: there is no per-tool permission model in the core specification.",
-    url: "https://github.com/openid/authzen",
+    url: "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0",
+    related: [{ kind: "builds-on", entry: "coaz-framework" }],
   },
 
   /* ───────────── Signals ───────────── */
