@@ -196,7 +196,7 @@ export const lessons: Lesson[] = [
       {
         href: "/flows/tool-call-authorization/",
         label: "Tool-call authorization",
-        note: "A policy check on the order and amount, even when the token is valid.",
+        note: "A policy check on the calendar and event duration, even when the token is valid.",
       },
       {
         href: "/concepts/#rules",

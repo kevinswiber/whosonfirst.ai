@@ -8,10 +8,10 @@ export const toolCallAuthorization: Flow = {
   human: "any",
   maturity: "stable",
   tagline:
-    "A tool service checks the caller’s credentials, then asks a policy service whether it may run this call with these arguments.",
-  summary: `A support agent asks to refund $25 on order O-1842 for Alice. Its access token is valid, and the refund tool is visible. May it refund that order for her at that amount?
+    "The Calendar API checks the token, then asks a policy service whether this agent can add a focus block of the requested length.",
+  summary: `Alice asks her scheduling agent to block 30 minutes on her work calendar. The agent has a valid token and can see the tool for adding a focus block, an event with no invitees. The Calendar API still has to decide whether the agent may add this particular event.
 
-The tool service is the **policy enforcement point** (PEP): it can run the refund or stop it. It asks a **policy decision point** (PDP), the service that evaluates the rules, for an answer. AuthZEN defines the messages between them. The application decides how to describe the call and what its policy allows.`,
+The Calendar API acts as the **policy enforcement point** (PEP). It asks the **policy decision point** (PDP) to evaluate the call, then either writes the event or refuses it. AuthZEN defines the messages between them. The application decides how to describe the call and what its policy allows.`,
   fits: [
     "Tool services and gateways that need to decide on a specific record, tenant or argument after validating a credential.",
     "Services that want to keep the policy decision separate from the code that carries it out.",
@@ -24,56 +24,56 @@ The tool service is the **policy enforcement point** (PEP): it can run the refun
   credentials: {
     title: "What each caller presents",
     intro:
-      "The agent’s token stops at the tool service. The tool service has its own credential for calling the policy service.",
+      "The agent’s token stops at the Calendar API. The API uses its own credential to call the policy service.",
     items: [
       {
         name: "Agent access token",
         type: "Opaque bearer token",
         issuer: "The application’s authorization server",
-        recipient: "Tool service",
+        recipient: "Calendar API",
         meaning:
-          "The issuer’s token record identifies the support agent, Alice and the tenant it may act in. It permits entry to the tool service; the refund still needs a decision.",
-        binding: "Issued for the tool service; no key binding",
+          "The issuer’s record names the scheduling agent, Alice and the tenant where the agent may act for her. Adding an event still needs a policy decision.",
+        binding: "Issued for the Calendar API, with no key binding",
       },
       {
-        name: "Tool service certificate",
+        name: "Calendar API certificate",
         type: "TLS client certificate",
         issuer: "The operator’s certificate authority",
         recipient: "Policy service",
         meaning:
-          "Identifies the tool service on the evaluation connection. The policy service accepts caller identity and request facts from that service.",
-        binding:
-          "The tool service proves it holds the certificate’s private key",
+          "Identifies the Calendar API to the policy service, which trusts the API to supply caller identity and request facts.",
+        binding: "The API proves it holds the certificate’s private key",
       },
     ],
   },
   lesson: "limits",
   phases: [
-    { title: "Check the caller and the requested refund", from: 1 },
+    { title: "Check the caller and the calendar request", from: 1 },
     { title: "Ask for a decision and enforce it", from: 3 },
-    { title: "Try a larger refund with the same token", from: 6 },
+    { title: "Try a longer event with the same token", from: 6 },
   ],
   parts: {
-    agent: "Sends the requested order and amount, along with its access token.",
+    agent:
+      "Sends its access token with the requested calendar, start time and duration.",
     tool: "Checks the token and resolves the inputs the policy needs. Runs only the operation that received a usable allow answer.",
     policy:
-      "Authenticates the tool service, applies the refund policy to the facts it receives and returns a decision. It cannot make the refund itself.",
+      "Authenticates the Calendar API, applies the event policy to the facts it receives and returns a decision for the API to enforce.",
   },
   illustrated: {
     steps:
-      "The agent calls an HTTP tool endpoint. The AuthZEN exchange starts between the tool service and the policy service at step 3. Steps 6–9 show the alternative outcome with a different amount.",
+      "The agent calls an HTTP tool endpoint at the Calendar API. The API sends its first AuthZEN evaluation in step 3. Steps 6–9 show the alternative outcome when only the event’s duration changes.",
     preconditions: [
-      "The agent already has a token for the tool service. In this application, the issuer records which agent may act for which user in which tenant.",
-      "The tool service knows its policy service endpoint. The two services authenticate each other over TLS.",
+      "The agent already has a token that lets it request calendar writes for Alice. In this application, the issuer records which agent may act for which user in which tenant.",
+      "The Calendar API knows its policy service endpoint. The two services authenticate each other over TLS.",
     ],
     references:
-      "AuthZEN 1.0 defines the evaluation exchange; RFC 6750 supplies the bearer header on the tool call. The example’s token record, refund mapping and policy are application choices.",
+      "AuthZEN 1.0 defines the evaluation exchange. RFC 6750 supplies the bearer header on the tool call. The token record, calendar mapping and policy are application choices.",
   },
   participants: [
-    { id: "agent", label: "Agent", sub: "Support assistant", role: "agent" },
+    { id: "agent", label: "Agent", sub: "Scheduling assistant", role: "agent" },
     {
       id: "tool",
-      label: "Tool service",
+      label: "Calendar API",
       sub: "Enforces the decision",
       role: "resource",
     },
@@ -89,38 +89,42 @@ The tool service is the **policy enforcement point** (PEP): it can run the refun
       from: "agent",
       to: "tool",
       kind: "back",
-      label: "Request a $25 refund",
-      title: "The agent requests a refund for one order",
-      body: `The agent presents its access token over HTTPS. It proposes an order ID and an amount in cents. It does not get to choose the user or tenant in the request body.`,
+      label: "Request a 30-minute block",
+      title: "The agent asks to add a focus block",
+      body: `The agent presents its access token over HTTPS. It sends a calendar ID, start time and duration in minutes. The user and tenant come from the token record.`,
       code: {
         lang: "http",
-        text: `POST /tools/refund-order HTTP/1.1
-Host: tools.example.com
+        text: `POST /api/tools/add-focus-block HTTP/1.1
+Host: calendar.example
 Authorization: Bearer example-agent-token
 Content-Type: application/json
 
-{"order_id": "O-1842", "amount_minor": 2500}`,
+{
+  "calendar_id": "work",
+  "starts_at": "2026-11-16T17:00:00Z",
+  "duration_minutes": 30
+}`,
       },
-      gain: [["agent", "access token for the tool service"]],
+      gain: [["agent", "access token for the Calendar API"]],
     },
     {
       from: "tool",
       kind: "self",
-      label: "Validate token; resolve order",
-      title: "The tool service assembles the facts",
-      body: `The tool service checks the token against the trusted issuer’s records: it must be active, issued for this service and valid for the agent to act for Alice in the Northwind tenant. If that check fails, the service rejects the call before asking for a decision. It takes the agent ID, represented user and tenant from the issuer’s record. The agent ID says which client the issuer gave the token to; a bearer token alone cannot prove who presented it.
+      label: "Validate token; resolve calendar",
+      title: "The Calendar API assembles the facts",
+      body: `The Calendar API checks the token against the trusted issuer’s records: it must be active, issued for this service and valid for the agent to act for Alice in the Northwind tenant. If that check fails, the service rejects the call before asking for a decision. It takes the agent ID, represented user and tenant from the issuer’s record. The agent ID says which client the issuer gave the token to. A bearer token alone cannot prove who presented it.
 
-The service takes the action from the route it will execute. It looks up the supplied order ID within Northwind, uses the order’s canonical ID and currency, and validates the requested amount as a positive integer in the currency’s minor units. It keeps those resolved inputs together for both evaluation and execution, and keeps the order’s current version for the write.`,
+The API takes the action from its route and resolves the supplied calendar ID within Alice’s account in Northwind. It uses the calendar’s canonical ID, parses the start time as UTC and checks that the duration is a positive whole number of minutes. It keeps these inputs together for both evaluation and execution, along with the calendar version it read.`,
     },
     {
       from: "tool",
       to: "policy",
       kind: "back",
-      label: "Evaluate this refund",
-      title: "The tool service sends an AuthZEN evaluation",
-      body: `The tool service authenticates to the policy service with its own TLS certificate. The agent’s bearer token is not forwarded.
+      label: "Evaluate this event",
+      title: "The Calendar API sends an AuthZEN evaluation",
+      body: `The Calendar API authenticates to the policy service with its own TLS certificate. It keeps the agent’s bearer token at the API.
 
-AuthZEN requires a \`subject\`, \`resource\` and \`action\` and allows a \`context\` object. In this application, the subject is the agent, with Alice named in a subject property. The resource is the order, the action carries the amount and currency, and the context names the tenant. These field choices are the application’s mapping. AuthZEN defines no standard way to turn a delegation claim into any of them.`,
+AuthZEN requires a \`subject\`, \`resource\` and \`action\` and allows a \`context\` object. In this application, the subject is the agent, with Alice named in a subject property. The resource is the calendar, the action carries the start time and duration, and the context names the tenant. These field choices are the application’s mapping. AuthZEN defines no standard way to turn a delegation claim into any of them.`,
       code: {
         lang: "http",
         text: `POST /access/v1/evaluation HTTP/1.1
@@ -130,13 +134,16 @@ Content-Type: application/json
 {
   "subject": {
     "type": "agent",
-    "id": "support-agent",
+    "id": "scheduling-agent",
     "properties": {"represented_user_id": "alice"}
   },
-  "resource": {"type": "order", "id": "northwind:O-1842"},
+  "resource": {"type": "calendar", "id": "northwind:alice-work"},
   "action": {
-    "name": "refund_order",
-    "properties": {"amount_minor": 2500, "currency": "USD"}
+    "name": "add_focus_block",
+    "properties": {
+      "starts_at": "2026-11-16T17:00:00Z",
+      "duration_minutes": 30
+    }
   },
   "context": {"tenant_id": "northwind"}
 }`,
@@ -148,8 +155,8 @@ Content-Type: application/json
       to: "tool",
       kind: "resp",
       label: "200 · allow",
-      title: "The policy allows this $25 refund",
-      body: `This application’s rules allow the support agent to refund on Alice’s behalf for orders she is allowed to handle in Northwind, up to $50 per refund. The policy service checks those permissions and the amount. AuthZEN returns a Boolean \`decision\`; here it is \`true\`.`,
+      title: "The policy allows the 30-minute event",
+      body: `In this application, the scheduling agent may add focus blocks for Alice on a Northwind calendar she can write to, up to 60 minutes per block. The policy service checks the agent and Alice against its delegation rules, checks Alice’s write permission for this calendar and applies the duration limit. It returns the AuthZEN Boolean \`decision\`; here it is \`true\`.`,
       code: {
         lang: "http",
         text: `HTTP/1.1 200 OK
@@ -162,35 +169,35 @@ Content-Type: application/json
       from: "tool",
       to: "agent",
       kind: "resp",
-      label: "Execute refund; return result",
-      title: "The tool service executes the exact refund it evaluated",
-      body: `The service matches the answer to the pending evaluation. It refunds $25 in USD using the same order, action and validated arguments. As part of the write it checks that the order version still matches the one it read. If the order changed, the write stops.
+      label: "Add the event; return result",
+      title: "The Calendar API adds the event it evaluated",
+      body: `The API matches the answer to the pending evaluation. It uses the same calendar, action, start time and 30-minute duration to write the event. The write checks that the calendar version still matches the one the API read. A version change stops the write.
 
-The service uses the answer only for the pending call and within a short window set by the application. A different amount or order needs its own evaluation. If the answer expires or the service learns that a fact used for the decision changed, it discards the answer and evaluates again before it can proceed.`,
+The API uses the answer only for the pending call and within a short window set by the application. A changed calendar, start time or duration needs a new evaluation. If the answer expires or the API learns that a fact used for the decision changed, it discards the answer and evaluates again before it can proceed.`,
     },
     {
       from: "agent",
       to: "tool",
       kind: "back",
-      label: "Request an $80 refund",
-      title: "The same valid token accompanies a larger refund",
-      body: `In this alternative run, the agent sends the same token and order ID, but sets \`amount_minor\` to \`8000\`. The tool service validates the token and resolves the call as before.`,
+      label: "Request a 90-minute block",
+      title: "The same valid token accompanies a longer event",
+      body: `In this alternative run, the agent sends the same token, calendar ID and start time. It sets \`duration_minutes\` to \`90\`. The Calendar API validates the token and resolves the call as before.`,
     },
     {
       from: "tool",
       to: "policy",
       kind: "back",
-      label: "Evaluate the $80 refund",
-      title: "The tool service asks for a fresh decision",
-      body: `The evaluation is the same except for \`action.properties.amount_minor\`, now \`8000\`. The service does not reuse an allow answer for $25.`,
+      label: "Evaluate the 90-minute event",
+      title: "The Calendar API asks for a fresh decision",
+      body: `The API sends a new evaluation with \`action.properties.duration_minutes\` set to \`90\`. The other fields match the 30-minute request.`,
     },
     {
       from: "policy",
       to: "tool",
       kind: "resp",
       label: "200 · deny",
-      title: "The policy denies the larger refund",
-      body: `The amount exceeds the policy’s $50 limit. The evaluation itself succeeded, so the policy service still returns HTTP 200. The Boolean \`false\` is the denial; an HTTP error from the policy service would mean it did not supply a decision.`,
+      title: "The policy denies the longer event",
+      body: `The event exceeds the policy’s 60-minute limit. The evaluation succeeds, so the policy service returns HTTP 200. The Boolean \`false\` is the denial; an HTTP error from the policy service would mean it did not supply a decision.`,
       code: {
         lang: "http",
         text: `HTTP/1.1 200 OK
@@ -203,9 +210,9 @@ Content-Type: application/json
       from: "tool",
       to: "agent",
       kind: "resp",
-      label: "Reject; no refund",
-      title: "The tool service stops the call",
-      body: `The tool service refuses the $80 refund even though the token is valid. It also refuses to execute if it gets no usable decision: for example, the evaluation times out or the reply has no Boolean decision. That is this application’s fail-closed rule. An unavailable policy service and a policy denial both stop execution, but they are different outcomes to report.`,
+      label: "Reject; no event",
+      title: "The Calendar API stops the call",
+      body: `The Calendar API refuses to add the 90-minute event even though the token is valid. It also refuses to write if it gets no usable decision: for example, the evaluation times out or the reply has no Boolean decision. That is this application’s fail-closed rule. An unavailable policy service and a policy denial both stop execution, but they are different outcomes to report.`,
     },
   ],
   standards: ["authzen", "rfc6750", "coaz-mcp"],
@@ -226,7 +233,7 @@ Content-Type: application/json
           title: "A draft way to map MCP calls",
           body: `The COAZ binding for MCP is an AuthZEN working group draft. It reads claims from a validated JWT access token. Its default mapping uses the user’s token subject (\`sub\`) as the AuthZEN subject and puts the agent’s client ID, if present, in \`context.agent\`.
 
-For a tool call, the default names the tool and leaves out its arguments. To include an amount in the evaluation, the server can declare a mapping for that tool in its input schema.`,
+For a tool call, the default names the tool and leaves out its arguments. To include an event’s duration in the evaluation, the server can declare a mapping for that tool in its input schema.`,
           sources: [
             {
               label: "COAZ Binding for MCP",
@@ -240,7 +247,7 @@ For a tool call, the default names the tool and leaves out its arguments. To inc
   notes: [
     {
       title: "Where consent fits",
-      body: `AuthZEN supplies the interface for an authorization decision. It does not supply the refund rules or ask Alice to approve the refund. If policy requires fresh approval for a sensitive operation, a separate flow such as [step-up authorization](/flows/step-up-authorization/) can collect it.`,
+      body: `The AuthZEN Authorization API carries the decision. It does not ask Alice to approve the event. The calendar application supplies the rules. If policy requires fresh approval from Alice, a separate flow such as [step-up authorization](/flows/step-up-authorization/) can collect it.`,
     },
   ],
 };
