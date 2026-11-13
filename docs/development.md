@@ -49,6 +49,34 @@ Biome's settings are in `biome.json`. Two things about this repository shape the
 
 Biome does not handle `.mdx`, so the deployment guides and the About page are not formatted.
 
+### Checks
+
+The checks are tests for Node's own test runner, `node:test`, in `test/`. Each file runs in a process of its own, and several run at once.
+
+| Directory       | What its tests read                               | Run by                   |
+| --------------- | ------------------------------------------------- | ------------------------ |
+| `test/unit/`    | The data and the color tokens. No build is needed | `npm test`               |
+| `test/build/`   | The built site, as files                          | `npm run check:rendered` |
+| `test/browser/` | The built site, opened in Chromium                | `npm run check:rendered` |
+
+What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves `dist/client/` with the site's own headers and starts a browser, one for each test file. It also opens pages: `open()` waits for the load event, the fonts and a drawn frame, which is the state a reader sees, since no page loads anything after its load event. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to.
+
+While working on one thing, run the test file for it. It still needs a current build:
+
+```bash
+node --test test/browser/print.test.mjs
+```
+
+Or run the tests whose names match a pattern. The pattern goes before the files:
+
+```bash
+node --test --test-name-pattern="sideways" "test/browser/*.test.mjs"
+```
+
+Before a pull request, run the four commands [CONTRIBUTING.md](../CONTRIBUTING.md) names. Continuous integration runs every check on every change, because a change to any file under `src/` can move what some page draws.
+
+A new check is a test in the file for what it reads. Tests in a suite run in order and may share a page. A file can run suites side by side with `{ concurrency: true }`, as the files that measure every page do. It does that only where each suite has a page of its own and nothing waits on a clock, and each suite inside then sets `{ concurrency: 1 }`, since a suite's tests take its setting.
+
 ### Continuous integration
 
 `.github/workflows/ci.yml` runs the same commands on every pull request and on every change to `main`, as two jobs side by side: Biome, then `npm test`; and the build, then `npm run check:rendered`. It needs no secret and deploys nothing, so it runs the same on a pull request from a fork.
@@ -88,6 +116,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `scripts/readme-figure.mjs`           | Draws the picture at the top of the README from the built site, in each theme                      |
 | `scripts/social-assets.mjs`           | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
 | `scripts/built-site.mjs`              | Stops a script that reads the built site when the build is older than its sources                  |
+| `test/`                               | The checks, as tests: see [Checks](#checks)                                                        |
 | `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
 
 ## Editing content
