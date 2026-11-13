@@ -2,18 +2,20 @@
  * What a script that reads the built site asks before it does anything else:
  * is the build there, and was it made after the last change to its sources?
  *
- * rendered-check.mjs, readme-figure.mjs and social-assets.mjs all read
- * dist/client/, and none of them builds it. Run on a build made before the
+ * The rendered checks (test/build/ and test/browser/), readme-figure.mjs and
+ * social-assets.mjs all read dist/client/, and none of them builds it. Run on a build made before the
  * last change, each would do its work on the site as it was then: the checks
  * could pass where the site as it is now would fail, and a picture would show
  * a list of flows that is one short. Nothing in what they print or draw would
  * say so, so each of them stops here first.
  *
- * This file is imported, not run. Continuous integration builds and then
- * checks, so it only ever stops a run made by hand.
+ * `npm run check:rendered` runs this file before its tests, so a stale build
+ * is reported once and not by every test file; each test file asks again, for
+ * a test run by itself. Continuous integration builds and then checks, so it
+ * only ever stops a run made by hand.
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = fileURLToPath(new URL("../", import.meta.url));
@@ -50,3 +52,10 @@ export function requireCurrentBuild(stale) {
   );
   process.exit(1);
 }
+
+// Run by itself, it checks the build for the rendered checks.
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+)
+  requireCurrentBuild("The checks would report on the site as it was then.");

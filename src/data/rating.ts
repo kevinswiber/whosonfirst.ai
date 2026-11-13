@@ -1,6 +1,6 @@
 /**
  * The rating rule, kept free of site data so it can be checked on its own
- * (scripts/rating-check.mjs). The rule is stated for readers on the About page
+ * (test/unit/rating.test.mjs). The rule is stated for readers on the About page
  * under "How flows are rated".
  *
  *   - A flow takes the level of its least mature required reference.

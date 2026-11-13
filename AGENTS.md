@@ -21,7 +21,7 @@ Node 22 or later. Install with `npm ci`.
 | `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name              |
 | `npm run check:rendered` | Reads the built site, then opens it in a browser. Refuses a build older than its sources |
 
-`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes about two minutes. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
+`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes under a minute. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
 
 ## Before you say a change is done
 
