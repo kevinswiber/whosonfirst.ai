@@ -184,6 +184,11 @@ export const lessons: Lesson[] = [
         note: "Binding a token to a key, step by step.",
       },
       {
+        href: "/flows/oauth-mtls/",
+        label: "OAuth access tokens bound to a TLS certificate",
+        note: "How the TLS handshake proves the caller holds the key for a bound token.",
+      },
+      {
         href: "/flows/credential-broker/",
         label: "Credential broker",
         note: "Keeping the secret outside the agent altogether.",

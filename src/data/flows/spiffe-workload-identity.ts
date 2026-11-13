@@ -17,7 +17,7 @@ For agent systems this gives you a per-workload identity that works the same acr
   fits: [
     "Agent-to-tool and agent-to-agent calls inside your own infrastructure.",
     "Multi-cluster or multi-cloud deployments that need one identity scheme.",
-    "A foundation for other flows: an SVID can authenticate an OAuth client or be exchanged for a token.",
+    "A foundation for other flows. An X.509 SVID can supply the client certificate for [OAuth mTLS](/flows/oauth-mtls/) where the servers are configured to support it.",
   ],
   watchOut: [
     "SPIFFE says **who a workload is**. It says nothing about which user the workload is acting for. For that you still need a token carrying the user’s delegation, alongside the workload identity.",
@@ -150,6 +150,7 @@ Validity:
     "wimse-arch": "background", // named once in a note about related IETF work
   },
   related: [
+    "oauth-mtls",
     "workload-identity-federation",
     "wimse-workload-tokens",
     "transaction-tokens",

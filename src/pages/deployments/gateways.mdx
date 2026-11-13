@@ -216,6 +216,8 @@ On Kubernetes, [gateways and policy](/deployments/kubernetes/#gateways-and-polic
 - **The server accepts the gateway and nobody else.** It verifies that the gateway is the caller, by the gateway's [workload identity](/flows/spiffe-workload-identity/) on the connection or by a token [bound to a key](/flows/dpop/) that only the gateway holds. Requiring the gateway in the `act` [claim](/glossary/#claim) helps as well, with a limit: that claim says who was authorized to act, not who is holding the token.
 - **The server applies the same rules itself**, so that a direct call gets the answer the gateway would have given.
 
+For [certificate-bound OAuth tokens](/flows/oauth-mtls/), the client proves possession of its key on the TLS connection to the gateway. If the backend checks the token binding, it must accept the original client certificate only from the trusted gateway over a protected path. The gateway must strip or overwrite client-supplied certificate headers before forwarding.
+
 On a person's machine nothing forces a call through the gateway at all, and a [local server started over stdio](/deployments/local/#local-mcp-servers-over-stdio) never touches it.
 
 **Misuse of allowed access.** A hijacked agent can call every tool the policy allows for its user. For actions that cannot be undone, bring the person back with [step-up](/flows/step-up-authorization/) or [backchannel approval](/flows/ciba/).

@@ -57,6 +57,10 @@ const COMPARE: Record<string, [subject: string, proof: string]> = {
   "web-bot-auth": ["Agent operator", "HTTP message signature"],
   "agent-payments": ["User’s signed intent", "A key named in the mandate"],
   dpop: ["Unchanged", "A signed proof on every request"],
+  "oauth-mtls": [
+    "Set by the grant (the agent here)",
+    "The key for the bound certificate, in TLS",
+  ],
   "credential-broker": ["Unchanged", "Nothing: the proxy holds the secret"],
 };
 for (const f of flows) {
