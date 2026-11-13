@@ -200,7 +200,7 @@ An RFC being updated does not change its status or a flow's rating. It may chang
 
 ### Final specifications from other bodies
 
-Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
+Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `caep`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
 
 ### Guidance
 

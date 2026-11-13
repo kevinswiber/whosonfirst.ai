@@ -5,6 +5,7 @@ import { std } from "../standards";
 import type { Flow, FlowGroup } from "../types";
 import { GROUPS, MATURITY_LABEL } from "../types";
 import { aauth } from "./aauth";
+import { accessRevocation } from "./access-revocation";
 import { agentPayments } from "./agent-payments";
 import { agentToAgent } from "./agent-to-agent";
 import { authorizationCodePkce } from "./authorization-code-pkce";
@@ -46,6 +47,7 @@ export const flows: Flow[] = [
   webBotAuth,
   agentPayments,
   dpop,
+  accessRevocation,
   credentialBroker,
 ];
 

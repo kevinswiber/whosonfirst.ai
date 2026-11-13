@@ -192,6 +192,10 @@
     "etag": "\"7dd49-63994268300de-gzip\"",
     "lastModified": "Thu, 10 Jul 2025 14:38:44 GMT"
   },
+  "https://openid.net/specs/openid-caep-1_0-final.html": {
+    "etag": "\"1abcf-63d827e8b242d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
   "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html": {
     "etag": "\"1b12d-5caf39dbfa700-gzip\"",
     "lastModified": "Wed, 01 Sep 2021 18:55:56 GMT"
@@ -204,7 +208,14 @@
     "etag": "\"1aa38-60c9a2fa36c00-gzip\"",
     "lastModified": "Sat, 16 Dec 2023 05:57:04 GMT"
   },
-  "https://openid.net/wg/sharedsignals/": {},
+  "https://openid.net/specs/openid-risc-1_0-final.html": {
+    "etag": "\"119a4-63d827e8b2fe5-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
+  "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html": {
+    "etag": "\"3c527-63d827e8b3b9d-gzip\"",
+    "lastModified": "Fri, 29 Aug 2025 15:15:38 GMT"
+  },
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
@@ -261,6 +272,9 @@
   "https://www.rfc-editor.org/rfc/rfc8414.json": {
     "etag": "\"a58c82ee5977949ef56219d8b8824ec6\""
   },
+  "https://www.rfc-editor.org/rfc/rfc8417.json": {
+    "etag": "\"076ef4683ad4a44176ee8e5c02652b6b\""
+  },
   "https://www.rfc-editor.org/rfc/rfc8628.json": {
     "etag": "\"b4d10c5c7795c4d5264bb5fdb72ffab0\""
   },
@@ -278,6 +292,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc8785.json": {
     "etag": "\"e0aa47c0fc88580e86d63959d6535cd9\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc8935.json": {
+    "etag": "\"247566f93b6d4628bbb68c20c889f6f6\""
   },
   "https://www.rfc-editor.org/rfc/rfc8996.json": {
     "etag": "\"e9e03cd48501408d6af6e357392876c5\""
@@ -305,6 +322,9 @@
   },
   "https://www.rfc-editor.org/rfc/rfc9470.json": {
     "etag": "\"26765f7f7fa3481bce26340734197c7f\""
+  },
+  "https://www.rfc-editor.org/rfc/rfc9493.json": {
+    "etag": "\"79f8a332ff28dc5a10207393cc788ad4\""
   },
   "https://www.rfc-editor.org/rfc/rfc9635.json": {
     "etag": "\"f5ed04e46bda06558a53ea6fd89212b5\""
