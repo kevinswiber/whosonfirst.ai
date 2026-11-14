@@ -199,12 +199,12 @@ export function previewOf(address: string): Record<string, string> | undefined {
     ([, name]) => name !== "href",
   );
   if (!found.length) return undefined;
-  const unescape = (v: string) =>
+  const decoded = (v: string) =>
     v
       .replace(/&quot;/g, '"')
       .replace(/&lt;/g, "<")
       .replace(/&amp;/g, "&");
-  return Object.fromEntries(found.map(([, name, v]) => [name, unescape(v)]));
+  return Object.fromEntries(found.map(([, name, v]) => [name, decoded(v)]));
 }
 
 /** Give an authored glossary or tracker link the same preview as an automatically marked one.
