@@ -1,13 +1,22 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { glossary } from "../../data/glossary";
+import { standards } from "../../data/standards";
+import { STATUS_LABEL, STATUS_TONE } from "../../data/types";
 import { inline } from "../../lib/md";
+import { must } from "../../lib/must";
 import { termSlug } from "../../lib/term";
 
 const terms = [...glossary].sort((a, b) =>
   a.term.localeCompare(b.term, "en", { sensitivity: "base" }),
 );
 const slug = termSlug;
+// a term that names a specification shows that document's status, as the tracker words it
+const standardOf = (id: string, term: string) =>
+  must(
+    standards.find((s) => s.id === id),
+    `tracker entry "${id}" (the standard of glossary term "${term}")`,
+  );
 const letters = [...new Set(terms.map((t) => t.term[0].toUpperCase()))];
 ---
 
@@ -38,6 +47,7 @@ const letters = [...new Set(terms.map((t) => t.term[0].toUpperCase()))];
       <dl>
         {
           terms.map((t, i) => {
+            const std = t.standard ? standardOf(t.standard, t.term) : undefined;
             const first = t.term[0].toUpperCase();
             const newLetter = i === 0 || terms[i - 1].term[0].toUpperCase() !== first;
             return (
@@ -57,6 +67,12 @@ const letters = [...new Set(terms.map((t) => t.term[0].toUpperCase()))];
                     <a class="see" href={t.see.href}>
                       {t.see.label} →
                     </a>
+                  )}
+                  {std && (
+                    <span class="std">
+                      <span class="chip" data-tone={STATUS_TONE[std.status]}>{STATUS_LABEL[std.status]}</span>
+                      <a href={`/standards/#${std.id}`}>{std.ref}</a>
+                    </span>
                   )}
                 </dd>
               </div>
@@ -216,6 +232,19 @@ const letters = [...new Set(terms.map((t) => t.term[0].toUpperCase()))];
     margin-left: 0.4rem;
     font-size: 0.88rem;
     white-space: nowrap;
+  }
+  /* the specification the term names: its status, and its identifier linking to the tracker */
+  .std {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    margin-top: 0.35rem;
+  }
+  .std a {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    word-break: break-word;
   }
   @media (max-width: 40rem) {
     .gl-term {

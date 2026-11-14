@@ -239,3 +239,73 @@ for (const javaScriptEnabled of [false, true]) {
     }
   });
 }
+
+// A glossary term that names one specification, such as "token exchange", is
+// still the glossary's: one preview for one word. That preview says which
+// document defines it and how settled the document is, and leads to both.
+describe("a term that names a specification", () => {
+  test("its preview shows the document's status and links to the glossary and the tracker", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/workload-identity-federation/"));
+    const term = page
+      .locator('main a.term[href="/glossary/#token-exchange"]')
+      .first();
+    await term.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await term.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(
+      await tip.locator(".term-tip-meta .chip").textContent(),
+      "RFC",
+    );
+    assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 8693");
+    assert.deepEqual(
+      await tip
+        .locator(".term-tip-more")
+        .evaluateAll((links) => links.map((a) => a.getAttribute("href"))),
+      ["/glossary/#token-exchange", "/standards/#rfc8693"],
+    );
+  });
+
+  test("the glossary shows the document's status and links to it, without scripts", async (t) => {
+    const ctx = await site.context({ javaScriptEnabled: false });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/glossary/"));
+    const std = page.locator("#dpop .std");
+    assert.equal(await std.locator(".chip").textContent(), "RFC");
+    const link = std.locator('a[href="/standards/#rfc9449"]');
+    assert.equal(await link.textContent(), "RFC 9449");
+    await Promise.all([
+      page.waitForURL(site.url("/standards/#rfc9449")),
+      link.click(),
+    ]);
+    assert.equal(await page.locator('[id="rfc9449"]').count(), 1);
+  });
+});
+
+// A specification named in words that are not a glossary term is marked as a
+// document when it is written as the tracker writes it, and its number, if it
+// follows, is not marked a second time.
+describe("a document named in words", () => {
+  test("HTTP Message Signatures previews RFC 9421, once", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/dpop/"));
+    const named = page.locator('main a.spec[href="/standards/#rfc9421"]');
+    assert.equal(await named.count(), 1);
+    assert.equal(await named.textContent(), "HTTP Message Signatures");
+    await named.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await named.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 9421");
+  });
+});

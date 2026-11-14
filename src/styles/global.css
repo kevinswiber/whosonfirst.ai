@@ -221,6 +221,7 @@ a:is(.term, .spec)[aria-expanded="true"] {
 .term-tip-more {
   display: inline-block;
   margin-top: 0.4rem;
+  margin-right: 1rem;
   color: var(--accent);
   text-decoration-thickness: 1px;
 }
