@@ -16,6 +16,7 @@ import {
   validateProfiles,
 } from "../src/data/implementations/model.ts";
 import { profiles } from "../src/data/implementations/records.ts";
+import { plain } from "./quote-text.mjs";
 import { flows as readFlows } from "./sources.mjs";
 
 const args = process.argv.slice(2);
@@ -32,33 +33,6 @@ const parties = Object.fromEntries(
     f.participants.filter((p) => p.role !== "human").map((p) => p.id),
   ]),
 );
-
-/** Text as a reader sees it, near enough to find a copied sentence in. */
-export const plain = (text) =>
-  text
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\\u([0-9a-f]{4})/gi, (_, h) => String.fromCharCode(`0x${h}`))
-    .replace(/\\[nrt]/g, " ")
-    .replace(/\\(["'/\\])/g, "$1")
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(`0x${h}`))
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&(apos|rsquo|lsquo);/g, "'")
-    .replace(/&(ldquo|rdquo);/g, '"')
-    .replace(/&(ndash|mdash);/g, "-")
-    .replace(/[‘’‛′]/g, "'")
-    .replace(/[“”″]/g, '"')
-    .replace(/[‐-―−]/g, "-")
-    .replace(/[ ​­]/g, " ")
-    .replace(/[*_`[\]()#>|]/g, " ")
-    .replace(/\s+/g, " ")
-    .toLowerCase()
-    .trim();
 
 /** Where a page's text can be read without running its scripts. */
 const readable = (url) => {
@@ -111,10 +85,15 @@ const worksheet = (file) => {
   const problems = [];
   const record = profiles.find((p) => p.slug === sheet.flow);
   if (!record) return { sheet, problems: [`${file}: no flow ${sheet.flow}`] };
-  const entries = [
-    ...(sheet.implementations ?? []),
-    ...(sheet.deployments ?? []),
-  ];
+  const all = [...(sheet.implementations ?? []), ...(sheet.deployments ?? [])];
+  // An excluded candidate needs only its source and the reason. Everything
+  // else is held to what the build would accept.
+  for (const entry of all.filter((e) => e.review?.state === "excluded"))
+    if (!entry.sources?.[0]?.url || !entry.review.rationale?.trim())
+      problems.push(
+        `${entry.id ?? "an excluded entry"}: give its source and the reason`,
+      );
+  const entries = all.filter((e) => e.review?.state !== "excluded");
   const taken = new Set(
     profiles.flatMap((p) =>
       [...p.implementations, ...p.deployments, ...p.observations].map(
@@ -137,8 +116,8 @@ const worksheet = (file) => {
         {
           ...record,
           reviewedOn: sheet.checkedOn,
-          implementations: sheet.implementations ?? [],
-          deployments: sheet.deployments ?? [],
+          implementations: entries.filter((e) => e.kind === "implementation"),
+          deployments: entries.filter((e) => e.kind === "deployment"),
           observations: [],
           events: [],
         },

@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { plain } from "../../scripts/quote-text.mjs";
 import {
   deploymentOrganizations,
   publishProfile,
@@ -257,4 +258,22 @@ test("a worksheet is refused for a used id, an unknown party or a source with no
   } finally {
     rmSync(dir, { recursive: true });
   }
+});
+
+test("a quote copied from a page is found in the HTML or Markdown the server sends", () => {
+  const quote = plain("The client uses the device code flow, by default.");
+  for (const page of [
+    "<p>The client uses the <a href='/x'>device code</a> flow, by default.</p>",
+    "The client uses the [device code](https://example.com/x) flow, by default.",
+    "<p>The client uses the <!--[--><code>device code</code><!--]--> flow, by default.</p>",
+    "The client uses the `device code` flow , by default.",
+  ])
+    assert.ok(plain(page).includes(quote), page);
+  assert.ok(
+    plain("A value is 1 < 2 and the client uses it > once.").includes(
+      plain("1 < 2 and the client uses it > once"),
+    ),
+    "a < in Markdown text is text, not a tag",
+  );
+  assert.ok(plain("It’s “quoted”").includes(plain(`It's "quoted"`)));
 });

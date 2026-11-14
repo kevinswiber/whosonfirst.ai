@@ -40,7 +40,7 @@ With a flow’s slug it prints that flow alone:
 npm run implementations:coverage -- dpop
 ```
 
-A gap is a place to look. It is not a finding: a party with no entry may have no public implementation, and saying so is a result.
+A gap is a place to look. It is not a finding: a party with no entry may have no public implementation, and saying so is a result. Some parties need nothing particular to the flow: an API that checks an ordinary access token in a PKCE flow, or the third-party service in URL elicitation. Do not look for those. Say in the worksheet’s `notFound` that the party is filled by generic software.
 
 ## 2. The flow and its scope
 
@@ -88,35 +88,37 @@ A vendor’s customer story is a `vendor-report`. A product guide is not a deplo
 
 Search for the strings a real implementation has to contain, not for the flow’s name. A page that mentions the name may be commentary. A page that contains the parameter is nearly always documentation or code.
 
-| Flow                           | Search for                                                                                                            |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `authorization-code-pkce`      | `code_challenge_method`, `S256`, `code_verifier`, “RFC 7636”                                                          |
-| `device-authorization`         | `urn:ietf:params:oauth:grant-type:device_code`, `device_authorization_endpoint`, `verification_uri_complete`          |
-| `mcp-authorization`            | `oauth-protected-resource`, `resource_metadata`, “Client ID Metadata Document”, “RFC 9728”                            |
-| `url-elicitation`              | `elicitation/create` with `"mode": "url"`, `URLElicitationRequiredError`, `-32042`                                    |
-| `aauth`                        | `Signature-Key`, `AAuth` with “HTTP Message Signatures”, “person server”, `aauth.dev`                                 |
-| `gnap`                         | “RFC 9635”, `grant request` with `interact`, `continue` with `access_token`, “Open Payments”                          |
-| `ciba`                         | `urn:openid:params:grant-type:ciba`, `bc-authorize`, `backchannel_authentication_endpoint`, `binding_message`         |
-| `step-up-authorization`        | `insufficient_user_authentication`, `acr_values` with `max_age`, “RFC 9470”                                           |
-| `token-exchange`               | `urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token_type`, `actor_token`, “RFC 8693”                    |
-| `cross-app-access`             | `urn:ietf:params:oauth:token-type:id-jag`, “ID-JAG”, “Identity Assertion JWT Authorization Grant”, “Cross App Access” |
-| `identity-chaining`            | `draft-ietf-oauth-identity-chaining`, token exchange followed by `urn:ietf:params:oauth:grant-type:jwt-bearer`        |
-| `transaction-tokens`           | `Txn-Token`, `urn:ietf:params:oauth:token-type:txn_token`, `draft-ietf-oauth-transaction-tokens`                      |
-| `biscuit-delegation`           | `biscuit-auth`, “Biscuit” with “attenuation” or “Datalog”, `third-party block`                                        |
-| `client-credentials`           | `grant_type=client_credentials`, `private_key_jwt`, `client_assertion_type`                                           |
-| `workload-identity-federation` | “workload identity federation”, `AssumeRoleWithWebIdentity`, “federated credential”, `id-token: write`                |
-| `spiffe-workload-identity`     | `spiffe://`, “X509-SVID”, “JWT-SVID”, “Workload API”, “SPIRE”                                                         |
-| `wimse-workload-tokens`        | `Workload-Identity-Token`, `Workload-Proof-Token`, “WIT-SVID”, `draft-ietf-wimse`                                     |
-| `agent-to-agent`               | `/.well-known/agent-card.json`, `securitySchemes` with “Agent Card”, `a2a-sdk`                                        |
-| `web-bot-auth`                 | `Signature-Agent`, `http-message-signatures-directory`, `tag="web-bot-auth"`                                          |
-| `agent-payments`               | “AP2” with “mandate”, “Intent Mandate”, “Cart Mandate”, `ap2-protocol.org`                                            |
-| `dpop`                         | `DPoP-Nonce`, `dpop_bound_access_tokens`, `dpop_signing_alg_values_supported`, `use_dpop_nonce`, “RFC 9449”           |
-| `oauth-mtls`                   | `x5t#S256`, `tls_client_certificate_bound_access_tokens`, `mtls_endpoint_aliases`, “RFC 8705”                         |
-| `tool-call-authorization`      | `/access/v1/evaluation`, “AuthZEN”, “Authorization API 1.0”, “COAZ”                                                   |
-| `access-revocation`            | `session-revoked`, `credential-change`, `/.well-known/ssf-configuration`, “Shared Signals”, “CAEP”                    |
-| `credential-broker`            | “credential injection” with “sandbox”, “egress proxy” with “secret”, “the agent never sees”                           |
+| Flow                           | Search for                                                                                                                                                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authorization-code-pkce`      | `code_challenge_method`, `S256`, `code_verifier`, “RFC 7636”, “PKCE” with “device code” or “deprecated”                                                                                                                          |
+| `device-authorization`         | `urn:ietf:params:oauth:grant-type:device_code`, `device_authorization_endpoint`, `verification_uri_complete`, “device code flow by default”                                                                                      |
+| `mcp-authorization`            | `oauth-protected-resource`, `resource_metadata`, “Client ID Metadata Document”, “RFC 9728”                                                                                                                                       |
+| `url-elicitation`              | `elicitation/create` with `"mode": "url"`, `URLElicitationRequiredError`, `-32042`, `inputRequired.elicitUrl`, “form and URL elicitation”                                                                                        |
+| `aauth`                        | `Signature-Key`, `AAuth` with “HTTP Message Signatures”, “person server”, `aauth.dev`, `aauth-person.json`, `person_token_endpoint`                                                                                              |
+| `gnap`                         | “RFC 9635”, `grant request` with `interact`, `continue` with `access_token`, “Open Payments”, “RFC 9767”                                                                                                                         |
+| `ciba`                         | `urn:openid:params:grant-type:ciba`, `bc-authorize`, `backchannel_authentication_endpoint`, `binding_message`, “Asynchronous Authorization”, `withAsyncAuthorization`                                                            |
+| `step-up-authorization`        | `insufficient_user_authentication`, `acr_values` with `max_age`, “RFC 9470”, `unmet_authentication_requirements`                                                                                                                 |
+| `token-exchange`               | `urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token_type`, `actor_token`, “RFC 8693”, `act` with “nested” or “prior actor”                                                                                         |
+| `cross-app-access`             | `urn:ietf:params:oauth:token-type:id-jag`, “ID-JAG”, “Identity Assertion JWT Authorization Grant”, “Cross App Access”, `IdentityAssertionOAuthProvider`, `CrossAppAccessProvider`, “Enterprise-Managed Authorization” with “MCP” |
+| `identity-chaining`            | `draft-ietf-oauth-identity-chaining`, token exchange followed by `urn:ietf:params:oauth:grant-type:jwt-bearer`                                                                                                                   |
+| `transaction-tokens`           | `Txn-Token`, `urn:ietf:params:oauth:token-type:txn_token`, `draft-ietf-oauth-transaction-tokens`, `requested_token_type` with `txn_token`                                                                                        |
+| `biscuit-delegation`           | `biscuit-auth`, “Biscuit” with “attenuation” or “Datalog”, `third-party block`, `biscuit-web-keys`                                                                                                                               |
+| `client-credentials`           | `grant_type=client_credentials`, `private_key_jwt`, `client_assertion_type`, “app-only” and “daemon” for the API side                                                                                                            |
+| `workload-identity-federation` | “workload identity federation”, `AssumeRoleWithWebIdentity`, “federated credential”, `id-token: write`, `GetWebIdentityToken`, “trusted publishing”, `AWS_WEB_IDENTITY_TOKEN_FILE`                                               |
+| `spiffe-workload-identity`     | `spiffe://`, “X509-SVID”, “JWT-SVID”, “Workload API”, “SPIRE”                                                                                                                                                                    |
+| `wimse-workload-tokens`        | `Workload-Identity-Token`, `Workload-Proof-Token`, “WIT-SVID”, `draft-ietf-wimse`, `wit+jwt`, `wpt+jwt`, `FetchWITSVID`, “Workload-Presentation-Token” (an earlier name)                                                         |
+| `agent-to-agent`               | `/.well-known/agent-card.json`, `securitySchemes` with “Agent Card”, `a2a-sdk`                                                                                                                                                   |
+| `web-bot-auth`                 | `Signature-Agent`, `http-message-signatures-directory`, `tag="web-bot-auth"`, `browserSigning`                                                                                                                                   |
+| `agent-payments`               | “AP2” with “mandate”, “Intent Mandate”, “Cart Mandate”, `ap2-protocol.org`, `mandate.checkout.open.1`, `mandate.payment.open.1`                                                                                                  |
+| `dpop`                         | `DPoP-Nonce`, `dpop_bound_access_tokens`, `dpop_signing_alg_values_supported`, `use_dpop_nonce`, “RFC 9449”, `proof_of_possession_dpop`, “DPoP-bound refresh tokens”                                                             |
+| `oauth-mtls`                   | `x5t#S256`, `tls_client_certificate_bound_access_tokens`, `mtls_endpoint_aliases`, “RFC 8705”, `x509CertificateBoundAccessTokens`, `MTLS_POP`, “certificate bound thumbprint”                                                    |
+| `tool-call-authorization`      | `/access/v1/evaluation`, “AuthZEN”, “Authorization API 1.0”, “COAZ”, `/.well-known/authzen-configuration`, `access_evaluation_endpoint`                                                                                          |
+| `access-revocation`            | `session-revoked`, `credential-change`, `/.well-known/ssf-configuration`, “Shared Signals”, “CAEP”, “SSF receiver” with “resource server”                                                                                        |
+| `credential-broker`            | “credential injection” with “sandbox”, “egress proxy” with “secret”, “the agent never sees”, `injectHosts`, `Proxy-Tokenizer`, `HTTPS_PROXY` with “credential”                                                                   |
 
 Add a term to this table when a run finds one that works. Where the wire name has changed between revisions of a draft, search for both and record which revision the product names.
+
+From this environment, `github.com` pages may refuse a fetch where `raw.githubusercontent.com` answers. The check reads a repository file at its raw address for the same reason.
 
 Restricting a search to the documentation hosts in [Domains a run needs](source-review.md#domains-a-run-needs) finds products the site already reads. Searching `github.com` for the string in code finds libraries.
 
@@ -124,11 +126,15 @@ Restricting a search to the documentation hosts in [Domains a run needs](source-
 
 Stop on a flow when 3.1 to 3.5 have been worked through for each party with a gap. A run is not asked to find everything. It is asked to leave each party with up to three well-sourced entries of different kinds where they exist, such as a hosted service, a self-hosted server and a library, and each flow with up to three deployment reports from different operators. Past that, add an entry only when it tells a reader something the others do not: another language, another role, a later revision.
 
+A sound candidate left out only because the party already has enough entries is `"state": "pending"`, with a full record and the reason in `rationale`. It is not written into the records, and the log lists it as a lead for the next run. `excluded` is for a candidate whose source does not establish the claim.
+
 Record what was looked for and not found. “Nothing found for the resource server after 3.1 to 3.5” is worth more to the next run than silence.
 
 ## 4. What a source establishes
 
 Open the source and read it. A search result’s summary, a model’s memory and another site’s description of the page are not the source. If the source cannot be reached, the candidate waits.
+
+Where a page builds its text with a script and its publisher serves the same page as Markdown, at a `.md` address or by content type, cite that copy. It is the publisher’s own page.
 
 **An implementation entry needs** the product’s own documentation, release note or repository saying that this product does this mechanism in this role. Record:
 
@@ -210,6 +216,8 @@ One JSON file per flow. It is not committed. Its entries have the shape of the r
 - **`id`** starts with the prefix the flow’s existing entries use and is not reused. A published `id` is part of a link and does not change.
 - **`quote`** is a passage copied from the source, exactly, of one sentence or so and no more than 300 characters, that carries the claim. **`section`** is the heading it is under. Every source of a new entry has both. They are how the next reader finds the place, and how the check below asks whether the page still says it.
 - **`qualification`** is optional: one short sentence for a condition a reader of the compact card must not miss, and that the summary does not already state.
+- **An excluded candidate** goes in `implementations` or `deployments` with the others, by its kind, and needs only an `id`, its `kind`, the product or operator, one source’s `url` and title, and `review` with `"state": "excluded"` and the reason in `rationale`.
+- **`secondReading`** is added by the second reader: one line per entry, saying it was accepted as written, what was changed and why, or why it was excluded.
 - **`corrections`** lists anything the run found wrong or out of date in an entry already in the records, with the entry’s `id`, what the source says now and the source. The run does not edit the records.
 
 ## 6. Check the worksheet
@@ -222,6 +230,7 @@ Without the network, it refuses a worksheet whose entries the build would refuse
 
 - **Found** means the page contains the passage today. It does not mean the passage supports the claim. That is the reader’s judgment, and the second reader’s.
 - **Not found** means read the page again. The passage may have been paraphrased or shortened, or the page may build its text with a script, which the check cannot run. Correct the quote from the page, or say in `review.rationale` how the page was read.
+- The check asks for Markdown where a site offers it, and some do. A link’s text is kept and its address dropped in either form, so a quote copied from the HTML page still matches. Other markup does not always survive: a quote that runs across bold text, inline code or a list break may need shortening.
 - **Not reached** is not a pass. The candidate waits, or the rationale says how the source was read.
 
 With no file it checks every quote in the records the same way:
