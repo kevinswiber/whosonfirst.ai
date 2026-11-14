@@ -11,18 +11,29 @@ import {
 import { flows, flow, maturityLabel } from "../../data/flows";
 import { HUMAN_LABEL } from "../../data/types";
 
-// fail the build if a rule points at a flow or answer that does not exist
+// Keep the chooser in sync with the catalog and the answers it offers.
+const covered = new Set<string>();
 for (const r of rules) {
   flow(r.flow);
+  covered.add(r.flow);
+  if (!Object.keys(r.when).length)
+    throw new Error(`guide: "${r.flow}" has a rule with no conditions`);
   for (const [q, values] of Object.entries(r.when)) {
     const question = questions.find((x) => x.id === q);
     if (!question) throw new Error(`guide: unknown question "${q}"`);
+    if (!values.length)
+      throw new Error(`guide: "${r.flow}" has no answers for "${q}"`);
     for (const v of values) {
       if (!question.options.some((o) => o.value === v))
         throw new Error(`guide: unknown answer "${q}=${v}"`);
     }
   }
 }
+const missing = flows.filter((f) => !covered.has(f.slug));
+if (missing.length)
+  throw new Error(
+    `guide: no rules for ${missing.map((f) => f.slug).join(", ")}`,
+  );
 
 const data = {
   rules,
@@ -56,6 +67,7 @@ const data = {
         Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
         answers, so you can share the result. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
+        You can also <a href="/flows/">browse all {flows.length} flows</a>.
       </p>
     </div>
   </div>
@@ -206,7 +218,7 @@ const data = {
 
         let html = '';
         const total = best.size;
-        html += `<p class="dg-status">${answered} of ${names.length} answered · ${total} ${total === 1 ? 'flow fits' : 'flows fit'}</p>`;
+        html += `<p class="dg-status">${answered} of ${names.length} answered · ${total} possible ${total === 1 ? 'match' : 'matches'}</p>`;
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -243,6 +255,11 @@ const data = {
 
       // restore from URL
       const params = new URLSearchParams(location.search);
+      // Older shared links used "internal" as a target without naming an interface.
+      if (params.get('target') === 'internal') {
+        params.delete('target');
+        if (!params.has('boundary')) params.set('boundary', 'same');
+      }
       for (const n of names) {
         const v = params.get(n);
         if (!v) continue;

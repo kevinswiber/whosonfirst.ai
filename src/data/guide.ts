@@ -60,32 +60,32 @@ export const questions: Question[] = [
   {
     id: "target",
     title: "What is the agent calling?",
+    help: "Choose the interface for this call. An API, MCP server or agent can be yours or someone else’s.",
     options: [
-      { value: "mcp", label: "An MCP server" },
-      { value: "api", label: "An HTTP API" },
-      { value: "agent", label: "Another agent" },
-      { value: "web", label: "A public website" },
-      { value: "internal", label: "Services inside my own infrastructure" },
+      { value: "api", label: "An HTTP API", hint: "For example, a REST API" },
+      { value: "mcp", label: "An MCP server", hint: "Calling tools over MCP" },
+      { value: "agent", label: "Another agent", hint: "Handing off a task" },
+      { value: "web", label: "A public website", hint: "Browsing web pages" },
     ],
   },
   {
     id: "boundary",
-    title: "Who runs the thing being called?",
+    title: "Who runs the service, and whose identity system does it trust?",
     options: [
       {
         value: "same",
-        label: "We do",
-        hint: "Same organization, same identity system",
+        label: "We run it and share an identity system",
+        hint: "Both sides use our organization’s identity system",
       },
       {
         value: "enterprise",
-        label: "A vendor we use at work",
-        hint: "Both sides use the sign-in system our company runs",
+        label: "A vendor that trusts our company sign-in",
+        hint: "Both sides trust our company’s identity provider",
       },
       {
         value: "cross",
-        label: "Someone else entirely",
-        hint: "No sign-in system in common",
+        label: "It uses a separate identity system",
+        hint: "For example, a third-party API with its own accounts",
       },
     ],
   },
@@ -166,10 +166,21 @@ export const rules: Rule[] = [
     when: {
       principal: ["user"],
       human: ["present"],
-      target: ["api", "agent", "web", "internal"],
+      target: ["api", "agent", "web"],
       runtime: ["local", "k8s", "managed"],
     },
     why: "A person is present and a browser is available. This is the baseline everything else is measured against.",
+  },
+  {
+    flow: "gnap",
+    role: "consider",
+    when: {
+      principal: ["user"],
+      human: ["present"],
+      target: ["api"],
+      runtime: ["local", "k8s", "managed"],
+    },
+    why: "If the API and its authorization server support GNAP, the agent can sign a grant request, send the user to approve it in a browser, then resume the request to get a token.",
   },
   {
     flow: "device-authorization",
@@ -288,16 +299,26 @@ export const rules: Rule[] = [
     when: {
       principal: ["user"],
       boundary: ["same"],
-      target: ["mcp", "api", "agent", "internal"],
+      target: ["mcp", "api", "agent"],
     },
     why: "Any tool or sub-agent that calls another service for the same user should exchange the token it received for a new one, never forward it.",
   },
   {
     flow: "transaction-tokens",
-    role: "start",
+    role: "add",
     weight: 8,
-    when: { principal: ["user"], target: ["internal"] },
-    why: "Inside your own infrastructure, carry the user and the approved request through every hop in a short-lived token that downstream services cannot alter.",
+    when: {
+      principal: ["user"],
+      target: ["api", "mcp", "agent"],
+      boundary: ["same"],
+    },
+    why: "If the call fans out across services in one trust domain, carry the user and the fixed details of the request in a short-lived token. Use workload identity to authenticate each hop.",
+  },
+  {
+    flow: "biscuit-delegation",
+    role: "consider",
+    when: { target: ["api", "mcp", "agent"] },
+    why: "If the agent hands work to a tool or worker and the receiving service supports Biscuit, give the worker a restricted copy of the token without asking the issuer for a new one.",
   },
   {
     flow: "identity-chaining",
@@ -308,7 +329,7 @@ export const rules: Rule[] = [
       target: ["api", "agent", "mcp"],
       human: ["reachable", "absent"],
     },
-    why: "If the other organization’s authorization server trusts yours, obtain a grant at home and redeem it there. Each side keeps control of its own tokens.",
+    why: "If the receiving service’s authorization server trusts yours, obtain a grant from yours and redeem it there. Each side keeps control of its own tokens.",
   },
 
   // ── the agent's own authority ──
@@ -321,7 +342,7 @@ export const rules: Rule[] = [
     when: {
       principal: ["self"],
       runtime: ["k8s", "managed", "headless"],
-      target: ["mcp", "api", "agent", "web", "internal"],
+      target: ["mcp", "api", "agent", "web"],
     },
     why: "The platform can vouch for the agent. Use the identity it establishes to get short-lived access, with no long-lived secret to provision.",
   },
@@ -345,7 +366,7 @@ export const rules: Rule[] = [
     weight: 6,
     when: {
       principal: ["self"],
-      target: ["mcp", "api", "agent", "internal"],
+      target: ["mcp", "api", "agent"],
       runtime: ["local"],
     },
     why: "Only where this installation was given a credential of its own, one that no other copy holds. Keep it in the operating system’s credential store, and prefer a key to a secret. A secret built into the app is the same in every copy, so it proves nothing about this one.",
@@ -361,15 +382,22 @@ export const rules: Rule[] = [
     flow: "spiffe-workload-identity",
     role: "start",
     weight: 9,
-    when: { runtime: ["k8s"], target: ["internal"] },
+    when: {
+      runtime: ["k8s"],
+      target: ["api", "mcp", "agent"],
+      boundary: ["same"],
+    },
     why: "Between workloads you operate, give each a cryptographic identity and authenticate both ends of every connection.",
   },
   {
     flow: "wimse-workload-tokens",
     role: "consider",
     weight: 4,
-    when: { runtime: ["k8s", "managed"], target: ["internal", "agent"] },
-    why: "If gateways terminate TLS between your workloads, a key-bound workload token with per-request proof survives the hop. The specifications are still working-group drafts.",
+    when: {
+      runtime: ["k8s", "managed"],
+      target: ["api", "mcp", "agent"],
+    },
+    why: "If both workloads can use the same workload identity scheme and gateways terminate TLS between them, a key-bound token with per-request proof survives the hop. The specifications are still working-group drafts.",
   },
 
   // ── agents and the web ──
@@ -402,11 +430,20 @@ export const rules: Rule[] = [
     weight: 5,
     when: {
       principal: ["user"],
-      target: ["api", "mcp", "internal"],
+      target: ["api", "mcp", "agent"],
       boundary: ["same"],
       risk: ["write", "irreversible"],
     },
     why: "The service you run can ask a policy service about the specific action, record and arguments before it changes anything.",
+  },
+  {
+    flow: "access-revocation",
+    role: "add",
+    when: {
+      principal: ["user"],
+      target: ["api", "mcp", "agent"],
+    },
+    why: "If ending a user’s session needs to cut off access before the token expires, the authorization server can report the change and the receiving service can enforce it. Both have to agree on which session the event identifies.",
   },
   {
     flow: "credential-broker",
@@ -439,6 +476,12 @@ export const rules: Rule[] = [
     weight: 2,
     when: { target: ["api", "mcp", "agent"], risk: ["read"] },
     why: "Sender-constrained tokens are cheap insurance wherever both ends support them.",
+  },
+  {
+    flow: "oauth-mtls",
+    role: "consider",
+    when: { target: ["api", "mcp", "agent"] },
+    why: "If the authorization server and receiving service support certificate-bound OAuth tokens, present the same client certificate at both. The receiving service checks that it matches the token’s binding.",
   },
 ];
 
