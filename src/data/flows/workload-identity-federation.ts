@@ -104,7 +104,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "back",
       label: "Present identity credential",
       title: "The workload presents it to the receiving token service",
-      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The note on request formats, below, sets out the differences.
+      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The note on request formats, below, says what they share.
 
 *Usually handled by an SDK or credential library, once it is told where to find the identity credential and what to ask for.*`,
     },
@@ -232,21 +232,9 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
   notes: [
     {
       title: "One exchange, several request formats",
-      body: `No single specification defines this pattern. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The exchange itself is where they differ.
+      body: `No single specification defines this exchange. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The request itself differs by receiver, as step 2 shows, and so do audience values, credential lifetimes and the claims a rule can match on. Each provider’s entry under [Standards in play](#standards) gives its details. Do not carry one provider’s settings over to another.
 
-**Google Cloud** follows OAuth token exchange (RFC 8693). The workload posts its credential to the Security Token Service as the subject token and receives a federated access token. The service also accepts proofs that are not JWTs, including a signed AWS request and an X.509 client certificate presented over mutual TLS.
-
-**Microsoft Entra** uses the client credentials grant. The outside token goes in \`client_assertion\`, with \`client_assertion_type\` set to the JWT bearer type from RFC 7523, in place of an assertion the application would otherwise sign with its own certificate. Its issuer, subject and audience must match the federated identity credential exactly. A [flexible federated identity credential](https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials), which Microsoft marks as a preview, replaces the fixed subject with an expression over the token’s claims that can use wildcards. It is supported for tokens issued by GitHub, GitLab and Terraform Cloud.
-
-**AWS, inbound.** \`AssumeRoleWithWebIdentity\` takes the token and the role to assume. The call is not signed with AWS credentials. It returns temporary security credentials for signing requests, not an OAuth access token.
-
-**AWS, outbound.** A workload that already has AWS credentials can call \`GetWebIdentityToken\` for a short-lived JWT to present to a service outside AWS. The feature has to be enabled for the account first, and the caller needs permission for the operation. The caller names the audience and the signing algorithm. The token lasts from one minute to an hour, five minutes by default. The issuer URL is specific to the account, and the operation is not available on the STS global endpoint. AWS describes the token as proof of identity, to be exchanged at the outside service for that service’s own credentials.
-
-Audience values, credential lifetimes, the claims a rule can match on and the way keys are discovered are each provider’s own. Do not carry one provider’s settings over to another.
-
-**A proposed common request.** The [Workload Authorization Grant](/standards/#wag) proposes one request for a receiver that is an OAuth authorization server, such as a third-party service’s. The credential goes in \`assertion\` on a JWT bearer grant (RFC 7523), and the draft recommends naming the API in \`resource\`. The credential’s audience is the authorization server’s issuer identifier. No client authentication is required, and no refresh token is issued. It is an individual draft, not adopted by a working group, and any part of it may change.
-
-Its trust rule names the platform, not the workload. The authorization server is set up once to trust the platform’s issuer, and then accepts agents it has not seen before, so the platform decides which agents exist. Where one issuer signs for several customers, the rule also names a claim and the value that sets this customer apart, and an assertion without that value does not match. What each agent may do comes from the server’s own policy, which can read claims the platform includes, such as a team or a role. A claim means what that platform means by it: the draft says not to read a claim of the same name from another platform as the same thing. The server keeps each agent’s records under the trust rule it matched and its subject together, never under the subject alone, and a display name the platform sends must never decide access. Whether to require proof of possession is still open in the draft.`,
+**A proposed common request.** The [Workload Authorization Grant](/standards/#wag), an individual draft, proposes one request for a receiver that is an OAuth authorization server: the identity credential as a JWT bearer grant (RFC 7523), addressed to the server’s issuer identifier. Its trust rule names the platform, not the workload. The server is set up once to trust a platform’s issuer, accepts agents it has not seen before, and decides what each may do by its own policy, which can read claims the platform includes. Where one issuer signs for several customers, the rule also names a claim that sets this customer apart. So the platform, not the receiver, decides which agents exist: the opposite of matching the exact workload.`,
     },
     {
       title: "Stopping access",
@@ -331,7 +319,7 @@ Short lifetimes on both credentials keep the gaps small. Deleting a pod, a servi
         ],
       },
     ],
-    after: `These are recognizable examples, not a catalog. Not every service offers every path. Audience values, lifetimes and the claims a rule can match on differ by provider, so check the documentation for the combination you need. Managed agent platforms apply the same model to the agents they host: see [agent platforms](/deployments/agent-platforms/) and the other [deployment guides](/deployments/).`,
+    after: `These are recognizable examples, not a catalog. Not every service offers every path. Managed agent platforms apply the same model to the agents they host: see [agent platforms](/deployments/agent-platforms/) and the other [deployment guides](/deployments/).`,
   },
   example: {
     title: "Worked example: a Kubernetes pod",
