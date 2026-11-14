@@ -3,7 +3,7 @@
 // built but is not marked as such everywhere.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { built, LESSONS, main, some } from "../support/site.mjs";
+import { built, LESSONS, main, pageAt, some } from "../support/site.mjs";
 
 // A line break in a template between a word and an inline element loses its
 // space, and the two run together on the page ("calls thisclient credentials").
@@ -96,5 +96,22 @@ test("a figure choice that must not be built is marked on its button, in its pan
           `${p.path}: ${p.panels} panels, ${p.buttons} buttons, ${p.rows} rows`,
       ),
     [],
+  );
+});
+
+// The menu under the header lists a page's second-level headings. On the style
+// guide those are its sections, and a sample of a component shown inside one
+// takes a lower level, so the menu does not list it as a section of its own.
+test("the style guide's second-level headings are its sections and nothing else", () => {
+  const html = main(pageAt("/styleguide/"));
+  const sections = html.match(/<section class="section"/g) ?? [];
+  const headings = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) =>
+    words(m[1]),
+  );
+  assert.ok(sections.length > 1, "the style guide has no sections");
+  assert.equal(
+    headings.length,
+    sections.length,
+    `${sections.length} sections, but these headings: ${headings.join(", ")}`,
   );
 });
