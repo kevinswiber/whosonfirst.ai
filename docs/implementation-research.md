@@ -2,7 +2,7 @@
 
 How an implementation or a deployment report is found, checked and added to the [Implementations](https://whosonfirst.ai/implementations/) records. A person can work through it by hand. A coding agent given one flow reads this document, follows it and hands back a worksheet.
 
-[Source review](source-review.md) keeps what is already on the site true. This document is for adding to it. The records are in `src/data/implementations/records.ts`, and [Implementation evidence](development.md#implementation-evidence) says how they are shown. The log of what each run read, accepted and left out is [the evidence review](adoption/evidence-review.md).
+[Source review](source-review.md) keeps what is already on the site true. This document is for adding to it. The records are in `src/data/implementations/records.ts`, and [Implementation evidence](development.md#implementation-evidence) says how they are shown. The log of what each run read, accepted and left out is [the evidence review](adoption/evidence-review.md) and the dated `research-` files beside it.
 
 The records are reviewed examples. They are not a census, a ranking or a measure of use, and no run tries to make them one.
 
@@ -268,7 +268,7 @@ An entry that fails one is corrected from the source or excluded. The second rea
    This also adds each new source’s host to [Domains a run needs](source-review.md#domains-a-run-needs), sets the profile’s `reviewedOn` to the day of the run and adds an `evidence-added` event for that day naming the new entries. Earlier events and existing entries’ `checkedOn` stay as they are. It writes nothing from a worksheet the check refuses. With `--emit` in place of `--apply` it prints the entries and changes nothing, for pasting by hand.
 2. Add a `release` or `report-published` event only where a new entry’s source carries that date as `publishedOn`.
 3. Bring the profile’s `searchNote` up to date in a sentence or two: what kinds of source were read, and what was looked for and not found.
-4. Add a dated section to [the evidence review](adoption/evidence-review.md). `npm run implementations:check -- --log path/to/*.json` prints one from the worksheets, to be read and edited before it goes in: for each flow, what was accepted, what was excluded and why, and the `looked` and `notFound` lists. Correct the counts at the top of that document.
+4. Write the run’s log to `docs/adoption/research-<date>.md`, and link it and correct the counts at the top of [the evidence review](adoption/evidence-review.md). `npm run implementations:check -- --log path/to/*.json` prints the body from the worksheets, to be read and edited before it goes in. Begin it with what the run started from and what it left, as [the first run’s log](adoption/research-2026-11-14.md) does. For each flow it gives what was accepted, what was held back or excluded and why, and the `looked`, `notFound` and `secondReading` lists.
 5. Record the new sources. Applying a worksheet has already listed their hosts; `npm run implementations:check -- --hosts` does that alone, for an entry added by hand.
 
    ```bash
