@@ -3,7 +3,7 @@
 // built but is not marked as such everywhere.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { built, LESSONS, main, pageAt, some } from "../support/site.mjs";
+import { built, FLOWS, LESSONS, main, pageAt, some } from "../support/site.mjs";
 
 // A line break in a template between a word and an inline element loses its
 // space, and the two run together on the page ("calls thisclient credentials").
@@ -114,4 +114,54 @@ test("the style guide's second-level headings are its sections and nothing else"
     sections.length,
     `${sections.length} sections, but these headings: ${headings.join(", ")}`,
   );
+});
+
+// A flow's implementation record is read by people who know the general
+// vocabulary, from a flow page that already explains its own references. So it
+// marks only what names a specification, never one its flow lists, and each
+// specification once. The directory and the flow cards mark nothing: they are
+// summaries that link to the record, and a card is itself a link.
+test("implementation records mark only specifications from outside their flow, once each", () => {
+  const wrong = [];
+  let marks = 0;
+  for (const p of built.filter((p) =>
+    /^\/implementations\/[^/]+\/$/.test(p.path),
+  )) {
+    const slug = p.path.split("/")[2];
+    const guide = pageAt(`/flows/${slug}/`);
+    assert.ok(guide, `${p.path} has no flow page`);
+    const listed = new Set(
+      [
+        ...guide.html.matchAll(
+          /<a class="card std" href="\/standards\/#([^"]+)"/g,
+        ),
+      ].map((m) => m[1]),
+    );
+    const seen = new Set();
+    for (const m of main(p).matchAll(
+      /<a class="(term|spec)"([^>]*)>([^<]*)<\/a>/g,
+    )) {
+      marks++;
+      const [, kind, rest, text] = m;
+      const id =
+        kind === "spec"
+          ? rest.match(/href="\/standards\/#([^"]+)"/)?.[1]
+          : rest.match(/data-standard="\/standards\/#([^"]+)"/)?.[1];
+      if (!id)
+        wrong.push(`${p.path} marks “${text}”, which names no specification`);
+      else if (listed.has(id))
+        wrong.push(`${p.path} marks “${text}”, which its flow lists`);
+      else if (seen.has(id)) wrong.push(`${p.path} marks ${id} twice`);
+      seen.add(id);
+    }
+  }
+  assert.ok(marks > 0, "no implementation record marks anything");
+  assert.deepEqual(some(wrong), []);
+  const summaries = [pageAt("/implementations/"), ...FLOWS.map(pageAt)].flatMap(
+    (p) =>
+      [...main(p).matchAll(/<ul class="evidence-examples[\s\S]*?<\/ul>/g)]
+        .filter((m) => /class="(term|spec)"/.test(m[0]))
+        .map(() => p.path),
+  );
+  assert.deepEqual(some(summaries), []);
 });

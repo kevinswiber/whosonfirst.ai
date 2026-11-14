@@ -165,10 +165,38 @@ export interface Gloss {
   seen: Set<string>;
   /** The page being rendered: a term is not marked on the page that explains it. */
   path?: string;
+  /** Mark only what names a specification: documents, and terms with a `standard`. */
+  standardsOnly?: boolean;
 }
 
 export function gloss(path?: string): Gloss {
   return { seen: new Set(), path };
+}
+
+/**
+ * A flow's implementation record, read as one. Its entries share a vocabulary,
+ * and marking it in each of them would mark the same words down the page, so a
+ * term or a document is marked once on it. Its readers know the general
+ * vocabulary: only what names a specification is marked. Nor is what the flow's
+ * page already explains: the glossary terms it is home to, and the
+ * specifications it lists. What is left is a specification from outside the flow.
+ */
+export function evidenceGloss(flowPath: string, listed: string[]): Gloss {
+  const seen = new Set<string>(listed.map((id) => `/standards/#${id}`));
+  for (const e of definitions.values())
+    if (e.home?.split("#")[0] === flowPath) {
+      seen.add(href(e));
+      if (e.spec) seen.add(`/standards/#${e.spec}`);
+    }
+  return { seen, path: flowPath, standardsOnly: true };
+}
+
+/** Plain text, escaped, with the first use of each term and document in it marked. */
+export function marked(text: string, g: Gloss): string {
+  return mark(
+    text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+    g,
+  );
 }
 
 const attr = (s: string) =>
@@ -237,7 +265,11 @@ export function mark(text: string, g: Gloss): string {
     const e = entries.get(name.toLowerCase());
     if (!e) return whole;
     if (e.written && name !== e.written) return whole;
+    if (g.standardsOnly && e.kind === "term" && !e.spec) return whole;
     if (g.seen.has(href(e))) return whole;
+    // where only specifications are marked, a term marks its document, so not once more
+    if (g.standardsOnly && e.spec && g.seen.has(`/standards/#${e.spec}`))
+      return whole;
     if (e.home && g.path && e.home.split("#")[0] === g.path) return whole;
     g.seen.add(href(e));
     // a term's preview already says which document defines it

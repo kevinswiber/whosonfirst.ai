@@ -6,6 +6,8 @@ import {
   EVENT_LABEL,
   evidenceDate,
 } from "../data/implementations";
+import { flow } from "../data/flows";
+import { evidenceGloss, marked } from "../lib/gloss";
 
 interface Props {
   profile: ImplementationProfile;
@@ -37,6 +39,9 @@ const categories = [
       ]
     : []),
 ];
+// The record is one reading: a specification is marked the first time it appears on it.
+const guide = flow(profile.slug);
+const g = evidenceGloss(`/flows/${guide.slug}/`, guide.standards);
 const events = [...profile.events].sort((a, b) => b.date.localeCompare(a.date));
 const evidenceNames = new Map(
   categories.flatMap(({ entries }) =>
@@ -58,8 +63,8 @@ const evidenceNames = new Map(
 <div class="implementation-record">
   <section class="prose evidence-scope" aria-labelledby="field-scope">
     <h2 id="field-scope">Scope</h2>
-    <p>{profile.scope}</p>
-    <p>{profile.searchNote}</p>
+    <p set:html={marked(profile.scope, g)} />
+    <p set:html={marked(profile.searchNote, g)} />
     <p><a href="/about/#how-implementation-evidence-is-reviewed">How evidence is reviewed</a></p>
   </section>
 
@@ -98,11 +103,11 @@ const evidenceNames = new Map(
                     </p>
                   </>
                 )}
-                <p class="evidence-entry-summary">{entry.summary}</p>
+                <p class="evidence-entry-summary" set:html={marked(entry.summary, g)} />
                 {entry.kind === 'implementation' && (
-                  <p class="evidence-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
+                  <p class="evidence-limits"><strong>{entry.release.label}.</strong> <Fragment set:html={marked(entry.release.detail, g)} /></p>
                 )}
-                <p class="evidence-limits"><strong>Limits.</strong> {entry.limits}</p>
+                <p class="evidence-limits"><strong>Limits.</strong> <Fragment set:html={marked(entry.limits, g)} /></p>
               </div>
               <div class="evidence-sources">
                 <p class="doc-key">{citedSources(entry.sources).length === 1 ? 'Source' : 'Sources'}</p>
