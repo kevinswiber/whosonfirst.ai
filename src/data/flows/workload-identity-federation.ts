@@ -457,7 +457,7 @@ may:
     {
       id: "implementations",
       title: "Real implementations",
-      intro: `Three paths the providers document, for agents and services you operate. They are documented implementation paths, read in November 2026. They are not evidence of how widely any of them is used in production, and none was tested here.`,
+      intro: `Two paths the providers document, for agents and services you operate. They are documented implementation paths, read in November 2026. They are not evidence of how widely any of them is used in production, and none was tested here.`,
       parts: [
         {
           title: "An agent acting as itself against a custom service",
@@ -496,31 +496,8 @@ The second covers authorization. The designer of a custom API defines applicatio
             },
           ],
         },
-        {
-          title: "An agent carrying a user’s authorization downstream",
-          tags: [
-            { text: "AWS AgentCore" },
-            { text: "Related: user delegation" },
-          ],
-          body: `This is a related case, here for contrast. The agent is not proving only its own workload identity. A signed-in user’s authorization travels with each request, and the downstream system applies that user’s access. AWS published it in August 2026 as a reference implementation on Amazon Bedrock AgentCore. Its three data sources are protected in three different ways.
-
-**DynamoDB.** The agent passes the user’s Cognito ID token to \`AssumeRoleWithWebIdentity\`. Session tags taken from the signed token, and an IAM policy that keys on them, limit the temporary credentials to the user’s department. IAM refuses a request outside it.
-
-**Salesforce.** AgentCore Identity performs an on-behalf-of token exchange (RFC 8693) and obtains a user-scoped token. Salesforce’s own sharing rules decide what that user sees.
-
-**Knowledge Bases.** The agent adds a metadata filter to its query. AWS calls this application-layer enforcement: it holds only while the agent’s code applies the filter, unlike the DynamoDB restriction, which IAM enforces. For stricter isolation AWS suggests a knowledge base for each department, with IAM policies on each.
-
-Access delegated by a user is the subject of [token exchange](/flows/token-exchange/).`,
-          sources: [
-            {
-              label:
-                "Propagate user authorization context in AI agents with Amazon Bedrock AgentCore (AWS Security Blog)",
-              href: "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/",
-            },
-          ],
-        },
       ],
-      after: `All three keep the same jobs apart: an issuer the receiver trusts, an identity read from validated claims, and permissions the receiving system grants and enforces. For the products themselves, see [agent platforms](/deployments/agent-platforms/).`,
+      after: `AWS’s reference implementation on Amazon Bedrock AgentCore carries a signed-in user’s authority instead, and is described with [token exchange](/flows/token-exchange/). For the products themselves, see [agent platforms](/deployments/agent-platforms/).`,
     },
   ],
 };
