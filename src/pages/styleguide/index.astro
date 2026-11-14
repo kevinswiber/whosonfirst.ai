@@ -98,17 +98,6 @@ const sample = flow("client-credentials");
 const cards = ["mcp-authorization", "ciba", "spiffe-workload-identity"].map(
   flow,
 );
-
-const toc = [
-  ["color", "Color"],
-  ["contrast", "Contrast"],
-  ["type", "Type"],
-  ["shape", "Shape"],
-  ["components", "Components"],
-  ["diagrams", "Diagrams"],
-  ["lessons", "Lessons"],
-  ["voice", "Voice"],
-];
 ---
 
 <Base
@@ -124,9 +113,6 @@ const toc = [
         Every swatch, specimen and component below is the real thing, rendered from the same tokens the site uses.
         Use the theme button in the header to see it in light and dark.
       </p>
-      <nav class="sg-toc" aria-label="On this page">
-        {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
-      </nav>
     </div>
   </div>
 
@@ -704,20 +690,6 @@ grant_type=client_credentials
 <style>
   style-guide {
     display: block;
-  }
-  .sg-toc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.2rem;
-    margin-top: 1.4rem;
-    font-family: var(--font-label);
-    font-size: 0.76rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .sg-toc a {
-    color: var(--fg-muted);
-    text-decoration-color: var(--border-strong);
   }
   .section h2 {
     margin-top: 0;
