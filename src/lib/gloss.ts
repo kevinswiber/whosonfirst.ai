@@ -188,6 +188,25 @@ const data = (e: Target) =>
     ...(e.spec ? [`data-standard="/standards/#${attr(e.spec)}"`] : []),
   ].join(" ");
 
+/**
+ * The attributes that give a link written in a template, not in text, the
+ * preview of the glossary or tracker entry it points to: its class and the
+ * data the preview reads. Nothing for any other address.
+ */
+export function previewOf(address: string): Record<string, string> | undefined {
+  const tag = markExplicitLink(`<a href="${attr(address)}">`);
+  const found = [...tag.matchAll(/\s([\w-]+)="([^"]*)"/g)].filter(
+    ([, name]) => name !== "href",
+  );
+  if (!found.length) return undefined;
+  const unescape = (v: string) =>
+    v
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&amp;/g, "&");
+  return Object.fromEntries(found.map(([, name, v]) => [name, unescape(v)]));
+}
+
 /** Give an authored glossary or tracker link the same preview as an automatically marked one.
  * The caller supplies just the opening tag; its label and destination stay intact.
  * Explicit links express the author's intent, even for ambiguous or repeated terms.

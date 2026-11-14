@@ -309,3 +309,30 @@ describe("a document named in words", () => {
     assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 9421");
   });
 });
+
+// The specification a flow is based on is named by its number at the top of the
+// page. That number previews its tracker entry as it does in the text.
+describe("the specification a flow is based on", () => {
+  test("“Based on: RFC 8693” previews Token Exchange and leads to its entry", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/token-exchange/"));
+    const based = page.locator('.doc-line a.spec[href="/standards/#rfc8693"]');
+    assert.equal(await based.count(), 1);
+    await based.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await based.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(
+      await tip.locator(".term-tip-name").textContent(),
+      "Token Exchange",
+    );
+    await Promise.all([
+      page.waitForURL(site.url("/standards/#rfc8693")),
+      based.press("Enter"),
+    ]);
+  });
+});
