@@ -1,25 +1,20 @@
-// The decision guide's rules and the names it gives to situations, in
+// The decision guide's rules and the names it gives to cases, in
 // src/data/guide.ts and src/lib/guide-rules.ts: how one rule is chosen over
 // another, that every combination of answers has exactly one name, and that a
-// situation's page, read before the other questions are answered, leaves out
+// case's page, read before the other questions are answered, leaves out
 // nothing the guide would say once they are.
 //
 // Node strips the types from the files as it loads them; they import types only.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { glossary } from "../../src/data/glossary.ts";
+import { cases, cautions, questions, rules } from "../../src/data/guide.ts";
 import {
-  cautions,
-  questions,
-  rules,
-  situations,
-} from "../../src/data/guide.ts";
-import {
+  caseFor,
   compatible,
   matches,
   possibleStarts,
   recommend,
-  situationFor,
 } from "../../src/lib/guide-rules.ts";
 
 const answers = (id) =>
@@ -33,8 +28,8 @@ const combinations = (ids) =>
     [{}],
   );
 
-test("a situation is named from the first two questions, by one answer to each", () => {
-  for (const s of situations) {
+test("a case is named from the first two questions, by one answer to each", () => {
+  for (const s of cases) {
     for (const [q, values] of Object.entries(s.when)) {
       assert.ok(["principal", "human"].includes(q), `${s.slug} names "${q}"`);
       assert.equal(values.length, 1, `${s.slug}: answers to "${q}"`);
@@ -59,35 +54,28 @@ test("every combination of answers has the one name its first two answers give i
   for (const a of all) {
     const expected = NAMES[`${a.principal} ${a.human}`];
     assert.ok(expected, `${a.principal} ${a.human}`);
+    assert.equal(caseFor(cases, a)?.slug, expected, JSON.stringify(a));
     assert.equal(
-      situationFor(situations, a)?.slug,
-      expected,
-      JSON.stringify(a),
-    );
-    assert.equal(
-      situations.filter((s) => matches(s.when, a, true)).length,
+      cases.filter((s) => matches(s.when, a, true)).length,
       1,
       JSON.stringify(a),
     );
   }
   assert.deepEqual(
     [...new Set(Object.values(NAMES))].sort(),
-    situations.map((s) => s.slug).sort(),
+    cases.map((s) => s.slug).sort(),
   );
 });
 
 test("there is no name until the questions it comes from are answered", () => {
-  assert.equal(situationFor(situations, {}), undefined);
-  assert.equal(situationFor(situations, { principal: "user" }), undefined);
-  assert.equal(situationFor(situations, { human: "absent" }), undefined);
+  assert.equal(caseFor(cases, {}), undefined);
+  assert.equal(caseFor(cases, { principal: "user" }), undefined);
+  assert.equal(caseFor(cases, { human: "absent" }), undefined);
   assert.equal(
-    situationFor(situations, { target: "api", runtime: "k8s", risk: "read" }),
+    caseFor(cases, { target: "api", runtime: "k8s", risk: "read" }),
     undefined,
   );
-  assert.equal(
-    situationFor(situations, { principal: "self" })?.slug,
-    "own-authority",
-  );
+  assert.equal(caseFor(cases, { principal: "self" })?.slug, "own-authority");
 });
 
 // recommend, against rules made up for the purpose.
@@ -155,14 +143,14 @@ test("under a heading, flows are ordered by answers matched and then by weight",
   );
 });
 
-// A situation's page lists possibleStarts for the answers its name stands for.
+// A case's page lists possibleStarts for the answers its name stands for.
 const fixedFor = (s) =>
   Object.fromEntries(Object.entries(s.when).map(([q, v]) => [q, v[0]]));
 const holds = (when, a) =>
   Object.entries(when).every(([q, values]) => values.includes(a[q]));
 
-test("a situation’s page has every flow the guide starts with, however the other questions are answered, and each reason it gives", () => {
-  for (const s of situations) {
+test("a case’s page has every flow the guide starts with, however the other questions are answered, and each reason it gives", () => {
+  for (const s of cases) {
     const fixed = fixedFor(s);
     const listed = possibleStarts(rules, fixed);
     const rest = questions.map((q) => q.id).filter((q) => !(q in fixed));
@@ -185,8 +173,8 @@ test("a situation’s page has every flow the guide starts with, however the oth
   }
 });
 
-test("a situation’s page lists no rule that never applies, and none twice", () => {
-  for (const s of situations) {
+test("a case’s page lists no rule that never applies, and none twice", () => {
+  for (const s of cases) {
     const fixed = fixedFor(s);
     const listed = possibleStarts(rules, fixed);
     assert.equal(new Set(listed).size, listed.length);
@@ -205,10 +193,10 @@ test("a situation’s page lists no rule that never applies, and none twice", ()
   }
 });
 
-test("what a partly answered guide leaves out is on the situation’s page", () => {
+test("what a partly answered guide leaves out is on the case’s page", () => {
   const starts = (slug) =>
-    possibleStarts(rules, fixedFor(situations.find((s) => s.slug === slug)));
-  for (const s of situations) {
+    possibleStarts(rules, fixedFor(cases.find((s) => s.slug === slug)));
+  for (const s of cases) {
     assert.ok(
       starts(s.slug).some(
         (r) =>
@@ -233,10 +221,10 @@ test("what a partly answered guide leaves out is on the situation’s page", () 
   assert.deepEqual(away[0].when.human, ["absent"]);
 
   const warned = (slug) => {
-    const fixed = fixedFor(situations.find((s) => s.slug === slug));
+    const fixed = fixedFor(cases.find((s) => s.slug === slug));
     return cautions.filter((c) => compatible(c.when, fixed));
   };
-  for (const s of situations) {
+  for (const s of cases) {
     assert.ok(
       warned(s.slug).some((c) => c.when.runtime?.join() === "local"),
       `${s.slug}: no caution for a local agent`,
@@ -254,14 +242,14 @@ test("what a partly answered guide leaves out is on the situation’s page", () 
   );
 });
 
-test("no two situations share a name or an address, and none is a glossary term", () => {
+test("no two cases share a name or an address, and none is a glossary term", () => {
   const terms = new Set(
     glossary
       .flatMap((t) => [t.term, ...(t.aka ?? [])])
       .map((t) => t.toLowerCase()),
   );
   const seen = new Set();
-  for (const s of situations) {
+  for (const s of cases) {
     assert.match(s.slug, /^[a-z]+(-[a-z]+)*$/, s.slug);
     for (const key of [s.slug, s.name.toLowerCase()]) {
       assert.ok(!seen.has(key), `"${key}" is used twice`);

@@ -84,7 +84,7 @@ const facts = (page) =>
       ]),
     );
 
-test("the situation is named once the first two questions are answered, and not before", async (t) => {
+test("the case is named once the first two questions are answered, and not before", async (t) => {
   const ctx = await site.context();
   t.after(() => ctx.close());
   const page = await ctx.newPage();
@@ -184,23 +184,23 @@ test("on a phone, the results are one step from the questions and back, and an a
   );
 });
 
-test("a situation’s page says what each start and each caution applies to, without a script", async (t) => {
+test("a case’s page says what each start and each caution applies to, without a script", async (t) => {
   const ctx = await site.context({ javaScriptEnabled: false });
   t.after(() => ctx.close());
   const page = await ctx.newPage();
   await open(page, site.url("/guide/"));
-  const situations = await page
-    .locator('#situations a.card[href^="/guide/"]')
+  const cases = await page
+    .locator('#cases a.card[href^="/guide/"]')
     .evaluateAll((cards) => cards.map((a) => a.getAttribute("href")));
-  assert.equal(situations.length, 4);
+  assert.equal(cases.length, 4);
 
-  for (const path of situations) {
+  for (const path of cases) {
     await open(page, site.url(path));
     const entries = await page
-      .locator(".sit-flows > li, .sit-warn > li")
+      .locator(".case-flows > li, .case-warn > li")
       .evaluateAll((items) =>
         items.map((li) => ({
-          flow: li.querySelector(".sit-flow")?.getAttribute("href") ?? "",
+          flow: li.querySelector(".case-flow")?.getAttribute("href") ?? "",
           applies:
             li.querySelector(".ga")?.textContent.replace(/\s+/g, " ").trim() ??
             "",
@@ -220,7 +220,7 @@ test("a situation’s page says what each start and each caution applies to, wit
   await open(page, site.url("/guide/own-authority/"));
   const own = await page
     .locator(
-      '.sit-flows > li:has(.sit-flow[href="/flows/client-credentials/"]) .ga',
+      '.case-flows > li:has(.case-flow[href="/flows/client-credentials/"]) .ga',
     )
     .allTextContents();
   assert.equal(

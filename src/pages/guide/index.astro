@@ -6,7 +6,7 @@ import {
   rules,
   cautions,
   deployLinks,
-  situations,
+  cases,
   ROLE_TITLE,
 } from "../../data/guide";
 import { flows, flow, maturityLabel } from "../../data/flows";
@@ -35,14 +35,14 @@ if (missing.length)
     `guide: no rules for ${missing.map((f) => f.slug).join(", ")}`,
   );
 
-// A situation is named from questions the guide asks, by one answer to each.
+// A case is named from questions the guide asks, by one answer to each.
 const label = (q: string, v: string) =>
   questions.find((x) => x.id === q)?.options.find((o) => o.value === v)?.label;
-for (const s of situations) {
+for (const s of cases) {
   for (const [q, values] of Object.entries(s.when)) {
     if (values.length !== 1 || !label(q, values[0]))
       throw new Error(
-        `guide: situation "${s.slug}" needs one known answer to "${q}"`,
+        `guide: case "${s.slug}" needs one known answer to "${q}"`,
       );
   }
 }
@@ -51,7 +51,7 @@ const data = {
   rules,
   cautions,
   deployLinks,
-  situations: situations.map(({ slug, name, when, short }) => ({
+  cases: cases.map(({ slug, name, when, short }) => ({
     slug,
     name,
     when,
@@ -81,8 +81,8 @@ const data = {
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
         Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result. The first two answers also give the situation{' '}
-        <a href="#situations">one of four names</a>. If the questions use words you have not met, <a href="/learn/">the
+        answers, so you can share the result. The first two answers also put it in{' '}
+        <a href="#cases">one of four named cases</a>. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
         You can also <a href="/flows/">browse all {flows.length} flows</a>.
       </p>
@@ -136,7 +136,7 @@ const data = {
           <noscript>
             <p>
               The guide needs JavaScript to compute recommendations. Without it, the{' '}
-              <a href="#situations">four situations</a> below each say where to start, and the <a href="/flows/"
+              <a href="#cases">four cases</a> below each say where to start, and the <a href="/flows/"
                 >flows page</a
               > groups every option by whether a human is involved.
             </p>
@@ -148,10 +148,10 @@ const data = {
     </decision-guide>
   </div>
 
-  <section class="section" id="situations">
+  <section class="section" id="cases">
     <div class="wrap">
       <div class="section-head">
-        <h2>Four situations, by name</h2>
+        <h2>Four cases, by name</h2>
         <p>
           The first two answers say whose authority a piece of access uses, and whether that person is there. Each
           pair has a name and a page. The names are this site’s own, not terms from a specification. A name describes
@@ -161,7 +161,7 @@ const data = {
       </div>
       <div class="grid two">
         {
-          situations.map((s) => (
+          cases.map((s) => (
             <a class="card" href={`/guide/${s.slug}/`}>
               <h3>{s.name}</h3>
               <p>{s.short}</p>
@@ -175,12 +175,12 @@ const data = {
 
 <script>
   import type { Rule } from '../../data/guide';
-  import { type Answers, matches, recommend, situationFor } from '../../lib/guide-rules';
+  import { type Answers, matches, recommend, caseFor } from '../../lib/guide-rules';
 
   interface Data {
     rules: Rule[];
     cautions: { when: Record<string, string[]>; text: string }[];
-    situations: { slug: string; name: string; when: Record<string, string[]>; short: string }[];
+    cases: { slug: string; name: string; when: Record<string, string[]>; short: string }[];
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
     flows: Record<string, { short: string; maturity: string; implementations: boolean }>;
@@ -235,12 +235,12 @@ const data = {
           : '';
         html += `<div class="dg-top"><p class="dg-status">${answered} of ${names.length} answered · ${count}</p><p class="dg-tools"><a class="dg-edit" href="#questions">Edit answers</a>${copy}<span class="dg-copied"></span></p></div>`;
 
-        // The name of the situation, once the questions it comes from are answered,
+        // The name of the case, once the questions it comes from are answered,
         // then every other answer as a fact with the word for its question: the name
         // stands for two of them, and a reader who repeats it should see the rest.
-        const sit = situationFor(data.situations, a);
+        const named = caseFor(data.cases, a);
         const facts = names
-          .filter((n) => a[n] != null && !(sit && n in sit.when))
+          .filter((n) => a[n] != null && !(named && n in named.when))
           .map((n) => {
             const input = form.querySelector<HTMLInputElement>(`input[name="${n}"]:checked`)!;
             return `<div><dt>${esc(input.dataset.fact ?? '')}</dt><dd>${esc(input.dataset.brief ?? '')}</dd></div>`;
@@ -248,8 +248,8 @@ const data = {
         // A section like the ones after it: a heading, then the name as those
         // list a flow, with what the name stands for where a flow has its status.
         html += `<section class="dg-group dg-answers"><h2>Your answers</h2>`;
-        if (sit) {
-          html += `<a class="dg-flow" href="/guide/${sit.slug}/"><strong>${esc(sit.name)}</strong><span class="dg-meta">${Object.keys(sit.when).length === 1 ? 'First answer' : 'First two answers'}</span></a>`;
+        if (named) {
+          html += `<a class="dg-flow" href="/guide/${named.slug}/"><strong>${esc(named.name)}</strong><span class="dg-meta">${Object.keys(named.when).length === 1 ? 'First answer' : 'First two answers'}</span></a>`;
         }
         if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
         html += `</section>`;

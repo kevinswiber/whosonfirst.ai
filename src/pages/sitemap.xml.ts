@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { flows } from "../data/flows";
-import { situations } from "../data/guide";
+import { cases } from "../data/guide";
 import { implementationProfiles } from "../data/implementations";
 
 /** Static pages come from the filesystem; parameterized routes come from published data. */
@@ -19,7 +19,7 @@ export const GET: APIRoute = ({ site }) => {
   const urls = [
     ...pages,
     ...flows.map((f) => `/flows/${f.slug}/`),
-    ...situations.map((s) => `/guide/${s.slug}/`),
+    ...cases.map((s) => `/guide/${s.slug}/`),
     ...implementationProfiles.map(
       (profile) => `/implementations/${profile.slug}/`,
     ),

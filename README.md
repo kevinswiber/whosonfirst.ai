@@ -23,15 +23,15 @@ It is an independent reference, not a specification. Every page says which month
 
 ## Where to start
 
-| If you…                                         | Go to                                                                                                                                                                                                                   |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| are new to this                                 | **[The lessons](https://whosonfirst.ai/learn/)**: 6 short lessons, about 40 minutes, starting from an API key. No OAuth knowledge needed.                                                                               |
-| are designing an agent                          | **[The decision guide](https://whosonfirst.ai/guide/)**: six questions that turn your agent’s situation into a short list of flows, with reasons. The first two give the situation one of four names, each with a page. |
-| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 25 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.                                                    |
-| are looking for an implementation               | **[Implementations](https://whosonfirst.ai/implementations/)**: documented product roles, named production reports, sources and dates. Browse the overview, then open a flow’s full evidence record.                    |
-| need to know what changes where your agent runs | **[The deployment guides](https://whosonfirst.ai/deployments/)**: hosted apps, Kubernetes, managed agent platforms, local machines and CI, sandboxes, and gateways.                                                     |
-| need to know how settled a specification is     | **[The standards tracker](https://whosonfirst.ai/standards/)**: more than 90 RFCs, drafts, specifications and projects, each with its status and why it matters for agents.                                             |
-| met a word you do not know                      | **[The glossary](https://whosonfirst.ai/glossary/)**, or the whole model on one page in **[Concepts](https://whosonfirst.ai/concepts/)**.                                                                               |
+| If you…                                         | Go to                                                                                                                                                                                                                |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| are new to this                                 | **[The lessons](https://whosonfirst.ai/learn/)**: 6 short lessons, about 40 minutes, starting from an API key. No OAuth knowledge needed.                                                                            |
+| are designing an agent                          | **[The decision guide](https://whosonfirst.ai/guide/)**: six questions that turn your agent’s situation into a short list of flows, with reasons. The first two put it in one of four named cases, each with a page. |
+| know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 25 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.                                                 |
+| are looking for an implementation               | **[Implementations](https://whosonfirst.ai/implementations/)**: documented product roles, named production reports, sources and dates. Browse the overview, then open a flow’s full evidence record.                 |
+| need to know what changes where your agent runs | **[The deployment guides](https://whosonfirst.ai/deployments/)**: hosted apps, Kubernetes, managed agent platforms, local machines and CI, sandboxes, and gateways.                                                  |
+| need to know how settled a specification is     | **[The standards tracker](https://whosonfirst.ai/standards/)**: more than 90 RFCs, drafts, specifications and projects, each with its status and why it matters for agents.                                          |
+| met a word you do not know                      | **[The glossary](https://whosonfirst.ai/glossary/)**, or the whole model on one page in **[Concepts](https://whosonfirst.ai/concepts/)**.                                                                            |
 
 ## What is in it
 

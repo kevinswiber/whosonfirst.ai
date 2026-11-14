@@ -1,6 +1,6 @@
 /**
  * Decision guide: questions, the rules that turn answers into recommended flows,
- * and the names for the situations the first two answers describe.
+ * and the names for the cases the first two answers describe.
  *
  * A rule applies when every key it names matches the selected answer. Questions
  * the reader has not answered yet do not rule anything out.
@@ -182,11 +182,11 @@ export const questions: Question[] = [
 ];
 
 /**
- * The situations the guide names. A name comes from the first two questions
+ * The cases the guide names. A name comes from the first two questions
  * alone: whose authority a piece of access uses, and whether that person is
  * there. Names taken from those two cannot overlap: every combination of
  * answers has exactly one, which test/unit/guide.test.mjs confirms. The other
- * questions change what is recommended, not what the situation is called.
+ * questions change what is recommended, not what the case is called.
  *
  * A name describes one piece of access, not the agent: the same agent can act
  * for a person in one call and on its own authority in the next. So the names
@@ -196,9 +196,9 @@ export const questions: Question[] = [
  *
  * The wording rests on lesson 4, src/pages/learn/whose-authority.astro, and on
  * the reasons in the rules below. It says nothing those do not: what a
- * situation needs is in the rules and the cautions, and its page lists them.
+ * case needs is in the rules and the cautions, and its page lists them.
  */
-export interface Situation {
+export interface Case {
   /** Its address: /guide/<slug>/ */
   slug: string;
   name: string;
@@ -208,11 +208,11 @@ export interface Situation {
   when: Record<string, string[]>;
   /** One sentence, shown with the name wherever it appears. */
   short: string;
-  /** What a reader in this situation needs to know first, a paragraph each. */
+  /** What a reader in this case needs to know first, a paragraph each. */
   about: string[];
 }
 
-export const situations: Situation[] = [
+export const cases: Case[] = [
   {
     slug: "person-present",
     name: "Person present",

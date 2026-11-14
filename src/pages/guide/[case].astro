@@ -1,31 +1,31 @@
 ---
-// One situation the decision guide names, as a page that needs no script.
+// One case the decision guide names, as a page that needs no script.
 // It rests on src/data/guide.ts: the name, what defines it and what to know
-// first come from `situations`. "Where to start" and "Watch out" are worked
+// first come from `cases`. "Where to start" and "Watch out" are worked
 // out here from the guide's rules and cautions: every one that could apply
 // once the other questions are answered, each with the answers it
 // applies to. The guide's script answers for the answers it has; this page is
 // read ahead of them, so it leaves nothing out for want of an answer.
 import Base from "../../layouts/Base.astro";
-import { cautions, questions, rules, situations } from "../../data/guide";
-import type { Situation } from "../../data/guide";
+import { cautions, questions, rules, cases } from "../../data/guide";
+import type { Case } from "../../data/guide";
 import { flow, maturityLabel } from "../../data/flows";
 import { compatible, open, possibleStarts } from "../../lib/guide-rules";
 import type { Answers } from "../../lib/guide-rules";
 import Applies from "../../components/GuideApplies.astro";
 
 export function getStaticPaths() {
-  return situations.map((situation) => ({
-    params: { situation: situation.slug },
-    props: { situation },
+  return cases.map((c) => ({
+    params: { case: c.slug },
+    props: { case: c },
   }));
 }
 
 interface Props {
-  situation: Situation;
+  case: Case;
 }
 
-const { situation: s } = Astro.props;
+const { case: s } = Astro.props;
 
 const question = (id: string) => {
   const q = questions.find((x) => x.id === id);
@@ -90,7 +90,7 @@ const guideLink = `/guide/?${new URLSearchParams(fixed)}`;
 const left = ["no", "one", "two", "three", "four", "five", "six"][
   questions.length - Object.keys(fixed).length
 ];
-const others = situations.filter((o) => o.slug !== s.slug);
+const others = cases.filter((o) => o.slug !== s.slug);
 ---
 
 <Base
@@ -103,7 +103,7 @@ const others = situations.filter((o) => o.slug !== s.slug);
       <div class="wrap">
         <h1>{s.name}</h1>
         <p class="lede">{s.short}</p>
-        <dl class="sit-when">
+        <dl class="case-when">
           {
             defined.map((d) => (
               <div>
@@ -121,9 +121,9 @@ const others = situations.filter((o) => o.slug !== s.slug);
         <div class="prose">
           <h2>What it means</h2>
           {s.about.map((p) => <p>{p}</p>)}
-          <p class="sit-own">
-            “{s.name}” is one of <a href="/guide/#situations">four names</a> the decision guide gives to the
-            situations its first two questions describe. The names are this site’s own, not terms from a
+          <p class="case-own">
+            “{s.name}” is one of <a href="/guide/#cases">four names</a> the decision guide gives to the
+            cases its first two questions describe. The names are this site’s own, not terms from a
             specification. A name describes one piece of access, not the agent: the same agent can act for a person
             in one call and on its own authority in the next.
           </p>
@@ -136,17 +136,17 @@ const others = situations.filter((o) => o.slug !== s.slug);
         <div class="section-head">
           <h2>Where to start</h2>
           <p>
-            Every flow the guide’s rules start with in this situation. Which of them are yours depends on the guide’s
+            Every flow the guide’s rules start with in this case. Which of them are yours depends on the guide’s
             other {left} questions, so each one says which answers it applies to.
           </p>
         </div>
-        <ul class="sit-flows">
+        <ul class="case-flows">
           {
             starts.map((f) => (
               <li>
-                <a class="sit-flow" href={`/flows/${f.slug}/`}>
+                <a class="case-flow" href={`/flows/${f.slug}/`}>
                   <strong>{f.short}</strong>
-                  <span class="sit-meta">{f.maturity}</span>
+                  <span class="case-meta">{f.maturity}</span>
                 </a>
                 <p>{f.why}</p>
                 <Applies to={f.applies} />
@@ -154,7 +154,7 @@ const others = situations.filter((o) => o.slug !== s.slug);
             ))
           }
         </ul>
-        <p class="sit-more">
+        <p class="case-more">
           <a href={guideLink}>Answer the other {left} questions in the guide</a> to see which of these are yours, what
           to add to them and what else is worth a look.
         </p>
@@ -164,7 +164,7 @@ const others = situations.filter((o) => o.slug !== s.slug);
     <section class="section">
       <div class="wrap">
         <h2>Watch out</h2>
-        <ul class="sit-warn">
+        <ul class="case-warn">
           {
             warn.map((c) => (
               <li>
@@ -201,7 +201,7 @@ const others = situations.filter((o) => o.slug !== s.slug);
 </Base>
 
 <style>
-  .sit-when {
+  .case-when {
     display: flex;
     flex-wrap: wrap;
     gap: 0.9rem 2.6rem;
@@ -209,52 +209,52 @@ const others = situations.filter((o) => o.slug !== s.slug);
     padding-top: 0.9rem;
     border-top: 1px solid var(--border);
   }
-  .sit-when dt {
+  .case-when dt {
     font-family: var(--font-label);
     font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--fg-muted);
   }
-  .sit-when dd {
+  .case-when dd {
     margin: 0.15rem 0 0;
     font-weight: 500;
   }
-  .sit-own {
+  .case-own {
     color: var(--fg-muted);
   }
 
-  .sit-flows,
-  .sit-warn,
-  .sit-more {
+  .case-flows,
+  .case-warn,
+  .case-more {
     max-width: var(--prose);
   }
   .prose > h2:first-child {
     margin-top: 0;
   }
-  .sit-flows {
+  .case-flows {
     border-top: 1.5px solid var(--fg);
   }
-  .sit-flows,
-  .sit-warn {
+  .case-flows,
+  .case-warn {
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  .sit-flows > li,
-  .sit-warn > li {
+  .case-flows > li,
+  .case-warn > li {
     margin: 0;
     padding: 0.8rem 0;
     border-bottom: 1px solid var(--border);
   }
-  .sit-flow {
+  .case-flow {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.1rem 0.8rem;
     text-decoration: none;
   }
-  .sit-flow strong {
+  .case-flow strong {
     font-family: var(--font-heading);
     font-size: 1.16rem;
     font-weight: 560;
@@ -263,18 +263,18 @@ const others = situations.filter((o) => o.slug !== s.slug);
     text-decoration-thickness: 1.5px;
     text-underline-offset: 0.18em;
   }
-  .sit-meta {
+  .case-meta {
     font-family: var(--font-label);
     font-size: 0.66rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--fg-muted);
   }
-  .sit-flows > li > p,
-  .sit-warn > li > p {
+  .case-flows > li > p,
+  .case-warn > li > p {
     margin: 0.25rem 0 0;
   }
-  .sit-more {
+  .case-more {
     margin: 0.8rem 0 0;
     font-size: 0.93rem;
   }

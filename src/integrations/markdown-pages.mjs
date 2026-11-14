@@ -513,7 +513,7 @@ function reviewed(page) {
  */
 const SECTIONS = [
   { title: "Start here", match: /^\/(learn\/|guide\/|concepts\/)?$/ },
-  { title: "Situations", match: /^\/guide\/[^/]+\/$/, order: "/guide/" },
+  { title: "Named cases", match: /^\/guide\/[^/]+\/$/, order: "/guide/" },
   { title: "Lessons", match: /^\/learn\/[^/]+\/$/, order: "/learn/" },
   { title: "Flows", match: /^\/flows\//, order: "/flows/" },
   {

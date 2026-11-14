@@ -1,12 +1,12 @@
 /**
  * How the decision guide turns answers into recommendations and a name.
  *
- * The guide's script, the page for each situation and the tests all use these,
+ * The guide's script, the page for each case and the tests all use these,
  * so a page built ahead of time says what the script would say for the same
  * answers. Nothing here reads the data: each function is given the rules it
  * applies. The imports are types only, so Node can load this file as it is.
  */
-import type { Role, Rule, Situation } from "../data/guide";
+import type { Case, Role, Rule } from "../data/guide";
 
 /** question id → the answer chosen. A question not answered has no entry. */
 export type Answers = Record<string, string>;
@@ -70,14 +70,14 @@ export function recommend(rules: Rule[], a: Answers): Record<Role, Chosen[]> {
 }
 
 /**
- * The situation these answers describe, once every question it is named from
+ * The case these answers describe, once every question it is named from
  * has been answered. Before that there is none: a name is not a guess.
  */
-export function situationFor<T extends Pick<Situation, "when">>(
-  situations: T[],
+export function caseFor<T extends Pick<Case, "when">>(
+  cases: T[],
   a: Answers,
 ): T | undefined {
-  return situations.find((s) => matches(s.when, a, true));
+  return cases.find((s) => matches(s.when, a, true));
 }
 
 /** The conditions of a rule that the answers have not yet settled. */
