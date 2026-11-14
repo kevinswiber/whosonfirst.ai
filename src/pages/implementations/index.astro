@@ -3,7 +3,6 @@ import Base from "../../layouts/Base.astro";
 import FieldExamples from "../../components/FieldExamples.astro";
 import { fieldDate, fieldProfile } from "../../data/field";
 import { byGroup, flows, maturityLabel } from "../../data/flows";
-import { fieldSnapshot } from "../../lib/field";
 
 const groups = byGroup().map((group) => ({
   ...group,
@@ -12,7 +11,6 @@ const groups = byGroup().map((group) => ({
     return {
       flow,
       profile,
-      snapshot: profile && fieldSnapshot(profile),
       href: profile ? `/implementations/${flow.slug}/` : `/flows/${flow.slug}/`,
     };
   }),
@@ -32,106 +30,113 @@ const reviewed = groups
       <h1>Implementations</h1>
       <p class="lede">Find products that implement part of a flow and accounts of how named organizations have used it in production.</p>
       <p class="field-coverage">
-        <strong>{reviewed} of {flows.length} flows reviewed</strong> · <a href="#methodology">How we review evidence</a>
+        {reviewed} of {flows.length} flows reviewed · <a href="#methodology">How we review evidence</a>
       </p>
-      <p class="field-note">Coverage is selective and varies by flow. Counts describe entries and operators covered in this review; they do not measure adoption. Mention is not recommendation.</p>
+      <p class="field-note">Coverage is selective and varies by flow. These records do not measure adoption. Mention is not recommendation.</p>
     </div>
   </div>
 
   <div class="wrap">
     <field-directory>
       <form class="field-controls" role="search" aria-label="Implementation directory" hidden>
-        <div class="field-inputs">
-          <label class="field-search">
-            Search by flow, product or role
-            <input type="search" placeholder="e.g. Keycloak or client library" autocomplete="off" />
-          </label>
-          <button class="btn ghost" type="button">Clear search</button>
-        </div>
-        <p class="field-count" role="status">{flows.length} flows shown</p>
+        <label class="field-search">
+          Search by flow, product or role
+          <input type="search" name="q" placeholder="e.g. Keycloak or client library" autocomplete="off" />
+        </label>
+        <details class="field-facets" open>
+          <summary>
+            <span>Filters</span>
+            <span class="field-active" aria-live="polite"></span>
+          </summary>
+          <fieldset>
+            <legend>Flow group</legend>
+            {groups.map((group) => (
+              <label class="field-opt">
+                <input type="checkbox" name="group" value={group.id} />
+                <span>{group.title}</span>
+                <em data-count-for={group.id}><span class="field-group-total">{group.flows.length}</span><span class="visually-hidden"> matching flows</span></em>
+              </label>
+            ))}
+          </fieldset>
+          <button class="btn small ghost" type="reset">Clear filters</button>
+        </details>
       </form>
 
-      <noscript><p>Product and role search needs JavaScript. Browse by flow below; each record includes all reviewed entries.</p></noscript>
-      <p class="field-empty" hidden>No flows match. Try a different term or clear the search.</p>
+      <div class="field-results">
+        <noscript><p>Search and filters need JavaScript. All reviewed summaries are listed below by flow.</p></noscript>
+        <p class="field-count" role="status" hidden>{flows.length} flows shown</p>
+        <p class="field-empty" hidden>No flows match. Try a different term or clear the filters.</p>
 
-      {groups.map((group) => (
-        <section class="field-group" aria-labelledby={`field-${group.id}`}>
-          <h2 id={`field-${group.id}`}>{group.title}</h2>
-          <ul class="field-list" role="list">
-            {group.entries.map(({ flow, profile, snapshot, href }) => (
-              <li
-                class="field-record"
-                id={flow.slug}
-                data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
-                data-flow-identity={`${flow.title} ${flow.short} ${flow.slug}`}
-              >
-                <div class="field-identity">
-                  <h3>{flow.short}</h3>
-                  <dl>
-                    <div>
-                      <dt class="visually-hidden">Standards maturity</dt>
-                      <dd>{maturityLabel(flow)}</dd>
-                    </div>
-                    <div>
-                      <dt class="visually-hidden">Evidence review</dt>
-                      <dd>
-                        {profile
-                          ? <>Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></>
-                          : 'Not reviewed'}
-                      </dd>
-                    </div>
-                  </dl>
+        {groups.map((group) => (
+          <section class="field-group" data-group={group.id} aria-labelledby={`field-${group.id}`}>
+            <h2 id={`field-${group.id}`}>{group.title}</h2>
+            <ul class="field-list" role="list">
+              {group.entries.map(({ flow, profile, href }) => (
+                <li
+                  class="field-record"
+                  id={flow.slug}
+                  data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
+                  data-flow-identity={`${flow.title} ${flow.short} ${flow.slug}`}
+                >
+                  <header class="field-identity">
+                    <h3>{flow.short}</h3>
+                    <p class="field-meta">
+                      <span class="visually-hidden">Standards maturity: </span>{maturityLabel(flow)}{' · '}
+                      {profile
+                        ? <>Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></>
+                        : 'Not reviewed'}
+                    </p>
+                  </header>
+                  {profile && (
+                    <>
+                      <dl class="field-overview">
+                        <div>
+                          <dt>
+                            <span class="field-section-title">Implementation evidence</span>
+                          </dt>
+                          <dd>
+                            {profile.implementations.length > 0 ? (
+                              <FieldExamples slug={flow.slug} entries={profile.implementations} label="Implementations from the record" />
+                            ) : <p class="field-none">No entry included in this review.</p>}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>
+                            <span class="field-section-title">Deployment reports</span>
+                          </dt>
+                          <dd>
+                            {profile.deployments.length > 0 ? (
+                              <FieldExamples slug={flow.slug} entries={profile.deployments} label="Deployment reports from the record" />
+                            ) : <p class="field-none">No report included in this review.</p>}
+                          </dd>
+                        </div>
+                      </dl>
+                      <template>
+                        <FieldExamples
+                          slug={flow.slug}
+                          entries={[...profile.implementations, ...profile.deployments]}
+                          label="Matching evidence"
+                          searchable
+                        />
+                      </template>
+                      <div class="field-matches" hidden>
+                        <p class="field-section-title">Matching evidence</p>
+                        <div class="field-match-list"></div>
+                      </div>
+                    </>
+                  )}
                   <div class="field-actions">
                     <p><a href={`/flows/${flow.slug}/`}>See the flow<span class="visually-hidden"> for {flow.short}</span></a></p>
                     {profile && (
-                      <p><a class="field-evidence-link" href={href}>See the full record<span class="visually-hidden"> for {flow.short}</span></a></p>
+                      <p><a class="field-evidence-link" href={href}>Sources and review details<span class="visually-hidden"> for {flow.short}</span></a></p>
                     )}
                   </div>
-                </div>
-                {profile && snapshot && (
-                  <>
-                    <dl class="field-overview">
-                      <div>
-                        <dt>Implementation evidence</dt>
-                        <dd>
-                          {snapshot.implementations.length > 0 ? (
-                            <>
-                              <strong>{snapshot.optionsLabel}</strong>
-                              <p class="field-example-label">From the record:</p>
-                              <FieldExamples slug={flow.slug} entries={snapshot.implementations} label="Implementations from the record" />
-                            </>
-                          ) : 'No entry included in this review.'}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Deployment reports</dt>
-                        <dd>
-                          {snapshot.deployment ? (
-                            <>
-                              <strong>{snapshot.operatorsLabel}</strong>
-                              <p class="field-example-label">From the record:</p>
-                              <FieldExamples slug={flow.slug} entries={[snapshot.deployment]} label="Deployment report from the record" />
-                            </>
-                          ) : 'No report included in this review.'}
-                        </dd>
-                      </div>
-                    </dl>
-                    <template>
-                      <FieldExamples
-                        slug={flow.slug}
-                        entries={[...profile.implementations, ...profile.deployments]}
-                        label="Matching evidence"
-                        searchable
-                      />
-                    </template>
-                    <div class="field-matches" hidden></div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </field-directory>
 
     <section class="field-method prose" aria-labelledby="methodology">
@@ -171,21 +176,27 @@ const reviewed = groups
 
   class FieldDirectory extends HTMLElement {
     connectedCallback() {
-      const form = this.querySelector('form')!;
-      const input = form.querySelector('input')!;
-      const clear = form.querySelector('button')!;
-      const count = form.querySelector<HTMLElement>('.field-count')!;
+      const form = this.querySelector<HTMLFormElement>('form')!;
+      const input = form.querySelector<HTMLInputElement>('input[type="search"]')!;
+      const checks = [...form.querySelectorAll<HTMLInputElement>('input[name="group"]')];
+      const facets = form.querySelector<HTMLDetailsElement>('.field-facets')!;
+      const active = form.querySelector<HTMLElement>('.field-active')!;
+      const narrow = window.matchMedia('(max-width: 57.99rem)');
+      const count = this.querySelector<HTMLElement>('.field-count')!;
       const empty = this.querySelector<HTMLElement>('.field-empty')!;
       const groups = [...this.querySelectorAll<HTMLElement>('.field-group')].map((element) => ({
         element,
+        counter: form.querySelector<HTMLElement>(`[data-count-for="${element.dataset.group}"]`)!,
         entries: [...element.querySelectorAll<HTMLElement>('.field-record')].map((record) => {
           const flow = record.dataset.flowText ?? '';
           const identity = record.dataset.flowIdentity ?? '';
           const source = record.querySelector('template')?.content.querySelector('ul');
           const matches = record.querySelector<HTMLElement>('.field-matches');
+          const matchList = matches?.querySelector<HTMLElement>('.field-match-list');
           return {
             record,
             matches,
+            matchList,
             source,
             flowText: searchText(flow),
             // A product or operator and its role belong to the same entry.
@@ -197,29 +208,33 @@ const reviewed = groups
         }),
       }));
 
-      const filter = () => {
+      const filter = (updateURL = true) => {
+        const selected = checks.filter((check) => check.checked).map((check) => check.value);
         const words = searchText(input.value).split(/\s+/).filter(Boolean);
         const contains = (text: string) => words.every((word) => text.includes(word));
         let shown = 0;
-        for (const { element, entries } of groups) {
+        for (const { element, counter, entries } of groups) {
+          const matchesGroup = selected.length === 0 || selected.includes(element.dataset.group ?? '');
           let hasMatch = false;
-          for (const { record, matches, source, flowText, candidates } of entries) {
+          let queryMatches = 0;
+          for (const { record, matches, matchList, source, flowText, candidates } of entries) {
             const matchesFlow = contains(flowText);
             const matchingEntries = words.length > 0
               ? candidates.filter((candidate) => contains(candidate.text))
               : [];
-            const show = matchesFlow || matchingEntries.length > 0;
+            const matchesQuery = matchesFlow || matchingEntries.length > 0;
+            // Count flows before group selection, including those with several matching entries.
+            if (matchesQuery) queryMatches++;
+            const show = matchesGroup && matchesQuery;
             record.toggleAttribute('data-filtered', !show);
             record.toggleAttribute('data-matching', matchingEntries.length > 0);
-            if (matches) {
-              matches.replaceChildren();
+            if (matches && matchList) {
+              matchList.replaceChildren();
               matches.hidden = matchingEntries.length === 0;
               if (matchingEntries.length && source) {
-                const label = document.createElement('strong');
-                label.textContent = 'Matching evidence';
                 const list = source.cloneNode(false);
                 for (const { item } of matchingEntries) list.appendChild(item.cloneNode(true));
-                matches.append(label, list);
+                matchList.append(list);
               }
             }
             if (show) {
@@ -227,21 +242,64 @@ const reviewed = groups
               hasMatch = true;
             }
           }
+          counter.querySelector('.field-group-total')!.textContent = String(queryMatches);
+          counter.querySelector('.visually-hidden')!.textContent = queryMatches === 1 ? ' matching flow' : ' matching flows';
           element.toggleAttribute('data-filtered', !hasMatch);
         }
         count.textContent = `${shown} ${shown === 1 ? 'flow' : 'flows'} shown`;
         empty.hidden = shown > 0;
+        active.textContent = selected.length ? `${selected.length} on` : '';
+        if (updateURL) {
+          const params = new URLSearchParams();
+          if (input.value.trim()) params.set('q', input.value.trim());
+          for (const group of selected) params.append('group', group);
+          const query = params.toString();
+          history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+        }
       };
 
-      form.addEventListener('submit', (event) => event.preventDefault());
-      input.addEventListener('input', filter);
-      clear.addEventListener('click', () => {
-        form.reset();
+      const params = new URLSearchParams(location.search);
+      input.value = params.get('q') ?? '';
+      const selected = params.getAll('group');
+      for (const check of checks) check.checked = selected.includes(check.value);
+      const place = () => {
+        facets.open = !narrow.matches || checks.some((check) => check.checked);
+      };
+      narrow.addEventListener('change', place);
+      place();
+
+      const clear = () => {
+        input.value = '';
+        for (const check of checks) check.checked = false;
         filter();
+      };
+      form.addEventListener('submit', (event) => event.preventDefault());
+      form.addEventListener('input', () => {
+        filter();
+        // Keep results in view when the sticky sidebar narrows a long list.
+        if (count.getBoundingClientRect().top < 0) count.scrollIntoView({ block: 'start' });
+      });
+      form.addEventListener('reset', (event) => {
+        event.preventDefault();
+        clear();
         input.focus();
       });
-      filter();
+      filter(false);
       form.hidden = false;
+      count.hidden = false;
+      this.dataset.js = '';
+
+      // A link to a flow must stay reachable even when saved filters exclude it.
+      const focusHash = () => {
+        const id = location.hash.slice(1);
+        const target = [...this.querySelectorAll<HTMLElement>('.field-record, .field-group h2')]
+          .find((element) => element.id === id);
+        if (!target) return;
+        if (target.closest('[data-filtered]')) clear();
+        target.scrollIntoView({ block: 'start' });
+      };
+      window.addEventListener('hashchange', focusHash);
+      focusHash();
     }
   }
 
@@ -254,55 +312,130 @@ const reviewed = groups
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  .field-coverage strong { color: var(--fg); }
   .field-note {
     margin: 0.25rem 0 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  field-directory { display: block; }
-  .field-controls {
-    margin-top: 1.4rem;
-    padding: 0.95rem 1.05rem 0.75rem;
-    border: 1px solid var(--border);
-    background: var(--bg-sunken);
+  field-directory {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem 2.5rem;
+    margin-top: 1.5rem;
   }
-  .field-inputs {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: 0.75rem 0.9rem;
+  @media screen and (min-width: 58rem) {
+    field-directory[data-js] { grid-template-columns: 15.5rem minmax(0, 1fr); }
+    .field-controls {
+      position: sticky;
+      top: 4.6rem;
+      max-height: calc(100dvh - 5.4rem);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      padding-right: 0.4rem;
+    }
   }
-  .field-inputs label {
+  .field-controls[hidden] { display: none; }
+  .field-search {
     display: grid;
     gap: 0.3rem;
-    min-width: 0;
     font-size: 0.95rem;
-    font-weight: 600;
   }
-  .field-search { flex: 1 1 16rem; }
-  .field-inputs input {
+  .field-search input {
     width: 100%;
     min-width: 0;
-    min-height: 2.5rem;
-    padding: 0.35rem 0.6rem;
-    border: 1px solid var(--border-strong);
+    font: inherit;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid var(--fg);
     border-radius: var(--radius);
     background: var(--bg-raised);
     color: var(--fg);
-    font-family: inherit;
-    font-size: 1rem;
   }
-  .field-inputs input::placeholder { color: var(--fg-subtle); }
-  .field-inputs button { min-height: 2.5rem; }
-  .field-count,
-  .field-empty {
+  .field-search input::placeholder { color: var(--fg-subtle); }
+  .field-controls fieldset { border: 0; padding: 0; margin: 1.2rem 0 0; }
+  .field-controls legend {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--fg-muted);
-    font-size: 0.95rem;
+    padding: 0 0 0.35rem;
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.35rem;
   }
-  .field-count { margin: 0.55rem 0 0; }
-  .field-empty { margin: 1rem 0 0; }
-  .field-group { margin-top: 2rem; }
+  .field-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .field-opt input {
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    width: 0.95rem;
+    height: 0.95rem;
+    margin: 0;
+  }
+  .field-opt em {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.7rem;
+    color: var(--fg-subtle);
+  }
+  .field-controls .btn { margin-top: 1.2rem; }
+  .field-facets > summary { display: none; }
+  @media (max-width: 57.99rem) {
+    field-directory { gap: 1rem; }
+    .field-facets > summary {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--fg);
+      border-radius: var(--radius);
+      background: var(--bg-raised);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+    }
+    .field-facets > summary::-webkit-details-marker { display: none; }
+    .field-facets > summary::after {
+      content: 'Show';
+      margin-left: auto;
+      font-family: var(--font-label);
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .field-facets[open] > summary::after { content: 'Hide'; }
+    .field-active {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+    }
+    .field-controls fieldset { display: flex; flex-wrap: wrap; gap: 0.1rem 1.1rem; }
+    .field-opt em { margin-left: 0; }
+  }
+  .field-count {
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 0 0 0.7rem;
+  }
+  .field-empty { margin: 1rem 0 0; color: var(--fg-muted); }
+  .field-group { margin-top: 0; }
+  .field-group + .field-group { margin-top: 2rem; }
   .field-group h2,
   .field-method h2 {
     margin: 0 0 0.65rem;
@@ -312,71 +445,66 @@ const reviewed = groups
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-  .field-list { border-top: 1px solid var(--fg); }
-  .field-record {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 2.65fr);
-    gap: 0.75rem 1.4rem;
+    gap: 0.8rem;
+  }
+  .field-record {
     margin: 0;
-    padding: 0.8rem 1.25rem;
-    border: 1px solid transparent;
-    border-bottom-color: var(--border);
+    padding: 1.05rem 1.25rem 0.95rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     overflow-wrap: anywhere;
   }
   .field-record:target {
     border-color: var(--accent);
     box-shadow: 4px 4px 0 var(--accent-soft);
   }
-  .field-record h3 { margin: 0 0 0.2rem; font-size: 1.12rem; }
-  .field-record dl { margin: 0; }
-  .field-record dd {
-    margin: 0;
+  .field-identity h3 { margin: 0; font-size: 1.24rem; }
+  .field-meta {
+    margin: 0.4rem 0 0;
     color: var(--fg-muted);
-    font-size: 0.95rem;
-    line-height: 1.45;
+    font-size: 0.86rem;
   }
-  .field-overview {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: 0.6rem 1.25rem;
-    min-width: 0;
+  .field-overview { margin: 0.8rem 0 0; }
+  .field-overview > div,
+  .field-matches {
+    padding: 0.8rem 0;
+    border-top: 1px dashed var(--border-strong);
   }
   .field-overview dt {
-    margin: 0 0 0.25rem;
-    color: var(--fg-muted);
-    font: 500 0.76rem/1.35 var(--font-label);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.9rem;
+    margin: 0 0 0.55rem;
   }
-  .field-overview dd strong { color: var(--fg); }
-  .field-example-label {
-    margin: 0.5rem 0 0;
-    font: 500 0.72rem/1.35 var(--font-label);
+  .field-overview dd { margin: 0; }
+  .field-section-title {
+    margin: 0;
+    color: var(--fg-muted);
+    font: 500 0.68rem/1.35 var(--font-label);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  .field-actions {
-    display: grid;
-    gap: 0.45rem;
-    margin-top: 0.7rem;
+  .field-none {
+    margin: 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
-    line-height: 1.45;
+  }
+  .field-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.4rem;
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--border-strong);
+    font-size: 0.86rem;
   }
   .field-actions p { margin: 0; }
   .field-evidence-link { font-weight: 600; }
-  .field-matches {
-    grid-column: 2 / -1;
-    grid-row: 1;
-    padding: 0 0 0 0.8rem;
-    border-inline-start: 2px solid var(--accent);
-    font-size: 0.95rem;
-  }
-  .field-matches ul { margin: 0.25rem 0 0; }
-  .field-matches li { margin: 0.2rem 0; }
+  .field-matches { margin-top: 0.8rem; }
+  .field-matches > p { margin-bottom: 0.55rem; }
   .field-method {
     margin-top: 2.2rem;
     padding-top: 1.2rem;
@@ -390,21 +518,8 @@ const reviewed = groups
     [data-filtered],
     [data-matching] .field-overview { display: none; }
   }
-  @media (max-width: 52rem) {
-    .field-record { grid-template-columns: minmax(0, 1fr); }
-    .field-overview { grid-column: 1; grid-row: 2; }
-    .field-matches { grid-column: 1 / -1; grid-row: 2; }
-    .field-identity dl {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.1rem 1rem;
-    }
-  }
-  @media (max-width: 34rem) {
-    .field-overview { grid-template-columns: minmax(0, 1fr); }
-  }
   @media print {
-    .field-controls, .field-empty, .field-matches { display: none; }
+    .field-controls, .field-count, .field-empty, .field-matches { display: none; }
     .field-record { break-inside: avoid; }
   }
 </style>

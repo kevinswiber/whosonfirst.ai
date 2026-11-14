@@ -1,7 +1,9 @@
-// The directory is a bounded view of the evidence. Search reaches the full
-// record, while scripts-off and print readers keep the full overview.
+// The directory shows every reviewed summary. Search and group filters narrow
+// the view, while scripts-off and print readers keep all the summaries.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
+import { publishProfile } from "../../src/data/field/model.ts";
+import { profiles } from "../../src/data/field/records.ts";
 import { open, useBrowser } from "../support/browser.mjs";
 import { FLOWS } from "../support/site.mjs";
 
@@ -26,10 +28,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   const dpop = page.locator("#dpop");
   assert.equal(await dpop.getByRole("heading").getByRole("link").count(), 0);
   assert.equal(
-    await dpop
-      .locator(".field-identity .field-actions")
-      .getByRole("link")
-      .count(),
+    await dpop.locator(".field-actions").getByRole("link").count(),
     2,
   );
   assert.equal(
@@ -38,19 +37,35 @@ test("the compact directory, full record and flow guide connect without JavaScri
       .getAttribute("href"),
     "/flows/dpop/",
   );
-  const snapshot = await dpop.locator(".field-overview").textContent();
-  assert.match(snapshot, /\d+ entries in this review/);
-  assert.deepEqual(
-    await dpop
-      .getByRole("list", { name: "Implementations from the record" })
-      .getByRole("link")
-      .allTextContents()
-      .then((names) => names.map((name) => name.trim())),
-    ["Keycloak", "oauth4webapi"],
+  // Check all entries, including products and reports that used to be omitted.
+  const actual = await page
+    .locator(".field-overview .field-examples li")
+    .evaluateAll((items) =>
+      items
+        .map((item) => ({
+          href: item.querySelector("a").getAttribute("href"),
+          summary: item
+            .querySelector(".field-example-summary")
+            .textContent.trim(),
+        }))
+        .sort((a, b) => a.href.localeCompare(b.href)),
+    );
+  const expected = profiles
+    .map(publishProfile)
+    .flatMap((profile) =>
+      [...profile.implementations, ...profile.deployments].map((entry) => ({
+        href: `/implementations/${profile.slug}/#field-${entry.id}`,
+        summary: entry.summary,
+      })),
+    )
+    .sort((a, b) => a.href.localeCompare(b.href));
+  assert.deepEqual(actual, expected);
+  assert.doesNotMatch(
+    await dpop.textContent(),
+    /examples shown|entries reviewed/,
   );
-  assert.doesNotMatch(snapshot, /Spring Security/);
   await dpop
-    .getByRole("link", { name: "See the full record for DPoP" })
+    .getByRole("link", { name: "Sources and review details for DPoP" })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.ok(
@@ -91,7 +106,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   const summary = page.locator("#in-the-field");
   assert.equal(
     await summary
-      .getByRole("link", { name: "See the full record" })
+      .getByRole("link", { name: "Sources and review details" })
       .getAttribute("href"),
     "/implementations/dpop/",
   );
@@ -114,7 +129,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
   );
 });
 
-test("search links to exact entries beyond the sample and keeps product and role together", async (t) => {
+test("search links to exact entries and keeps product and role together", async (t) => {
   const ctx = await site.context();
   t.after(() => ctx.close());
   const page = await ctx.newPage();
@@ -174,12 +189,15 @@ test("directory search resets from the keyboard and print shows the full overvie
   const count = page.getByRole("status");
   await input.fill("no matching implementation");
   assert.equal(await count.textContent(), "0 flows shown");
-  await page.getByRole("button", { name: "Clear search" }).press("Enter");
+  await page.locator(".field-facets summary").press("Enter");
+  await page.getByRole("checkbox", { name: /^Cross-cutting/ }).check();
+  await page.getByRole("button", { name: "Clear filters" }).press("Enter");
   assert.equal(await count.textContent(), `${FLOWS.length} flows shown`);
   assert.equal(await input.inputValue(), "");
   assert.equal(await page.locator(".field-empty").isVisible(), false);
   assert.ok(await input.evaluate((el) => el === document.activeElement));
 
+  await page.getByRole("checkbox", { name: /^Cross-cutting/ }).check();
   await input.fill("dpop spring");
   assert.equal(await page.locator(records).count(), 1);
   assert.equal(await page.locator(".field-matches:visible").count(), 1);
@@ -189,6 +207,16 @@ test("directory search resets from the keyboard and print shows the full overvie
   assert.equal(
     await page.locator(".field-overview:visible").count(),
     FLOWS.length,
+  );
+  assert.equal(
+    await page.locator(".field-overview .field-examples li:visible").count(),
+    profiles
+      .map(publishProfile)
+      .reduce(
+        (total, profile) =>
+          total + profile.implementations.length + profile.deployments.length,
+        0,
+      ),
   );
   assert.equal(await input.isVisible(), false);
   assert.equal(await count.isVisible(), false);
@@ -248,7 +276,7 @@ test("flow sections and recommendation results lead to their implementation reco
       name: "Implementations and deployment reports",
       exact: true,
     })
-    .getByRole("link", { name: "See the full record" })
+    .getByRole("link", { name: "Sources and review details" })
     .click();
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.equal(
@@ -351,7 +379,7 @@ test("flow evidence follows the standards and links to the full review beneath i
       await summary.evaluate(
         (section) =>
           section.querySelector("h2").nextElementSibling.querySelector("a")
-            ?.textContent === "See the full record",
+            ?.textContent === "Sources and review details",
       ),
     );
     assert.doesNotMatch(
@@ -365,7 +393,7 @@ test("flow evidence follows the standards and links to the full review beneath i
   const pkce = await page
     .locator("#authorization-code-pkce .field-overview")
     .textContent();
-  assert.match(pkce, /3 entries in this review/);
+  assert.match(pkce, /GitHub OAuth Apps and GitHub Apps/);
   assert.match(pkce, /No report included in this review/);
   assert.doesNotMatch(pkce, /None found|No production report found/);
 });
@@ -446,7 +474,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
       const report = page.locator(selector).getByRole("list", {
         name: path.startsWith("/flows/")
           ? "Reviewed implementations and deployment reports"
-          : "Deployment report from the record",
+          : "Deployment reports from the record",
       });
       assert.ok(
         await report
@@ -482,6 +510,9 @@ test("flow cards include every implementation and deployment entry from the full
         items.map((item) => ({
           id: item.id,
           name: item.querySelector("h3").textContent.trim(),
+          summary: item
+            .querySelector(".field-entry-summary")
+            .textContent.trim(),
           kind:
             item.closest("section").getAttribute("aria-labelledby") ===
             "field-production"
@@ -495,6 +526,9 @@ test("flow cards include every implementation and deployment entry from the full
       items.map((item) => ({
         id: item.querySelector("a").hash.slice(1),
         name: item.querySelector("a").textContent.trim(),
+        summary: item
+          .querySelector(".field-example-summary")
+          .textContent.trim(),
         kind: item.querySelector(".field-example-kind").textContent.trim(),
       })),
     );
@@ -514,7 +548,120 @@ for (const viewport of [
   { width: 1280, height: 900 },
   { width: 390, height: 844 },
 ]) {
-  test(`${viewport.width}px: product search replaces samples with qualified matches and restores them when cleared`, async (t) => {
+  test(`${viewport.width}px: group filters combine selections, intersect search and restore from the URL`, async (t) => {
+    const ctx = await site.context({ viewport });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/implementations/"));
+    const facets = page.locator(".field-facets");
+    const input = page.getByRole("searchbox", {
+      name: "Search by flow, product or role",
+    });
+    const groupIds = async () =>
+      page
+        .locator(".field-group:visible")
+        .evaluateAll((groups) => groups.map((group) => group.dataset.group));
+    assert.equal(await groupIds().then((ids) => ids.length), 6);
+    if (viewport.width < 986) {
+      assert.equal(await facets.getAttribute("open"), null);
+      assert.ok(await input.isVisible());
+      await facets.locator("summary").press("Enter");
+    }
+    assert.equal(await facets.getByRole("checkbox").count(), 6);
+    const groupCounts = () =>
+      facets
+        .locator("[data-count-for]")
+        .evaluateAll((counters) =>
+          Object.fromEntries(
+            counters.map((counter) => [
+              counter.dataset.countFor,
+              Number(counter.querySelector(".field-group-total").textContent),
+            ]),
+          ),
+        );
+    const totals = await groupCounts();
+    const onlyDpop = Object.fromEntries(
+      Object.keys(totals).map((group) => [
+        group,
+        group === "cross-cutting" ? 1 : 0,
+      ]),
+    );
+    await input.fill("dpop");
+    assert.ok((await page.locator("#dpop .field-matches li").count()) > 1);
+    assert.deepEqual(
+      await groupCounts(),
+      onlyDpop,
+      "several matching entries count as one flow",
+    );
+    assert.equal(
+      await facets.getByRole("checkbox").count(),
+      6,
+      "zero-count groups stay visible",
+    );
+    assert.equal(await facets.locator("input:disabled").count(), 0);
+    await input.fill("");
+    assert.deepEqual(await groupCounts(), totals);
+    await page.getByRole("checkbox", { name: /^Human present/ }).check();
+    assert.deepEqual(await groupIds(), ["human-present"]);
+    await page.getByRole("checkbox", { name: /^Cross-cutting/ }).check();
+    assert.deepEqual(await groupIds(), ["human-present", "cross-cutting"]);
+    await input.fill("dpop spring");
+    assert.equal(await page.locator(records).count(), 1);
+    assert.deepEqual(await groupIds(), ["cross-cutting"]);
+    assert.deepEqual(await groupCounts(), onlyDpop);
+    assert.deepEqual(new URL(page.url()).searchParams.getAll("group"), [
+      "human-present",
+      "cross-cutting",
+    ]);
+    assert.equal(new URL(page.url()).searchParams.get("q"), "dpop spring");
+    await open(page, page.url());
+    assert.equal(await input.inputValue(), "dpop spring");
+    assert.deepEqual(
+      await groupCounts(),
+      onlyDpop,
+      "counts restore with the saved search",
+    );
+    assert.ok(
+      await page.getByRole("checkbox", { name: /^Human present/ }).isChecked(),
+    );
+    assert.ok(
+      await page.getByRole("checkbox", { name: /^Cross-cutting/ }).isChecked(),
+    );
+    assert.equal(await page.locator(records).count(), 1);
+    if (viewport.width < 986)
+      assert.notEqual(await facets.getAttribute("open"), null);
+    await page.getByRole("checkbox", { name: /^Cross-cutting/ }).uncheck();
+    assert.equal(await page.locator(records).count(), 0);
+    assert.ok(await page.locator(".field-empty").isVisible());
+    assert.deepEqual(
+      await groupCounts(),
+      onlyDpop,
+      "an unselected group retains its search count",
+    );
+    await input.fill("");
+    assert.deepEqual(
+      await groupCounts(),
+      totals,
+      "clearing only the text restores every group total",
+    );
+    assert.deepEqual(await groupIds(), ["human-present"]);
+    await input.fill("no matching implementation");
+    assert.ok(Object.values(await groupCounts()).every((count) => count === 0));
+    assert.equal(await facets.getByRole("checkbox").count(), 6);
+    await page.getByRole("button", { name: "Clear filters" }).press("Enter");
+    assert.deepEqual(await groupCounts(), totals);
+    assert.equal(await input.inputValue(), "");
+    assert.equal(await facets.locator("input:checked").count(), 0);
+    assert.equal(await page.locator(records).count(), FLOWS.length);
+    assert.equal(new URL(page.url()).search, "");
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+  });
+
+  test(`${viewport.width}px: product search replaces summaries with qualified matches and restores them when cleared`, async (t) => {
     const ctx = await site.context({ viewport });
     t.after(() => ctx.close());
     const page = await ctx.newPage();
@@ -540,7 +687,7 @@ for (const viewport of [
     assert.ok(
       await mcp
         .getByRole("link", {
-          name: "See the full record for MCP authorization",
+          name: "Sources and review details for MCP authorization",
         })
         .isVisible(),
     );
@@ -563,7 +710,9 @@ for (const viewport of [
       name: "Search by flow, product or role",
     });
     await input.fill("keycloak");
-    await page.getByRole("button", { name: "Clear search" }).click();
+    if (viewport.width < 986)
+      await page.locator(".field-facets summary").click();
+    await page.getByRole("button", { name: "Clear filters" }).click();
     assert.equal(await page.locator(records).count(), FLOWS.length);
     assert.equal(await page.locator(".field-matches:visible").count(), 0);
     assert.ok(
@@ -598,7 +747,7 @@ test("material qualifications accompany product and report names without JavaScr
     );
     assert.match(
       await cloudflare.textContent(),
-      /Earlier wire format; rejects the format this guide illustrates/,
+      /Rejects the format this guide illustrates/,
     );
     const google = scope.getByRole("listitem").filter({
       has: page.getByRole("link", { name: "Google-Agent", exact: true }),
@@ -619,5 +768,19 @@ test("material qualifications accompany product and report names without JavaScr
   const eon = page
     .locator(".field-summary li")
     .filter({ has: page.getByRole("link", { name: "Eon", exact: true }) });
-  assert.match(await eon.textContent(), /A2A 0.3 when reported/);
+  assert.match(await eon.textContent(), /Eon reported using A2A 0.3/);
+});
+
+test("a flow fragment reveals a record excluded by saved filters", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(
+    page,
+    site.url("/implementations/?group=human-present&q=cognito#dpop"),
+  );
+  assert.ok(await page.locator("#dpop").isVisible());
+  assert.equal(await page.locator(".field-controls input:checked").count(), 0);
+  assert.equal(new URL(page.url()).search, "");
+  assert.equal(new URL(page.url()).hash, "#dpop");
 });
