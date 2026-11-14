@@ -457,16 +457,15 @@ may:
     {
       id: "implementations",
       title: "Real implementations",
+      afterNotes: true,
       intro: `Two paths the providers document, for agents and services you operate. They are documented implementation paths, read in November 2026. They are not evidence of how widely any of them is used in production, and none was tested here.`,
       parts: [
         {
           title: "An agent acting as itself against a custom service",
           tags: [{ text: "Google Cloud" }, { text: "Preview", tone: "amber" }],
-          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. The token is a JWT whose subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s public discovery and key endpoints, checking issuer, signature, audience and expiry. The service then authorizes the verified identity. Google’s example compares the subject against an allowlist of agent SPIFFE IDs.
+          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. Its subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s published discovery document and keys, then authorizes the verified identity. Google’s example checks the subject against an allowlist of agent SPIFFE IDs.
 
-The service accepts the identity token directly, as a bearer token on the request. Nothing is exchanged. Google documents the exchange path separately, for receivers with built-in federation such as Microsoft Entra, so not every integration needs a second token. By default the token is also bound to the agent’s certificate. A receiver can enforce that binding over mutual TLS. One that ignores it is accepting a bearer token.
-
-Google marks this feature Preview, under pre-GA terms and with limited support. That is the product’s release stage. It is separate from the maturity of the standards underneath, JWT and OpenID Connect Discovery, which are stable.`,
+Nothing is exchanged: the service accepts the identity token directly, as a bearer token. By default the token is also bound to the agent’s certificate, and a receiver can enforce that binding over mutual TLS. One that ignores it is accepting a bearer token. Google marks the feature Preview, under pre-GA terms. That is the product’s stage, not the maturity of the standards underneath.`,
           sources: [
             {
               label:
@@ -478,11 +477,9 @@ Google marks this feature Preview, under pre-GA terms and with limited support. 
         {
           title: "A federated workload with application-defined permissions",
           tags: [{ text: "Microsoft Entra" }],
-          body: `Two Microsoft documents together establish this path. Neither is a walkthrough for agents.
+          body: `A workload outside Azure exchanges a token from its own identity provider for a Microsoft Entra access token. For authorization, the designer of a custom API defines application roles on the API’s registration, and an administrator assigns them to the workload. The API validates the access token and checks its \`roles\` claim for the operation being called.
 
-The first covers authentication. With workload identity federation, a workload outside Azure presents a token from its own identity provider and receives a Microsoft Entra access token, with no client secret or certificate of its own.
-
-The second covers authorization. The designer of a custom API defines application roles on the API’s registration, and an administrator assigns them to the workload. The receiving API validates the access token and checks its \`roles\` claim for the operation being called. Microsoft says an API does not use the scope claim for workloads, and that the API is responsible for enforcing the workload’s access. By default an application role covers every instance of a resource, so anything finer is the API’s own policy.`,
+Microsoft says an API does not use the scope claim for workloads, and that the API is responsible for enforcing the workload’s access. An application role covers every instance of a resource by default, so anything finer is the API’s own policy. The two documents this rests on are not a walkthrough for agents.`,
           sources: [
             {
               label:
