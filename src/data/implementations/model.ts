@@ -5,6 +5,13 @@ export interface EvidenceSource {
   publisher: string;
   /** Publication date, only when the source states it. Not a deployment date. */
   publishedOn?: string;
+  /** The heading the passage is under, for the next reader to find it. */
+  section?: string;
+  /**
+   * A passage copied from the source that carries the claim. Not shown on the
+   * site: `npm run implementations:check` asks whether the page still has it.
+   */
+  quote?: string;
 }
 
 export interface EvidenceReview {
@@ -29,6 +36,11 @@ export interface ImplementationEvidence extends Evidence {
   organization: string;
   product: string;
   role: string;
+  /**
+   * The participants of the flow's diagram this product fills, by `id`. What
+   * `npm run implementations:coverage` counts, so only what the sources document.
+   */
+  parties: string[];
   release: {
     stage: "supported" | "preview" | "experimental" | "unspecified";
     label: string;
@@ -67,6 +79,12 @@ export interface ImplementationProfile {
   reviewedOn: string;
   scope: string;
   searchNote: string;
+  /**
+   * Parties of the flow that need nothing particular to it, such as an API
+   * that checks an ordinary access token. Research does not look for them, and
+   * the coverage report does not count them as gaps.
+   */
+  genericParties?: string[];
   implementations: ImplementationEvidence[];
   deployments: DeploymentEvidence[];
   observations: ObservationEvidence[];
@@ -85,6 +103,9 @@ export const ATTRIBUTION_LABEL = {
   "project-report": "Project’s account",
 } as const;
 
+/** A quote is a sentence or so, not a copy of the page. */
+export const QUOTE_LIMIT = 300;
+
 const dateIsValid = (value: string) =>
   /^\d{4}-\d{2}-\d{2}$/.test(value) &&
   !Number.isNaN(Date.parse(value)) &&
@@ -94,6 +115,8 @@ const dateIsValid = (value: string) =>
 export function validateProfiles(
   profiles: ImplementationProfile[],
   publishedSlugs?: string[],
+  /** Each flow's participant ids that software can fill, by slug. */
+  parties?: Record<string, string[]>,
 ): void {
   const slugs = new Set<string>();
   const ids = new Set<string>();
@@ -112,6 +135,13 @@ export function validateProfiles(
     ), `${profile.slug}: invalid review date`);
     require(profile.scope.trim() &&
       profile.searchNote.trim(), `${profile.slug}: describe review scope`);
+    const own =
+      parties && Object.hasOwn(parties, profile.slug)
+        ? parties[profile.slug]
+        : undefined;
+    for (const party of profile.genericParties ?? [])
+      require(!own ||
+        own.includes(party), `${profile.slug}: has no party ${party}`);
     const evidence = [
       ...profile.implementations,
       ...profile.deployments,
@@ -151,6 +181,10 @@ export function validateProfiles(
           require(dateIsValid(
             source.publishedOn,
           ), `${entry.id}: invalid publication date`);
+        if (source.quote !== undefined)
+          require(source.quote.trim() &&
+            source.quote.length <= QUOTE_LIMIT &&
+            source.section?.trim(), `${entry.id}: a quote is a short passage with its section`);
       }
     }
     for (const entry of profile.implementations) {
@@ -159,6 +193,20 @@ export function validateProfiles(
       require(entry.organization.trim() &&
         entry.product.trim() &&
         entry.role.trim(), `${entry.id}: name product and role`);
+      require(Array.isArray(entry.parties) &&
+        entry.parties.length > 0 &&
+        new Set(entry.parties).size ===
+          entry.parties
+            .length, `${entry.id}: say which parties of the flow it fills`);
+      const known =
+        parties && Object.hasOwn(parties, profile.slug)
+          ? parties[profile.slug]
+          : undefined;
+      if (known)
+        for (const party of entry.parties)
+          require(known.includes(
+            party,
+          ), `${entry.id}: ${profile.slug} has no party ${party}`);
       require(["supported", "preview", "experimental", "unspecified"].includes(
         entry.release.stage,
       ), `${entry.id}: unknown release stage`);

@@ -53,6 +53,14 @@ If nothing changed, say so in one line and still give sections 3 and 5.
 
 Review `src/data/implementations/records.ts` against [the implementation evidence review](adoption/evidence-review.md). Re-read the cited source for the exact role, release condition and claim before changing its review date. A production report remains a dated account; an inaccessible source does not prove retirement. Publication dates, evidence-added events and checked dates are independent. The evidence review date must not change the site-wide standards-review date.
 
+Where an entry’s source carries a `quote`, ask whether the page still has it:
+
+```bash
+npm run implementations:check
+```
+
+**Found** means the passage is on the page today. **Not found** means read the page: it may have been reworded, or the fact may have changed. **Not reached** is not checked. An entry with no quote is read as before. Adding entries is a different job, with its own procedure in [Implementation research](implementation-research.md).
+
 Implementation evidence sources are included in `scripts/sources.mjs`. `--add` requests only previously unrecorded sources, preserves existing validators and drops unused addresses. It does not perform or mark a whole-site source review.
 
 ### IETF drafts in the tracker
@@ -366,6 +374,51 @@ tokenetes.io
 www.ietf.org
 www.postman.com
 www.spaceandtime.io
+code.visualstudio.com
+community.atlassian.com
+developer.atlassian.com
+developers.etsy.com
+docs.keycard.ai
+everruns.com
+learn.chatgpt.com
+linear.app
+person.hello.coop
+pkg.go.dev
+ts.sdk.modelcontextprotocol.io
+twigbush.github.io
+www.canva.dev
+www.dock.io
+yoto.dev
+zuplo.com
+authdog.com
+docs.cerbos.dev
+documentation.gravitee.io
+easyssf.org
+cloud-apim.github.io
+doc.biscuitsec.org
+docs.sprites.dev
+fly.io
+infisical.com
+connect2id.com
+developers.googleblog.com
+docs.digdir.no
+duendesoftware.com
+developer.bankid.no
+docs.stacklok.com
+spring.io
+workos.com
+developers.notion.com
+www.atlassian.com
+docs.jans.io
+fhir.epic.com
+blog.pypi.org
+chainguard.dev
+docs.npmjs.com
+docs.pypi.org
+developer.squareup.com
+goteleport.com
+www.uber.com
+d.spirl.com
 ```
 
 Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the flows' `sources` link to, plus what the checks above read: `author-tools.ietf.org` for diffs between draft revisions, `api.github.com` and `raw.githubusercontent.com` for releases and files of projects hosted on GitHub, and `www.agenticcommerce.dev`, where `agenticcommerce.dev` redirects. From `developer.okta.com` on, they are the documentation sites of the vendors on the agent platforms page, which links to them only beside a few facts; they are where that review starts, and a vendor may keep the relevant page elsewhere.

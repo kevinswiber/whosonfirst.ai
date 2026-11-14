@@ -22,6 +22,8 @@
     "readme:figure": "node scripts/readme-figure.mjs",
     "social:assets": "node scripts/social-assets.mjs",
     "sources:changed": "node scripts/source-changes.mjs",
+    "implementations:coverage": "node scripts/implementation-coverage.mjs",
+    "implementations:check": "node scripts/implementation-check.mjs",
     "generate-types": "wrangler types",
     "deploy": "npm run build && wrangler deploy"
   },
