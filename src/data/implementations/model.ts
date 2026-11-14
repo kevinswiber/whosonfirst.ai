@@ -308,6 +308,18 @@ export function publishProfile(
   };
 }
 
+/**
+ * The pages an entry cites, each once. A source is recorded once for each
+ * passage it carries, and the passages are not shown, so a page with three
+ * of them would otherwise be listed three times.
+ */
+export function citedSources(sources: EvidenceSource[]): EvidenceSource[] {
+  const pages = new Map<string, EvidenceSource>();
+  for (const source of sources)
+    if (!pages.has(source.url)) pages.set(source.url, source);
+  return [...pages.values()];
+}
+
 /** A deployment count can only be derived from accepted deployment reports. */
 export function deploymentOrganizations(
   profile: ImplementationProfile,

@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { plain } from "../../scripts/quote-text.mjs";
 import {
+  citedSources,
   deploymentOrganizations,
   publishProfile,
   validateProfiles,
@@ -381,4 +382,27 @@ test("a worksheet that only names generic parties is applied without dating a re
   } finally {
     rmSync(dir, { recursive: true });
   }
+});
+
+test("a page that carries several passages is cited once", () => {
+  const npm = profiles
+    .flatMap((profile) => profile.implementations)
+    .find((entry) => entry.id === "wif-npm");
+  assert.ok(npm.sources.length > new Set(npm.sources.map((s) => s.url)).size);
+  assert.deepEqual(
+    citedSources(npm.sources).map((source) => source.url),
+    [
+      "https://docs.npmjs.com/trusted-publishers",
+      "https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/",
+    ],
+  );
+  for (const profile of profiles)
+    for (const entry of [
+      ...profile.implementations,
+      ...profile.deployments,
+      ...profile.observations,
+    ]) {
+      const urls = citedSources(entry.sources).map((source) => source.url);
+      assert.equal(urls.length, new Set(urls).size, entry.id);
+    }
 });
