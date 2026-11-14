@@ -9,6 +9,8 @@
 export interface Question {
   id: string;
   title: string;
+  /** One word for the question, where an answer is shown as a fact beside the others. */
+  short: string;
   help?: string;
   /** Where the question is explained, for a reader who is not sure what it is asking. */
   more?: { href: string; text: string };
@@ -18,6 +20,7 @@ export interface Question {
 export const questions: Question[] = [
   {
     id: "principal",
+    short: "Authority",
     title: "Whose authority is the agent using?",
     help: "The single most important question. It decides whose name is on the token.",
     more: {
@@ -39,6 +42,7 @@ export const questions: Question[] = [
   },
   {
     id: "human",
+    short: "Person",
     title: "Is a person available when access is needed?",
     options: [
       {
@@ -60,6 +64,7 @@ export const questions: Question[] = [
   },
   {
     id: "target",
+    short: "Calls",
     title: "What is the agent calling?",
     help: "Choose the interface for this call. An API, MCP server or agent can be yours or someone else’s.",
     options: [
@@ -71,6 +76,7 @@ export const questions: Question[] = [
   },
   {
     id: "boundary",
+    short: "Trust",
     title: "Who runs the service, and whose identity system does it trust?",
     options: [
       {
@@ -92,6 +98,7 @@ export const questions: Question[] = [
   },
   {
     id: "runtime",
+    short: "Runs",
     title: "Where does the agent run?",
     options: [
       {
@@ -115,6 +122,7 @@ export const questions: Question[] = [
   },
   {
     id: "risk",
+    short: "Risk",
     title: "What is the worst it could do?",
     options: [
       { value: "read", label: "Read data" },
@@ -185,9 +193,9 @@ export const situations: Situation[] = [
     ],
   },
   {
-    slug: "person-away",
-    name: "Person away",
-    title: "Person away: an agent acting for a person who is not there",
+    slug: "person-unavailable",
+    name: "Person unavailable",
+    title: "Person unavailable: an agent acting for a person who is not there",
     when: { principal: ["user"], human: ["absent"] },
     short:
       "The agent acts for a person who approved in advance and is not there when it runs.",

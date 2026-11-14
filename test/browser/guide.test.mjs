@@ -74,32 +74,57 @@ test("an older internal-target link restores shared identity without guessing an
   );
 });
 
+const facts = (page) =>
+  page
+    .locator(".dg-facts > div")
+    .evaluateAll((rows) =>
+      rows.map((r) => [
+        r.querySelector("dt").textContent,
+        r.querySelector("dd").textContent,
+      ]),
+    );
+
 test("the situation is named once the first two questions are answered, and not before", async (t) => {
   const ctx = await site.context();
   t.after(() => ctx.close());
   const page = await ctx.newPage();
   const name = page.locator(".dg-sit-name");
-  const more = page.locator(".dg-sit-more a");
 
+  // one of the two answered: no name, and the answers there are, each with its word
   await open(page, site.url("/guide/?principal=user&target=api"));
   assert.equal(await name.count(), 0, "named from one answer");
+  assert.deepEqual(await facts(page), [
+    ["Authority", "A specific person’s"],
+    ["Calls", "An HTTP API"],
+  ]);
 
   await page.getByRole("radio", { name: /^No\b/ }).check({ force: true });
-  assert.equal(await name.textContent(), "Person away");
-  assert.equal(await more.getAttribute("href"), "/guide/person-away/");
-  // the answers the name does not stand for are beside it, in words
-  assert.equal(await page.locator(".dg-sit-rest").textContent(), "An HTTP API");
+  assert.equal(await name.textContent(), "Person unavailable");
+  const note = page.locator(".dg-sit-note");
   assert.match(
-    await page.locator(".dg-sit-label").textContent(),
-    /this site’s words/,
+    await note.textContent(),
+    /This site’s name for the first two answers/,
   );
+  assert.equal(
+    await note.locator("a").getAttribute("href"),
+    "/guide/person-unavailable/",
+  );
+  // the answers the name does not stand for are beside it
+  assert.deepEqual(await facts(page), [["Calls", "An HTTP API"]]);
 
   await page.getByRole("radio", { name: /Its own/ }).check({ force: true });
   assert.equal(await name.textContent(), "Own authority");
-  assert.equal(
-    await page.locator(".dg-sit-rest").textContent(),
-    "No · An HTTP API",
-  );
+  assert.deepEqual(await facts(page), [
+    ["Person", "No"],
+    ["Calls", "An HTTP API"],
+  ]);
+
+  // Start over takes the name and the answers with it
+  await page.click('decision-guide button[type="reset"]');
+  await page.locator(".dg-empty").waitFor();
+  assert.equal(await name.count(), 0);
+  assert.equal(await page.locator(".dg-facts").count(), 0);
+  assert.equal(page.url(), site.url("/guide/"));
 });
 
 test("the result’s link can be copied with every answer in it", async (t) => {
@@ -115,6 +140,50 @@ test("the result’s link can be copied with every answer in it", async (t) => {
   await page.click(".dg-copy");
   await page.locator(".dg-copied", { hasText: "Copied" }).waitFor();
   assert.equal(await page.evaluate(() => navigator.clipboard.readText()), url);
+});
+
+test("on a phone, the results are one step from the questions and back, and an answer moves nothing", async (t) => {
+  const ctx = await site.context({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    reducedMotion: "reduce",
+  });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(page, site.url("/guide/"));
+  const jump = page.locator(".dg-jump");
+  assert.equal((await jump.textContent()).trim(), "View results");
+
+  // answering does not scroll the page or take the focus away
+  const answer = page.locator('input[name="principal"][value="user"]');
+  await answer.scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => scrollY);
+  await answer.check();
+  assert.match(await jump.textContent(), /^View results · \d+ matches$/);
+  assert.equal(await page.evaluate(() => scrollY), before, "the page moved");
+  assert.ok(
+    await answer.evaluate((el) => document.activeElement === el),
+    "the focus moved",
+  );
+
+  // the way down stays on screen while the questions are
+  const inView = (locator) =>
+    locator.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= innerHeight;
+    });
+  assert.ok(await inView(jump), "the way to the results is off screen");
+  await jump.click();
+  assert.ok(
+    await inView(page.locator(".dg-kicker")),
+    "did not reach the results",
+  );
+  await page.locator(".dg-edit").click();
+  assert.ok(
+    await inView(page.locator("#questions legend").first()),
+    "did not get back to the questions",
+  );
 });
 
 test("a situation’s page says what each start and each caution applies to, without a script", async (t) => {

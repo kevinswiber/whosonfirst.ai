@@ -47,7 +47,7 @@ test("a situation is named from the first two questions, by one answer to each",
 const NAMES = {
   "user present": "person-present",
   "user reachable": "person-reachable",
-  "user absent": "person-away",
+  "user absent": "person-unavailable",
   "self present": "own-authority",
   "self reachable": "own-authority",
   "self absent": "own-authority",
@@ -226,7 +226,7 @@ test("what a partly answered guide leaves out is on the situation’s page", () 
     "local",
   ]);
   // one flow, a rule that replaces another when no one is there: only that one
-  const away = starts("person-away").filter(
+  const away = starts("person-unavailable").filter(
     (r) => r.flow === "cross-app-access",
   );
   assert.equal(away.length, 1);
