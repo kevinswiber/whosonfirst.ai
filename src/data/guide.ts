@@ -14,7 +14,8 @@ export interface Question {
   help?: string;
   /** Where the question is explained, for a reader who is not sure what it is asking. */
   more?: { href: string; text: string };
-  options: { value: string; label: string; hint?: string }[];
+  /** `brief` is the answer in a few words, for the list of facts beside a result. */
+  options: { value: string; label: string; brief: string; hint?: string }[];
 }
 
 export const questions: Question[] = [
@@ -31,11 +32,13 @@ export const questions: Question[] = [
       {
         value: "user",
         label: "A specific person’s",
+        brief: "A person’s",
         hint: "Their data, their permissions",
       },
       {
         value: "self",
         label: "Its own",
+        brief: "Its own",
         hint: "A service identity that an admin set up",
       },
     ],
@@ -48,16 +51,19 @@ export const questions: Question[] = [
       {
         value: "present",
         label: "Yes, in the session",
+        brief: "In the session",
         hint: "They can click through a sign-in now",
       },
       {
         value: "reachable",
         label: "Reachable, but elsewhere",
+        brief: "Reachable elsewhere",
         hint: "Phone, chat, email",
       },
       {
         value: "absent",
         label: "No",
+        brief: "Unavailable",
         hint: "Scheduled, event-driven, overnight",
       },
     ],
@@ -68,10 +74,30 @@ export const questions: Question[] = [
     title: "What is the agent calling?",
     help: "Choose the interface for this call. An API, MCP server or agent can be yours or someone else’s.",
     options: [
-      { value: "api", label: "An HTTP API", hint: "For example, a REST API" },
-      { value: "mcp", label: "An MCP server", hint: "Calling tools over MCP" },
-      { value: "agent", label: "Another agent", hint: "Handing off a task" },
-      { value: "web", label: "A public website", hint: "Browsing web pages" },
+      {
+        value: "api",
+        label: "An HTTP API",
+        brief: "HTTP API",
+        hint: "For example, a REST API",
+      },
+      {
+        value: "mcp",
+        label: "An MCP server",
+        brief: "MCP server",
+        hint: "Calling tools over MCP",
+      },
+      {
+        value: "agent",
+        label: "Another agent",
+        brief: "Another agent",
+        hint: "Handing off a task",
+      },
+      {
+        value: "web",
+        label: "A public website",
+        brief: "Public website",
+        hint: "Browsing web pages",
+      },
     ],
   },
   {
@@ -82,16 +108,19 @@ export const questions: Question[] = [
       {
         value: "same",
         label: "We run it and share an identity system",
+        brief: "Shared identity system",
         hint: "Both sides use our organization’s identity system",
       },
       {
         value: "enterprise",
         label: "A vendor that trusts our company sign-in",
+        brief: "Company sign-in",
         hint: "Both sides trust our company’s identity provider",
       },
       {
         value: "cross",
         label: "It uses a separate identity system",
+        brief: "Separate identity system",
         hint: "For example, a third-party API with its own accounts",
       },
     ],
@@ -104,20 +133,31 @@ export const questions: Question[] = [
       {
         value: "local",
         label: "On the user’s machine",
+        brief: "On the user’s machine",
         hint: "Desktop app, IDE, CLI",
       },
       {
         value: "headless",
         label: "Remote, with no browser",
+        brief: "Remote, no browser",
         hint: "Container, SSH session, CI job",
       },
       {
         value: "k8s",
         label: "Our own servers or cloud",
+        brief: "Our own servers or cloud",
         hint: "A hosted app, containers, Kubernetes",
       },
-      { value: "managed", label: "A managed agent platform" },
-      { value: "sandbox", label: "A sandbox that runs untrusted code" },
+      {
+        value: "managed",
+        label: "A managed agent platform",
+        brief: "Managed agent platform",
+      },
+      {
+        value: "sandbox",
+        label: "A sandbox that runs untrusted code",
+        brief: "Sandbox",
+      },
     ],
   },
   {
@@ -125,11 +165,16 @@ export const questions: Question[] = [
     short: "Risk",
     title: "What is the worst it could do?",
     options: [
-      { value: "read", label: "Read data" },
-      { value: "write", label: "Change things that can be undone" },
+      { value: "read", label: "Read data", brief: "Read only" },
+      {
+        value: "write",
+        label: "Change things that can be undone",
+        brief: "Reversible changes",
+      },
       {
         value: "irreversible",
         label: "Something irreversible",
+        brief: "Irreversible",
         hint: "Move money, delete, send in someone’s name",
       },
     ],

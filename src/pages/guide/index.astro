@@ -113,7 +113,7 @@ const data = {
               <div class="dg-options">
                 {q.options.map((o) => (
                   <label>
-                    <input type="radio" name={q.id} value={o.value} data-fact={q.short} />
+                    <input type="radio" name={q.id} value={o.value} data-fact={q.short} data-brief={o.brief} />
                     <span>
                       <strong>{o.label}</strong>
                       {o.hint && <em>{o.hint}</em>}
@@ -240,16 +240,18 @@ const data = {
         // stands for two of them, and a reader who repeats it should see the rest.
         const sit = situationFor(data.situations, a);
         if (sit) {
-          html += `<p class="dg-sit-name">${esc(sit.name)}</p><p class="dg-sit-note">This site’s name for the first ${Object.keys(sit.when).length === 1 ? 'answer' : 'two answers'}. <a href="/guide/${sit.slug}/">What “${esc(sit.name)}” means</a></p>`;
+          html += `<p class="dg-sit-label">Situation · this site’s wording</p><p class="dg-sit-name">${esc(sit.name)}</p>`;
         }
         const facts = names
           .filter((n) => a[n] != null && !(sit && n in sit.when))
           .map((n) => {
             const input = form.querySelector<HTMLInputElement>(`input[name="${n}"]:checked`)!;
-            const said = input.parentElement!.querySelector('strong')!.textContent ?? '';
-            return `<div><dt>${esc(input.dataset.fact ?? '')}</dt><dd>${esc(said)}</dd></div>`;
+            return `<div><dt>${esc(input.dataset.fact ?? '')}</dt><dd>${esc(input.dataset.brief ?? '')}</dd></div>`;
           });
         if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
+        if (sit) {
+          html += `<p class="dg-sit-note"><a href="/guide/${sit.slug}/">About “${esc(sit.name)}”</a> · Covers the first ${Object.keys(sit.when).length === 1 ? 'answer' : 'two answers'} only.</p>`;
+        }
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -361,7 +363,6 @@ const data = {
       padding-left: 3rem;
       border-left: 1px solid var(--border);
     }
-    .dg-jump,
     .dg-out :global(.dg-edit) {
       display: none;
     }
@@ -374,34 +375,26 @@ const data = {
   }
   legend {
     display: flex;
-    align-items: center;
-    gap: 0.7rem;
+    align-items: baseline;
+    gap: 0.9rem;
     font-family: var(--font-heading);
-    font-size: 1.2rem;
+    font-size: 1.32rem;
     font-weight: 560;
     line-height: 1.2;
     padding: 0;
     margin-bottom: 0.3rem;
   }
+  /* The number is a number: which questions are answered shows in the radios. */
   .dg-num {
-    display: grid;
-    place-items: center;
     flex: none;
-    width: 1.6rem;
-    height: 1.6rem;
-    border: 1.5px solid var(--fg);
-    border-radius: var(--radius-round);
+    width: 1rem;
     font-family: var(--font-mono);
-    font-size: 0.76rem;
+    font-size: 0.8rem;
     font-weight: 500;
-  }
-  fieldset:has(input:checked) .dg-num {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
+    color: var(--fg-muted);
   }
   .dg-help {
-    margin: 0 0 0.3rem 2.3rem;
+    margin: 0 0 0.3rem 1.9rem;
     font-size: 0.92rem;
     color: var(--fg-muted);
   }
@@ -409,38 +402,38 @@ const data = {
   /* An answer is a row with a radio button, and the whole row is the target. */
   .dg-options {
     display: grid;
-    gap: 0 1.2rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-    margin: 0.4rem 0 0 2.3rem;
+    margin: 0.5rem 0 0 1.9rem;
   }
   .dg-options label {
     cursor: pointer;
     display: flex;
     align-items: flex-start;
-    gap: 0.6rem;
+    gap: 0.75rem;
     min-height: 2.75rem;
-    padding: 0.45rem 0.5rem;
+    padding: 0.4rem 0.5rem;
     margin-left: -0.5rem;
     border-radius: var(--radius);
   }
   .dg-options input {
     flex: none;
-    width: 1.1rem;
-    height: 1.1rem;
-    margin: 0.16rem 0 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0.14rem 0 0;
     accent-color: var(--accent);
     cursor: pointer;
+    /* reached with the keyboard, it stops clear of the strip at the foot */
+    scroll-margin-bottom: 4.5rem;
   }
   .dg-options strong {
     display: block;
-    font-size: 0.96rem;
-    font-weight: 400;
+    font-size: 1rem;
+    font-weight: 500;
     line-height: 1.3;
   }
   .dg-options em {
     display: block;
     font-style: normal;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--fg-muted);
     line-height: 1.35;
     margin-top: 0.1rem;
@@ -448,8 +441,10 @@ const data = {
   .dg-options label:hover {
     background: var(--bg-raised);
   }
+  /* chosen: the filled radio, a heavier label, and the accent */
   .dg-options input:checked + span strong {
     font-weight: 600;
+    color: var(--accent);
   }
   .dg-options label:has(input:focus-visible) {
     outline: 2px solid var(--accent);
@@ -459,27 +454,30 @@ const data = {
     outline: none;
   }
 
+  /* Start over, and the way to the recommendations with how many there are.
+     It stays at the foot of the window for as long as the questions are on
+     screen: on a phone the recommendations are far below them, and beside
+     them on a wide screen the top of the list has scrolled away. */
   .dg-foot {
+    position: sticky;
+    bottom: 0;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 0.6rem 1rem;
     margin: 0;
+    padding: 0.6rem 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border-strong);
   }
   .dg-jump {
     font-weight: 500;
   }
-  /* On a phone the recommendations are far below the questions. The way down
-     to them stays in reach for as long as the questions are on screen. */
   @media (max-width: 61.99rem) {
     .dg-foot {
-      position: sticky;
-      bottom: 0;
       margin-inline: calc(-1 * var(--gutter));
-      padding: 0.6rem var(--gutter);
-      background: var(--bg);
-      border-top: 1px solid var(--border-strong);
+      padding-inline: var(--gutter);
     }
   }
 
@@ -518,35 +516,42 @@ const data = {
   .dg-out :global(.dg-copied:empty) {
     display: none;
   }
-  .dg-out :global(.dg-sit-name) {
-    font-family: var(--font-heading);
-    font-size: 1.3rem;
-    font-weight: 560;
-    line-height: 1.2;
-    margin: 0.9rem 0 0;
-  }
-  .dg-out :global(.dg-sit-note) {
-    margin: 0.15rem 0 0;
-    font-size: 0.88rem;
-    color: var(--fg-muted);
-  }
-  .dg-out :global(.dg-facts) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.6rem;
-    margin: 0.8rem 0 0;
-  }
-  .dg-out :global(.dg-facts dt) {
+  .dg-out :global(.dg-sit-label) {
     font-family: var(--font-label);
-    font-size: 0.66rem;
+    font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 1rem 0 0;
+  }
+  .dg-out :global(.dg-sit-name) {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 560;
+    line-height: 1.25;
+    margin: 0.2rem 0 0;
+  }
+  /* each answer on a line of its own: the word for the question, then the answer */
+  .dg-out :global(.dg-facts) {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.15rem 1.6rem;
+    margin: 0.6rem 0 0;
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+  .dg-out :global(.dg-facts div) {
+    display: contents;
+  }
+  .dg-out :global(.dg-facts dt) {
     color: var(--fg-muted);
   }
   .dg-out :global(.dg-facts dd) {
     margin: 0;
-    font-size: 0.93rem;
-    line-height: 1.35;
+  }
+  .dg-out :global(.dg-sit-note) {
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);

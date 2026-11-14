@@ -94,29 +94,30 @@ test("the situation is named once the first two questions are answered, and not 
   await open(page, site.url("/guide/?principal=user&target=api"));
   assert.equal(await name.count(), 0, "named from one answer");
   assert.deepEqual(await facts(page), [
-    ["Authority", "A specific person’s"],
-    ["Calls", "An HTTP API"],
+    ["Authority", "A person’s"],
+    ["Calls", "HTTP API"],
   ]);
 
   await page.getByRole("radio", { name: /^No\b/ }).check({ force: true });
   assert.equal(await name.textContent(), "Person unavailable");
   const note = page.locator(".dg-sit-note");
-  assert.match(
-    await note.textContent(),
-    /This site’s name for the first two answers/,
-  );
+  assert.match(await note.textContent(), /Covers the first two answers only/);
   assert.equal(
     await note.locator("a").getAttribute("href"),
     "/guide/person-unavailable/",
   );
   // the answers the name does not stand for are beside it
-  assert.deepEqual(await facts(page), [["Calls", "An HTTP API"]]);
+  assert.deepEqual(await facts(page), [["Calls", "HTTP API"]]);
+  assert.match(
+    await page.locator(".dg-sit-label").textContent(),
+    /this site’s wording/,
+  );
 
   await page.getByRole("radio", { name: /Its own/ }).check({ force: true });
   assert.equal(await name.textContent(), "Own authority");
   assert.deepEqual(await facts(page), [
-    ["Person", "No"],
-    ["Calls", "An HTTP API"],
+    ["Person", "Unavailable"],
+    ["Calls", "HTTP API"],
   ]);
 
   // Start over takes the name and the answers with it
