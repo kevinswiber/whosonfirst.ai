@@ -243,7 +243,7 @@ export const rules: Rule[] = [
       human: ["absent"],
       boundary: ["same", "cross"],
     },
-    why: "Someone has to consent once. Obtain the grant while the user is present, with the narrowest scope that works, then run unattended on a refresh token. This is the riskiest arrangement on this page: plan how it is revoked.",
+    why: "Someone has to consent once. Obtain the grant while the user is present, with the narrowest scope that works. Where the authorization server issues a refresh token, the agent can then run unattended on it. Plan how the grant is revoked.",
   },
   {
     flow: "ciba",
@@ -497,7 +497,7 @@ export const cautions: Caution[] = [
   },
   {
     when: { principal: ["user"], human: ["absent"] },
-    text: "An unattended agent holding a person’s long-lived grant acts with nobody watching. Scope it narrowly, bind it to a key, and make sure someone can revoke it.",
+    text: "An unattended agent can go on using a person’s grant while that person is unavailable. Scope it narrowly, bind it to a key where both sides support that, and make sure someone can revoke it.",
   },
   {
     when: { risk: ["irreversible"], human: ["absent"] },
