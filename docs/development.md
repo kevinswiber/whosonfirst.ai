@@ -91,6 +91,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/pages/learn/*.astro`             | One file per lesson: its text, its figure and its questions                                        |
 | `src/layouts/Lesson.astro`            | The shape every lesson shares                                                                      |
 | `src/components/Scenario.astro`       | A lesson's figure: a small cast, one thing that varies, the same questions asked of each variation |
+| `src/components/Glance.astro`         | The same figure with nothing to choose: every variation against every question, on the home page   |
 | `src/components/Check.astro`          | Questions with feedback that says why                                                              |
 | `src/components/Here.astro`           | The line under the site header that says which page this is, on the long pages                     |
 | `src/data/learn/api-sees.ts`          | The figure lesson 1 and the home page share                                                        |

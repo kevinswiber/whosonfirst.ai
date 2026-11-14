@@ -155,7 +155,7 @@ async function readSite() {
         eyebrow: text(one(".hero .eyebrow")),
         question: text(one(".hero h1")),
         lede: text(one(".hero .lede")),
-        figure: text(one(".hero .sc-title")),
+        figure: text(one(".hero .ag-title")),
         description: one('meta[name="description"]').content,
         descriptor: text(one(".site-footer p")).split(".")[0],
         // the facts under the figure: what kind of guide this is, and when it was checked

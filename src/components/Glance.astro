@@ -1,0 +1,267 @@
+---
+/**
+ * A scenario with nothing to choose: every variation is a row, every question
+ * a column, and each cell is a verdict. It is for a place where the comparison
+ * is the point and the reader has not yet decided to read, as on the home page.
+ * The lesson that owns the scenario shows it in full, one variation at a time,
+ * with the reasons; this figure links there.
+ *
+ * Under each variation's name is what sets its request apart: the lines of its
+ * first listing that no other variation's listing has.
+ */
+import type { Scenario } from "../data/learn/types";
+import { VERDICT_WORD } from "../data/learn/types";
+import { inline } from "../lib/md";
+
+interface Props {
+  scenario: Scenario;
+  title: string;
+  /** The situation, in a sentence or two, since there is no drawing of it. */
+  setup: string;
+  /** What the table adds up to. md-lite. */
+  so: string;
+  /** The way on, to where the reasons are. */
+  more: { href: string; text: string };
+}
+const { scenario: s, title, setup, so, more } = Astro.props;
+
+const lines = (o: (typeof s.options)[number]) =>
+  (o.exhibits?.[0]?.text ?? "").trim().split("\n");
+const rows = s.options.map((o) => {
+  if (o.findings.some((f) => !f.verdict))
+    throw new Error(
+      `scenario "${s.id}", option "${o.id}": a glance needs a verdict for every question`,
+    );
+  const others = s.options.filter((p) => p !== o).flatMap(lines);
+  return { o, sends: lines(o).filter((l) => l && !others.includes(l)) };
+});
+---
+
+<figure class="ag">
+  <p class="ag-title">{title}</p>
+  <p class="ag-setup">{setup}</p>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">{s.legend}</th>
+        {s.questions.map((q) => <th scope="col">{q}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(({ o, sends }) => (
+          <tr>
+            <th scope="row">
+              <span class="ag-name">{o.name}</span>
+              {sends.map((l) => (
+                <span class="ag-sends">
+                  <code>{l}</code>
+                </span>
+              ))}
+            </th>
+            {o.findings.map((f, k) => (
+              <td data-q={s.questions[k]}>
+                <span class={`ag-mark is-${f.verdict}`}>{f.verdict && VERDICT_WORD[f.verdict]}</span>
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p class="ag-so" set:html={inline(so)} />
+  <p class="ag-more">
+    <a href={more.href}>{more.text}</a>
+  </p>
+</figure>
+
+<style>
+  .ag {
+    margin: 0;
+    background: var(--bg-raised);
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.2rem;
+    color: var(--fg);
+  }
+  .ag-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: 600;
+    letter-spacing: var(--display-tracking);
+  }
+  .ag-setup {
+    margin: 0 0 0.9rem;
+    max-width: 36rem;
+    font-size: 0.96rem;
+    color: var(--fg-muted);
+  }
+
+  table {
+    margin: 0;
+    width: 100%;
+  }
+  thead th {
+    vertical-align: bottom;
+    white-space: normal;
+    line-height: 1.3;
+    padding: 0.4rem 0.8rem 0.45rem 0;
+    border-bottom: 1px solid var(--fg);
+  }
+  /* the questions are the page's own, so they are set as words and not as labels */
+  thead th + th {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg);
+  }
+  thead th:last-child,
+  tbody td:last-child {
+    padding-right: 0;
+  }
+  tbody :is(th, td) {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 0.8rem 0.7rem 0;
+    vertical-align: top;
+  }
+  tbody tr:last-child :is(th, td) {
+    border-bottom-color: var(--fg);
+  }
+  tbody th {
+    font-family: var(--font-body);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg);
+    white-space: normal;
+  }
+  .ag-name {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .ag-sends {
+    display: block;
+  }
+  code {
+    padding: 0;
+    background: none;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    overflow-wrap: anywhere;
+  }
+  /* the mark sits level with the variation's name */
+  tbody td {
+    padding-top: 0.82rem;
+  }
+
+  /* the verdict is a word first; shape and color repeat it */
+  .ag-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: var(--font-label);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ag-mark::before {
+    content: '';
+    width: 0.72em;
+    height: 0.72em;
+    flex: none;
+    border-radius: 50%;
+  }
+  .is-yes {
+    color: var(--green);
+  }
+  .is-yes::before {
+    background: currentColor;
+  }
+  .is-no {
+    color: var(--red);
+  }
+  .is-no::before {
+    box-shadow: inset 0 0 0 1.5px currentColor;
+  }
+  .is-partly {
+    color: var(--amber);
+  }
+  .is-partly::before {
+    box-shadow: inset 0 0 0 1.5px currentColor;
+    background: linear-gradient(to right, currentColor 50%, transparent 50%);
+  }
+  .is-skipped {
+    color: var(--fg-muted);
+  }
+  .is-skipped::before {
+    height: 1.5px;
+    border-radius: 0;
+    background: currentColor;
+  }
+
+  .ag-so {
+    margin: 1rem 0 0;
+    max-width: 38rem;
+    font-size: 0.98rem;
+  }
+  .ag-more {
+    margin: 0.7rem 0 0;
+    font-size: 0.94rem;
+  }
+  .ag-more a::after {
+    content: ' →';
+  }
+
+  /* On a phone four columns would crowd the names. So each variation becomes a
+     block: its name, then every question beside its answer. The column headings
+     are still there for a screen reader; each cell repeats its own. */
+  @media (max-width: 34rem) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    tbody tr {
+      display: block;
+      padding: 0.7rem 0;
+      border-top: 1px solid var(--border);
+    }
+    tbody tr:first-child {
+      border-top-color: var(--fg);
+    }
+    tbody tr:last-child {
+      border-bottom: 1px solid var(--fg);
+    }
+    tbody :is(th, td) {
+      display: block;
+      border: 0;
+      padding: 0;
+    }
+    tbody th {
+      padding-bottom: 0.4rem;
+    }
+    tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding: 0.12rem 0;
+      font-size: 0.92rem;
+    }
+    tbody td::before {
+      content: attr(data-q);
+    }
+  }
+</style>

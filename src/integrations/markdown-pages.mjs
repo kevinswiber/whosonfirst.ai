@@ -105,6 +105,8 @@ const ROW = [
   "step-route",
   "step-kind",
   "when",
+  "ag-name", // a variation at a glance, and
+  "ag-sends", // each line that sets its request apart
 ];
 /** Inline elements. Two of these side by side with nothing between were set apart by layout. */
 const PHRASING = [

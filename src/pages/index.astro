@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import Scenario from "../components/Scenario.astro";
+import Glance from "../components/Glance.astro";
 import DocMeta from "../components/DocMeta.astro";
 import { byGroup, flow, flows } from "../data/flows";
 import { apiSees } from "../data/learn/api-sees";
@@ -225,11 +225,12 @@ const news = [
         </nav>
       </div>
 
-      <Scenario
+      <Glance
         scenario={apiSees}
         title="What can the API tell?"
-        brief
-        more={{ href: `/learn/${lessons[0].slug}/`, text: 'A token Alice approved answers all three. Lesson 1 shows why' }}
+        setup="Alice asks an agent what is on her calendar tomorrow. The agent calls the calendar API and attaches one of three things."
+        so="Each key names one party. **Only the token answers all three.**"
+        more={{ href: `/learn/${lessons[0].slug}/`, text: 'Lesson 1 shows why, one request at a time' }}
       />
 
       <div class="hero-meta">

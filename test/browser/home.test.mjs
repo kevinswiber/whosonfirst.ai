@@ -9,7 +9,6 @@ import {
   useBrowser,
   VIEWPORTS,
 } from "../support/browser.mjs";
-import { pathClean } from "../support/measure.mjs";
 import { LESSON_ORDER } from "../support/site.mjs";
 
 const DESTINATIONS = [
@@ -119,55 +118,60 @@ for (const theme of THEMES) {
         });
       }
 
-      // The figure in the hero is lesson 1's, without its listings. It has to make
-      // its point before anything is clicked, and without a page of scrolling.
-      const first = () =>
+      // The figure in the hero is lesson 1's comparison, with nothing to choose:
+      // every credential against every question, on screen as the page arrives.
+      const figure = () =>
         page.evaluate(() => {
-          const fig = document.querySelector(".hero .sc");
-          const panel = [...fig.querySelectorAll(".sc-panel")].find(
-            (p) => p.offsetParent,
-          );
-          return panel
-            ? {
-                rows: panel.querySelectorAll(".sc-findings tbody tr").length,
-                marks: [...panel.querySelectorAll(".sc-mark")].map((m) =>
-                  m.textContent.trim(),
-                ),
-                so: panel.querySelector(".sc-so").textContent.trim().length,
-                height: fig.getBoundingClientRect().height,
-              }
-            : null;
+          const fig = document.querySelector(".hero .ag");
+          const box = fig.getBoundingClientRect();
+          const seen = (el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.left >= box.left && r.right <= box.right;
+          };
+          return {
+            controls: fig.querySelectorAll("input, button, select").length,
+            rows: [...fig.querySelectorAll("tbody tr")].map((tr) => ({
+              name: tr.querySelector(".ag-name").textContent.trim(),
+              sends: tr.querySelectorAll(".ag-sends").length,
+              marks: [...tr.querySelectorAll(".ag-mark")]
+                .filter(seen)
+                .map((m) => m.textContent.trim()),
+            })),
+            so: fig.querySelector(".ag-so").textContent.trim().length,
+            more: fig.querySelector(".ag-more a").getAttribute("href"),
+            height: box.height,
+            pageWider: document.documentElement.scrollWidth > innerWidth,
+          };
         });
-      test("explainer shows a complete first state", async () => {
-        const f = await first();
-        assert.ok(f, "not visible");
-        assert.ok(f.rows === 3 && f.so > 0, f.marks.join(", "));
+      test("figure shows every credential against every question, with nothing to click", async () => {
+        const f = await figure();
+        assert.equal(f.controls, 0, "the figure has a control");
+        assert.deepEqual(
+          f.rows.map((r) => [r.marks.length, r.sends > 0]),
+          [
+            [3, true],
+            [3, true],
+            [3, true],
+          ],
+          JSON.stringify(f.rows),
+        );
+        assert.ok(f.so > 0, "no conclusion under the table");
+      });
+      test("figure ends on the credential that answers all three, and leads to lesson 1", async () => {
+        const f = await figure();
+        assert.deepEqual(f.rows.at(-1).marks, ["Yes", "Yes", "Yes"]);
+        assert.equal(f.more, LESSON_ORDER[0]);
       });
       // beside the text on a wide screen it fits the window; on a phone, where
-      // its path runs down the page, it may run a little past one
-      test("explainer fits in about one screen", async () => {
-        const f = await first();
+      // each credential is a block of its own, it may run a little past one
+      test("figure fits in about one screen, and inside the page", async () => {
+        const f = await figure();
         const room = vp.name === "phone" ? vp.height * 1.3 : vp.height;
-        assert.ok(f, "not visible");
         assert.ok(
           f.height <= room,
           `${Math.round(f.height)}px, allowed ${Math.round(room)}px`,
         );
-      });
-      test("choosing another credential changes the panel", async () => {
-        await page.check('.hero .sc input[value="token"]', { force: true });
-        const second = await page.evaluate(() =>
-          [...document.querySelectorAll(".hero .sc-panel")]
-            .filter((p) => p.offsetParent)
-            .map((p) => p.dataset.option),
-        );
-        assert.deepEqual(second, ["token"]);
-      });
-      test("explainer path: no label overlaps a box or another label, or leaves the figure, in either state", async () => {
-        const keyPath = await page.evaluate(pathClean, ".hero .sc");
-        await page.check('.hero .sc input[value="token"]', { force: true });
-        const tokenPath = await page.evaluate(pathClean, ".hero .sc");
-        assert.deepEqual({ keyPath, tokenPath }, { keyPath: 0, tokenPath: 0 });
+        assert.ok(!f.pageWider, "the page scrolls sideways");
       });
 
       // both answers to "whose authority" are on screen together, before either list of flows
