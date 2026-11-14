@@ -33,7 +33,7 @@ const reviewed = groups
       <h1>Implementations</h1>
       <p class="lede">Find products that implement part of a flow and accounts of how named organizations have used it in production.</p>
       <p class="evidence-coverage">
-        {reviewed} of {flows.length} flows reviewed · <a href="#methodology">How we review evidence</a>
+        {reviewed} of {flows.length} flows reviewed · <a href="/about/#how-implementation-evidence-is-reviewed">How evidence is reviewed</a>
       </p>
       <p class="evidence-note">Coverage is selective and varies by flow. These records do not measure adoption. Mention is not recommendation.</p>
     </div>
@@ -141,36 +141,6 @@ const reviewed = groups
         ))}
       </div>
     </implementation-directory>
-
-    <section class="evidence-method prose" aria-labelledby="methodology">
-      <h2 id="methodology">How we review evidence</h2>
-      <p>
-        Each reviewed flow lists the sources consulted, what they establish, and the limits of that evidence.
-        Coverage varies by flow.
-      </p>
-      <dl>
-        <div>
-          <dt>Standards maturity</dt>
-          <dd>Comes from the flow’s specifications. <a href="/about/#how-flows-are-rated">How flows are rated</a>.</dd>
-        </div>
-        <div>
-          <dt>Implementation evidence</dt>
-          <dd>Primary sources describe each product’s role and support. Where they give a release stage, the record uses their wording. Interoperability requires its own evidence.</dd>
-        </div>
-        <div>
-          <dt>Deployment reports</dt>
-          <dd>Accounts of specific deployments name the operator, who reported the use, and the setting. “No report included” describes this review’s coverage; it does not establish that the flow is unused.</dd>
-        </div>
-        <div>
-          <dt>Observations</dt>
-          <dd>Counts of advertised support or other measurements retain their unit, population and date when known. They are kept out of the count of production operators.</dd>
-        </div>
-        <div>
-          <dt>Dates</dt>
-          <dd>A report’s publication, a product release, and the date evidence was added or checked each describe different events. A report can describe earlier use.</dd>
-        </div>
-      </dl>
-    </section>
   </div>
 </Base>
 
@@ -439,8 +409,7 @@ const reviewed = groups
   .evidence-empty { margin: 1rem 0 0; color: var(--fg-muted); }
   .evidence-group { margin-top: 0; }
   .evidence-group + .evidence-group { margin-top: 2rem; }
-  .evidence-group h2,
-  .evidence-method h2 {
+  .evidence-group h2 {
     margin: 0 0 0.65rem;
     font-size: 1.48rem;
   }
@@ -508,14 +477,6 @@ const reviewed = groups
   .evidence-details-link { font-weight: 600; }
   .evidence-matches { margin-top: 0.8rem; }
   .evidence-matches > p { margin-bottom: 0.55rem; }
-  .evidence-method {
-    margin-top: 2.2rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid var(--fg);
-  }
-  .evidence-method dl { margin: 0; }
-  .evidence-method dt { font-weight: 600; }
-  .evidence-method dd { margin: 0 0 0.75rem; }
 
   @media screen {
     [data-filtered],

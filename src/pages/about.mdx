@@ -44,7 +44,7 @@ The standards in this area change monthly, and a reference that is confidently o
 
 **Specifications read at source.** The MCP authorization specification and its extensions, the A2A specification, the AP2 specification, and the OAuth and WIMSE working group draft sources were read from their public repositories. Kubernetes feature stages were taken from the project's versioned feature list and documentation source. How AWS, Google Cloud, Microsoft Entra and GitHub Actions handle workload identity was read from each provider's own documentation. Examples on flow pages follow those documents.
 
-**Implementations** keeps implementation support, deployment reports and measured observations separate. The initial source review used coding agents to read primary documentation and operator accounts, followed by a separate check of the selected claims and publication rules. It does not establish prevalence, conformance or independent verification of a deployment. Each record names its scope, sources, limits and date; a flow outside that review says “Not reviewed”.
+**Implementations** keeps implementation support, deployment reports and measured observations separate. The initial source review used coding agents to read primary documentation and operator accounts, followed by a separate check of the selected claims and publication rules. It does not establish prevalence, conformance or independent verification of a deployment. Each record names its scope, sources, limits and date; a flow outside that review says “Not reviewed”. [How implementation evidence is reviewed](#how-implementation-evidence-is-reviewed) says what each kind of record means.
 
 **The lessons** restate the flow pages and the Concepts page in plain words, and were then read against the specifications they lean on: the OAuth framework and its security best current practice, the JWT profile for access tokens, token exchange, DPoP, the step-up challenge, the MCP authorization specification and the Kubernetes documentation. So were the page on hosted apps and the short answer on Kubernetes. The page on gateways was read against the MCP specification's authorization, security and transport pages; its table of products comes from each project's documentation. **The overviews** on flow pages were checked against the page each one opens.
 
@@ -113,6 +113,20 @@ The same holds in the other direction. Where a published specification says that
 **What the rating is not.** It describes the dependencies of the arrangement the page draws. Where a page covers more than it draws, as the pages on workload identity federation, AAuth and agent payments do, it says so above the diagram and beside its required references: those references and the rating belong to the arrangement drawn, not to every implementation. The rating does not say the flow is secure, or ready for production where you run it. A stable flow can be deployed badly, and an emerging one can be the right choice.
 
 **Coverage.** Every flow has been reviewed under this rule. In a review, each reference a flow lists is read and given a role: required, optional or background, or marked as not settled. Every flow’s page groups its references under those roles, and its rating is worked out from the required ones.
+
+## How implementation evidence is reviewed
+
+Each flow reviewed on the [Implementations](/implementations/) page lists the sources consulted, what they establish, and the limits of that evidence. Coverage varies by flow.
+
+**Standards maturity** comes from the flow’s specifications, as [described above](#how-flows-are-rated).
+
+**Implementation evidence.** Primary sources describe each product’s role and support. Where they give a release stage, the record uses their wording. Interoperability requires its own evidence.
+
+**Deployment reports.** Accounts of specific deployments name the operator, who reported the use, and the setting. “No report included” describes this review’s coverage; it does not establish that the flow is unused.
+
+**Observations.** Counts of advertised support or other measurements retain their unit, population and date when known. They are kept out of the count of production operators.
+
+**Dates.** A report’s publication, a product release, and the date evidence was added or checked each describe different events. A report can describe earlier use.
 
 ## Examples are illustrative
 
