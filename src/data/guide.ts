@@ -108,13 +108,13 @@ export const questions: Question[] = [
       {
         value: "same",
         label: "We run it and share an identity system",
-        brief: "Shared identity system",
+        brief: "We run it; shared identity",
         hint: "Both sides use our organization’s identity system",
       },
       {
         value: "enterprise",
         label: "A vendor that trusts our company sign-in",
-        brief: "Company sign-in",
+        brief: "Vendor trusts company sign-in",
         hint: "Both sides trust our company’s identity provider",
       },
       {
@@ -156,7 +156,7 @@ export const questions: Question[] = [
       {
         value: "sandbox",
         label: "A sandbox that runs untrusted code",
-        brief: "Sandbox",
+        brief: "Sandbox running untrusted code",
       },
     ],
   },

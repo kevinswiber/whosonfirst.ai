@@ -422,8 +422,10 @@ const data = {
     margin: 0.14rem 0 0;
     accent-color: var(--accent);
     cursor: pointer;
-    /* reached with the keyboard, it stops clear of the strip at the foot */
-    scroll-margin-bottom: 4.5rem;
+    /* Reached with the keyboard, the whole row stops clear of the strip at the
+       foot of the window: the rest of the row below the button, and the strip
+       at its tallest, when a narrow screen puts it on two lines. */
+    scroll-margin-bottom: 10rem;
   }
   .dg-options strong {
     display: block;

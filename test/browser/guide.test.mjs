@@ -184,6 +184,89 @@ test("on a phone, the results are one step from the questions and back, and an a
   );
 });
 
+test("every answered question is a fact beside the result, in a few words", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(
+    page,
+    site.url(
+      "/guide/?principal=self&human=reachable&target=mcp&boundary=enterprise&runtime=sandbox&risk=irreversible",
+    ),
+  );
+  const link = page.locator(".dg-answers .dg-flow");
+  assert.equal(await link.locator("strong").textContent(), "Own authority");
+  assert.equal(await link.getAttribute("href"), "/guide/own-authority/");
+  assert.equal(await link.locator(".dg-meta").textContent(), "First answer");
+  assert.deepEqual(await facts(page), [
+    ["Person", "Reachable elsewhere"],
+    ["Calls", "MCP server"],
+    ["Trust", "Vendor trusts company sign-in"],
+    ["Runs", "Sandbox running untrusted code"],
+    ["Risk", "Irreversible"],
+  ]);
+  assert.match(
+    await page.locator(".dg-status").textContent(),
+    /^6 of 6 answered · \d+ matches$/,
+  );
+});
+
+// The strip at the foot of the window is tallest on the narrowest screen, where
+// its two controls sit on two lines.
+test("on a narrow phone, an answer reached with the keyboard is clear of the strip at the foot", async (t) => {
+  const ctx = await site.context({
+    viewport: { width: 320, height: 568 },
+    reducedMotion: "reduce",
+  });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(
+    page,
+    site.url(
+      "/guide/?principal=user&human=reachable&target=api&boundary=enterprise&runtime=sandbox&risk=irreversible",
+    ),
+  );
+  await page.locator('input[name="principal"]:checked').focus();
+  const seen = [];
+  for (let i = 0; i < 6; i++) {
+    const at = await page.evaluate(() => {
+      const input = document.activeElement;
+      if (!(input instanceof HTMLInputElement) || input.type !== "radio")
+        return null;
+      const row = input.closest("label").getBoundingClientRect();
+      const strip = document.querySelector(".dg-foot").getBoundingClientRect();
+      const header = document
+        .querySelector(".site-header")
+        .getBoundingClientRect();
+      return {
+        name: input.name,
+        // the strip covers the row only while it is stuck over it
+        under: row.bottom - Math.min(strip.top, innerHeight),
+        over: header.bottom - row.top,
+      };
+    });
+    assert.ok(at, `Tab ${i} left the answers`);
+    seen.push(at.name);
+    assert.ok(
+      at.under <= 0,
+      `${at.name}: ${at.under.toFixed(0)}px behind the strip`,
+    );
+    assert.ok(
+      at.over <= 0,
+      `${at.name}: ${at.over.toFixed(0)}px behind the header`,
+    );
+    await page.keyboard.press("Tab");
+  }
+  assert.deepEqual(seen, [
+    "principal",
+    "human",
+    "target",
+    "boundary",
+    "runtime",
+    "risk",
+  ]);
+});
+
 test("a case’s page says what each start and each caution applies to, without a script", async (t) => {
   const ctx = await site.context({ javaScriptEnabled: false });
   t.after(() => ctx.close());
