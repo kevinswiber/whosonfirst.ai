@@ -67,6 +67,7 @@ const KINDS = [
   [/^\/learn\/[^/]+\/$/, "Lesson"],
   [/^\/flows\/[^/]+\/$/, "Flow"],
   [/^\/deployments\/[^/]+\/$/, "Deployment guide"],
+  [/^\/guide\/[^/]+\/$/, "Situation"],
 ];
 
 /**

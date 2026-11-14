@@ -1,5 +1,6 @@
 /**
- * Decision guide: questions, and the rules that turn answers into recommended flows.
+ * Decision guide: questions, the rules that turn answers into recommended flows,
+ * and the names for the situations the first two answers describe.
  *
  * A rule applies when every key it names matches the selected answer. Questions
  * the reader has not answered yet do not rule anything out.
@@ -123,6 +124,87 @@ export const questions: Question[] = [
         label: "Something irreversible",
         hint: "Move money, delete, send in someone’s name",
       },
+    ],
+  },
+];
+
+/**
+ * The situations the guide names. A name comes from the first two questions
+ * alone: whose authority the agent uses, and whether a person is available.
+ * Those two decide the most, and names taken from them cannot overlap: every
+ * pair of answers has exactly one, which test/unit/guide.test.mjs confirms.
+ * The other questions change what is recommended, not what the situation is called.
+ *
+ * The names are this site's own, not terms from a specification, and the guide
+ * says so where it shows them. None may be a term the glossary defines: an
+ * agent with its own authority is "As itself", as lesson 4 puts it, because
+ * "service account" already means an account that belongs to software.
+ *
+ * The wording rests on lesson 4, src/pages/learn/whose-authority.astro, and on
+ * the reasons in the rules below.
+ */
+export interface Situation {
+  /** Its address: /guide/<slug>/ */
+  slug: string;
+  name: string;
+  /** The name and what it means in plain words: the title of its page, for a reader arriving from a search. */
+  title: string;
+  /** question id → the answer that makes it this one. One answer for each question named. */
+  when: Record<string, string[]>;
+  /** One sentence, shown with the name wherever it appears. */
+  short: string;
+  /** What a reader in this situation needs to know first, a paragraph each. */
+  about: string[];
+}
+
+export const situations: Situation[] = [
+  {
+    slug: "at-the-keyboard",
+    name: "At the keyboard",
+    title: "At the keyboard: an agent acting for a person who is present",
+    when: { principal: ["user"], human: ["present"] },
+    short:
+      "The agent acts for a person who is in the session and can sign in or approve now.",
+    about: [
+      "The token names the person. What the agent can do is capped by what that person can do, and by what they approved.",
+      "Because the person is there, a sensitive action can be put to them at the moment it matters. Keep the everyday token weak, and ask again for the rest.",
+    ],
+  },
+  {
+    slug: "on-call",
+    name: "On call",
+    title: "On call: an agent acting for a person it has to reach",
+    when: { principal: ["user"], human: ["reachable"] },
+    short:
+      "The agent acts for a person who is not in the session but can be reached: by phone, in chat, by email.",
+    about: [
+      "The token still names the person, but the agent cannot send them through a sign-in where it runs. Something has to contact them on a device it already knows, and the agent waits for the answer.",
+      "The wait is part of the design. The work has to be able to stop until the person answers.",
+    ],
+  },
+  {
+    slug: "standing-order",
+    name: "Standing order",
+    title: "Standing order: an agent acting for a person who is not there",
+    when: { principal: ["user"], human: ["absent"] },
+    short:
+      "The agent acts for a person who approved once and is not there when it runs.",
+    about: [
+      "Someone has to consent once. The agent obtains its grant while the person is present, then runs unattended on a refresh token.",
+      "It has a person’s full authority and no person watching. Of every arrangement in this guide, it is the one most likely to end badly.",
+      "Sometimes it is what the job needs. Ask for the narrowest scope that does the work, find a way to reach the person for anything that cannot be undone, and know how the access is switched off before the agent runs for the first time.",
+    ],
+  },
+  {
+    slug: "as-itself",
+    name: "As itself",
+    title: "As itself: an agent acting on its own authority",
+    when: { principal: ["self"] },
+    short:
+      "The agent uses its own authority. The token names the agent, and nobody approves anything at the moment it runs.",
+    about: [
+      "An administrator decided in advance what this agent is allowed to do. It is limited only by what it was given, and those grants tend to grow.",
+      "Acting as itself is right when the work is the organization’s. It is not a shortcut around sign-in: if the agent serves several people under one identity, the API cannot tell them apart.",
     ],
   },
 ];

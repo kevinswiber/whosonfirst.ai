@@ -6,6 +6,7 @@ import {
   rules,
   cautions,
   deployLinks,
+  situations,
   ROLE_TITLE,
 } from "../../data/guide";
 import { flows, flow, maturityLabel } from "../../data/flows";
@@ -34,10 +35,28 @@ if (missing.length)
     `guide: no rules for ${missing.map((f) => f.slug).join(", ")}`,
   );
 
+// A situation is named from questions the guide asks, by one answer to each.
+const label = (q: string, v: string) =>
+  questions.find((x) => x.id === q)?.options.find((o) => o.value === v)?.label;
+for (const s of situations) {
+  for (const [q, values] of Object.entries(s.when)) {
+    if (values.length !== 1 || !label(q, values[0]))
+      throw new Error(
+        `guide: situation "${s.slug}" needs one known answer to "${q}"`,
+      );
+  }
+}
+
 const data = {
   rules,
   cautions,
   deployLinks,
+  situations: situations.map(({ slug, name, when, short }) => ({
+    slug,
+    name,
+    when,
+    short,
+  })),
   roles: ROLE_TITLE,
   flows: Object.fromEntries(
     flows.map((f) => [
@@ -62,7 +81,8 @@ const data = {
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
         Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result. If the questions use words you have not met, <a href="/learn/">the
+        answers, so you can share the result. The first two answers also put your agent in one of{' '}
+        <a href="#situations">four situations, each with a name</a>. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
         You can also <a href="/flows/">browse all {flows.length} flows</a>.
       </p>
@@ -112,7 +132,8 @@ const data = {
         <div class="dg-out">
           <noscript>
             <p>
-              The guide needs JavaScript to compute recommendations. Without it, the <a href="/flows/"
+              The guide needs JavaScript to compute recommendations. Without it, the{' '}
+              <a href="#situations">four situations</a> below each say where to start, and the <a href="/flows/"
                 >flows page</a
               > groups every option by whether a human is involved.
             </p>
@@ -123,20 +144,38 @@ const data = {
       <script type="application/json" class="dg-data" set:html={JSON.stringify(data)} />
     </decision-guide>
   </div>
+
+  <section class="section" id="situations">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Four situations, by name</h2>
+        <p>
+          The first two answers decide the most, so they give the situation its name. The names are this site’s own,
+          not terms from a specification. Each has a page that says where to start.
+        </p>
+      </div>
+      <div class="grid two">
+        {
+          situations.map((s) => (
+            <a class="card" href={`/guide/${s.slug}/`}>
+              <h3>{s.name}</h3>
+              <p>{s.short}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
 </Base>
 
 <script>
-  type Answers = Record<string, string>;
-  interface Rule {
-    flow: string;
-    role: 'start' | 'add' | 'consider';
-    when: Record<string, string[]>;
-    why: string;
-    weight?: number;
-  }
+  import type { Rule } from '../../data/guide';
+  import { type Answers, matches, recommend, situationFor } from '../../lib/guide-rules';
+
   interface Data {
     rules: Rule[];
     cautions: { when: Record<string, string[]>; text: string }[];
+    situations: { slug: string; name: string; when: Record<string, string[]>; short: string }[];
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
     flows: Record<string, { short: string; maturity: string; implementations: boolean }>;
@@ -162,21 +201,6 @@ const data = {
         return a;
       };
 
-      // A rule matches when every condition whose question has been answered is satisfied.
-      // It only counts once at least one of its conditions has actually been answered.
-      const matches = (when: Record<string, string[]>, a: Answers, needAll = false) => {
-        let hit = 0;
-        for (const [q, values] of Object.entries(when)) {
-          if (a[q] == null) {
-            if (needAll) return false;
-            continue;
-          }
-          if (!values.includes(a[q])) return false;
-          hit++;
-        }
-        return hit > 0;
-      };
-
       const render = (push = true) => {
         const a = read();
         const answered = Object.keys(a).length;
@@ -192,30 +216,17 @@ const data = {
         }
 
         // best rule per flow; a "start" beats an "add" beats a "consider"
-        const rank = { start: 0, add: 1, consider: 2 } as const;
-        const best = new Map<string, Rule & { specificity: number }>();
-        for (const r of data.rules) {
-          if (!matches(r.when, a)) continue;
-          const specificity = Object.keys(r.when).filter((q) => a[q] != null).length;
-          const prev = best.get(r.flow);
-          if (
-            !prev ||
-            rank[r.role] < rank[prev.role] ||
-            (rank[r.role] === rank[prev.role] && specificity > prev.specificity)
-          ) {
-            best.set(r.flow, { ...r, specificity });
-          }
-        }
-
-        const groups: Record<string, (Rule & { specificity: number })[]> = { start: [], add: [], consider: [] };
-        for (const r of best.values()) groups[r.role].push(r);
-        for (const k of Object.keys(groups)) {
-          groups[k].sort((x, y) => y.specificity - x.specificity || (y.weight ?? 0) - (x.weight ?? 0));
-        }
+        const groups = recommend(data.rules, a);
 
         let html = '';
-        const total = best.size;
+        const total = groups.start.length + groups.add.length + groups.consider.length;
         html += `<p class="dg-status">${answered} of ${names.length} answered · ${total} possible ${total === 1 ? 'match' : 'matches'}</p>`;
+
+        // The name of the situation, once the questions it comes from are answered.
+        const sit = situationFor(data.situations, a);
+        if (sit) {
+          html += `<div class="dg-sit"><p class="dg-sit-label">Your situation</p><p class="dg-sit-name"><a href="/guide/${sit.slug}/">${esc(sit.name)}</a></p><p class="dg-sit-short">${esc(sit.short)}</p></div>`;
+        }
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -430,6 +441,34 @@ const data = {
     text-transform: uppercase;
     color: var(--fg-muted);
     margin: 0 0 0.4rem;
+  }
+  .dg-out :global(.dg-sit) {
+    margin: 0.7rem 0 0.2rem;
+    padding: 0.75rem 0.9rem 0.8rem;
+    border: 1.5px solid var(--fg);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+  .dg-out :global(.dg-sit p) {
+    margin: 0;
+  }
+  .dg-out :global(.dg-sit-label) {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .dg-out :global(.dg-sit-name) {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 560;
+    line-height: 1.2;
+  }
+  .dg-out :global(.dg-sit-short) {
+    margin-top: 0.25rem;
+    font-size: 0.93rem;
+    line-height: 1.5;
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);

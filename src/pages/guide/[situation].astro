@@ -1,0 +1,320 @@
+---
+// One situation the decision guide names, as a page that needs no script.
+// It rests on src/data/guide.ts: the name, what defines it and what to know
+// first come from `situations`, and everything under "Where to start" and
+// "Watch out" is worked out here from the same rules the guide's script
+// applies, by the same functions. For the answers the name stands for and each
+// thing the agent might call, this page says what the guide says.
+import Base from "../../layouts/Base.astro";
+import { cautions, questions, rules, situations } from "../../data/guide";
+import type { Situation } from "../../data/guide";
+import { flow, maturityLabel } from "../../data/flows";
+import { matches, open, recommend } from "../../lib/guide-rules";
+import type { Answers } from "../../lib/guide-rules";
+
+export function getStaticPaths() {
+  return situations.map((situation) => ({
+    params: { situation: situation.slug },
+    props: { situation },
+  }));
+}
+
+interface Props {
+  situation: Situation;
+}
+
+const { situation: s } = Astro.props;
+
+const question = (id: string) => {
+  const q = questions.find((x) => x.id === id);
+  if (!q) throw new Error(`guide: unknown question "${id}"`);
+  return q;
+};
+const label = (id: string, value: string) => {
+  const o = question(id).options.find((x) => x.value === value);
+  if (!o) throw new Error(`guide: unknown answer "${id}=${value}"`);
+  return o.label;
+};
+
+// The answers the name stands for.
+const fixed: Answers = Object.fromEntries(
+  Object.entries(s.when).map(([q, values]) => [q, values[0]]),
+);
+const defined = Object.entries(fixed).map(([q, v]) => ({
+  question: question(q).title,
+  answer: label(q, v),
+}));
+
+const order = (id: string) => questions.findIndex((x) => x.id === id);
+
+/** What a rule still depends on, in the order the guide asks and in its own words for each question and answer. */
+const depends = (when: Record<string, string[]>, a: Answers) =>
+  open(when, a)
+    .sort(([x], [y]) => order(x) - order(y))
+    .map(
+      ([q, values]) =>
+        `${question(q).title} ${values.map((v) => label(q, v)).join(", or ")}`,
+    );
+
+const guideLink = (a: Answers) => `/guide/?${new URLSearchParams(a)}`;
+const lowerFirst = (t: string) => t[0].toLowerCase() + t.slice(1);
+
+// For each thing the agent might call, what the guide starts with.
+const targets = question("target").options.map((o) => {
+  const a = { ...fixed, target: o.value };
+  return {
+    id: `calls-${o.value}`,
+    heading: `If it calls ${lowerFirst(o.label)}`,
+    link: guideLink(a),
+    start: recommend(rules, a).start.map((r) => {
+      const f = flow(r.flow);
+      return {
+        slug: f.slug,
+        short: f.short,
+        maturity: maturityLabel(f),
+        why: r.why,
+        depends: depends(r.when, a),
+      };
+    }),
+  };
+});
+
+const warn = cautions
+  .filter((c) => matches(c.when, fixed))
+  .map((c) => ({ text: c.text, depends: depends(c.when, fixed) }));
+
+const others = situations.filter((o) => o.slug !== s.slug);
+---
+
+<Base
+  title={s.title}
+  description={`${s.short} Where to start, and what to watch out for.`}
+  here={{ trail: [{ label: 'Choose a flow', href: '/guide/' }], current: s.name }}
+>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>{s.name}</h1>
+        <p class="lede">{s.short}</p>
+        <dl class="sit-when">
+          {
+            defined.map((d) => (
+              <div>
+                <dt>{d.question}</dt>
+                <dd>{d.answer}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="prose">
+          <h2>What it means</h2>
+          {s.about.map((p) => <p>{p}</p>)}
+          <p class="sit-own">
+            “{s.name}” is one of <a href="/guide/#situations">four names</a> the decision guide gives to the
+            situations its first two questions describe. The names are this site’s own, not terms from a
+            specification.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Where to start</h2>
+          <p>
+            What the guide’s rules say to start with, for each thing the agent might call. Some depend on an answer the
+            name does not settle. Each of those says which.
+          </p>
+        </div>
+        {
+          targets.map((t) => (
+            <section class="sit-target" id={t.id}>
+              <h3>{t.heading}</h3>
+              <ul class="sit-flows">
+                {t.start.map((f) => (
+                  <li>
+                    <a class="sit-flow" href={`/flows/${f.slug}/`}>
+                      <strong>{f.short}</strong>
+                      <span class="sit-meta">{f.maturity}</span>
+                    </a>
+                    <p>{f.why}</p>
+                    {f.depends.length > 0 && (
+                      <div class="sit-depends">
+                        <p>Depends on</p>
+                        <ul>
+                          {f.depends.map((d) => (
+                            <li>{d}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p class="sit-more">
+                <a href={t.link}>Answer the rest in the guide</a>, for what to add and what else is worth a look.
+              </p>
+            </section>
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      warn.length > 0 && (
+        <section class="section">
+          <div class="wrap">
+            <h2>Watch out</h2>
+            <ul class="sit-warn">
+              {warn.map((c) => (
+                <li>
+                  <p>{c.text}</p>
+                  {c.depends.length > 0 && (
+                    <div class="sit-depends">
+                      <p>Depends on</p>
+                      <ul>
+                        {c.depends.map((d) => (
+                          <li>{d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>The other three</h2>
+          <p>
+            Not this one? <a href="/guide/">The guide’s first two questions</a> say which it is.
+          </p>
+        </div>
+        <div class="grid">
+          {
+            others.map((o) => (
+              <a class="card" href={`/guide/${o.slug}/`}>
+                <h3>{o.name}</h3>
+                <p>{o.short}</p>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .sit-when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 2.6rem;
+    margin: 1.4rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+  .sit-when dt {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .sit-when dd {
+    margin: 0.15rem 0 0;
+    font-weight: 500;
+  }
+  .sit-own {
+    color: var(--fg-muted);
+  }
+
+  .sit-target,
+  .sit-warn {
+    max-width: var(--prose);
+  }
+  .prose > h2:first-child {
+    margin-top: 0;
+  }
+  .sit-target + .sit-target {
+    margin-top: 2.4rem;
+  }
+  .sit-target h3 {
+    margin: 0 0 0.2rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1.5px solid var(--fg);
+  }
+  .sit-flows,
+  .sit-warn {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sit-flows > li,
+  .sit-warn > li {
+    margin: 0;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sit-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.8rem;
+    text-decoration: none;
+  }
+  .sit-flow strong {
+    font-family: var(--font-heading);
+    font-size: 1.16rem;
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.18em;
+  }
+  .sit-meta {
+    font-family: var(--font-label);
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .sit-flows > li > p,
+  .sit-warn > li > p {
+    margin: 0.25rem 0 0;
+  }
+  .sit-depends {
+    margin-top: 0.45rem;
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+  .sit-depends p {
+    margin: 0;
+    font-family: var(--font-label);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sit-depends ul {
+    margin: 0.1rem 0 0;
+    padding-left: 1.1rem;
+  }
+  .sit-depends li {
+    margin: 0;
+  }
+  .sit-more {
+    margin: 0.8rem 0 0;
+    font-size: 0.93rem;
+  }
+</style>

@@ -73,3 +73,59 @@ test("an older internal-target link restores shared identity without guessing an
     1,
   );
 });
+
+test("the situation is named once the first two questions are answered, and not before", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  const name = page.locator(".dg-sit-name a");
+
+  await open(page, site.url("/guide/?principal=user&target=api"));
+  assert.equal(await name.count(), 0, "named from one answer");
+
+  await page.getByRole("radio", { name: /^No\b/ }).check({ force: true });
+  assert.equal(await name.textContent(), "Standing order");
+  assert.equal(await name.getAttribute("href"), "/guide/standing-order/");
+
+  await page.getByRole("radio", { name: /Its own/ }).check({ force: true });
+  assert.equal(await name.textContent(), "As itself");
+});
+
+test("each situation’s page starts with the flows the guide gives for the same answers", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(page, site.url("/guide/"));
+  const situations = await page
+    .locator('#situations a.card[href^="/guide/"]')
+    .evaluateAll((cards) => cards.map((a) => a.getAttribute("href")));
+  assert.equal(situations.length, 4);
+
+  for (const path of situations) {
+    await open(page, site.url(path));
+    const targets = await page.locator(".sit-target").evaluateAll((sections) =>
+      sections.map((s) => ({
+        link: s.querySelector(".sit-more a").getAttribute("href"),
+        flows: [...s.querySelectorAll(".sit-flow")].map((a) =>
+          a.getAttribute("href"),
+        ),
+      })),
+    );
+    assert.equal(targets.length, 4, path);
+    for (const target of targets) {
+      await open(page, site.url(target.link));
+      assert.equal(
+        await page.locator(".dg-sit-name a").getAttribute("href"),
+        path,
+        target.link,
+      );
+      assert.deepEqual(
+        await page
+          .locator(".dg-start .dg-flow")
+          .evaluateAll((flows) => flows.map((a) => a.getAttribute("href"))),
+        target.flows,
+        `${path}, ${target.link}`,
+      );
+    }
+  }
+});
