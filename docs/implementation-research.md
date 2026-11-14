@@ -40,7 +40,7 @@ With a flow’s slug it prints that flow alone:
 npm run implementations:coverage -- dpop
 ```
 
-A gap is a place to look. It is not a finding: a party with no entry may have no public implementation, and saying so is a result. Some parties need nothing particular to the flow: an API that checks an ordinary access token in a PKCE flow, or the third-party service in URL elicitation. Do not look for those. Name them in the worksheet’s `generic` list, as party `id`s. Applying the worksheet records them in the profile’s `genericParties`, and the coverage report then shows them as **generic** and stops counting them.
+A gap is a place to look. It is not a finding: a party with no entry may have no public implementation, and saying so is a result. Some parties need nothing particular to the flow: an API that checks an ordinary access token in a PKCE flow, or the third-party service in URL elicitation. Do not look for those. Name them in the worksheet’s `generic` list, as party `id`s. Applying the worksheet records them in the profile’s `genericParties`, and the coverage report then shows them as **generic** and stops counting them. A worksheet may carry only that list. It is applied all the same, without an event or a new review date, since no evidence was added.
 
 ## 2. The flow and its scope
 

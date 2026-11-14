@@ -347,3 +347,38 @@ test("two worksheets applied to a flow on the same day share one evidence-added 
     rmSync(dir, { recursive: true });
   }
 });
+
+test("a worksheet that only names generic parties is applied without dating a review", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "records-"));
+  const data = new URL("../../src/data/implementations/", import.meta.url);
+  for (const file of ["records.ts", "model.ts"])
+    writeFileSync(join(dir, file), readFileSync(new URL(file, data)));
+  const records = join(dir, "records.ts");
+  const file = join(dir, "dpop.json");
+  writeFileSync(
+    file,
+    JSON.stringify({ flow: "dpop", checkedOn: "2027-01-03", generic: ["api"] }),
+  );
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/implementation-check.mjs", "--apply", file],
+      {
+        cwd: new URL("../..", import.meta.url),
+        encoding: "utf8",
+        env: { ...process.env, IMPLEMENTATION_RECORDS: records },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    const { profiles: applied } = await import(pathToFileURL(records).href);
+    assert.doesNotThrow(() => validateProfiles(applied));
+    const before = dpop();
+    const after = applied.find((p) => p.slug === "dpop");
+    assert.deepEqual(after.genericParties, ["api"]);
+    assert.equal(after.reviewedOn, before.reviewedOn);
+    assert.deepEqual(after.events, before.events);
+    assert.deepEqual(after.implementations, before.implementations);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});

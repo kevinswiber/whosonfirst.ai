@@ -205,7 +205,9 @@ const write = (sheet, accepted) => {
   const eventId = `${sheet.flow}-added-${sheet.checkedOn}`;
   const ids = accepted.map((e) => e.id);
   const at = block.indexOf(`id: "${eventId}",`);
-  if (at === -1) {
+  if (ids.length === 0) {
+    // Only generic parties: no evidence was added, so no event and no review.
+  } else if (at === -1) {
     into("events", [
       {
         id: eventId,
@@ -223,9 +225,12 @@ const write = (sheet, accepted) => {
     const added = ids.map((id) => JSON.stringify(id)).join(", ");
     block = `${block.slice(0, open)}${inner}, ${added}${block.slice(close)}`;
   }
+  // Read from the block being written, which may already hold a list from
+  // an earlier worksheet applied in this run.
+  const recorded = block.match(/\n {4}genericParties: (\[[^\n]*\]),/);
   const generic = [
     ...new Set([
-      ...(record(sheet.flow)?.genericParties ?? []),
+      ...(recorded ? JSON.parse(recorded[1]) : []),
       ...(sheet.generic ?? []),
     ]),
   ];
@@ -235,15 +240,15 @@ const write = (sheet, accepted) => {
       ? block.replace(/\n {4}genericParties: [^\n]*/, () => line)
       : block.replace(/\n {4}searchNote:/, () => `${line}\n    searchNote:`);
   }
-  block = block.replace(
-    /reviewedOn: "[^"]*"/,
-    () => `reviewedOn: "${sheet.checkedOn}"`,
-  );
+  if (ids.length > 0)
+    block = block.replace(
+      /reviewedOn: "[^"]*"/,
+      () => `reviewedOn: "${sheet.checkedOn}"`,
+    );
   writeFileSync(RECORDS, text.slice(0, start) + block + text.slice(end));
   return text;
 };
 
-const record = (slug) => profiles.find((p) => p.slug === slug);
 const lower = (text) => text.charAt(0).toLowerCase() + text.slice(1);
 const links = (entry) =>
   (entry.sources ?? []).map((s) => `[${s.title}](${s.url})`).join(" · ");
@@ -340,7 +345,11 @@ if (files.length === 0) {
     refused += problems.length;
     const accepted = entries.filter((e) => e.review?.state === "accepted");
     if (apply) {
-      if (problems.length === 0 && accepted.length > 0) {
+      const generic = sheet.generic ?? [];
+      if (
+        problems.length === 0 &&
+        (accepted.length > 0 || generic.length > 0)
+      ) {
         const before = write(sheet, accepted);
         try {
           validateProfiles(await freshRecords(), undefined, parties);
@@ -352,7 +361,11 @@ if (files.length === 0) {
           refused++;
           continue;
         }
-        console.log(`${sheet.flow}: ${accepted.length} entries written.`);
+        const marked =
+          generic.length > 0 ? `; generic parties: ${generic.join(", ")}` : "";
+        console.log(
+          `${sheet.flow}: ${accepted.length} entries written${marked}.`,
+        );
       }
       continue;
     }
