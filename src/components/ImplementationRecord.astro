@@ -6,7 +6,6 @@ import {
   EVENT_LABEL,
   evidenceDate,
 } from "../data/implementations";
-import { flow } from "../data/flows";
 import { evidenceGloss, marked } from "../lib/gloss";
 
 interface Props {
@@ -39,9 +38,11 @@ const categories = [
       ]
     : []),
 ];
-// The record is one reading: a specification is marked the first time it appears on it.
-const guide = flow(profile.slug);
-const g = evidenceGloss(`/flows/${guide.slug}/`, guide.standards);
+// The scope and each entry are readings of their own, which mark the specifications they
+// name; a general glossary term is marked once on the page. See evidenceGloss.
+const terms = new Set<string>();
+const reading = () => evidenceGloss(`/implementations/${profile.slug}/`, terms);
+const scope = reading();
 const events = [...profile.events].sort((a, b) => b.date.localeCompare(a.date));
 const evidenceNames = new Map(
   categories.flatMap(({ entries }) =>
@@ -63,8 +64,8 @@ const evidenceNames = new Map(
 <div class="implementation-record">
   <section class="prose evidence-scope" aria-labelledby="field-scope">
     <h2 id="field-scope">Scope</h2>
-    <p set:html={marked(profile.scope, g)} />
-    <p set:html={marked(profile.searchNote, g)} />
+    <p set:html={marked(profile.scope, scope)} />
+    <p set:html={marked(profile.searchNote, scope)} />
     <p><a href="/about/#how-implementation-evidence-is-reviewed">How evidence is reviewed</a></p>
   </section>
 
@@ -73,7 +74,9 @@ const evidenceNames = new Map(
       <h2 id={id}>{title}</h2>
       {entries.length ? (
         <ul class="evidence-entries" role="list">
-          {entries.map((entry) => (
+          {entries.map((entry) => {
+            const g = reading();
+            return (
             <li class="evidence-entry" id={`field-${entry.id}`}>
               <div class="evidence-claim">
                 {entry.kind === 'implementation' && (
@@ -126,7 +129,8 @@ const evidenceNames = new Map(
                 <p class="evidence-checked">Checked <time datetime={entry.review.checkedOn}>{evidenceDate(entry.review.checkedOn)}</time></p>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       ) : (
         <p class="prose evidence-none">{empty}</p>

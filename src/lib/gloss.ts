@@ -147,7 +147,11 @@ for (const t of glossary) {
     if (/^[a-z]{2,4}$/.test(name)) continue;
     add(name, {
       ...base,
-      written: /^[A-Z0-9-]{2,6}$/.test(name) ? name : undefined,
+      // capitals that are part of the name: "AS" is not "as", and "DPoP" is not dpop()
+      written:
+        /^[A-Z0-9-]{2,6}$/.test(name) || /[a-z][A-Z]/.test(name)
+          ? name
+          : undefined,
     });
   }
 }
@@ -156,7 +160,8 @@ const literal = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // longest first, so "authorization server" wins over "authorization code" only where it is written
 const names = [...entries.keys()].sort((a, b) => b.length - a.length);
 const PATTERN = new RegExp(
-  `(?<![\\w-])(${names.map(literal).join("|")})(s?)(?![\\w-])`,
+  // after a number, a hyphen starts a suffix: "RFC 8693-based" names RFC 8693
+  `(?<![\\w-])(${names.map(literal).join("|")})(s?)(?:(?![\\w-])|(?<=\\d)(?=-[a-z]))`,
   "gi",
 );
 
@@ -165,8 +170,12 @@ export interface Gloss {
   seen: Set<string>;
   /** The page being rendered: a term is not marked on the page that explains it. */
   path?: string;
-  /** Mark only what names a specification: documents, and terms with a `standard`. */
-  standardsOnly?: boolean;
+  /**
+   * Where general glossary terms are counted on their own, across several
+   * readings: on an implementation record, where they are marked once on the
+   * page while specifications are marked once in each entry.
+   */
+  terms?: Set<string>;
 }
 
 export function gloss(path?: string): Gloss {
@@ -174,21 +183,14 @@ export function gloss(path?: string): Gloss {
 }
 
 /**
- * A flow's implementation record, read as one. Its entries share a vocabulary,
- * and marking it in each of them would mark the same words down the page, so a
- * term or a document is marked once on it. Its readers know the general
- * vocabulary: only what names a specification is marked. Nor is what the flow's
- * page already explains: the glossary terms it is home to, and the
- * specifications it lists. What is left is a specification from outside the flow.
+ * One reading of a flow's implementation record: its scope, or one entry. A
+ * reader often arrives at a single entry from a link to it, so each entry marks
+ * the specifications it names, whether or not the flow lists them. General
+ * terms are the vocabulary every entry shares: `terms`, shared by every reading
+ * of the page, marks each of them once on it.
  */
-export function evidenceGloss(flowPath: string, listed: string[]): Gloss {
-  const seen = new Set<string>(listed.map((id) => `/standards/#${id}`));
-  for (const e of definitions.values())
-    if (e.home?.split("#")[0] === flowPath) {
-      seen.add(href(e));
-      if (e.spec) seen.add(`/standards/#${e.spec}`);
-    }
-  return { seen, path: flowPath, standardsOnly: true };
+export function evidenceGloss(path: string, terms: Set<string>): Gloss {
+  return { seen: new Set(), path, terms };
 }
 
 /** Plain text, escaped, with the first use of each term and document in it marked. */
@@ -265,13 +267,13 @@ export function mark(text: string, g: Gloss): string {
     const e = entries.get(name.toLowerCase());
     if (!e) return whole;
     if (e.written && name !== e.written) return whole;
-    if (g.standardsOnly && e.kind === "term" && !e.spec) return whole;
-    if (g.seen.has(href(e))) return whole;
-    // where only specifications are marked, a term marks its document, so not once more
-    if (g.standardsOnly && e.spec && g.seen.has(`/standards/#${e.spec}`))
-      return whole;
+    // a general term may be counted across the page, not in this reading alone
+    const seen = g.terms && e.kind === "term" && !e.spec ? g.terms : g.seen;
+    if (seen.has(href(e))) return whole;
+    // there, a term that names a specification already marked says nothing new
+    if (g.terms && e.spec && g.seen.has(`/standards/#${e.spec}`)) return whole;
     if (e.home && g.path && e.home.split("#")[0] === g.path) return whole;
-    g.seen.add(href(e));
+    seen.add(href(e));
     // a term's preview already says which document defines it
     if (e.spec) g.seen.add(`/standards/#${e.spec}`);
     return `${opening(e)}${name}${plural}</a>`;
