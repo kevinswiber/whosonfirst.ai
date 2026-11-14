@@ -28,7 +28,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
     "**Grant the least access that works.** The role or permission behind the trust rule is what a stolen credential is worth.",
     "**Do not share one identity between agents.** Agents that share a service account, a role or a job identity are one principal to every system downstream. They cannot be limited, audited or cut off separately.",
     "**Short-lived credentials still need protecting.** A bearer token, such as a JWT identity credential or an access token issued for it, can be replayed by whoever holds a copy until it expires. Certificate-based authentication is different: it requires proof of possession of the matching private key, so the key is what has to stay private. Keep tokens and private keys out of logs, prompts and tool output. Limit what can reach the platform’s credential endpoints too: anything that can make requests from inside the workload, including a tool the agent was talked into calling, may be able to ask for the same credentials.",
-    "**Deleting the workload does not cut off its credentials.** It stops the platform issuing or renewing the identity credential. A copy that has not expired can still be exchanged for new access while the receiver’s trust rule stands, and what the receiver already issued has a lifetime of its own. See the note on stopping access.",
+    "**Deleting the workload does not cut off its credentials.** A copy that has not expired can still be exchanged while the receiver’s trust rule stands, and what was already issued lasts its own lifetime. See the note on stopping access.",
     "**The receiver has to reach the issuer’s keys.** A private cluster or an internal identity provider has to publish its discovery document and keys somewhere the receiver can fetch them, or upload the keys where the receiver allows that.",
     "**Workload identity is not a user’s authority.** Federation establishes which workload is calling. It does not carry a person’s identity or consent, and it does not turn the agent’s access into the user’s. Carrying a user’s authority is delegation: see [token exchange](/flows/token-exchange/).",
   ],
@@ -81,7 +81,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "back",
       label: "Workload identity credential",
       title: "The platform gives the workload an identity credential",
-      body: `The workload identity provider is whatever established which workload this is: a cloud’s metadata service, a Kubernetes cluster, a CI system, a SPIFFE implementation. It supplies a short-lived, signed statement of that identity, most often a JWT (RFC 7519) like the one shown. How it arrives depends on the platform: a file that is kept fresh, a local endpoint, a request the workload makes when it needs one. Some receivers accept other proofs instead, such as an X.509 certificate or a signed request.
+      body: `The workload identity provider is whatever established which workload this is: a cloud’s metadata service, a Kubernetes cluster, a CI system, a SPIFFE implementation. It supplies a short-lived, signed statement of that identity, most often a JWT (RFC 7519) like the one shown. How it arrives depends on the platform: a file that is kept fresh, a local endpoint, a request the workload makes when it needs one.
 
 *Usually handled by the platform, and read by an SDK.*`,
       code: {
@@ -104,7 +104,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "back",
       label: "Present identity credential",
       title: "The workload presents it to the receiving token service",
-      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The note on request formats, below, sets out the differences.
+      body: `This is the federation step. The receiving token service belongs to the system the agent wants access to: a cloud’s security token service, or an identity platform’s token endpoint. The request has no universal format. Google Cloud uses OAuth token exchange (RFC 8693). Microsoft Entra takes the credential as the client assertion on a client credentials request. AWS has its own operation, \`AssumeRoleWithWebIdentity\`. The note on request formats, below, says what they share.
 
 *Usually handled by an SDK or credential library, once it is told where to find the identity credential and what to ask for.*`,
     },
@@ -231,28 +231,10 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
   ],
   notes: [
     {
-      title: "What the platform and the SDK do for you",
-      body: `In most deployments you write none of the eight steps. The platform issues the identity credential and keeps it fresh. A cloud SDK or credential library, pointed at that credential, makes the exchange, caches what comes back, renews it, and attaches it to requests or signs them. The receiving system does the validation. What is left to you is configuration: which identity the workload runs as, the trust rule on the receiving side, and the access behind it.
-
-With native workload identity there is less still. A function, virtual machine or managed container calling its own cloud’s APIs is handed credentials for that cloud’s identity system by the platform, and nothing is exchanged. Federation starts when the system being called is not the one that established the identity.`,
-    },
-    {
       title: "One exchange, several request formats",
-      body: `No single specification defines this pattern. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The exchange itself is where they differ.
+      body: `No single specification defines this exchange. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The request itself differs by receiver, as step 2 shows, and so do audience values, credential lifetimes and the claims a rule can match on. Each provider’s entry under [Standards in play](#standards) gives its details. Do not carry one provider’s settings over to another.
 
-**Google Cloud** follows OAuth token exchange (RFC 8693). The workload posts its credential to the Security Token Service as the subject token and receives a federated access token. The service also accepts proofs that are not JWTs, including a signed AWS request and an X.509 client certificate presented over mutual TLS.
-
-**Microsoft Entra** uses the client credentials grant. The outside token goes in \`client_assertion\`, with \`client_assertion_type\` set to the JWT bearer type from RFC 7523, in place of an assertion the application would otherwise sign with its own certificate. Its issuer, subject and audience must match the federated identity credential exactly. A [flexible federated identity credential](https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials), which Microsoft marks as a preview, replaces the fixed subject with an expression over the token’s claims that can use wildcards. It is supported for tokens issued by GitHub, GitLab and Terraform Cloud.
-
-**AWS, inbound.** \`AssumeRoleWithWebIdentity\` takes the token and the role to assume. The call is not signed with AWS credentials. It returns temporary security credentials for signing requests, not an OAuth access token.
-
-**AWS, outbound.** A workload that already has AWS credentials can call \`GetWebIdentityToken\` for a short-lived JWT to present to a service outside AWS. The feature has to be enabled for the account first, and the caller needs permission for the operation. The caller names the audience and the signing algorithm. The token lasts from one minute to an hour, five minutes by default. The issuer URL is specific to the account, and the operation is not available on the STS global endpoint. AWS describes the token as proof of identity, to be exchanged at the outside service for that service’s own credentials.
-
-Audience values, credential lifetimes, the claims a rule can match on and the way keys are discovered are each provider’s own. Do not carry one provider’s settings over to another.
-
-**A proposed common request.** The [Workload Authorization Grant](/standards/#wag) proposes one request for a receiver that is an OAuth authorization server, such as a third-party service’s. The credential goes in \`assertion\` on a JWT bearer grant (RFC 7523), and the draft recommends naming the API in \`resource\`. The credential’s audience is the authorization server’s issuer identifier. No client authentication is required, and no refresh token is issued. It is an individual draft, not adopted by a working group, and any part of it may change.
-
-Its trust rule names the platform, not the workload. The authorization server is set up once to trust the platform’s issuer, and then accepts agents it has not seen before, so the platform decides which agents exist. Where one issuer signs for several customers, the rule also names a claim and the value that sets this customer apart, and an assertion without that value does not match. What each agent may do comes from the server’s own policy, which can read claims the platform includes, such as a team or a role. A claim means what that platform means by it: the draft says not to read a claim of the same name from another platform as the same thing. The server keeps each agent’s records under the trust rule it matched and its subject together, never under the subject alone, and a display name the platform sends must never decide access. Whether to require proof of possession is still open in the draft.`,
+**A proposed common request.** The [Workload Authorization Grant](/standards/#wag), an individual draft, proposes one request for a receiver that is an OAuth authorization server: the identity credential as a JWT bearer grant (RFC 7523), addressed to the server’s issuer identifier. Its trust rule names the platform, not the workload. The server is set up once to trust a platform’s issuer, accepts agents it has not seen before, and decides what each may do by its own policy, which can read claims the platform includes. Where one issuer signs for several customers, the rule also names a claim that sets this customer apart. So the platform, not the receiver, decides which agents exist: the opposite of matching the exact workload.`,
     },
     {
       title: "Stopping access",
@@ -337,7 +319,7 @@ Short lifetimes on both credentials keep the gaps small. Deleting a pod, a servi
         ],
       },
     ],
-    after: `These are recognizable examples, not a catalog. Not every service offers every path. Audience values, lifetimes and the claims a rule can match on differ by provider, so check the documentation for the combination you need. Managed agent platforms apply the same model to the agents they host: see [agent platforms](/deployments/agent-platforms/) and the other [deployment guides](/deployments/).`,
+    after: `These are recognizable examples, not a catalog. Not every service offers every path. Managed agent platforms apply the same model to the agents they host: see [agent platforms](/deployments/agent-platforms/) and the other [deployment guides](/deployments/).`,
   },
   example: {
     title: "Worked example: a Kubernetes pod",
@@ -427,12 +409,8 @@ grants:   role/model-inference`,
     {
       id: "permissions",
       title: "From identity to permissions",
-      intro: `A validated credential says who is calling. What the caller may do is a separate decision, and the system that receives the call makes it. Three jobs are involved. Keeping them apart is what lets workload identity support roles and permissions of your own.`,
+      intro: `A validated credential says who is calling. What the caller may do is a separate decision, made by the system that receives the call. Keeping the two apart is what lets workload identity support roles and permissions of your own.`,
       parts: [
-        {
-          title: "Trust the issuer",
-          body: `The receiver accepts credentials only from issuers it was configured to trust, and checks each one’s signature, audience and expiry. That establishes that the statement is authentic and meant for this receiver. It grants nothing yet.`,
-        },
         {
           title: "Identify the workload, or the user",
           body: `The validated claims name the caller: a subject such as a service account, a SPIFFE ID, or a repository and environment. A token issued for a user names that user as well, or instead. Only claims from a validated credential count. A name sent in a request body or a header is only the caller’s word.`,
@@ -452,21 +430,19 @@ may:
           },
         },
       ],
-      after: `Workload identity can underpin custom roles and permissions like these. It does not define them, and it does not convey a human user’s authority. The API, gateway or authorization service has to enforce the resulting policy.`,
     },
     {
       id: "implementations",
       title: "Real implementations",
-      intro: `Three paths the providers document, for agents and services you operate. They are documented implementation paths, read in November 2026. They are not evidence of how widely any of them is used in production, and none was tested here.`,
+      afterNotes: true,
+      intro: `Two paths the providers document, for agents and services you operate. They are documented implementation paths, read in November 2026. They are not evidence of how widely any of them is used in production, and none was tested here.`,
       parts: [
         {
           title: "An agent acting as itself against a custom service",
           tags: [{ text: "Google Cloud" }, { text: "Preview", tone: "amber" }],
-          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. The token is a JWT whose subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s public discovery and key endpoints, checking issuer, signature, audience and expiry. The service then authorizes the verified identity. Google’s example compares the subject against an allowlist of agent SPIFFE IDs.
+          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. Its subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s published discovery document and keys, then authorizes the verified identity. Google’s example checks the subject against an allowlist of agent SPIFFE IDs.
 
-The service accepts the identity token directly, as a bearer token on the request. Nothing is exchanged. Google documents the exchange path separately, for receivers with built-in federation such as Microsoft Entra, so not every integration needs a second token. By default the token is also bound to the agent’s certificate. A receiver can enforce that binding over mutual TLS. One that ignores it is accepting a bearer token.
-
-Google marks this feature Preview, under pre-GA terms and with limited support. That is the product’s release stage. It is separate from the maturity of the standards underneath, JWT and OpenID Connect Discovery, which are stable.`,
+Nothing is exchanged: the service accepts the identity token directly, as a bearer token. By default the token is also bound to the agent’s certificate, and a receiver can enforce that binding over mutual TLS. One that ignores it is accepting a bearer token. Google marks the feature Preview, under pre-GA terms. That is the product’s stage, not the maturity of the standards underneath.`,
           sources: [
             {
               label:
@@ -478,11 +454,9 @@ Google marks this feature Preview, under pre-GA terms and with limited support. 
         {
           title: "A federated workload with application-defined permissions",
           tags: [{ text: "Microsoft Entra" }],
-          body: `Two Microsoft documents together establish this path. Neither is a walkthrough for agents.
+          body: `A workload outside Azure exchanges a token from its own identity provider for a Microsoft Entra access token. For authorization, the designer of a custom API defines application roles on the API’s registration, and an administrator assigns them to the workload. The API validates the access token and checks its \`roles\` claim for the operation being called.
 
-The first covers authentication. With workload identity federation, a workload outside Azure presents a token from its own identity provider and receives a Microsoft Entra access token, with no client secret or certificate of its own.
-
-The second covers authorization. The designer of a custom API defines application roles on the API’s registration, and an administrator assigns them to the workload. The receiving API validates the access token and checks its \`roles\` claim for the operation being called. Microsoft says an API does not use the scope claim for workloads, and that the API is responsible for enforcing the workload’s access. By default an application role covers every instance of a resource, so anything finer is the API’s own policy.`,
+Microsoft says an API does not use the scope claim for workloads, and that the API is responsible for enforcing the workload’s access. An application role covers every instance of a resource by default, so anything finer is the API’s own policy. The two documents this rests on are not a walkthrough for agents.`,
           sources: [
             {
               label:
@@ -496,31 +470,8 @@ The second covers authorization. The designer of a custom API defines applicatio
             },
           ],
         },
-        {
-          title: "An agent carrying a user’s authorization downstream",
-          tags: [
-            { text: "AWS AgentCore" },
-            { text: "Related: user delegation" },
-          ],
-          body: `This is a related case, here for contrast. The agent is not proving only its own workload identity. A signed-in user’s authorization travels with each request, and the downstream system applies that user’s access. AWS published it in August 2026 as a reference implementation on Amazon Bedrock AgentCore. Its three data sources are protected in three different ways.
-
-**DynamoDB.** The agent passes the user’s Cognito ID token to \`AssumeRoleWithWebIdentity\`. Session tags taken from the signed token, and an IAM policy that keys on them, limit the temporary credentials to the user’s department. IAM refuses a request outside it.
-
-**Salesforce.** AgentCore Identity performs an on-behalf-of token exchange (RFC 8693) and obtains a user-scoped token. Salesforce’s own sharing rules decide what that user sees.
-
-**Knowledge Bases.** The agent adds a metadata filter to its query. AWS calls this application-layer enforcement: it holds only while the agent’s code applies the filter, unlike the DynamoDB restriction, which IAM enforces. For stricter isolation AWS suggests a knowledge base for each department, with IAM policies on each.
-
-Access delegated by a user is the subject of [token exchange](/flows/token-exchange/).`,
-          sources: [
-            {
-              label:
-                "Propagate user authorization context in AI agents with Amazon Bedrock AgentCore (AWS Security Blog)",
-              href: "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/",
-            },
-          ],
-        },
       ],
-      after: `All three keep the same jobs apart: an issuer the receiver trusts, an identity read from validated claims, and permissions the receiving system grants and enforces. For the products themselves, see [agent platforms](/deployments/agent-platforms/).`,
+      after: `AWS’s reference implementation on Amazon Bedrock AgentCore carries a signed-in user’s authority instead, and is described with [token exchange](/flows/token-exchange/). For the products themselves, see [agent platforms](/deployments/agent-platforms/).`,
     },
   ],
 };

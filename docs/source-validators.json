@@ -50,9 +50,6 @@
   "https://aws.amazon.com/blogs/security/authenticate-legitimate-ai-agent-traffic-with-aws-waf-bot-control/": {
     "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
   },
-  "https://aws.amazon.com/blogs/security/propagate-user-authorization-context-in-ai-agents-with-amazon-bedrock-agentcore/": {
-    "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
-  },
   "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/": {},
   "https://blog.postman.com/credential-sprawl/": {},
   "https://blog.pypi.org/posts/2023-04-20-introducing-trusted-publishers/": {
