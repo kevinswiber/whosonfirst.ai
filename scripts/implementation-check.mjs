@@ -4,8 +4,10 @@
 // to check every quote already in the records. `--emit` prints a worksheet's
 // accepted entries ready to paste into records.ts, and `--apply` writes them
 // there with the day's evidence-added event, and `--log` prints the
-// worksheets as a section of docs/adoption/evidence-review.md. None of the
-// three fetches anything.
+// worksheets as a section of docs/adoption/evidence-review.md. `--hosts`
+// adds each host the records link to and docs/source-review.md does not list
+// to that document's list, as `--apply` does after writing. None of these
+// fetches anything.
 // docs/implementation-research.md says what a worksheet is and how to read
 // the answers.
 //
@@ -25,6 +27,10 @@ const args = process.argv.slice(2);
 const files = args.filter((a) => !a.startsWith("--"));
 const emit = args.includes("--emit");
 const log = args.includes("--log");
+const hosts = args.includes("--hosts");
+const REVIEW = fileURLToPath(
+  new URL("../docs/source-review.md", import.meta.url),
+);
 const apply = args.includes("--apply");
 const RECORDS = fileURLToPath(
   new URL("../src/data/implementations/records.ts", import.meta.url),
@@ -254,6 +260,40 @@ const logSection = (sheet, entries) => {
   return lines.join("\n");
 };
 
+/** Adds the hosts the records link to that a source review's list lacks. */
+const addHosts = async () => {
+  const { profiles: now } = await import(
+    `../src/data/implementations/records.ts?${Date.now()}`
+  );
+  const text = readFileSync(REVIEW, "utf8");
+  const at = text.match(/## Domains a run needs[\s\S]*?```text\n([\s\S]*?)```/);
+  if (!at) throw new Error("docs/source-review.md has no list of domains");
+  const listed = new Set(at[1].split("\n").filter(Boolean));
+  const missing = [
+    ...new Set(
+      now
+        .map(publishProfile)
+        .flatMap((p) => [
+          ...p.implementations,
+          ...p.deployments,
+          ...p.observations,
+        ])
+        .flatMap((e) => e.sources.map((s) => new URL(s.url).host)),
+    ),
+  ]
+    .filter((h) => !listed.has(h))
+    .sort();
+  if (missing.length === 0) return;
+  const end = at.index + at[0].length - 3;
+  writeFileSync(
+    REVIEW,
+    `${text.slice(0, end)}${missing.join("\n")}\n${text.slice(end)}`,
+  );
+  console.log(
+    `Listed ${missing.length} hosts in docs/source-review.md: ${missing.join(", ")}`,
+  );
+};
+
 let refused = 0;
 const queue = [];
 if (files.length === 0) {
@@ -300,7 +340,9 @@ if (files.length === 0) {
   }
 }
 
-if (!emit && !apply && !log) {
+if (apply || (hosts && files.length === 0)) await addHosts();
+
+if (!emit && !apply && !log && !hosts) {
   let at = 0;
   await Promise.all(
     Array.from({ length: 6 }, async () => {
