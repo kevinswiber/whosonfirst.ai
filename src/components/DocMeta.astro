@@ -26,8 +26,11 @@ interface Props {
     /** The label, when "Based on" would claim too much: e.g. "Diagram based on". */
     key?: string;
     refs: { ref: string; href: string }[];
-    status: string;
-    revision?: string;
+    /**
+     * What a reference's preview does not say, such as when an RFC was published
+     * or which revision a draft is at. The preview shows its status.
+     */
+    note?: string;
   };
   /** A leading fact for pages that follow no single specification, e.g. "83 entries". */
   lead?: string;
@@ -74,7 +77,7 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
               </a>
             </>
           ))}
-          {' — '}<span class="doc-status">{[based.status, based.revision].filter(Boolean).join(', ')}.</span>
+          {based.note ? <>{' — '}<span class="doc-status">{based.note}.</span></> : '.'}
         </span>
       )
     }
