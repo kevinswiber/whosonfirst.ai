@@ -2,9 +2,16 @@
 import Base from "../../layouts/Base.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import { byGroup, flow, flows, maturityLabel } from "../../data/flows";
-import { HUMAN_LABEL } from "../../data/types";
+import type { HumanPresence } from "../../data/types";
 
 const groups = byGroup();
+
+const HUMAN_COLUMN_LABEL: Record<HumanPresence, string> = {
+  present: "Present",
+  reachable: "Reachable",
+  absent: "No human",
+  any: "Either",
+};
 
 /** Who the resulting credential is about, and what the agent proves itself with. */
 const COMPARE: Record<string, [subject: string, proof: string]> = {
@@ -202,7 +209,7 @@ const filters = [
                   <td>
                     <a href={`/flows/${f.slug}/`}>{f.short}</a>
                   </td>
-                  <td>{HUMAN_LABEL[f.human].replace('Human ', '').replace('With or without a human', 'Either')}</td>
+                  <td>{HUMAN_COLUMN_LABEL[f.human]}</td>
                   <td>{COMPARE[f.slug][0]}</td>
                   <td>{COMPARE[f.slug][1]}</td>
                   <td>{maturityLabel(f)}</td>
