@@ -605,7 +605,9 @@ for (const viewport of [
     assert.equal(await facets.locator("input:disabled").count(), 0);
     await input.fill("");
     assert.deepEqual(await groupCounts(), totals);
-    await page.getByRole("checkbox", { name: /^Human present/ }).check();
+    await page
+      .getByRole("checkbox", { name: /^Get access on behalf of a user/ })
+      .check();
     assert.deepEqual(await groupIds(), ["human-present"]);
     await page.getByRole("checkbox", { name: /^Cross-cutting/ }).check();
     assert.deepEqual(await groupIds(), ["human-present", "cross-cutting"]);
@@ -626,7 +628,9 @@ for (const viewport of [
       "counts restore with the saved search",
     );
     assert.ok(
-      await page.getByRole("checkbox", { name: /^Human present/ }).isChecked(),
+      await page
+        .getByRole("checkbox", { name: /^Get access on behalf of a user/ })
+        .isChecked(),
     );
     assert.ok(
       await page.getByRole("checkbox", { name: /^Cross-cutting/ }).isChecked(),

@@ -2,16 +2,9 @@
 import Base from "../../layouts/Base.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import { byGroup, flow, flows, maturityLabel } from "../../data/flows";
-import type { HumanPresence } from "../../data/types";
+import { std } from "../../data/standards";
 
 const groups = byGroup();
-
-const HUMAN_COLUMN_LABEL: Record<HumanPresence, string> = {
-  present: "Present",
-  reachable: "Reachable",
-  absent: "No human",
-  any: "Either",
-};
 
 /** Who the resulting credential is about, and what the agent proves itself with. */
 const COMPARE: Record<string, [subject: string, proof: string]> = {
@@ -107,13 +100,6 @@ const START: [slug: string, when: string][] = [
   ["dpop", "A copied token should be useless to whoever copied it."],
 ];
 const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
-
-const filters = [
-  { id: "all", label: "All flows" },
-  { id: "present", label: "Human present" },
-  { id: "reachable", label: "Human reachable" },
-  { id: "absent", label: "No human" },
-];
 ---
 
 <Base
@@ -125,14 +111,13 @@ const filters = [
       <p class="eyebrow">Flows</p>
       <h1>How agents get, use and lose access</h1>
       <p class="lede">
-        {flows.length} flows, each as a sequence diagram you can step through. They are grouped by the question that
-        matters most when choosing between them: is there a person involved, and when?
+        {flows.length} flows, grouped by what they help you do. Each has a sequence diagram you can step through.
       </p>
       <p>Looking for an implementation? <a href="/implementations/">Browse implementations</a> for documented product roles and deployment reports.</p>
     </div>
   </div>
 
-  <div class="wrap fl">
+  <flow-catalog class="wrap fl">
     <section class="fl-start" aria-labelledby="start">
       <div class="section-head">
         <h2 id="start">Start with these</h2>
@@ -156,122 +141,311 @@ const filters = [
     </section>
 
     <h2 class="fl-all" id="all">Every flow</h2>
-    <fieldset class="fl-filter">
-      <legend class="visually-hidden">Filter by human involvement</legend>
-      {
-        filters.map((f, i) => (
-          <label>
-            <input type="radio" name="human" value={f.id} checked={i === 0} />
-            <span>{f.label}</span>
-          </label>
-        ))
-      }
-    </fieldset>
-
-    {
-      groups.map((g) => (
-        <section class="fl-group" aria-labelledby={`g-${g.id}`}>
-          <div class="section-head">
-            <h2 id={`g-${g.id}`}>{g.title}</h2>
-            <p>{g.blurb}</p>
-          </div>
-          <div class="grid">
-            {g.flows.map((f) => (
-              <div class="fl-cell" data-human={f.human}>
-                <FlowCard flow={f} />
-              </div>
+    <div class="fl-browser">
+      <form class="fl-sidebar" role="search" aria-label="Filter flows" hidden>
+        <label class="fl-search">
+          Search by flow or standard
+          <input type="search" id="flow-search" name="q" placeholder="e.g. OAuth or RFC 8693" autocomplete="off" />
+        </label>
+        <details class="fl-facets" open>
+          <summary>Filters <span class="fl-active"></span></summary>
+          <fieldset class="fl-filter">
+            <legend class="fl-label">Flow groups</legend>
+            {groups.map((g) => (
+              <label>
+                <input type="checkbox" name="group" value={g.id} data-title={g.title} />
+                <span>{g.title}</span>
+                <span class="fl-total">
+                  <span data-count-for={g.id}>{g.flows.length}</span><span class="visually-hidden"> matching {g.flows.length === 1 ? 'flow' : 'flows'}</span>
+                </span>
+              </label>
             ))}
+          </fieldset>
+          <button class="btn small ghost" type="reset">Clear filters</button>
+        </details>
+      </form>
+      <div class="fl-results">
+        <div class="fl-catalog">
+          <p class="fl-count" role="status" hidden></p>
+          {groups.map((g) => (
+            <section class="fl-group" data-group={g.id} aria-labelledby={`g-${g.id}`}>
+              <div class="section-head">
+                <h3 id={`g-${g.id}`}>{g.title}</h3>
+                <p>{g.blurb}</p>
+              </div>
+              <div class="grid">
+                {g.flows.map((f) => (
+                  <div
+                    class="fl-cell"
+                    data-flow={f.slug}
+                    data-search={[
+                      f.title, f.short, f.slug, f.tagline, f.summary, g.title,
+                      ...f.standards.flatMap((id) => {
+                        const { name, ref, otherNames = [] } = std(id);
+                        return [name, ref, ...otherNames];
+                      }),
+                    ].join(" ")}
+                  >
+                    <FlowCard flow={f} headingLevel={4} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        <section class="fl-table" aria-labelledby="compare">
+          <div class="section-head">
+            <h2 id="compare" tabindex="-1">Side by side</h2>
+            <p>Who the token is about, and what proves it.</p>
+          </div>
+          <div class="fl-compare-filter" hidden>
+            <p></p>
+            <a class="fl-edit-filters" href="#flow-search">Edit filters</a>
+            <button class="btn small ghost" type="button">Clear filters</button>
+          </div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Flows compared">
+            <table>
+              <thead>
+                <tr>
+                  <th>Flow</th>
+                  <th>Token subject</th>
+                  <th>Agent proves itself with</th>
+                  <th>Maturity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  flows.map((f) => (
+                    <tr data-flow={f.slug}>
+                      <td>
+                        <a href={`/flows/${f.slug}/`}>{f.short}</a>
+                      </td>
+                      <td>{COMPARE[f.slug][0]}</td>
+                      <td>{COMPARE[f.slug][1]}</td>
+                      <td>{maturityLabel(f)}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </div>
         </section>
-      ))
-    }
-
-    <section class="fl-table" aria-labelledby="compare">
-      <div class="section-head">
-        <h2 id="compare">Side by side</h2>
-        <p>Who the token is about, and what proves it.</p>
       </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Flows compared">
-        <table>
-          <thead>
-            <tr>
-              <th>Flow</th>
-              <th>Human</th>
-              <th>Token subject</th>
-              <th>Agent proves itself with</th>
-              <th>Maturity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              flows.map((f) => (
-                <tr>
-                  <td>
-                    <a href={`/flows/${f.slug}/`}>{f.short}</a>
-                  </td>
-                  <td>{HUMAN_COLUMN_LABEL[f.human]}</td>
-                  <td>{COMPARE[f.slug][0]}</td>
-                  <td>{COMPARE[f.slug][1]}</td>
-                  <td>{maturityLabel(f)}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </div>
+    </div>
+  </flow-catalog>
 </Base>
+
+<script>
+  const searchText = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ');
+
+  class FlowCatalog extends HTMLElement {
+    connectedCallback() {
+      const form = this.querySelector<HTMLFormElement>('.fl-sidebar')!;
+      const search = form.querySelector<HTMLInputElement>('input[name="q"]')!;
+      const checks = [...form.querySelectorAll<HTMLInputElement>('input[name="group"]')];
+      const facets = form.querySelector<HTMLDetailsElement>('.fl-facets')!;
+      const active = form.querySelector<HTMLElement>('.fl-active')!;
+      const count = this.querySelector<HTMLElement>('.fl-count')!;
+      const comparison = this.querySelector<HTMLElement>('.fl-table')!;
+      const compareNotice = comparison.querySelector<HTMLElement>('.fl-compare-filter')!;
+      const compareText = compareNotice.querySelector('p')!;
+      const table = comparison.querySelector<HTMLElement>('.table-scroll')!;
+      const rows = new Map([...table.querySelectorAll<HTMLTableRowElement>('tr[data-flow]')]
+        .map((row) => [row.dataset.flow, row]));
+      const groups = [...this.querySelectorAll<HTMLElement>('.fl-group')].map((element) => ({
+        element,
+        id: element.dataset.group!,
+        counter: form.querySelector<HTMLElement>(`[data-count-for="${element.dataset.group}"]`)!,
+        cells: [...element.querySelectorAll<HTMLElement>('.fl-cell')].map((cell) => ({
+          cell,
+          text: searchText(cell.dataset.search!),
+          row: rows.get(cell.dataset.flow)!,
+        })),
+      }));
+
+      const filter = () => {
+        const words = searchText(search.value).split(/\s+/).filter(Boolean);
+        const selected = checks.filter((check) => check.checked);
+        let shown = 0;
+        for (const { element, id, counter, cells } of groups) {
+          const selectedGroup = selected.length === 0 || selected.some((check) => check.value === id);
+          let matches = 0;
+          for (const { cell, text, row } of cells) {
+            const match = words.every((word) => text.includes(word));
+            if (match) matches++;
+            cell.toggleAttribute('data-filtered', !match);
+            row.toggleAttribute('data-filtered', !selectedGroup || !match);
+          }
+          counter.textContent = String(matches);
+          counter.nextElementSibling!.textContent = matches === 1 ? ' matching flow' : ' matching flows';
+          element.toggleAttribute('data-filtered', !selectedGroup || matches === 0);
+          if (selectedGroup) shown += matches;
+        }
+        count.textContent = shown === 0
+          ? 'No flows match. Try a different search or clear the filters.'
+          : `${shown} ${shown === 1 ? 'flow' : 'flows'} shown`;
+        active.textContent = selected.length ? `(${selected.length} on)` : '';
+        const filters = [
+          words.length ? `Search “${search.value.trim()}”` : '',
+          ...selected.map((check) => check.dataset.title),
+        ].filter(Boolean);
+        const result = shown === 0 ? 'No flows match' : `${shown} of ${rows.size} flows shown`;
+        compareText.textContent = [result, ...filters].join(' · ');
+        compareNotice.hidden = words.length === 0 && selected.length === 0;
+        table.toggleAttribute('data-filtered', shown === 0);
+      };
+
+      // Open the controls on wide screens and keep them compact on phones.
+      const wide = window.matchMedia('(min-width: 58rem)');
+      facets.open = wide.matches;
+      wide.addEventListener('change', (event) => { facets.open = event.matches; });
+      form.addEventListener('submit', (event) => event.preventDefault());
+      const update = () => {
+        const bounds = comparison.getBoundingClientRect();
+        const comparing = bounds.top < window.innerHeight && bounds.bottom > 0;
+        filter();
+        if (comparing && wide.matches) {
+          if (comparison.getBoundingClientRect().top < 0 || comparison.getBoundingClientRect().top >= window.innerHeight) {
+            comparison.scrollIntoView({ block: 'start' });
+          }
+        } else if (count.getBoundingClientRect().top < 0) {
+          count.scrollIntoView({ block: 'start' });
+        }
+      };
+      form.addEventListener('input', update);
+      const clear = () => {
+        search.value = '';
+        for (const check of checks) check.checked = false;
+      };
+      form.addEventListener('reset', (event) => {
+        event.preventDefault();
+        clear();
+        search.focus();
+        update();
+      });
+      compareNotice.querySelector('button')!.addEventListener('click', () => {
+        clear();
+        filter();
+        const heading = comparison.querySelector('h2')!;
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({ block: 'start' });
+      });
+      filter();
+      form.hidden = false;
+      count.hidden = false;
+      this.querySelector<HTMLElement>('.fl-browser')!.dataset.js = '';
+    }
+  }
+
+  customElements.define('flow-catalog', FlowCatalog);
+</script>
 
 <style>
   .fl {
+    display: block;
     padding-top: 1.6rem;
+  }
+  .fl-browser {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem 2.5rem;
+    margin-top: 1rem;
+  }
+  @media screen and (min-width: 58rem) {
+    .fl-browser[data-js] {
+      grid-template-columns: 15.5rem minmax(0, 1fr);
+    }
+    .fl-sidebar {
+      position: sticky;
+      top: 4.6rem;
+      max-height: calc(100dvh - 5.4rem);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      padding-inline: 0.25rem 0.4rem;
+    }
+  }
+  .fl-search {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.95rem;
+  }
+  .fl-search input {
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid var(--fg);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    color: var(--fg);
+  }
+  .fl-search input::placeholder { color: var(--fg-subtle); }
+  .fl-label {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    padding: 0 0 0.35rem;
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+    margin: 0 0 0.35rem;
+  }
+  .fl-filter label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 1.65rem;
+    padding-block: 0.15rem;
+    font-size: 0.9rem;
+    cursor: pointer;
   }
   .fl-filter {
     border: 0;
     padding: 0;
-    margin: 0 0 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    position: sticky;
-    top: 3.6rem;
-    z-index: 5;
-    background: var(--bg);
-    padding-block: 0.7rem;
-  }
-  .fl-filter label {
-    cursor: pointer;
+    margin: 1.2rem 0 0;
+    min-width: 0;
   }
   .fl-filter input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    width: 0.95rem;
+    height: 0.95rem;
+    margin: 0;
   }
-  .fl-filter span {
-    display: block;
-    font-family: var(--font-label);
-    font-size: 0.74rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.55rem 0.9rem;
-    border: 1.5px solid var(--border-strong);
-    border-radius: var(--radius-pill);
+  .fl-total {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--fg-subtle);
+  }
+  .fl-sidebar button { margin-top: 1.2rem; }
+  .fl-facets > summary { display: none; }
+  .fl-active {
+    font-size: 0.82rem;
+    font-weight: 400;
     color: var(--fg-muted);
   }
-  .fl-filter label:hover span {
-    border-color: var(--fg);
-    color: var(--fg);
+  @media (max-width: 57.99rem) {
+    .fl-facets > summary {
+      display: list-item;
+      margin-top: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--fg);
+      border-radius: var(--radius);
+      background: var(--bg-raised);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
   }
-  .fl-filter input:checked + span {
-    background: var(--fg);
-    border-color: var(--fg);
-    color: var(--bg);
-  }
-  .fl-filter input:focus-visible + span {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  .fl-count {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    margin: 0 0 0.7rem;
   }
 
   /* where to start: the situation first, then the name of the flow that answers it */
@@ -330,9 +504,10 @@ const filters = [
     border-top: 1px solid var(--border);
   }
   .fl-group:first-of-type {
+    padding-top: 0;
     border-top: 0;
   }
-  .fl-group h2 {
+  .fl-group h3 {
     margin: 0;
     font-size: 1.6rem;
   }
@@ -340,19 +515,13 @@ const filters = [
     display: grid;
   }
 
-  /* CSS-only filter. "any" flows always show. */
-  .fl:has(input[value='present']:checked) .fl-cell:not([data-human='present'], [data-human='any']),
-  .fl:has(input[value='reachable']:checked) .fl-cell:not([data-human='reachable'], [data-human='any']),
-  .fl:has(input[value='absent']:checked) .fl-cell:not([data-human='absent'], [data-human='any']) {
-    display: none;
+  @media screen {
+    [data-filtered] { display: none; }
+    .fl-group:nth-child(1 of .fl-group:not([data-filtered])) {
+      padding-top: 0;
+      border-top: 0;
+    }
   }
-  .fl:has(input[value='present']:checked) .fl-group:not(:has(.fl-cell:is([data-human='present'], [data-human='any']))),
-  .fl:has(input[value='reachable']:checked)
-    .fl-group:not(:has(.fl-cell:is([data-human='reachable'], [data-human='any']))),
-  .fl:has(input[value='absent']:checked) .fl-group:not(:has(.fl-cell:is([data-human='absent'], [data-human='any']))) {
-    display: none;
-  }
-
   .fl-table {
     padding-block: 2rem 0;
     border-top: 1px solid var(--border);
@@ -361,8 +530,27 @@ const filters = [
     margin: 0;
     font-size: 1.6rem;
   }
+  .fl-compare-filter:not([hidden]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .fl-compare-filter p {
+    color: var(--fg-muted);
+    margin: 0;
+    overflow-wrap: anywhere;
+    flex-basis: 100%;
+  }
+  @media screen and (min-width: 58rem) {
+    .fl-edit-filters { display: none; }
+  }
   .fl-table td:first-child {
     font-weight: 500;
     white-space: nowrap;
+  }
+  @media print {
+    .fl-sidebar, .fl-count, .fl-compare-filter:not([hidden]) { display: none; }
   }
 </style>

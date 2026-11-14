@@ -80,7 +80,7 @@ const CHROME = [
   "flow-progress",
   "gl-tools", // the glossary's filter and its row of letters
   "compare-narrow", // a comparison laid out for a narrow screen; the table beside it says the same
-  "fl-filter", // the flows index's filter
+  "fl-sidebar", // the flows index's search and filters
   "sx-filters", // the standards tracker's search and filters
   "sx-empty",
   "nav.path", // the strip of lesson numbers at the head of a lesson

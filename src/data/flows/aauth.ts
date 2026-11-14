@@ -7,7 +7,7 @@ export const aauth: Flow = {
   slug: "aauth",
   title: "AAuth: reading a calendar with a person server",
   short: "AAuth",
-  group: "human-in-the-loop",
+  group: "human-present",
   human: "reachable",
   maturity: "experimental",
   tagline:

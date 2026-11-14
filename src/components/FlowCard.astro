@@ -1,19 +1,19 @@
 ---
 import type { Flow } from "../data/types";
-import { HUMAN_LABEL, HUMAN_TONE } from "../data/types";
 import { maturityLabel } from "../data/flows";
 
 interface Props {
   flow: Flow;
+  headingLevel?: 3 | 4;
 }
-const { flow: f } = Astro.props;
+const { flow: f, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 4 ? "h4" : "h3";
 ---
 
 <a class="card flow-card" href={`/flows/${f.slug}/`}>
-  <h3>{f.short}</h3>
+  <Heading>{f.short}</Heading>
   <p>{f.tagline}</p>
   <div class="chips">
-    <span class="chip" data-tone={HUMAN_TONE[f.human]}>{HUMAN_LABEL[f.human]}</span>
     <span class="chip">{maturityLabel(f)}</span>
   </div>
 </a>
