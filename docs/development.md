@@ -96,7 +96,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/data/learn/api-sees.ts`          | The figure lesson 1 and the home page share                                                        |
 | `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
 | `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
-| `src/lib/gloss.ts`                    | Marks the first use of each glossary term, so its definition can be shown in place                 |
+| `src/lib/gloss.ts`                    | Marks the first use of each glossary term and RFC number, so what it is can be shown in place      |
 | `src/data/standards.ts`               | The standards tracker                                                                              |
 | `src/data/tokens.ts`                  | Annotated example tokens for the token inspector                                                   |
 | `src/data/guide.ts`                   | Questions and rules for the decision guide, and the four cases it names                            |

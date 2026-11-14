@@ -1,6 +1,7 @@
 // Glossary terms in the text: each is a link that works however it is
 // followed, with or without scripts, and the words that mean something else in
 // ordinary speech are linked only where an author meant the technical sense.
+// An RFC number is a link of the same kind, to its entry in the standards tracker.
 import { strict as assert } from "node:assert";
 import { describe, test } from "node:test";
 import { frames, open, useBrowser } from "../support/browser.mjs";
@@ -159,3 +160,82 @@ describe("claim and state links refer to their technical meanings", () => {
     });
   }
 });
+
+// "RFC 7519" says nothing to most readers. Where the text names a document by
+// its number, or links to its tracker entry, the reader can see in place which
+// document it is, how settled it is and what it defines, and the link goes to
+// its entry in the tracker, with or without scripts.
+for (const javaScriptEnabled of [false, true]) {
+  describe(`a document named in a flow ${javaScriptEnabled ? "with" : "without"} JavaScript`, () => {
+    for (const [selector, name, status, ref, id] of [
+      // step 4 names the specification by number: the number is not repeated in the preview
+      [
+        '#step-4 a.spec[href="/standards/#rfc7519"]',
+        "JSON Web Token (JWT)",
+        "RFC",
+        null,
+        "rfc7519",
+      ],
+      // an authored link by name: the preview adds the identifier
+      [
+        'main p a.spec[href="/standards/#wag"]',
+        "Workload Authorization Grant",
+        "Individual draft",
+        "draft-carleton-workload-authz-grant",
+        "wag",
+      ],
+    ]) {
+      test(`${name} previews its tracker entry and leads to it`, async (t) => {
+        const ctx = await site.context({
+          javaScriptEnabled,
+          reducedMotion: "reduce",
+        });
+        t.after(() => ctx.close());
+        const page = await ctx.newPage();
+        await open(page, site.url("/flows/workload-identity-federation/"));
+        const link = page.locator(selector).first();
+        assert.equal(await link.count(), 1, `nothing matches ${selector}`);
+        assert.equal(await link.getAttribute("data-term"), name);
+        if (javaScriptEnabled)
+          await t.test("hovering it shows the document in place", async () => {
+            await link.scrollIntoViewIfNeeded();
+            await page.mouse.move(0, 0);
+            await frames(page);
+            await link.hover();
+            const tip = page.locator("#term-tip");
+            assert.ok(await isOpen(tip), "no preview");
+            assert.equal(
+              await tip.locator(".term-tip-name").textContent(),
+              name,
+            );
+            assert.equal(
+              await tip.locator(".term-tip-meta .chip").textContent(),
+              status,
+            );
+            assert.equal(
+              (await tip.locator(".term-tip-ref").count()) > 0
+                ? await tip.locator(".term-tip-ref").textContent()
+                : null,
+              ref,
+            );
+            assert.ok(
+              ((await tip.locator(".term-tip-def").textContent()) ?? "")
+                .length > 20,
+              "the preview does not say what the document defines",
+            );
+            assert.equal(
+              await tip.locator(".term-tip-more").getAttribute("href"),
+              `/standards/#${id}`,
+            );
+          });
+        await t.test("activating it reaches the tracker entry", async () => {
+          await Promise.all([
+            page.waitForURL(site.url(`/standards/#${id}`)),
+            link.press("Enter"),
+          ]);
+          assert.equal(await page.locator(`[id="${id}"]`).count(), 1);
+        });
+      });
+    }
+  });
+}
