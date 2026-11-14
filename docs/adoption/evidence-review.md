@@ -1,8 +1,8 @@
-# In the field evidence review
+# Implementation evidence review
 
-The source reviews were checked on **12 and 13 November 2026 (America/Los_Angeles)**. They now cover all 25 published flows. The [evidence records](../../src/data/field/records.ts) select 80 implementation entries, 19 attributed deployment accounts and one scoped interoperability observation. The initial pass covered five flows, followed by five more and then the remaining 15. Coding agents performed the source reviews and a separate check of selected claims and publication rules. These records do not assert independent human or operator verification, exhaustive coverage or prevalence.
+The source reviews were checked on **12 and 13 November 2026 (America/Los_Angeles)**. They now cover all 25 published flows. The [evidence records](../../src/data/implementations/records.ts) select 80 implementation entries, 19 attributed deployment accounts and one scoped interoperability observation. The initial pass covered five flows, followed by five more and then the remaining 15. Coding agents performed the source reviews and a separate check of selected claims and publication rules. These records do not assert independent human or operator verification, exhaustive coverage or prevalence.
 
-The review started with the [design and pilot findings](review-and-design.md), the pilot ledger and the site’s flow definitions. It opened product documentation, release announcements and first-party operator accounts. Targeted searches filled gaps in roles and operator evidence. The initial public selection used two or three actionable implementation entries and at most one operator account per flow. The extension broadens those records; compact overview examples link to complete field pages. Further candidates and exclusions remain research context. The resulting records are examples. No new endpoint survey, operational test, independent certification or prevalence measurement took place.
+The review started with the [design and pilot findings](review-and-design.md), the pilot ledger and the site’s flow definitions. It opened product documentation, release announcements and first-party operator accounts. Targeted searches filled gaps in roles and operator evidence. The initial public selection used two or three actionable implementation entries and at most one operator account per flow. The extension broadened those records. The Implementations directory links each reviewed entry to its full record. Further candidates and exclusions remain research context. The resulting records are examples. No new endpoint survey, operational test, independent certification or prevalence measurement took place.
 
 Dates below identify a review, publication or reported event. A page’s update date applies to the document. An operator account can describe a rollout without establishing its date or current status. Adding an existing source to the directory is a change in evidence coverage. An unstated feature stage stays unspecified. Project and publisher wording is preserved at the scope it describes.
 
@@ -69,7 +69,7 @@ The [pilot design review](review-and-design.md) records the collection and publi
 
 ## Newly published flows
 
-These five flows joined the published catalog in the 13 November 2026 integration from `main`. The issues below record their original proposals. All five now have reviewed field profiles in the completion review below. The initial AuthZEN research is retained here for its original scope and exclusions.
+These five flows joined the published catalog in the 13 November 2026 integration from `main`. The issues below record their original proposals. All five now have reviewed implementation profiles in the completion review below. The initial AuthZEN research is retained here for its original scope and exclusions.
 
 | Flow and original issue                                                                                          | Evidence review |
 | ---------------------------------------------------------------------------------------------------------------- | --------------- |
@@ -91,7 +91,7 @@ The reviewed sources contain no qualifying operator report for an AuthZEN-backed
 
 ## Review coverage
 
-All 25 published flows now have a scoped field record. Sparse records retain prototype status, partial roles and missing production reports explicitly. A reviewed record does not imply that a complete production implementation exists.
+All 25 published flows now have a scoped implementation record. Sparse records retain prototype status, partial roles and missing production reports explicitly. A reviewed record does not imply that a complete production implementation exists.
 
 ## Expanded review
 

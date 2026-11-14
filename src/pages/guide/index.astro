@@ -1,6 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { fieldProfile } from "../../data/field";
+import { implementationProfile } from "../../data/implementations";
 import {
   questions,
   rules,
@@ -48,7 +48,7 @@ const data = {
         tagline: f.tagline,
         human: HUMAN_LABEL[f.human],
         maturity: maturityLabel(f),
-        implementations: Boolean(fieldProfile(f.slug)),
+        implementations: Boolean(implementationProfile(f.slug)),
       },
     ]),
   ),

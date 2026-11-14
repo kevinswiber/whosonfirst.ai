@@ -1,19 +1,22 @@
 ---
 import Base from "../../layouts/Base.astro";
-import FieldEvidence from "../../components/FieldEvidence.astro";
-import { fieldDate, fieldProfiles } from "../../data/field";
-import type { FieldProfile } from "../../data/field";
+import ImplementationRecord from "../../components/ImplementationRecord.astro";
+import {
+  evidenceDate,
+  implementationProfiles,
+} from "../../data/implementations";
+import type { ImplementationProfile } from "../../data/implementations";
 import { flow } from "../../data/flows";
 
 export function getStaticPaths() {
-  return fieldProfiles.map((profile) => ({
+  return implementationProfiles.map((profile) => ({
     params: { slug: profile.slug },
     props: { profile },
   }));
 }
 
 interface Props {
-  profile: FieldProfile;
+  profile: ImplementationProfile;
 }
 
 const { profile } = Astro.props;
@@ -32,24 +35,24 @@ const title = `${guide.short} implementations and deployment reports`;
     <div class="page-head">
       <div class="wrap">
         <h1>{title}</h1>
-        <p class="field-date">Evidence reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></p>
-        <p class="field-links">
+        <p class="evidence-date">Evidence reviewed <time datetime={profile.reviewedOn}>{evidenceDate(profile.reviewedOn)}</time></p>
+        <p class="evidence-links">
           <a href={`/flows/${guide.slug}/`}>How {guide.short} works</a> · <a href="/implementations/">Browse implementations across all flows</a>
         </p>
       </div>
     </div>
-    <div class="wrap field-body">
-      <FieldEvidence profile={profile} />
+    <div class="wrap evidence-body">
+      <ImplementationRecord profile={profile} />
     </div>
   </article>
 </Base>
 
 <style>
-  .field-date {
+  .evidence-date {
     margin: 0.9rem 0 0.5rem;
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  .field-links { margin: 0; }
-  .field-body { margin-top: clamp(1.6rem, 4vw, 2.5rem); }
+  .evidence-links { margin: 0; }
+  .evidence-body { margin-top: clamp(1.6rem, 4vw, 2.5rem); }
 </style>

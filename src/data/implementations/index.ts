@@ -6,7 +6,7 @@ validateProfiles(
   profiles,
   flows.map((flow) => flow.slug),
 );
-export const fieldProfiles = profiles.map(publishProfile);
-export const fieldProfile = (slug: string) =>
-  fieldProfiles.find((profile) => profile.slug === slug);
+export const implementationProfiles = profiles.map(publishProfile);
+export const implementationProfile = (slug: string) =>
+  implementationProfiles.find((profile) => profile.slug === slug);
 export * from "./model.ts";

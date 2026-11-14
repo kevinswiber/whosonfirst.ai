@@ -261,13 +261,13 @@ test("every page gives its own address as canonical and describes itself in stru
   assert.deepEqual(some(data), []);
 });
 
-// Field records have their own review scope/date; generic page metadata must not
+// Implementation records have their own review scope/date; generic page metadata must not
 // attribute that limited review to the site author or the standards review date.
-test("pages with field evidence make no whole-page reviewer claim", () => {
+test("pages with implementation evidence make no whole-page reviewer claim", () => {
   const pages = built.filter(
     (p) =>
       p.path.startsWith("/implementations/") ||
-      p.html.includes("data-field-reviewed"),
+      p.html.includes("data-implementation-reviewed"),
   );
   assert.ok(pages.some((p) => p.path === "/implementations/"));
   assert.ok(pages.some((p) => p.path === "/implementations/dpop/"));

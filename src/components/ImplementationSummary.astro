@@ -1,10 +1,10 @@
 ---
-import type { FieldProfile } from "../data/field";
-import FieldExamples from "./FieldExamples.astro";
+import type { ImplementationProfile } from "../data/implementations";
+import ImplementationEntries from "./ImplementationEntries.astro";
 
 interface Props {
   slug: string;
-  profile?: FieldProfile;
+  profile?: ImplementationProfile;
 }
 
 const { slug, profile } = Astro.props;
@@ -13,13 +13,13 @@ const entries = profile
   : [];
 ---
 
-<section id="in-the-field" class="field-summary" aria-labelledby="implementation-evidence" data-field-reviewed={profile ? '' : undefined}>
+<section id="in-the-field" class="evidence-summary" aria-labelledby="implementation-evidence" data-implementation-reviewed={profile ? '' : undefined}>
   <h2 id="implementation-evidence">Implementations and deployment reports</h2>
   {profile ? (
     <>
       <p class="prose"><a href={`/implementations/${slug}/`}>Sources and review details</a></p>
       {entries.length > 0 && (
-        <FieldExamples slug={slug} entries={entries} label="Reviewed implementations and deployment reports" cards />
+        <ImplementationEntries slug={slug} entries={entries} label="Reviewed implementations and deployment reports" cards />
       )}
     </>
   ) : (
@@ -31,7 +31,7 @@ const entries = profile
 </section>
 
 <style>
-  .field-summary {
+  .evidence-summary {
     margin-top: clamp(2.5rem, 5vw, 3.75rem);
   }
   h2 {

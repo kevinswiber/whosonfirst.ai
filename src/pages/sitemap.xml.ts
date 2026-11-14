@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { fieldProfiles } from "../data/field";
 import { flows } from "../data/flows";
+import { implementationProfiles } from "../data/implementations";
 
 /** Static pages come from the filesystem; parameterized routes come from published data. */
 const pages = Object.keys(import.meta.glob("./**/*.{astro,mdx}"))
@@ -18,7 +18,9 @@ export const GET: APIRoute = ({ site }) => {
   const urls = [
     ...pages,
     ...flows.map((f) => `/flows/${f.slug}/`),
-    ...fieldProfiles.map((profile) => `/implementations/${profile.slug}/`),
+    ...implementationProfiles.map(
+      (profile) => `/implementations/${profile.slug}/`,
+    ),
   ].sort();
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

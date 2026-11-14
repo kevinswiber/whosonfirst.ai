@@ -1,10 +1,10 @@
 import type {
   DeploymentEvidence,
   ImplementationEvidence,
-} from "../data/field/model.ts";
+} from "../data/implementations/model.ts";
 
 /** Carry early-release wording and material scope limits into every compact view. */
-export function fieldQualification(
+export function evidenceQualification(
   entry: ImplementationEvidence | DeploymentEvidence,
 ): string {
   const release =

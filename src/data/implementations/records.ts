@@ -1,7 +1,7 @@
-import type { FieldProfile } from "./model.ts";
+import type { ImplementationProfile } from "./model.ts";
 
 // Primary-source review and exclusions: docs/adoption/evidence-review.md.
-export const profiles: FieldProfile[] = [
+export const profiles: ImplementationProfile[] = [
   {
     slug: "authorization-code-pkce",
     reviewedOn: "2026-11-12",
@@ -111,7 +111,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "These sources were added to the field record. Earlier reports and releases keep their own dates.",
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
         evidenceIds: ["pkce-cognito", "pkce-oauth4webapi", "pkce-github"],
       },
       {
@@ -336,7 +336,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "These sources were added to the field record. Earlier reports and releases keep their own dates.",
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
         evidenceIds: [
           "dpop-keycloak",
           "dpop-oauth4webapi",
@@ -503,7 +503,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "These sources were added to the field record. Earlier reports and releases keep their own dates.",
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
         evidenceIds: [
           "mcp-claude-code",
           "mcp-cloudflare",
@@ -616,7 +616,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "These sources were added to the field record. Earlier reports and releases keep their own dates.",
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
         evidenceIds: ["wif-github", "wif-google", "wif-pulumi"],
       },
       {
@@ -733,7 +733,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "These sources were added to the field record. Earlier reports and releases keep their own dates.",
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
         evidenceIds: ["spiffe-spire", "spiffe-istio", "spiffe-indeed"],
       },
       {
@@ -941,7 +941,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "Added the reviewed implementation and deployment sources to the field record.",
+          "Added the reviewed implementation and deployment sources to the implementation record.",
         evidenceIds: [
           "device-github-issuer",
           "device-keycloak-issuer",
@@ -1145,7 +1145,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "Added the reviewed implementation and deployment sources to the field record.",
+          "Added the reviewed implementation and deployment sources to the implementation record.",
         evidenceIds: [
           "client-creds-entra",
           "client-creds-okta",
@@ -1339,7 +1339,7 @@ export const profiles: FieldProfile[] = [
         kind: "evidence-added",
         date: "2026-11-12",
         summary:
-          "Added the reviewed implementation and deployment sources to the field record.",
+          "Added the reviewed implementation and deployment sources to the implementation record.",
         evidenceIds: [
           "exchange-keycloak-v2",
           "exchange-okta",
@@ -1532,7 +1532,7 @@ export const profiles: FieldProfile[] = [
         id: "ciba-review",
         kind: "evidence-added",
         date: "2026-11-12",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: [
           "ciba-openid-client",
           "ciba-auth0",
@@ -1739,7 +1739,7 @@ export const profiles: FieldProfile[] = [
         id: "a2a-review",
         kind: "evidence-added",
         date: "2026-11-12",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: [
           "a2a-python-sdk",
           "a2a-agentcore",
@@ -1900,7 +1900,7 @@ export const profiles: FieldProfile[] = [
         id: "step-up-authorization-evidence-added",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "Added the reviewed sources to the field record.",
+        summary: "Added the reviewed sources to the implementation record.",
         evidenceIds: [
           "step-up-pingone",
           "step-up-authlete",
@@ -2097,7 +2097,7 @@ export const profiles: FieldProfile[] = [
         id: "cross-app-access-evidence-added",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "Added the reviewed sources to the field record.",
+        summary: "Added the reviewed sources to the implementation record.",
         evidenceIds: [
           "xaa-okta",
           "xaa-claude",
@@ -2201,7 +2201,7 @@ export const profiles: FieldProfile[] = [
         id: "identity-chaining-evidence-added",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "Added the reviewed sources to the field record.",
+        summary: "Added the reviewed sources to the implementation record.",
         evidenceIds: ["identity-chain-keycloak", "identity-chain-authgent"],
       },
       {
@@ -2330,7 +2330,7 @@ export const profiles: FieldProfile[] = [
         id: "transaction-tokens-evidence-added",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "Added the reviewed sources to the field record.",
+        summary: "Added the reviewed sources to the implementation record.",
         evidenceIds: ["txn-tokenetes", "txn-kontxt", "txn-authgent"],
       },
     ],
@@ -2471,7 +2471,7 @@ export const profiles: FieldProfile[] = [
         id: "oauth-mtls-evidence-added",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "Added the reviewed sources to the field record.",
+        summary: "Added the reviewed sources to the implementation record.",
         evidenceIds: [
           "oauth-mtls-authlete",
           "oauth-mtls-duende",
@@ -2619,7 +2619,7 @@ export const profiles: FieldProfile[] = [
         id: "url-elicitation-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: [
           "url-elicitation-python",
           "url-elicitation-claude-code",
@@ -2725,7 +2725,7 @@ export const profiles: FieldProfile[] = [
         id: "aauth-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: ["aauth-dotnet", "aauth-js-resource"],
       },
     ],
@@ -2849,7 +2849,7 @@ export const profiles: FieldProfile[] = [
         id: "wimse-workload-tokens-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: ["wimse-wimsey", "wimse-spire", "wimse-solo"],
       },
       {
@@ -3001,7 +3001,7 @@ export const profiles: FieldProfile[] = [
         id: "web-bot-auth-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: [
           "web-bot-auth-cloudflare",
           "web-bot-auth-google",
@@ -3069,7 +3069,7 @@ export const profiles: FieldProfile[] = [
         id: "agent-payments-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "These sources were added to the field record.",
+        summary: "These sources were added to the implementation record.",
         evidenceIds: ["agent-payments-ap2-python"],
       },
       {
@@ -3236,7 +3236,8 @@ export const profiles: FieldProfile[] = [
         id: "tool-call-authorization-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "The reviewed sources were added to the field record.",
+        summary:
+          "The reviewed sources were added to the implementation record.",
         evidenceIds: [
           "authzen-traefik-hub",
           "authzen-openfga",
@@ -3428,7 +3429,8 @@ export const profiles: FieldProfile[] = [
         id: "access-revocation-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "The reviewed sources were added to the field record.",
+        summary:
+          "The reviewed sources were added to the implementation record.",
         evidenceIds: [
           "caep-okta-transmitter",
           "caep-google-workspace",
@@ -3589,7 +3591,8 @@ export const profiles: FieldProfile[] = [
         id: "biscuit-delegation-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "The reviewed sources were added to the field record.",
+        summary:
+          "The reviewed sources were added to the implementation record.",
         evidenceIds: [
           "biscuit-rust",
           "biscuit-agent-mesh",
@@ -3776,7 +3779,8 @@ export const profiles: FieldProfile[] = [
         id: "gnap-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "The reviewed sources were added to the field record.",
+        summary:
+          "The reviewed sources were added to the implementation record.",
         evidenceIds: [
           "gnap-sunet",
           "gnap-rafiki",
@@ -3986,7 +3990,8 @@ export const profiles: FieldProfile[] = [
         id: "credential-broker-review",
         kind: "evidence-added",
         date: "2026-11-13",
-        summary: "The reviewed sources were added to the field record.",
+        summary:
+          "The reviewed sources were added to the implementation record.",
         evidenceIds: [
           "credential-broker-anthropic",
           "credential-broker-docker",

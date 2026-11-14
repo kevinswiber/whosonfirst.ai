@@ -7,7 +7,7 @@
  */
 import { placeAt, places } from "../data/deployments";
 import { flows } from "../data/flows";
-import { fieldProfile } from "../data/field";
+import { implementationProfile } from "../data/implementations";
 
 interface Props {
   /** The guide's rendered HTML. */
@@ -42,7 +42,7 @@ const others = (here?.alsoRead ?? []).flatMap((s) =>
               <li>
                 <a href={`/flows/${f.slug}/`}>{f.short}</a>
                 <span>{f.tagline}</span>
-                {fieldProfile(f.slug) && <a class="implementation-link" href={`/implementations/${f.slug}/`}>See implementations<span class="visually-hidden"> for {f.short}</span></a>}
+                {implementationProfile(f.slug) && <a class="implementation-link" href={`/implementations/${f.slug}/`}>See implementations<span class="visually-hidden"> for {f.short}</span></a>}
               </li>
             ))}
           </ul>
