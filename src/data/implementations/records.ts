@@ -22,6 +22,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "pkce-cognito",
+        parties: ["as"],
         summary:
           "Documents authorization code with S256 for a public app client, followed by code redemption with the verifier.",
         limits:
@@ -52,6 +53,7 @@ export const profiles: ImplementationProfile[] = [
             "The project lists v3.x under Supported Versions; it does not date the introduction of PKCE.",
         },
         id: "pkce-oauth4webapi",
+        parties: ["agent"],
         summary:
           "Provides JavaScript client routines for the authorization code flow with PKCE.",
         limits:
@@ -82,6 +84,7 @@ export const profiles: ImplementationProfile[] = [
             "GitHub labels the announcement a release; it describes an enforcement exception for existing apps.",
         },
         id: "pkce-github",
+        parties: ["as"],
         qualification: "Secretless native-client support not established.",
         summary:
           "Announced S256 PKCE for user authorization in both app types. A sent challenge requires the verifier at code exchange, with the rollout exception described in the announcement.",
@@ -144,6 +147,7 @@ export const profiles: ImplementationProfile[] = [
             "The 30 September 2025 release announcement explicitly promotes DPoP from preview to supported.",
         },
         id: "dpop-keycloak",
+        parties: ["as"],
         summary:
           "Promoted DPoP from preview to supported in 26.4.0, including options for public-client refresh-token binding and DPoP at Keycloak’s own protected endpoints.",
         limits:
@@ -175,6 +179,7 @@ export const profiles: ImplementationProfile[] = [
             "The project lists v3.x as supported. The API documentation describes the DPoP handle.",
         },
         id: "dpop-oauth4webapi",
+        parties: ["agent"],
         summary:
           "Creates DPoP proofs from a key pair and handles server-issued nonces.",
         limits:
@@ -210,6 +215,7 @@ export const profiles: ImplementationProfile[] = [
             "The reference identifies 7.1.2 as stable; the API marks the provider as available since 6.5. The first release day was not established.",
         },
         id: "dpop-spring",
+        parties: ["api"],
         summary:
           "Provides DPoPAuthenticationProvider to authenticate DPoP-bound access tokens on protected servlet requests.",
         limits:
@@ -245,6 +251,7 @@ export const profiles: ImplementationProfile[] = [
             "The 11 March 2026 changelog identifies the Enterprise plan and the token-issuer feature.",
         },
         id: "dpop-auth0",
+        parties: ["as"],
         qualification: "Enterprise plans.",
         summary:
           "Auth0 issues RFC 9449 tokens bound to a client-held key and can require DPoP for public clients or all clients.",
@@ -278,6 +285,7 @@ export const profiles: ImplementationProfile[] = [
             "Curity announced broader OAuth token binding in Identity Server 11.4 on 11 August 2026.",
         },
         id: "dpop-curity",
+        parties: ["as"],
         summary:
           "Curity documents RFC 9449 binding for supported grants, a server nonce at the token endpoint and optional authorization-code binding with dpop_jkt.",
         limits:
@@ -391,6 +399,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "mcp-claude-code",
+        parties: ["client"],
         summary:
           "Documents protected-resource metadata discovery and Client ID Metadata Documents, alongside preconfigured client credentials and dynamic-registration compatibility.",
         limits:
@@ -421,6 +430,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "mcp-cloudflare",
+        parties: ["as", "mcp"],
         summary:
           "Documents separate OAuth roles for Workers against MCP’s 28 July 2026 revision, including client metadata documents, protected-resource discovery and resource-specific token checks.",
         limits:
@@ -451,6 +461,7 @@ export const profiles: ImplementationProfile[] = [
             "The guide explicitly marks support for this revision and the resource-indicators and cimd features as experimental.",
         },
         id: "mcp-keycloak",
+        parties: ["as"],
         summary:
           "Documents its authorization-server role for the 28 July 2026 MCP revision. Resource indicators and client metadata documents require experimental feature flags.",
         limits:
@@ -533,6 +544,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "wif-github",
+        parties: ["idp"],
         summary:
           "Issues an OIDC JWT for a workflow job that can be presented to a receiving service configured to trust its issuer and claims.",
         limits:
@@ -563,6 +575,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "wif-google",
+        parties: ["sts"],
         summary:
           "Uses Security Token Service to exchange an external credential for a federated token under RFC 8693. IAM can grant direct access or service-account impersonation.",
         limits:
@@ -649,6 +662,7 @@ export const profiles: ImplementationProfile[] = [
             "This is the project’s stated readiness, not a general-availability certification or an endorsement.",
         },
         id: "spiffe-spire",
+        parties: ["server", "node"],
         summary:
           "SPIRE Server and Agent perform attestation, issue X.509-SVIDs and deliver them through the local SPIFFE Workload API.",
         limits:
@@ -679,6 +693,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "spiffe-istio",
+        parties: ["agent", "tool"],
         summary:
           "Documents Envoy proxies obtaining SPIRE-issued identity material through Secret Discovery Service over a Unix socket.",
         limits:
@@ -757,6 +772,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "device-github-issuer",
+        parties: ["as"],
         organization: "GitHub",
         product: "GitHub OAuth Apps and GitHub Apps",
         role: "Authorization server",
@@ -788,6 +804,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "device-keycloak-issuer",
+        parties: ["as"],
         organization: "Keycloak",
         product: "Keycloak",
         role: "Authorization server",
@@ -823,6 +840,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "device-aws-cli",
+        parties: ["agent"],
         organization: "Amazon Web Services",
         product: "AWS CLI",
         role: "CLI client",
@@ -854,6 +872,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "device-github-go",
+        parties: ["agent"],
         organization: "GitHub",
         product: "cli/oauth",
         role: "Go client library",
@@ -980,6 +999,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-entra",
+        parties: ["as"],
         qualification:
           "Uses /.default scope; the illustrated resource parameter is unverified.",
         organization: "Microsoft",
@@ -1013,6 +1033,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-okta",
+        parties: ["as"],
         organization: "Okta",
         product: "Okta OAuth service apps",
         role: "Authorization server",
@@ -1043,6 +1064,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-spring",
+        parties: ["as"],
         organization: "Spring",
         product: "Spring Authorization Server",
         role: "Authorization-server framework",
@@ -1073,6 +1095,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-oauth4webapi",
+        parties: ["agent"],
         organization: "oauth4webapi project",
         product: "oauth4webapi",
         role: "Client library",
@@ -1167,6 +1190,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "exchange-keycloak-v2",
+        parties: ["as"],
         qualification: "Actor delegation is Preview; no resource parameter.",
         organization: "Keycloak",
         product: "Keycloak Standard Token Exchange V2",
@@ -1204,6 +1228,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "exchange-okta",
+        parties: ["as"],
         qualification: "Actor-token delegation not established.",
         organization: "Okta",
         product: "Okta On-Behalf-Of Token Exchange",
@@ -1240,6 +1265,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "exchange-spring-client",
+        parties: ["tool"],
         organization: "Spring",
         product: "Spring Security OAuth2 Client",
         role: "Client library",
@@ -1270,6 +1296,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "exchange-aws-agentcore",
+        parties: ["tool"],
         organization: "Amazon Web Services",
         product: "Amazon Bedrock AgentCore Identity",
         role: "Token-exchange client and broker",
@@ -1386,6 +1413,7 @@ export const profiles: ImplementationProfile[] = [
             "The project lists v6.x under Supported Versions. The feature introduction date is unstated.",
         },
         id: "ciba-openid-client",
+        parties: ["agent"],
         summary:
           "The JavaScript client library starts a backchannel authentication request and polls the token endpoint for the result. Its example also shows token retrieval after a ping callback.",
         limits:
@@ -1416,6 +1444,7 @@ export const profiles: ImplementationProfile[] = [
             "Auth0 announced general availability for Enterprise plan customers on 21 May 2025.",
         },
         id: "ciba-auth0",
+        parties: ["as"],
         qualification: "Enterprise plans.",
         summary:
           "Auth0 documents decoupled CIBA with a Guardian SDK mobile app for the user and Rich Authorization Requests (RFC 9396) for supplying context.",
@@ -1448,6 +1477,7 @@ export const profiles: ImplementationProfile[] = [
             "The guide lists Standard, Advanced, Custom and legacy Enterprise editions, with a compatible license key needed for legacy customers.",
         },
         id: "ciba-duende",
+        parties: ["as"],
         qualification: "Edition restrictions apply.",
         summary:
           "IdentityServer exposes a backchannel authentication endpoint and supports poll-mode retrieval at the token endpoint.",
@@ -1480,6 +1510,7 @@ export const profiles: ImplementationProfile[] = [
             "The integration guide documents the flow without a release stage.",
         },
         id: "ciba-vipps-mobilepay",
+        parties: ["as"],
         summary:
           "A merchant can start login by phone number, let the user complete it in the Vipps or MobilePay app, and poll the token endpoint for ID and access tokens.",
         limits:
@@ -1579,6 +1610,7 @@ export const profiles: ImplementationProfile[] = [
             "The compatibility matrix names the protocol version and transports. These sources do not date a release of card signing.",
         },
         id: "a2a-python-sdk",
+        parties: ["client", "remote"],
         summary:
           "The SDK documents A2A 1.0 clients and servers over JSON-RPC, HTTP+JSON and gRPC. A sample shows signing an Agent Card and verifying it with a configured allowlist of signing algorithms and key-set URLs.",
         limits:
@@ -1614,6 +1646,7 @@ export const profiles: ImplementationProfile[] = [
             "The guides document the A2A runtime integration without naming its feature stage.",
         },
         id: "a2a-agentcore",
+        parties: ["remote"],
         qualification: "A2A 0.3.0 example; 1.0 support unverified.",
         summary:
           "The runtime hosts an A2A JSON-RPC server with Agent Card discovery and SigV4 or OAuth 2.0 inbound authentication. Its protocol contract describes a 401 challenge when OAuth credentials are missing.",
@@ -1650,6 +1683,7 @@ export const profiles: ImplementationProfile[] = [
             "The project dated its first generally available SDK release to 10 June 2026. The task authorization guide consulted is for SDK 1.5.0.Final.",
         },
         id: "a2a-java-sdk",
+        parties: ["client", "remote"],
         summary:
           "The Java SDK supplies client and server bindings for JSON-RPC, gRPC and HTTP+JSON. Its 1.5.0.Final server guide documents a configurable provider for per-user task access checks.",
         limits:
@@ -1686,6 +1720,7 @@ export const profiles: ImplementationProfile[] = [
             "The Python guide states support and documents compatibility with A2A Python SDK 1.x and 0.3.x. The feature release date is unstated.",
         },
         id: "a2a-google-adk",
+        parties: ["client"],
         summary:
           "The Python integration takes an Agent Card or its URL, calls a remote agent from the local orchestrator, and exposes hooks for request metadata and headers.",
         limits:
@@ -1777,6 +1812,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "step-up-pingone",
+        parties: ["as", "api"],
         qualification: "Transaction-specific consent not established.",
         organization: "Ping Identity",
         product: "PingOne SSO and API Access Management",
@@ -1808,6 +1844,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "step-up-authlete",
+        parties: ["as"],
         organization: "Authlete",
         product: "Authlete",
         role: "Authorization-server backend",
@@ -1839,6 +1876,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "step-up-sdxc",
+        parties: ["agent", "api"],
         organization: "sdxc project",
         product: "@sdxc/auth",
         role: "Client and resource-server library",
@@ -1929,6 +1967,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "xaa-okta",
+        parties: ["idp", "as"],
         qualification:
           "Org authorization server does not accept external ID-JAGs.",
         organization: "Okta",
@@ -1968,6 +2007,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "xaa-claude",
+        parties: ["client"],
         qualification:
           "Team and Enterprise; Claude-issued assertions are beta.",
         organization: "Anthropic",
@@ -2000,6 +2040,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "xaa-pingfederate",
+        parties: ["idp", "as"],
         organization: "Ping Identity",
         product: "PingFederate",
         role: "ID-JAG issuer and resource authorization server",
@@ -2030,6 +2071,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "xaa-keycloak",
+        parties: ["as"],
         qualification: "Draft -01 receiver.",
         organization: "Keycloak",
         product: "Keycloak ID-JAG receiver",
@@ -2127,6 +2169,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "identity-chain-keycloak",
+        parties: ["asa", "asb"],
         organization: "Keycloak",
         product: "Keycloak",
         role: "Issuing and receiving authorization servers",
@@ -2163,6 +2206,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "identity-chain-authgent",
+        parties: ["asa", "asb"],
         qualification: "Overview names draft -14; later revisions unverified.",
         organization: "authgent project",
         product: "authgent",
@@ -2225,6 +2269,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "txn-tokenetes",
+        parties: ["tts", "tool"],
         organization: "Tokenetes project",
         product: "Tokenetes",
         role: "Transaction-token service and sidecar verifier",
@@ -2260,6 +2305,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "txn-kontxt",
+        parties: ["edge", "tts", "tool"],
         qualification: "Later draft revisions unverified.",
         organization: "kontxt project",
         product: "kontxt",
@@ -2291,6 +2337,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "txn-authgent",
+        parties: ["tts"],
         qualification:
           "Scope-subset check skipped when the subject token has no scope.",
         organization: "authgent project",
@@ -2346,6 +2393,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "oauth-mtls-authlete",
+        parties: ["as"],
         organization: "Authlete",
         product: "Authlete",
         role: "Authorization-server backend",
@@ -2376,6 +2424,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "oauth-mtls-duende",
+        parties: ["as"],
         organization: "Duende Software",
         product: "Duende IdentityServer",
         role: "Authorization server",
@@ -2411,6 +2460,7 @@ export const profiles: ImplementationProfile[] = [
       {
         kind: "implementation",
         id: "oauth-mtls-kong",
+        parties: ["api"],
         organization: "Kong",
         product: "Kong Gateway OpenID Connect plugin",
         role: "Gateway verifier",
@@ -2491,6 +2541,7 @@ export const profiles: ImplementationProfile[] = [
     implementations: [
       {
         id: "url-elicitation-python",
+        parties: ["client", "mcp"],
         kind: "implementation",
         organization: "Model Context Protocol project",
         product: "MCP Python SDK",
@@ -2521,6 +2572,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "url-elicitation-claude-code",
+        parties: ["client"],
         kind: "implementation",
         organization: "Anthropic",
         product: "Claude Code",
@@ -2551,6 +2603,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "url-elicitation-agentcore",
+        parties: ["mcp"],
         kind: "implementation",
         organization: "Amazon Web Services",
         product: "Amazon Bedrock AgentCore Gateway",
@@ -2581,6 +2634,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "url-elicitation-cloudflare-agents",
+        parties: ["client"],
         qualification: "Earlier server-initiated exchange.",
         kind: "implementation",
         organization: "Cloudflare",
@@ -2647,6 +2701,7 @@ export const profiles: ImplementationProfile[] = [
     implementations: [
       {
         id: "aauth-dotnet",
+        parties: ["agent", "api"],
         kind: "implementation",
         organization: "AAuth .NET SDK project",
         product: "AAuth .NET SDK",
@@ -2683,6 +2738,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "aauth-js-resource",
+        parties: ["api"],
         kind: "implementation",
         organization: "Hellō",
         product: "@aauth/resource",
@@ -2740,6 +2796,7 @@ export const profiles: ImplementationProfile[] = [
     implementations: [
       {
         id: "wimse-wimsey",
+        parties: ["issuer", "agent", "tool"],
         kind: "implementation",
         organization: "wimsey project",
         product: "wimsey",
@@ -2775,6 +2832,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "wimse-spire",
+        parties: ["issuer"],
         qualification: "HTTP proof generation and verification unverified.",
         kind: "implementation",
         organization: "SPIFFE project",
@@ -2812,6 +2870,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "wimse-solo",
+        parties: ["proxy"],
         qualification: "Proof verification unverified.",
         kind: "implementation",
         organization: "Solo.io",
@@ -2872,6 +2931,7 @@ export const profiles: ImplementationProfile[] = [
     implementations: [
       {
         id: "web-bot-auth-cloudflare",
+        parties: ["edge"],
         qualification: "Rejects the format this guide illustrates.",
         kind: "implementation",
         organization: "Cloudflare",
@@ -2903,6 +2963,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "web-bot-auth-google",
+        parties: ["op", "agent"],
         qualification: "Uses an origin where this guide uses the key-set URL.",
         kind: "implementation",
         organization: "Google",
@@ -2935,6 +2996,7 @@ export const profiles: ImplementationProfile[] = [
       },
       {
         id: "web-bot-auth-aws-waf",
+        parties: ["edge"],
         qualification:
           "Support for the illustrated draft -01 profile unverified.",
         kind: "implementation",
@@ -3021,6 +3083,7 @@ export const profiles: ImplementationProfile[] = [
     implementations: [
       {
         id: "agent-payments-ap2-python",
+        parties: ["agent", "cp", "merchant"],
         kind: "implementation",
         organization: "AP2 project",
         product: "AP2 Python reference SDK",
@@ -3102,6 +3165,7 @@ export const profiles: ImplementationProfile[] = [
             "Traefik lists AuthZEN authorization among features that graduated to GA on 30 September 2026. The preceding Early Access entry names both gateway surfaces.",
         },
         id: "authzen-traefik-hub",
+        parties: ["tool"],
         qualification: "COAZ binding revision unverified.",
         summary:
           "MCP Gateway maps the caller and tool arguments to an external AuthZEN evaluation and enforces the result. API Gateway documents a separate middleware for HTTP requests.",
@@ -3144,6 +3208,7 @@ export const profiles: ImplementationProfile[] = [
             "The project requires the authzen experimental flag and says the API can change.",
         },
         id: "authzen-openfga",
+        parties: ["policy"],
         summary:
           "Provides single and batch AuthZEN access evaluation against an OpenFGA authorization model, plus search and endpoint discovery.",
         limits:
@@ -3174,6 +3239,7 @@ export const profiles: ImplementationProfile[] = [
             "The 9 July 2026 release notes name both evaluation endpoints and the opt-in authzen feature.",
         },
         id: "authzen-keycloak",
+        parties: ["policy"],
         summary:
           "Evaluates subject, resource and action against configured Keycloak authorization policies using the AuthZEN 1.0 single and batch evaluation APIs.",
         limits:
@@ -3205,6 +3271,7 @@ export const profiles: ImplementationProfile[] = [
             "The setup reference uses image 0.4.2. It leaves the support stage unspecified.",
         },
         id: "authzen-id-partners",
+        parties: ["tool"],
         summary:
           "Maps MCP tool calls through declared mappings and sends requests to an AuthZEN decision point. The engine exposes an Envoy authorization service and an HTTP check API.",
         limits:
@@ -3283,6 +3350,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "caep-okta-transmitter",
+        parties: ["company"],
         summary:
           "Maps Okta’s user.session.end event to CAEP Session Revoked and delivers it to a configured receiver as a Security Event Token.",
         limits:
@@ -3313,6 +3381,7 @@ export const profiles: ImplementationProfile[] = [
             "Google’s guide describes closed enrollment for partner transmitters and Workspace customers.",
         },
         id: "caep-google-workspace",
+        parties: ["calendar"],
         summary:
           "Receives the CAEP Session Revoked signal for a Workspace user. Google describes the expected effect as logging out the user’s Workspace sessions.",
         limits:
@@ -3344,6 +3413,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "caep-sailpoint",
+        parties: ["company", "calendar"],
         summary:
           "Supports Session Revoked on both transmitter and receiver streams. Operators configure workflows to act on received events.",
         limits:
@@ -3374,6 +3444,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "caep-omnissa-access",
+        parties: ["company"],
         summary:
           "Configures the Security Events Service to send Session Revoked and Credential Change from Omnissa Access to Apple Business Manager or Apple School Manager.",
         limits:
@@ -3461,6 +3532,7 @@ export const profiles: ImplementationProfile[] = [
             "The project publishes a 6.0.0 release for biscuit-auth. It gives no separate support stage for these functions.",
         },
         id: "biscuit-rust",
+        parties: ["issuer", "parent", "worker", "api"],
         summary:
           "Creates a signed Biscuit, appends narrower checks without the issuer’s private key and evaluates the resulting token with an authorizer.",
         limits:
@@ -3496,6 +3568,7 @@ export const profiles: ImplementationProfile[] = [
             "The repository describes Agent Mesh as pre-1.0 and says it is outside Google’s officially supported products.",
         },
         id: "biscuit-agent-mesh",
+        parties: ["issuer", "parent", "api"],
         qualification:
           "Pre-1.0; outside Google’s officially supported products.",
         summary:
@@ -3638,6 +3711,7 @@ export const profiles: ImplementationProfile[] = [
             "The repository uses production-ready wording and lists features and known limitations. It does not name a support stage.",
         },
         id: "gnap-sunet",
+        parties: ["as"],
         qualification:
           "No HTTP Message Signatures, key-bound access tokens or RFC 9767 introspection.",
         summary:
@@ -3670,6 +3744,7 @@ export const profiles: ImplementationProfile[] = [
             "The project tags its 2.x releases beta and describes the auth service as a reference implementation.",
         },
         id: "gnap-rafiki",
+        parties: ["as", "api"],
         qualification: "Full RFC interoperability unverified.",
         summary:
           "Rafiki provides a GNAP authorization server for Open Payments grants. Its backend uses a GNAP introspection client to check access tokens with the auth service.",
@@ -3711,6 +3786,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "gnap-open-payments-js",
+        parties: ["agent"],
         summary:
           "The client can continue an Open Payments GNAP grant after browser interaction, sending the interaction reference and continuation token to the server’s continuation endpoint.",
         limits:
@@ -3818,6 +3894,7 @@ export const profiles: ImplementationProfile[] = [
             "Anthropic marks vaults Beta in its Managed Agents documentation.",
         },
         id: "credential-broker-anthropic",
+        parties: ["proxy", "vault"],
         summary:
           "Environment-variable credentials require a managed sandbox. It places an opaque variable there, then substitutes the real secret in configured locations on egress to allowed hosts.",
         limits:
@@ -3848,6 +3925,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "credential-broker-docker",
+        parties: ["proxy"],
         summary:
           "The host-side proxy finds the credential for a matching service and overwrites the outbound authentication header. The agent sees a sentinel or placeholder.",
         limits:
@@ -3878,6 +3956,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "credential-broker-vercel",
+        parties: ["proxy"],
         summary:
           "Injects credentials into allowed egress requests while keeping them outside the sandbox. A rule can limit injection by path, method, query or header.",
         limits:
@@ -3908,6 +3987,7 @@ export const profiles: ImplementationProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "credential-broker-cloudflare",
+        parties: ["proxy"],
         summary:
           "A Container’s HTTPS request can be intercepted by a Worker that checks the request and adds a token stored outside the sandbox. A Dynamic Worker can call a specific method supplied by the host Worker.",
         limits:
