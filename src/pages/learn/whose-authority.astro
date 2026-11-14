@@ -220,7 +220,7 @@ const checks: CheckQuestion[] = [
     "**Acting for a person:** the token names the person, and what they can do is the ceiling.",
     "**Acting as itself:** the token names the agent, and the rule an administrator wrote is the only limit.",
     "An agent’s own identity is best issued by the platform it runs on and short-lived, not stored as a secret.",
-    "A person’s access with no person watching is the arrangement to be most careful with.",
+    "A person’s access with no person watching needs a narrow scope, a way to reach the person, and a way to switch it off.",
   ]}
   names={[
     ["Whoever’s authority a request uses", "Principal"],
@@ -239,8 +239,8 @@ const checks: CheckQuestion[] = [
       can do, and by what they approved. This is what the previous lesson showed.
     </li>
     <li>
-      <strong>Its own.</strong> The token names the agent. Nobody approves anything at the moment it runs. An
-      administrator decided in advance what this agent is allowed to do.
+      <strong>Its own.</strong> The token names the agent. No person lent it their access. An administrator decided
+      in advance what this agent is allowed to do.
     </li>
   </ul>
   <p>
@@ -348,17 +348,17 @@ const checks: CheckQuestion[] = [
 
   <Mixup belief="A service account is the safe choice, because no user’s access is involved.">
     <p>
-      An agent acting as itself is limited only by what an administrator gave it, and those grants tend to grow. If
-      it serves several people under that one identity, the API cannot tell them apart, which is the first lesson
-      again. Acting as itself is right when the work is the organization’s. It is not a shortcut around sign-in.
+      An agent acting as itself is limited only by what an administrator gave it. Review that grant when the job
+      changes, so it does not keep access the work no longer needs. If it serves several people under that one
+      identity, the API cannot tell them apart, which is the first lesson again. Acting as itself is right when the
+      work is the organization’s. It is not a shortcut around sign-in.
     </p>
   </Mixup>
 
   <h2>The trap in the middle</h2>
   <p>
-    The fifth agent in the exercise was neither one thing nor the other: Alice’s access, and no Alice. It has a
-    person’s full authority and no person watching. Of every arrangement in this guide, it is the one most likely
-    to end badly.
+    The fifth agent in the exercise was neither one thing nor the other: Alice’s access, and no Alice. It can
+    do whatever her grant allows, and nobody is there to notice a mistake or to stop it.
   </p>
   <p>Sometimes it is what the job needs. If you find yourself there:</p>
   <ul>

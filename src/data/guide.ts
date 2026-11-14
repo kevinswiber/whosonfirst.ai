@@ -497,7 +497,7 @@ export const cautions: Caution[] = [
   },
   {
     when: { principal: ["user"], human: ["absent"] },
-    text: "An unattended agent holding a person’s long-lived grant is the configuration most likely to end badly. Scope it narrowly, bind it to a key, and make sure someone can revoke it.",
+    text: "An unattended agent holding a person’s long-lived grant acts with nobody watching. Scope it narrowly, bind it to a key, and make sure someone can revoke it.",
   },
   {
     when: { risk: ["irreversible"], human: ["absent"] },

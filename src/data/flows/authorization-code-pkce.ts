@@ -19,7 +19,7 @@ If an agent acts for a person and that person is at the keyboard, start here.`,
   ],
   watchOut: [
     "Consent fatigue. An agent that connects to twenty tools produces twenty consent screens, and people stop reading them. Ask for narrow scopes, late.",
-    "Unless the scopes are narrow, the token carries the user’s full authority. An agent with `mail.readwrite` can do anything the user can do to mail.",
+    "The token carries as much of the user’s authority as its scopes allow. An agent with `mail.readwrite` can do anything the user can do to mail.",
     "Refresh tokens outlive the conversation. Decide where they are stored and who can revoke them before you ship.",
     "Desktop and CLI agents are public clients. Use a loopback redirect and PKCE; do not embed a client secret in a binary.",
   ],
