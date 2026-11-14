@@ -1,9 +1,13 @@
 ---
-import type { FieldProfile } from "../data/field";
-import { ATTRIBUTION_LABEL, EVENT_LABEL, fieldDate } from "../data/field";
+import type { ImplementationProfile } from "../data/implementations";
+import {
+  ATTRIBUTION_LABEL,
+  EVENT_LABEL,
+  evidenceDate,
+} from "../data/implementations";
 
 interface Props {
-  profile: FieldProfile;
+  profile: ImplementationProfile;
 }
 
 const { profile } = Astro.props;
@@ -50,8 +54,8 @@ const evidenceNames = new Map(
 );
 ---
 
-<div class="field-evidence">
-  <section class="prose field-evidence-scope" aria-labelledby="field-scope">
+<div class="implementation-record">
+  <section class="prose evidence-scope" aria-labelledby="field-scope">
     <h2 id="field-scope">Scope</h2>
     <p>{profile.scope}</p>
     <p>{profile.searchNote}</p>
@@ -59,23 +63,23 @@ const evidenceNames = new Map(
   </section>
 
   {categories.map(({ id, title, entries, empty }) => (
-    <section class="field-category" aria-labelledby={id}>
+    <section class="evidence-category" aria-labelledby={id}>
       <h2 id={id}>{title}</h2>
       {entries.length ? (
-        <ul class="field-entries" role="list">
+        <ul class="evidence-entries" role="list">
           {entries.map((entry) => (
-            <li class="field-entry" id={`field-${entry.id}`}>
-              <div class="field-claim">
+            <li class="evidence-entry" id={`field-${entry.id}`}>
+              <div class="evidence-claim">
                 {entry.kind === 'implementation' && (
                   <>
                     <h3>{entry.product}</h3>
-                    <p class="field-entry-role">{entry.role}</p>
+                    <p class="evidence-entry-role">{entry.role}</p>
                   </>
                 )}
                 {entry.kind === 'deployment' && (
                   <>
                     <h3>{entry.organization}</h3>
-                    <p class="field-entry-role">{entry.setting} · {ATTRIBUTION_LABEL[entry.attribution]}</p>
+                    <p class="evidence-entry-role">{entry.setting} · {ATTRIBUTION_LABEL[entry.attribution]}</p>
                   </>
                 )}
                 {entry.kind === 'observation' && (
@@ -83,23 +87,23 @@ const evidenceNames = new Map(
                     <h3>
                       {entry.numerator.toLocaleString('en')}{entry.denominator !== undefined ? ` of ${entry.denominator.toLocaleString('en')}` : ''} {entry.unit}
                     </h3>
-                    <p class="field-entry-role">
+                    <p class="evidence-entry-role">
                       {entry.measure === 'advertised-support' ? 'Advertised support' : 'Reported count'} · {entry.population}
                     </p>
                     <p>
                       {entry.observedOn
-                        ? <>Observed <time datetime={entry.observedOn}>{fieldDate(entry.observedOn)}</time>.</>
+                        ? <>Observed <time datetime={entry.observedOn}>{evidenceDate(entry.observedOn)}</time>.</>
                         : 'Observation date unspecified.'}
                     </p>
                   </>
                 )}
-                <p class="field-entry-summary">{entry.summary}</p>
+                <p class="evidence-entry-summary">{entry.summary}</p>
                 {entry.kind === 'implementation' && (
-                  <p class="field-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
+                  <p class="evidence-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
                 )}
-                <p class="field-limits"><strong>Limits.</strong> {entry.limits}</p>
+                <p class="evidence-limits"><strong>Limits.</strong> {entry.limits}</p>
               </div>
-              <div class="field-sources">
+              <div class="evidence-sources">
                 <p class="doc-key">{entry.sources.length === 1 ? 'Source' : 'Sources'}</p>
                 <ul role="list">
                   {entry.sources.map((source) => (
@@ -107,37 +111,37 @@ const evidenceNames = new Map(
                       <a href={source.url}>{source.title}</a>
                       <p>
                         {source.publisher}{source.publishedOn && (
-                          <>{' · Published '}<time datetime={source.publishedOn}>{fieldDate(source.publishedOn)}</time></>
+                          <>{' · Published '}<time datetime={source.publishedOn}>{evidenceDate(source.publishedOn)}</time></>
                         )}
                       </p>
                     </li>
                   ))}
                 </ul>
-                <p class="field-checked">Checked <time datetime={entry.review.checkedOn}>{fieldDate(entry.review.checkedOn)}</time></p>
+                <p class="evidence-checked">Checked <time datetime={entry.review.checkedOn}>{evidenceDate(entry.review.checkedOn)}</time></p>
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p class="prose field-none">{empty}</p>
+        <p class="prose evidence-none">{empty}</p>
       )}
     </section>
   ))}
 
   {events.length > 0 && (
-    <section class="field-category" aria-labelledby="field-dates">
+    <section class="evidence-category" aria-labelledby="field-dates">
       <h2 id="field-dates">Dated record</h2>
-      <ul class="field-events" role="list">
+      <ul class="evidence-events" role="list">
         {events.map((event) => (
           <li>
-            <div class="field-event-date">
-              <time datetime={event.date}>{fieldDate(event.date)}</time>
+            <div class="evidence-event-date">
+              <time datetime={event.date}>{evidenceDate(event.date)}</time>
               <p>{EVENT_LABEL[event.kind]}</p>
             </div>
             <div>
               <p>{event.summary}</p>
               {event.kind !== 'evidence-added' && (
-                <ul class="field-event-links" role="list">
+                <ul class="evidence-event-links" role="list">
                   {event.evidenceIds.map((id) => (
                     <li><a href={`#field-${id}`}>{evidenceNames.get(id)}</a></li>
                   ))}
@@ -152,39 +156,39 @@ const evidenceNames = new Map(
 </div>
 
 <style>
-  .field-evidence {
+  .implementation-record {
     max-width: 62rem;
     overflow-wrap: anywhere;
   }
   h2, h3, p { margin: 0; }
   h2 { font-size: 1.55rem; margin-bottom: 0.65rem; }
   h3 { font-size: 1.12rem; }
-  .field-entry-role,
-  .field-event-date,
-  .field-checked { color: var(--fg-muted); }
-  .field-event-date {
+  .evidence-entry-role,
+  .evidence-event-date,
+  .evidence-checked { color: var(--fg-muted); }
+  .evidence-event-date {
     font-family: var(--font-label);
     font-size: 0.78rem;
   }
-  .field-evidence-scope p + p { margin-top: 0.55rem; }
-  .field-category { margin-top: 1.8rem; }
-  .field-none { color: var(--fg-muted); }
-  .field-entries,
-  .field-events,
-  .field-sources ul,
-  .field-event-links {
+  .evidence-scope p + p { margin-top: 0.55rem; }
+  .evidence-category { margin-top: 1.8rem; }
+  .evidence-none { color: var(--fg-muted); }
+  .evidence-entries,
+  .evidence-events,
+  .evidence-sources ul,
+  .evidence-event-links {
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .field-entries,
-  .field-events { border-top: 1px solid var(--border-strong); }
-  .field-entry,
-  .field-events > li {
+  .evidence-entries,
+  .evidence-events { border-top: 1px solid var(--border-strong); }
+  .evidence-entry,
+  .evidence-events > li {
     margin: 0;
     border-bottom: 1px solid var(--border);
   }
-  .field-entry {
+  .evidence-entry {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     gap: 0.85rem 2rem;
@@ -192,59 +196,59 @@ const evidenceNames = new Map(
     border: 1px solid transparent;
     border-bottom-color: var(--border);
   }
-  .field-entry:target {
+  .evidence-entry:target {
     border-color: var(--accent);
     box-shadow: 4px 4px 0 var(--accent-soft);
   }
-  .field-claim { max-width: var(--prose); }
-  .field-claim p { margin-top: 0.45rem; }
-  .field-claim .field-entry-role {
+  .evidence-claim { max-width: var(--prose); }
+  .evidence-claim p { margin-top: 0.45rem; }
+  .evidence-claim .evidence-entry-role {
     margin: 0.12rem 0 0.5rem;
     font-size: 0.95rem;
   }
-  .field-limits {
+  .evidence-limits {
     font-size: 0.95rem;
     color: var(--fg-muted);
   }
-  .field-sources {
+  .evidence-sources {
     border-inline-start: 1px solid var(--border);
     padding-inline-start: 1rem;
     align-self: start;
     font-size: 0.95rem;
   }
-  .field-sources li { margin: 0.35rem 0 0; }
-  .field-sources li p,
-  .field-checked { font-size: 0.86rem; }
-  .field-sources li p { color: var(--fg-muted); }
-  .field-checked { margin-top: 0.55rem; }
-  .field-events > li {
+  .evidence-sources li { margin: 0.35rem 0 0; }
+  .evidence-sources li p,
+  .evidence-checked { font-size: 0.86rem; }
+  .evidence-sources li p { color: var(--fg-muted); }
+  .evidence-checked { margin-top: 0.55rem; }
+  .evidence-events > li {
     display: grid;
     grid-template-columns: minmax(0, 10rem) minmax(0, var(--prose));
     gap: 0.3rem 1rem;
     padding: 0.75rem 0;
   }
-  .field-event-date p { font-weight: 600; }
-  .field-event-links {
+  .evidence-event-date p { font-weight: 600; }
+  .evidence-event-links {
     display: flex;
     flex-wrap: wrap;
     gap: 0.15rem 0.8rem;
     margin-top: 0.25rem;
     font-size: 0.95rem;
   }
-  .field-event-links li { margin: 0; }
+  .evidence-event-links li { margin: 0; }
   @media (max-width: 45rem) {
-    .field-entry { grid-template-columns: minmax(0, 1fr); }
+    .evidence-entry { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 34rem) {
-    .field-events > li { grid-template-columns: minmax(0, 1fr); }
-    .field-event-date {
+    .evidence-events > li { grid-template-columns: minmax(0, 1fr); }
+    .evidence-event-date {
       display: flex;
       flex-wrap: wrap;
       gap: 0.1rem 0.7rem;
     }
   }
   @media print {
-    .field-entry,
-    .field-events > li { break-inside: avoid; }
+    .evidence-entry,
+    .evidence-events > li { break-inside: avoid; }
   }
 </style>

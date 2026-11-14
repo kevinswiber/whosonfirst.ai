@@ -7,8 +7,8 @@ import FlowCredentials from "../../components/FlowCredentials.astro";
 import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
-import FieldSummary from "../../components/FieldSummary.astro";
-import { fieldProfile } from "../../data/field";
+import ImplementationSummary from "../../components/ImplementationSummary.astro";
+import { implementationProfile } from "../../data/implementations";
 import {
   flow as flowBySlug,
   flows,
@@ -43,7 +43,7 @@ interface Props {
   flow: Flow;
 }
 const { flow } = Astro.props;
-const inTheField = fieldProfile(flow.slug);
+const implementationEvidence = implementationProfile(flow.slug);
 // One reading of the page's own text: a glossary term is marked the first time it appears in it.
 const g = gloss(Astro.url.pathname);
 const group = must(
@@ -240,7 +240,7 @@ const detailGroups = [
 
 <Base
   title={flow.title}
-  reviewMetadata={!inTheField}
+  reviewMetadata={!implementationEvidence}
   description={flow.tagline}
   article
   here={{ trail: [{ label: 'Flows', href: '/flows/' }, { label: group.title }], current: flow.short }}
@@ -503,7 +503,7 @@ const detailGroups = [
       }
     </section>
 
-    <FieldSummary slug={flow.slug} profile={inTheField} />
+    <ImplementationSummary slug={flow.slug} profile={implementationEvidence} />
 
     {
       rel.length > 0 && (

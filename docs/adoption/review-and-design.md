@@ -1,6 +1,6 @@
-# In the field: evidence readers can use
+# Original proposal for the Implementations directory
 
-Design recommendation and bounded review, 12 November 2026 (America/Los_Angeles).
+Design recommendation and bounded review, 12 November 2026 (America/Los_Angeles). “In the field” was the proposed name. For the published design, see [Implementation evidence](../development.md#implementation-evidence).
 
 Reviewed the pilot at `cd049c6` on `feat/adoption-evidence`, its stored data dated 13 November 2026 UTC, and the supplied walkthrough. This is a proposal for discussion, not a new rating or a review of every ledger entry. The original pilot remains intact. New site sections still start with an issue.
 

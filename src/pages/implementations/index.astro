@@ -1,13 +1,16 @@
 ---
 import Base from "../../layouts/Base.astro";
-import FieldExamples from "../../components/FieldExamples.astro";
-import { fieldDate, fieldProfile } from "../../data/field";
+import ImplementationEntries from "../../components/ImplementationEntries.astro";
+import {
+  evidenceDate,
+  implementationProfile,
+} from "../../data/implementations";
 import { byGroup, flows, maturityLabel } from "../../data/flows";
 
 const groups = byGroup().map((group) => ({
   ...group,
   entries: group.flows.map((flow) => {
-    const profile = fieldProfile(flow.slug);
+    const profile = implementationProfile(flow.slug);
     return {
       flow,
       profile,
@@ -29,32 +32,32 @@ const reviewed = groups
     <div class="wrap">
       <h1>Implementations</h1>
       <p class="lede">Find products that implement part of a flow and accounts of how named organizations have used it in production.</p>
-      <p class="field-coverage">
+      <p class="evidence-coverage">
         {reviewed} of {flows.length} flows reviewed · <a href="#methodology">How we review evidence</a>
       </p>
-      <p class="field-note">Coverage is selective and varies by flow. These records do not measure adoption. Mention is not recommendation.</p>
+      <p class="evidence-note">Coverage is selective and varies by flow. These records do not measure adoption. Mention is not recommendation.</p>
     </div>
   </div>
 
   <div class="wrap">
-    <field-directory>
-      <form class="field-controls" role="search" aria-label="Implementation directory" hidden>
-        <label class="field-search">
+    <implementation-directory>
+      <form class="evidence-controls" role="search" aria-label="Implementation directory" hidden>
+        <label class="evidence-search">
           Search by flow, product or role
           <input type="search" name="q" placeholder="e.g. Keycloak or client library" autocomplete="off" />
         </label>
-        <details class="field-facets" open>
+        <details class="evidence-facets" open>
           <summary>
             <span>Filters</span>
-            <span class="field-active" aria-live="polite"></span>
+            <span class="evidence-active" aria-live="polite"></span>
           </summary>
           <fieldset>
             <legend>Flow group</legend>
             {groups.map((group) => (
-              <label class="field-opt">
+              <label class="evidence-opt">
                 <input type="checkbox" name="group" value={group.id} />
                 <span>{group.title}</span>
-                <em data-count-for={group.id}><span class="field-group-total">{group.flows.length}</span><span class="visually-hidden"> matching flows</span></em>
+                <em data-count-for={group.id}><span class="evidence-group-total">{group.flows.length}</span><span class="visually-hidden"> matching flows</span></em>
               </label>
             ))}
           </fieldset>
@@ -62,73 +65,73 @@ const reviewed = groups
         </details>
       </form>
 
-      <div class="field-results">
+      <div class="evidence-results">
         <noscript><p>Search and filters need JavaScript. All reviewed summaries are listed below by flow.</p></noscript>
-        <p class="field-count" role="status" hidden>{flows.length} flows shown</p>
-        <p class="field-empty" hidden>No flows match. Try a different term or clear the filters.</p>
+        <p class="evidence-count" role="status" hidden>{flows.length} flows shown</p>
+        <p class="evidence-empty" hidden>No flows match. Try a different term or clear the filters.</p>
 
         {groups.map((group) => (
-          <section class="field-group" data-group={group.id} aria-labelledby={`field-${group.id}`}>
+          <section class="evidence-group" data-group={group.id} aria-labelledby={`field-${group.id}`}>
             <h2 id={`field-${group.id}`}>{group.title}</h2>
-            <ul class="field-list" role="list">
+            <ul class="evidence-list" role="list">
               {group.entries.map(({ flow, profile, href }) => (
                 <li
-                  class="field-record"
+                  class="evidence-record"
                   id={flow.slug}
                   data-flow-text={`${flow.title} ${flow.short} ${flow.slug} ${flow.tagline} ${group.title}`}
                   data-flow-identity={`${flow.title} ${flow.short} ${flow.slug}`}
                 >
-                  <header class="field-identity">
+                  <header class="evidence-identity">
                     <h3>{flow.short}</h3>
-                    <p class="field-meta">
+                    <p class="evidence-meta">
                       <span class="visually-hidden">Standards maturity: </span>{maturityLabel(flow)}{' · '}
                       {profile
-                        ? <>Reviewed <time datetime={profile.reviewedOn}>{fieldDate(profile.reviewedOn)}</time></>
+                        ? <>Reviewed <time datetime={profile.reviewedOn}>{evidenceDate(profile.reviewedOn)}</time></>
                         : 'Not reviewed'}
                     </p>
                   </header>
                   {profile && (
                     <>
-                      <dl class="field-overview">
+                      <dl class="evidence-overview">
                         <div>
                           <dt>
-                            <span class="field-section-title">Implementation evidence</span>
+                            <span class="evidence-section-title">Implementation evidence</span>
                           </dt>
                           <dd>
                             {profile.implementations.length > 0 ? (
-                              <FieldExamples slug={flow.slug} entries={profile.implementations} label="Implementations from the record" />
-                            ) : <p class="field-none">No entry included in this review.</p>}
+                              <ImplementationEntries slug={flow.slug} entries={profile.implementations} label="Implementations from the record" />
+                            ) : <p class="evidence-none">No entry included in this review.</p>}
                           </dd>
                         </div>
                         <div>
                           <dt>
-                            <span class="field-section-title">Deployment reports</span>
+                            <span class="evidence-section-title">Deployment reports</span>
                           </dt>
                           <dd>
                             {profile.deployments.length > 0 ? (
-                              <FieldExamples slug={flow.slug} entries={profile.deployments} label="Deployment reports from the record" />
-                            ) : <p class="field-none">No report included in this review.</p>}
+                              <ImplementationEntries slug={flow.slug} entries={profile.deployments} label="Deployment reports from the record" />
+                            ) : <p class="evidence-none">No report included in this review.</p>}
                           </dd>
                         </div>
                       </dl>
                       <template>
-                        <FieldExamples
+                        <ImplementationEntries
                           slug={flow.slug}
                           entries={[...profile.implementations, ...profile.deployments]}
                           label="Matching evidence"
                           searchable
                         />
                       </template>
-                      <div class="field-matches" hidden>
-                        <p class="field-section-title">Matching evidence</p>
-                        <div class="field-match-list"></div>
+                      <div class="evidence-matches" hidden>
+                        <p class="evidence-section-title">Matching evidence</p>
+                        <div class="evidence-match-list"></div>
                       </div>
                     </>
                   )}
-                  <div class="field-actions">
+                  <div class="evidence-actions">
                     <p><a href={`/flows/${flow.slug}/`}>See the flow<span class="visually-hidden"> for {flow.short}</span></a></p>
                     {profile && (
-                      <p><a class="field-evidence-link" href={href}>Sources and review details<span class="visually-hidden"> for {flow.short}</span></a></p>
+                      <p><a class="evidence-details-link" href={href}>Sources and review details<span class="visually-hidden"> for {flow.short}</span></a></p>
                     )}
                   </div>
                 </li>
@@ -137,9 +140,9 @@ const reviewed = groups
           </section>
         ))}
       </div>
-    </field-directory>
+    </implementation-directory>
 
-    <section class="field-method prose" aria-labelledby="methodology">
+    <section class="evidence-method prose" aria-labelledby="methodology">
       <h2 id="methodology">How we review evidence</h2>
       <p>
         Each reviewed flow lists the sources consulted, what they establish, and the limits of that evidence.
@@ -174,25 +177,25 @@ const reviewed = groups
 <script>
   const searchText = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ');
 
-  class FieldDirectory extends HTMLElement {
+  class ImplementationDirectory extends HTMLElement {
     connectedCallback() {
       const form = this.querySelector<HTMLFormElement>('form')!;
       const input = form.querySelector<HTMLInputElement>('input[type="search"]')!;
       const checks = [...form.querySelectorAll<HTMLInputElement>('input[name="group"]')];
-      const facets = form.querySelector<HTMLDetailsElement>('.field-facets')!;
-      const active = form.querySelector<HTMLElement>('.field-active')!;
+      const facets = form.querySelector<HTMLDetailsElement>('.evidence-facets')!;
+      const active = form.querySelector<HTMLElement>('.evidence-active')!;
       const narrow = window.matchMedia('(max-width: 57.99rem)');
-      const count = this.querySelector<HTMLElement>('.field-count')!;
-      const empty = this.querySelector<HTMLElement>('.field-empty')!;
-      const groups = [...this.querySelectorAll<HTMLElement>('.field-group')].map((element) => ({
+      const count = this.querySelector<HTMLElement>('.evidence-count')!;
+      const empty = this.querySelector<HTMLElement>('.evidence-empty')!;
+      const groups = [...this.querySelectorAll<HTMLElement>('.evidence-group')].map((element) => ({
         element,
         counter: form.querySelector<HTMLElement>(`[data-count-for="${element.dataset.group}"]`)!,
-        entries: [...element.querySelectorAll<HTMLElement>('.field-record')].map((record) => {
+        entries: [...element.querySelectorAll<HTMLElement>('.evidence-record')].map((record) => {
           const flow = record.dataset.flowText ?? '';
           const identity = record.dataset.flowIdentity ?? '';
           const source = record.querySelector('template')?.content.querySelector('ul');
-          const matches = record.querySelector<HTMLElement>('.field-matches');
-          const matchList = matches?.querySelector<HTMLElement>('.field-match-list');
+          const matches = record.querySelector<HTMLElement>('.evidence-matches');
+          const matchList = matches?.querySelector<HTMLElement>('.evidence-match-list');
           return {
             record,
             matches,
@@ -242,7 +245,7 @@ const reviewed = groups
               hasMatch = true;
             }
           }
-          counter.querySelector('.field-group-total')!.textContent = String(queryMatches);
+          counter.querySelector('.evidence-group-total')!.textContent = String(queryMatches);
           counter.querySelector('.visually-hidden')!.textContent = queryMatches === 1 ? ' matching flow' : ' matching flows';
           element.toggleAttribute('data-filtered', !hasMatch);
         }
@@ -292,7 +295,7 @@ const reviewed = groups
       // A link to a flow must stay reachable even when saved filters exclude it.
       const focusHash = () => {
         const id = location.hash.slice(1);
-        const target = [...this.querySelectorAll<HTMLElement>('.field-record, .field-group h2')]
+        const target = [...this.querySelectorAll<HTMLElement>('.evidence-record, .evidence-group h2')]
           .find((element) => element.id === id);
         if (!target) return;
         if (target.closest('[data-filtered]')) clear();
@@ -303,21 +306,21 @@ const reviewed = groups
     }
   }
 
-  customElements.define('field-directory', FieldDirectory);
+  customElements.define('implementation-directory', ImplementationDirectory);
 </script>
 
 <style>
-  .field-coverage {
+  .evidence-coverage {
     margin: 1rem 0 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  .field-note {
+  .evidence-note {
     margin: 0.25rem 0 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  field-directory {
+  implementation-directory {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
@@ -325,8 +328,8 @@ const reviewed = groups
     margin-top: 1.5rem;
   }
   @media screen and (min-width: 58rem) {
-    field-directory[data-js] { grid-template-columns: 15.5rem minmax(0, 1fr); }
-    .field-controls {
+    implementation-directory[data-js] { grid-template-columns: 15.5rem minmax(0, 1fr); }
+    .evidence-controls {
       position: sticky;
       top: 4.6rem;
       max-height: calc(100dvh - 5.4rem);
@@ -335,13 +338,13 @@ const reviewed = groups
       padding-right: 0.4rem;
     }
   }
-  .field-controls[hidden] { display: none; }
-  .field-search {
+  .evidence-controls[hidden] { display: none; }
+  .evidence-search {
     display: grid;
     gap: 0.3rem;
     font-size: 0.95rem;
   }
-  .field-search input {
+  .evidence-search input {
     width: 100%;
     min-width: 0;
     font: inherit;
@@ -351,9 +354,9 @@ const reviewed = groups
     background: var(--bg-raised);
     color: var(--fg);
   }
-  .field-search input::placeholder { color: var(--fg-subtle); }
-  .field-controls fieldset { border: 0; padding: 0; margin: 1.2rem 0 0; }
-  .field-controls legend {
+  .evidence-search input::placeholder { color: var(--fg-subtle); }
+  .evidence-controls fieldset { border: 0; padding: 0; margin: 1.2rem 0 0; }
+  .evidence-controls legend {
     font-family: var(--font-label);
     font-size: 0.7rem;
     font-weight: 500;
@@ -365,7 +368,7 @@ const reviewed = groups
     border-bottom: 1px solid var(--border);
     margin-bottom: 0.35rem;
   }
-  .field-opt {
+  .evidence-opt {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -373,25 +376,25 @@ const reviewed = groups
     font-size: 0.9rem;
     cursor: pointer;
   }
-  .field-opt input {
+  .evidence-opt input {
     accent-color: var(--accent);
     flex-shrink: 0;
     width: 0.95rem;
     height: 0.95rem;
     margin: 0;
   }
-  .field-opt em {
+  .evidence-opt em {
     margin-left: auto;
     font-family: var(--font-mono);
     font-style: normal;
     font-size: 0.7rem;
     color: var(--fg-subtle);
   }
-  .field-controls .btn { margin-top: 1.2rem; }
-  .field-facets > summary { display: none; }
+  .evidence-controls .btn { margin-top: 1.2rem; }
+  .evidence-facets > summary { display: none; }
   @media (max-width: 57.99rem) {
-    field-directory { gap: 1rem; }
-    .field-facets > summary {
+    implementation-directory { gap: 1rem; }
+    .evidence-facets > summary {
       display: flex;
       align-items: center;
       gap: 0.6rem;
@@ -405,8 +408,8 @@ const reviewed = groups
       cursor: pointer;
       list-style: none;
     }
-    .field-facets > summary::-webkit-details-marker { display: none; }
-    .field-facets > summary::after {
+    .evidence-facets > summary::-webkit-details-marker { display: none; }
+    .evidence-facets > summary::after {
       content: 'Show';
       margin-left: auto;
       font-family: var(--font-label);
@@ -415,17 +418,17 @@ const reviewed = groups
       color: var(--accent);
       text-decoration: underline;
     }
-    .field-facets[open] > summary::after { content: 'Hide'; }
-    .field-active {
+    .evidence-facets[open] > summary::after { content: 'Hide'; }
+    .evidence-active {
       font-family: var(--font-label);
       font-size: 0.72rem;
       font-weight: 500;
       color: var(--fg-muted);
     }
-    .field-controls fieldset { display: flex; flex-wrap: wrap; gap: 0.1rem 1.1rem; }
-    .field-opt em { margin-left: 0; }
+    .evidence-controls fieldset { display: flex; flex-wrap: wrap; gap: 0.1rem 1.1rem; }
+    .evidence-opt em { margin-left: 0; }
   }
-  .field-count {
+  .evidence-count {
     font-family: var(--font-label);
     font-size: 0.74rem;
     letter-spacing: 0.08em;
@@ -433,22 +436,22 @@ const reviewed = groups
     color: var(--fg-muted);
     margin: 0 0 0.7rem;
   }
-  .field-empty { margin: 1rem 0 0; color: var(--fg-muted); }
-  .field-group { margin-top: 0; }
-  .field-group + .field-group { margin-top: 2rem; }
-  .field-group h2,
-  .field-method h2 {
+  .evidence-empty { margin: 1rem 0 0; color: var(--fg-muted); }
+  .evidence-group { margin-top: 0; }
+  .evidence-group + .evidence-group { margin-top: 2rem; }
+  .evidence-group h2,
+  .evidence-method h2 {
     margin: 0 0 0.65rem;
     font-size: 1.48rem;
   }
-  .field-list {
+  .evidence-list {
     margin: 0;
     padding: 0;
     list-style: none;
     display: grid;
     gap: 0.8rem;
   }
-  .field-record {
+  .evidence-record {
     margin: 0;
     padding: 1.05rem 1.25rem 0.95rem;
     background: var(--bg-raised);
@@ -456,43 +459,43 @@ const reviewed = groups
     border-radius: var(--radius);
     overflow-wrap: anywhere;
   }
-  .field-record:target {
+  .evidence-record:target {
     border-color: var(--accent);
     box-shadow: 4px 4px 0 var(--accent-soft);
   }
-  .field-identity h3 { margin: 0; font-size: 1.24rem; }
-  .field-meta {
+  .evidence-identity h3 { margin: 0; font-size: 1.24rem; }
+  .evidence-meta {
     margin: 0.4rem 0 0;
     color: var(--fg-muted);
     font-size: 0.86rem;
   }
-  .field-overview { margin: 0.8rem 0 0; }
-  .field-overview > div,
-  .field-matches {
+  .evidence-overview { margin: 0.8rem 0 0; }
+  .evidence-overview > div,
+  .evidence-matches {
     padding: 0.8rem 0;
     border-top: 1px dashed var(--border-strong);
   }
-  .field-overview dt {
+  .evidence-overview dt {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.2rem 0.9rem;
     margin: 0 0 0.55rem;
   }
-  .field-overview dd { margin: 0; }
-  .field-section-title {
+  .evidence-overview dd { margin: 0; }
+  .evidence-section-title {
     margin: 0;
     color: var(--fg-muted);
     font: 500 0.68rem/1.35 var(--font-label);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  .field-none {
+  .evidence-none {
     margin: 0;
     color: var(--fg-muted);
     font-size: 0.95rem;
   }
-  .field-actions {
+  .evidence-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem 1.4rem;
@@ -501,25 +504,25 @@ const reviewed = groups
     border-top: 1px dashed var(--border-strong);
     font-size: 0.86rem;
   }
-  .field-actions p { margin: 0; }
-  .field-evidence-link { font-weight: 600; }
-  .field-matches { margin-top: 0.8rem; }
-  .field-matches > p { margin-bottom: 0.55rem; }
-  .field-method {
+  .evidence-actions p { margin: 0; }
+  .evidence-details-link { font-weight: 600; }
+  .evidence-matches { margin-top: 0.8rem; }
+  .evidence-matches > p { margin-bottom: 0.55rem; }
+  .evidence-method {
     margin-top: 2.2rem;
     padding-top: 1.2rem;
     border-top: 1px solid var(--fg);
   }
-  .field-method dl { margin: 0; }
-  .field-method dt { font-weight: 600; }
-  .field-method dd { margin: 0 0 0.75rem; }
+  .evidence-method dl { margin: 0; }
+  .evidence-method dt { font-weight: 600; }
+  .evidence-method dd { margin: 0 0 0.75rem; }
 
   @media screen {
     [data-filtered],
-    [data-matching] .field-overview { display: none; }
+    [data-matching] .evidence-overview { display: none; }
   }
   @media print {
-    .field-controls, .field-count, .field-empty, .field-matches { display: none; }
-    .field-record { break-inside: avoid; }
+    .evidence-controls, .evidence-count, .evidence-empty, .evidence-matches { display: none; }
+    .evidence-record { break-inside: avoid; }
   }
 </style>

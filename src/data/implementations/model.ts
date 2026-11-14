@@ -1,5 +1,5 @@
 /** Evidence about implementations and deployments; never an adoption score. */
-export interface FieldSource {
+export interface EvidenceSource {
   title: string;
   url: string;
   publisher: string;
@@ -20,7 +20,7 @@ interface Evidence {
   limits: string;
   /** Material condition not already stated in the summary, also shown in compact views. */
   qualification?: string;
-  sources: FieldSource[];
+  sources: EvidenceSource[];
   review: EvidenceReview;
 }
 
@@ -54,7 +54,7 @@ export interface ObservationEvidence extends Evidence {
   observedOn?: string;
 }
 
-export interface FieldEvent {
+export interface EvidenceEvent {
   id: string;
   kind: "report-published" | "release" | "evidence-added";
   date: string;
@@ -62,7 +62,7 @@ export interface FieldEvent {
   evidenceIds: string[];
 }
 
-export interface FieldProfile {
+export interface ImplementationProfile {
   slug: string;
   reviewedOn: string;
   scope: string;
@@ -70,7 +70,7 @@ export interface FieldProfile {
   implementations: ImplementationEvidence[];
   deployments: DeploymentEvidence[];
   observations: ObservationEvidence[];
-  events: FieldEvent[];
+  events: EvidenceEvent[];
 }
 
 export const EVENT_LABEL = {
@@ -92,13 +92,13 @@ const dateIsValid = (value: string) =>
 
 /** Refuse ambiguous records at build time, before a template can display them. */
 export function validateProfiles(
-  profiles: FieldProfile[],
+  profiles: ImplementationProfile[],
   publishedSlugs?: string[],
 ): void {
   const slugs = new Set<string>();
   const ids = new Set<string>();
   const require = (ok: unknown, message: string) => {
-    if (!ok) throw new Error(`In the field: ${message}`);
+    if (!ok) throw new Error(`Implementation evidence: ${message}`);
   };
   for (const profile of profiles) {
     require(!slugs.has(profile.slug), `duplicate flow ${profile.slug}`);
@@ -232,7 +232,9 @@ export function validateProfiles(
 }
 
 /** Only accepted evidence reaches readers. Pending/excluded research stays private to review. */
-export function publishProfile(profile: FieldProfile): FieldProfile {
+export function publishProfile(
+  profile: ImplementationProfile,
+): ImplementationProfile {
   const implementations = profile.implementations.filter(
     (entry) => entry.review.state === "accepted",
   );
@@ -259,7 +261,9 @@ export function publishProfile(profile: FieldProfile): FieldProfile {
 }
 
 /** A deployment count can only be derived from accepted deployment reports. */
-export function deploymentOrganizations(profile: FieldProfile): number {
+export function deploymentOrganizations(
+  profile: ImplementationProfile,
+): number {
   return new Set(
     profile.deployments
       .filter((entry) => entry.review.state === "accepted")
@@ -267,7 +271,7 @@ export function deploymentOrganizations(profile: FieldProfile): number {
   ).size;
 }
 
-export function fieldDate(date: string): string {
+export function evidenceDate(date: string): string {
   return new Intl.DateTimeFormat("en", {
     day: "numeric",
     month: "long",

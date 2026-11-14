@@ -1,14 +1,14 @@
-# Overview and full field records
+# Overview and full implementation records
 
-Design update, 12 November 2026. This follows reader feedback on the first local implementation and extends [issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84).
+Historical design notes, 12–13 November 2026. For the current directory and filters, see [Implementation evidence](../development.md#implementation-evidence). This follows reader feedback on the first local implementation and extends [issue #84](https://github.com/kevinswiber/whosonfirst.ai/issues/84).
 
 ## The three reading tasks
 
-| Place                                            | Reader’s question                                                                                 | What belongs here                                                                                                                                                                 |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Implementations overview** `/implementations/` | What supports the products or roles I work with, across flows? What has been reviewed?            | Existing standards wording, a count of reviewed options/operators, a few explicitly labeled names, review date and links to complete records. Search across every accepted entry. |
-| **Field record** `/implementations/<slug>/`      | Which implementation fits this role, under what conditions, and what evidence supports the claim? | All implementation roles, release conditions, deployment accounts, sources, qualifications, review scope and dated events.                                                        |
-| **Flow guide** `/flows/<slug>/`                  | How does this mechanism work and what must each party do?                                         | The explanation and diagram, with a short field summary and a direct link to the evidence record.                                                                                 |
+| Place                                                | Reader’s question                                                                                 | What belongs here                                                                                                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implementations overview** `/implementations/`     | What supports the products or roles I work with, across flows? What has been reviewed?            | Existing standards wording, a count of reviewed options/operators, a few explicitly labeled names, review date and links to complete records. Search across every accepted entry. |
+| **Implementation record** `/implementations/<slug>/` | Which implementation fits this role, under what conditions, and what evidence supports the claim? | All implementation roles, release conditions, deployment accounts, sources, qualifications, review scope and dated events.                                                        |
+| **Flow guide** `/flows/<slug>/`                      | How does this mechanism work and what must each party do?                                         | The explanation and diagram, with a short implementation summary and a direct link to the evidence record.                                                                        |
 
 The overview has a cross-flow purpose. It can expose the different roles a product supports across protocols, show where the reviewed evidence is thin, or help someone find a client library before choosing a guide to read. A reader who already knows the mechanism can go straight from its guide to the full record. Both paths use the same reviewed data.
 
@@ -22,7 +22,7 @@ The overview’s columns support scanning the same questions across rows. They d
 - Match a product and role within the same evidence entry. Finding an authorization server and a client library on the same flow does not mean that server supplies the library.
 - Keep every full record statically readable, including sources and limitations. Section navigation helps on long pages. Ordinary links connect the overview, evidence and mechanism; no accordion conceals essential facts.
 - Preserve `/flows/<slug>/#in-the-field` at the compact summary. Existing local links still lead to useful context.
-- Print the complete overview rather than the current search subset; print a field record when its full evidence is wanted. Markdown exposes the same division and links.
+- Print the complete overview rather than the current search subset; print a implementation record when its full evidence is wanted. Markdown exposes the same division and links.
 
 Separate pages are useful before lists become large because the two kinds of reading already differ. Full records can grow without lengthening the diagram guide or turning the overview into an endless table. If individual records later become difficult to scan, measure that with readers before adding role filters or another level of pages.
 

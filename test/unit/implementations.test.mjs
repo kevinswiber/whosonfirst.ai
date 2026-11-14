@@ -4,9 +4,9 @@ import {
   deploymentOrganizations,
   publishProfile,
   validateProfiles,
-} from "../../src/data/field/model.ts";
-import { profiles } from "../../src/data/field/records.ts";
-import { fieldQualification } from "../../src/lib/field.ts";
+} from "../../src/data/implementations/model.ts";
+import { profiles } from "../../src/data/implementations/records.ts";
+import { evidenceQualification } from "../../src/lib/implementations.ts";
 
 const dpop = () => structuredClone(profiles.find((p) => p.slug === "dpop"));
 
@@ -140,21 +140,21 @@ test("compact qualifications retain early release wording and material limitatio
     ...profile.deployments,
   ]);
   const entry = (id) => entries.find((candidate) => candidate.id === id);
-  assert.equal(fieldQualification(entry("dpop-keycloak")), "");
-  assert.equal(fieldQualification(entry("mcp-keycloak")), "Experimental");
+  assert.equal(evidenceQualification(entry("dpop-keycloak")), "");
+  assert.equal(evidenceQualification(entry("mcp-keycloak")), "Experimental");
   assert.equal(
-    fieldQualification(entry("caep-google-workspace")),
+    evidenceQualification(entry("caep-google-workspace")),
     "Closed Beta",
   );
   assert.match(
-    fieldQualification(entry("gnap-rafiki")),
+    evidenceQualification(entry("gnap-rafiki")),
     /^Beta releases documented · Full RFC interoperability unverified/,
   );
   assert.match(
-    fieldQualification(entry("web-bot-auth-cloudflare")),
+    evidenceQualification(entry("web-bot-auth-cloudflare")),
     /Rejects the format this guide illustrates/,
   );
-  assert.equal(fieldQualification(entry("a2a-eon")), "");
+  assert.equal(evidenceQualification(entry("a2a-eon")), "");
   assert.match(entry("a2a-eon").summary, /reported using A2A 0[.]3/);
   const invalid = dpop();
   invalid.implementations[0].qualification = " ";

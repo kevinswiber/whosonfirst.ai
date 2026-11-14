@@ -18,7 +18,7 @@ A run can start by asking which sources have changed at all:
 npm run sources:changed
 ```
 
-This asks each source the data links to, on a tracker entry, in its `related`, in a flow’s `sources` or in field evidence, whether it has changed since the last review, using the `ETag` or `Last-Modified` value recorded then in `docs/source-validators.json`. It reads nothing and changes nothing. How to read its answer:
+This asks each source the data links to, on a tracker entry, in its `related`, in a flow’s `sources` or in implementation evidence, whether it has changed since the last review, using the `ETag` or `Last-Modified` value recorded then in `docs/source-validators.json`. It reads nothing and changes nothing. How to read its answer:
 
 - **Not modified** is a finding from the source itself: the page is as it was when it was last checked, and its items are unchanged.
 - **Changed since recorded** means only “read this one”. A page can change without the fact on the site changing: the datatracker's record changes whenever a document's metadata does.
@@ -49,11 +49,11 @@ If nothing changed, say so in one line and still give sections 3 and 5.
 
 ## Every run
 
-### Field implementation and deployment evidence
+### Implementation and deployment evidence
 
-Review `src/data/field/records.ts` against [the field evidence record](adoption/evidence-review.md). Re-read the cited source for the exact role, release condition and claim before changing its review date. A production report remains a dated account; an inaccessible source does not prove retirement. Publication dates, evidence-added events and checked dates are independent. The field review date must not change the site-wide standards-review date.
+Review `src/data/implementations/records.ts` against [the implementation evidence review](adoption/evidence-review.md). Re-read the cited source for the exact role, release condition and claim before changing its review date. A production report remains a dated account; an inaccessible source does not prove retirement. Publication dates, evidence-added events and checked dates are independent. The evidence review date must not change the site-wide standards-review date.
 
-Field sources are included in `scripts/sources.mjs`. `--add` requests only previously unrecorded sources, preserves existing validators and drops unused addresses. It does not perform or mark a whole-site source review.
+Implementation evidence sources are included in `scripts/sources.mjs`. `--add` requests only previously unrecorded sources, preserves existing validators and drops unused addresses. It does not perform or mark a whole-site source review.
 
 ### IETF drafts in the tracker
 
@@ -370,7 +370,7 @@ www.spaceandtime.io
 
 Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the flows' `sources` link to, plus what the checks above read: `author-tools.ietf.org` for diffs between draft revisions, `api.github.com` and `raw.githubusercontent.com` for releases and files of projects hosted on GitHub, and `www.agenticcommerce.dev`, where `agenticcommerce.dev` redirects. From `developer.okta.com` on, they are the documentation sites of the vendors on the agent platforms page, which links to them only beside a few facts; they are where that review starts, and a vendor may keep the relevant page elsewhere.
 
-When a link is added to the tracker, to a flow's `sources`, to a deployment guide or to field evidence, add its host here.
+When a link is added to the tracker, to a flow's `sources`, to a deployment guide or to implementation evidence, add its host here.
 
 Being on the list does not mean a host answers. If one refuses the run, list the items that depend on it as not checked, with what was tried.
 
