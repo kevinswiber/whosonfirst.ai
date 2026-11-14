@@ -6,6 +6,7 @@ import {
   rules,
   cautions,
   deployLinks,
+  cases,
   ROLE_TITLE,
 } from "../../data/guide";
 import { flows, flow, maturityLabel } from "../../data/flows";
@@ -34,10 +35,28 @@ if (missing.length)
     `guide: no rules for ${missing.map((f) => f.slug).join(", ")}`,
   );
 
+// A case is named from questions the guide asks, by one answer to each.
+const label = (q: string, v: string) =>
+  questions.find((x) => x.id === q)?.options.find((o) => o.value === v)?.label;
+for (const s of cases) {
+  for (const [q, values] of Object.entries(s.when)) {
+    if (values.length !== 1 || !label(q, values[0]))
+      throw new Error(
+        `guide: case "${s.slug}" needs one known answer to "${q}"`,
+      );
+  }
+}
+
 const data = {
   rules,
   cautions,
   deployLinks,
+  cases: cases.map(({ slug, name, when, short }) => ({
+    slug,
+    name,
+    when,
+    short,
+  })),
   roles: ROLE_TITLE,
   flows: Object.fromEntries(
     flows.map((f) => [
@@ -62,7 +81,8 @@ const data = {
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
         Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result. If the questions use words you have not met, <a href="/learn/">the
+        answers, so you can share the result. The first two answers also put it in{' '}
+        <a href="#cases">one of four named cases</a>. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
         You can also <a href="/flows/">browse all {flows.length} flows</a>.
       </p>
@@ -71,7 +91,7 @@ const data = {
 
   <div class="wrap">
     <decision-guide class="dg">
-      <form class="dg-questions" aria-label="About your agent">
+      <form class="dg-questions" id="questions" aria-label="About your agent">
         {
           questions.map((q, i) => (
             <fieldset>
@@ -93,7 +113,7 @@ const data = {
               <div class="dg-options">
                 {q.options.map((o) => (
                   <label>
-                    <input type="radio" name={q.id} value={o.value} />
+                    <input type="radio" name={q.id} value={o.value} data-fact={q.short} data-brief={o.brief} />
                     <span>
                       <strong>{o.label}</strong>
                       {o.hint && <em>{o.hint}</em>}
@@ -104,15 +124,19 @@ const data = {
             </fieldset>
           ))
         }
-        <button class="btn small ghost" type="reset">Start over</button>
+        <p class="dg-foot">
+          <button class="btn small ghost" type="reset">Start over</button>
+          <a class="dg-jump" href="#results">View results<span class="dg-jump-n"></span></a>
+        </p>
       </form>
 
-      <aside class="dg-results" aria-live="polite" aria-label="Recommendations">
-        <p class="dg-kicker">The call</p>
+      <aside class="dg-results" id="results" aria-live="polite" aria-label="Recommendations">
+        <p class="dg-kicker">Recommendations</p>
         <div class="dg-out">
           <noscript>
             <p>
-              The guide needs JavaScript to compute recommendations. Without it, the <a href="/flows/"
+              The guide needs JavaScript to compute recommendations. Without it, the{' '}
+              <a href="#cases">four cases</a> below each say where to start, and the <a href="/flows/"
                 >flows page</a
               > groups every option by whether a human is involved.
             </p>
@@ -123,20 +147,40 @@ const data = {
       <script type="application/json" class="dg-data" set:html={JSON.stringify(data)} />
     </decision-guide>
   </div>
+
+  <section class="section" id="cases">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Four cases, by name</h2>
+        <p>
+          The first two answers say whose authority a piece of access uses, and whether that person is there. Each
+          pair has a name and a page. The names are this site’s own, not terms from a specification. A name describes
+          one piece of access, not the agent: the same agent can act for a person in one call and on its own
+          authority in the next.
+        </p>
+      </div>
+      <div class="grid two">
+        {
+          cases.map((s) => (
+            <a class="card" href={`/guide/${s.slug}/`}>
+              <h3>{s.name}</h3>
+              <p>{s.short}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
 </Base>
 
 <script>
-  type Answers = Record<string, string>;
-  interface Rule {
-    flow: string;
-    role: 'start' | 'add' | 'consider';
-    when: Record<string, string[]>;
-    why: string;
-    weight?: number;
-  }
+  import type { Rule } from '../../data/guide';
+  import { type Answers, matches, recommend, caseFor } from '../../lib/guide-rules';
+
   interface Data {
     rules: Rule[];
     cautions: { when: Record<string, string[]>; text: string }[];
+    cases: { slug: string; name: string; when: Record<string, string[]>; short: string }[];
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
     flows: Record<string, { short: string; maturity: string; implementations: boolean }>;
@@ -150,6 +194,7 @@ const data = {
       const form = this.querySelector<HTMLFormElement>('form')!;
       const out = this.querySelector<HTMLElement>('.dg-out')!;
       const data: Data = JSON.parse(this.querySelector('.dg-data')!.textContent!);
+      const jump = this.querySelector<HTMLElement>('.dg-jump-n');
       const names = [...new Set([...form.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name))];
 
       const read = (): Answers => {
@@ -162,21 +207,6 @@ const data = {
         return a;
       };
 
-      // A rule matches when every condition whose question has been answered is satisfied.
-      // It only counts once at least one of its conditions has actually been answered.
-      const matches = (when: Record<string, string[]>, a: Answers, needAll = false) => {
-        let hit = 0;
-        for (const [q, values] of Object.entries(when)) {
-          if (a[q] == null) {
-            if (needAll) return false;
-            continue;
-          }
-          if (!values.includes(a[q])) return false;
-          hit++;
-        }
-        return hit > 0;
-      };
-
       const render = (push = true) => {
         const a = read();
         const answered = Object.keys(a).length;
@@ -187,35 +217,42 @@ const data = {
         }
 
         if (answered === 0) {
+          if (jump) jump.textContent = '';
           out.innerHTML = `<p class="dg-empty">Pick an answer to any question. Start with the first: it decides whose name ends up on the token.</p>`;
           return;
         }
 
         // best rule per flow; a "start" beats an "add" beats a "consider"
-        const rank = { start: 0, add: 1, consider: 2 } as const;
-        const best = new Map<string, Rule & { specificity: number }>();
-        for (const r of data.rules) {
-          if (!matches(r.when, a)) continue;
-          const specificity = Object.keys(r.when).filter((q) => a[q] != null).length;
-          const prev = best.get(r.flow);
-          if (
-            !prev ||
-            rank[r.role] < rank[prev.role] ||
-            (rank[r.role] === rank[prev.role] && specificity > prev.specificity)
-          ) {
-            best.set(r.flow, { ...r, specificity });
-          }
-        }
-
-        const groups: Record<string, (Rule & { specificity: number })[]> = { start: [], add: [], consider: [] };
-        for (const r of best.values()) groups[r.role].push(r);
-        for (const k of Object.keys(groups)) {
-          groups[k].sort((x, y) => y.specificity - x.specificity || (y.weight ?? 0) - (x.weight ?? 0));
-        }
+        const groups = recommend(data.rules, a);
 
         let html = '';
-        const total = best.size;
-        html += `<p class="dg-status">${answered} of ${names.length} answered · ${total} possible ${total === 1 ? 'match' : 'matches'}</p>`;
+        const total = groups.start.length + groups.add.length + groups.consider.length;
+        const count = `${total} ${total === 1 ? 'match' : 'matches'}`;
+        if (jump) jump.textContent = ` · ${count}`;
+        // The address holds every answer. Where the browser can copy it, a button does.
+        const copy = navigator.clipboard
+          ? `<button class="btn small ghost dg-copy" type="button">Copy result link</button>`
+          : '';
+        html += `<div class="dg-top"><p class="dg-status">${answered} of ${names.length} answered · ${count}</p><p class="dg-tools"><a class="dg-edit" href="#questions">Edit answers</a>${copy}<span class="dg-copied"></span></p></div>`;
+
+        // The name of the case, once the questions it comes from are answered,
+        // then every other answer as a fact with the word for its question: the name
+        // stands for two of them, and a reader who repeats it should see the rest.
+        const named = caseFor(data.cases, a);
+        const facts = names
+          .filter((n) => a[n] != null && !(named && n in named.when))
+          .map((n) => {
+            const input = form.querySelector<HTMLInputElement>(`input[name="${n}"]:checked`)!;
+            return `<div><dt>${esc(input.dataset.fact ?? '')}</dt><dd>${esc(input.dataset.brief ?? '')}</dd></div>`;
+          });
+        // A section like the ones after it: a heading, then the name as those
+        // list a flow, with what the name stands for where a flow has its status.
+        html += `<section class="dg-group dg-answers"><h2>Your answers</h2>`;
+        if (named) {
+          html += `<a class="dg-flow" href="/guide/${named.slug}/"><strong>${esc(named.name)}</strong><span class="dg-meta">${Object.keys(named.when).length === 1 ? 'First answer' : 'First two answers'}</span></a>`;
+        }
+        if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
+        html += `</section>`;
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -265,6 +302,18 @@ const data = {
       }
       render(false);
 
+      out.addEventListener('click', async (e) => {
+        const button = (e.target as Element).closest('.dg-copy');
+        if (!button) return;
+        const said = out.querySelector('.dg-copied');
+        try {
+          await navigator.clipboard.writeText(location.href);
+          if (said) said.textContent = 'Copied, with every answer';
+        } catch {
+          if (said) said.textContent = 'Not copied: the address bar has the same link';
+        }
+      });
+
       form.addEventListener('change', () => render());
       form.addEventListener('reset', () => {
         // the form forgets its answers, so the record of which one was selected has to go too:
@@ -297,35 +346,38 @@ const data = {
 </script>
 
 <style>
+  /* Questions on one side, recommendations on the other, with one quiet line
+     between them. Nothing here is a box inside a box: groups are set apart by
+     space and by a rule under a heading. The page scrolls as one. */
   .dg {
     display: grid;
     gap: 2rem 3rem;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    padding-top: clamp(1.6rem, 4vw, 2.6rem);
+    padding-block: clamp(1.6rem, 4vw, 2.6rem);
   }
   @media (min-width: 62rem) {
     .dg {
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     }
     .dg-results {
-      position: sticky;
-      top: 4.6rem;
-      max-height: calc(100dvh - 5.4rem);
-      overflow-y: auto;
-      scrollbar-width: thin;
+      padding-left: 3rem;
+      border-left: 1px solid var(--border);
+    }
+    .dg-out :global(.dg-edit) {
+      display: none;
     }
   }
 
   fieldset {
     border: 0;
     padding: 0;
-    margin: 0 0 1.9rem;
+    margin: 0 0 1.6rem;
   }
   legend {
     display: flex;
-    align-items: center;
-    gap: 0.7rem;
+    align-items: baseline;
+    gap: 0.9rem;
     font-family: var(--font-heading);
     font-size: 1.32rem;
     font-weight: 560;
@@ -333,95 +385,117 @@ const data = {
     padding: 0;
     margin-bottom: 0.3rem;
   }
+  /* The number is a number: which questions are answered shows in the radios. */
   .dg-num {
-    display: grid;
-    place-items: center;
     flex: none;
-    width: 1.7rem;
-    height: 1.7rem;
-    border: 1.5px solid var(--fg);
-    border-radius: var(--radius-round);
+    width: 1rem;
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 500;
-  }
-  fieldset:has(input:checked) .dg-num {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
+    color: var(--fg-muted);
   }
   .dg-help {
-    margin: 0 0 0.3rem 2.4rem;
+    margin: 0 0 0.3rem 1.9rem;
     font-size: 0.92rem;
     color: var(--fg-muted);
   }
+
+  /* An answer is a row with a radio button, and the whole row is the target. */
   .dg-options {
     display: grid;
-    gap: 0.45rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.5rem), 1fr));
-    margin-top: 0.7rem;
+    margin: 0.5rem 0 0 1.9rem;
   }
   .dg-options label {
     cursor: pointer;
-    display: grid;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.5rem;
+    margin-left: -0.5rem;
+    border-radius: var(--radius);
   }
   .dg-options input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .dg-options span {
-    display: block;
-    padding: 0.65rem 0.85rem;
-    background: var(--bg-raised);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    transition:
-      border-color 0.12s,
-      background 0.12s;
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0.14rem 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+    /* Reached with the keyboard, the whole row stops clear of the strip at the
+       foot of the window: the rest of the row below the button, and the strip
+       at its tallest, when a narrow screen puts it on two lines. */
+    scroll-margin-bottom: 10rem;
   }
   .dg-options strong {
     display: block;
-    font-size: 0.96rem;
+    font-size: 1rem;
     font-weight: 500;
     line-height: 1.3;
   }
   .dg-options em {
     display: block;
     font-style: normal;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--fg-muted);
     line-height: 1.35;
-    margin-top: 0.15rem;
+    margin-top: 0.1rem;
   }
-  .dg-options label:hover span {
-    border-color: var(--fg);
+  .dg-options label:hover {
+    background: var(--bg-raised);
   }
-  .dg-options input:checked + span {
-    border-color: var(--fg);
-    background: var(--fg);
-    color: var(--bg);
+  /* chosen: the filled radio, a heavier label, and the accent */
+  .dg-options input:checked + span strong {
+    font-weight: 600;
+    color: var(--accent);
   }
-  .dg-options input:checked + span em {
-    color: color-mix(in srgb, var(--bg) 75%, transparent);
-  }
-  .dg-options input:focus-visible + span {
+  .dg-options label:has(input:focus-visible) {
     outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline-offset: 1px;
+  }
+  .dg-options input:focus-visible {
+    outline: none;
   }
 
-  .dg-results {
-    background: var(--bg-raised);
-    border: 1.5px solid var(--fg);
-    border-radius: var(--radius);
-    padding: 1.2rem 1.3rem 1.3rem;
+  /* Start over, and the way to the recommendations with how many there are.
+     It stays at the foot of the window for as long as the questions are on
+     screen: on a phone the recommendations are far below them, and beside
+     them on a wide screen the top of the list has scrolled away. */
+  .dg-foot {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+    margin: 0;
+    padding: 0.6rem 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border-strong);
   }
+  .dg-jump {
+    font-weight: 500;
+  }
+  @media (max-width: 61.99rem) {
+    .dg-foot {
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+    }
+  }
+
   .dg-kicker {
     font-family: var(--font-heading);
-    font-style: var(--display-italic);
     font-size: 1.5rem;
     font-weight: 560;
-    margin: 0 0 0.4rem;
+    margin: 0 0 0.3rem;
+  }
+  .dg-out :global(.dg-top) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
   }
   .dg-out :global(.dg-status) {
     font-family: var(--font-label);
@@ -429,14 +503,49 @@ const data = {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--fg-muted);
-    margin: 0 0 0.4rem;
+    margin: 0;
+  }
+  .dg-out :global(.dg-tools) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    margin: 0;
+    font-size: 0.88rem;
+  }
+  .dg-out :global(.dg-copied) {
+    color: var(--fg-muted);
+  }
+  .dg-out :global(.dg-copied:empty) {
+    display: none;
+  }
+  .dg-out :global(.dg-answers .dg-flow) {
+    padding-top: 0.7rem;
+  }
+  /* each answer on a line of its own: the word for the question, then the answer */
+  .dg-out :global(.dg-facts) {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.15rem 1.6rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
+  .dg-out :global(.dg-facts div) {
+    display: contents;
+  }
+  .dg-out :global(.dg-facts dt) {
+    color: var(--fg-muted);
+  }
+  .dg-out :global(.dg-facts dd) {
+    margin: 0;
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);
     margin: 0.4rem 0 0;
   }
   .dg-out :global(.dg-group) {
-    margin-top: 1.1rem;
+    margin-top: 1.4rem;
   }
   .dg-out :global(.dg-group h2) {
     font-family: var(--font-label);

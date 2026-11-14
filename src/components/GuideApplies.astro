@@ -1,0 +1,60 @@
+---
+/**
+ * The answers a rule or a caution of the decision guide applies to, on a page
+ * that is read before those questions are answered. With none to name, it says
+ * that it applies whatever the other answers are, so no entry reads as if its
+ * conditions had been left off.
+ */
+interface Props {
+  to: { question: string; answers: string[] }[];
+}
+const { to } = Astro.props;
+---
+
+{
+  to.length === 0 ? (
+    <p class="ga ga-always">Applies whatever the other answers are.</p>
+  ) : (
+    <div class="ga">
+      <p class="ga-label">Applies when</p>
+      <ul>
+        {to.map((c) => (
+          <li>
+            {c.question} <strong>{c.answers.join(", or ")}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .ga {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+  p.ga,
+  .ga p {
+    margin-bottom: 0;
+  }
+  .ga-label {
+    margin: 0;
+    font-family: var(--font-label);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ga ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ga li {
+    margin: 0.1rem 0 0;
+  }
+  .ga strong {
+    font-weight: 500;
+    color: var(--fg);
+  }
+</style>

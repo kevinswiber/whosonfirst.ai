@@ -70,7 +70,7 @@ The model chooses which tool to call and with what arguments. Your code makes th
 
 ## When the work outlives the request
 
-A reply in a chat window is done in seconds, with the user watching. A report that runs every morning, or a task handed off to a queue, uses the same grant with nobody there. That is [the arrangement to be most careful with](/learn/whose-authority/).
+A reply in a chat window is done in seconds, with the user watching. A report that runs every morning, or a task handed off to a queue, uses the same grant with nobody there. That needs [a narrow scope, a way to reach the person and a way to switch it off](/learn/whose-authority/).
 
 - **Narrow the scope for unattended work.** A job that files receipts does not need permission to send mail.
 - **Record which job used which grant.** If something goes wrong at three in the morning, the token's `sub` will say the user did it.

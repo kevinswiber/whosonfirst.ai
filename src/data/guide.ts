@@ -1,5 +1,6 @@
 /**
- * Decision guide: questions, and the rules that turn answers into recommended flows.
+ * Decision guide: questions, the rules that turn answers into recommended flows,
+ * and the names for the cases the first two answers describe.
  *
  * A rule applies when every key it names matches the selected answer. Questions
  * the reader has not answered yet do not rule anything out.
@@ -8,15 +9,19 @@
 export interface Question {
   id: string;
   title: string;
+  /** One word for the question, where an answer is shown as a fact beside the others. */
+  short: string;
   help?: string;
   /** Where the question is explained, for a reader who is not sure what it is asking. */
   more?: { href: string; text: string };
-  options: { value: string; label: string; hint?: string }[];
+  /** `brief` is the answer in a few words, for the list of facts beside a result. */
+  options: { value: string; label: string; brief: string; hint?: string }[];
 }
 
 export const questions: Question[] = [
   {
     id: "principal",
+    short: "Authority",
     title: "Whose authority is the agent using?",
     help: "The single most important question. It decides whose name is on the token.",
     more: {
@@ -27,102 +32,233 @@ export const questions: Question[] = [
       {
         value: "user",
         label: "A specific person’s",
+        brief: "A person’s",
         hint: "Their data, their permissions",
       },
       {
         value: "self",
         label: "Its own",
+        brief: "Its own",
         hint: "A service identity that an admin set up",
       },
     ],
   },
   {
     id: "human",
+    short: "Person",
     title: "Is a person available when access is needed?",
     options: [
       {
         value: "present",
         label: "Yes, in the session",
+        brief: "In the session",
         hint: "They can click through a sign-in now",
       },
       {
         value: "reachable",
         label: "Reachable, but elsewhere",
+        brief: "Reachable elsewhere",
         hint: "Phone, chat, email",
       },
       {
         value: "absent",
         label: "No",
+        brief: "Unavailable",
         hint: "Scheduled, event-driven, overnight",
       },
     ],
   },
   {
     id: "target",
+    short: "Calls",
     title: "What is the agent calling?",
     help: "Choose the interface for this call. An API, MCP server or agent can be yours or someone else’s.",
     options: [
-      { value: "api", label: "An HTTP API", hint: "For example, a REST API" },
-      { value: "mcp", label: "An MCP server", hint: "Calling tools over MCP" },
-      { value: "agent", label: "Another agent", hint: "Handing off a task" },
-      { value: "web", label: "A public website", hint: "Browsing web pages" },
+      {
+        value: "api",
+        label: "An HTTP API",
+        brief: "HTTP API",
+        hint: "For example, a REST API",
+      },
+      {
+        value: "mcp",
+        label: "An MCP server",
+        brief: "MCP server",
+        hint: "Calling tools over MCP",
+      },
+      {
+        value: "agent",
+        label: "Another agent",
+        brief: "Another agent",
+        hint: "Handing off a task",
+      },
+      {
+        value: "web",
+        label: "A public website",
+        brief: "Public website",
+        hint: "Browsing web pages",
+      },
     ],
   },
   {
     id: "boundary",
+    short: "Trust",
     title: "Who runs the service, and whose identity system does it trust?",
     options: [
       {
         value: "same",
         label: "We run it and share an identity system",
+        brief: "We run it; shared identity",
         hint: "Both sides use our organization’s identity system",
       },
       {
         value: "enterprise",
         label: "A vendor that trusts our company sign-in",
+        brief: "Vendor trusts company sign-in",
         hint: "Both sides trust our company’s identity provider",
       },
       {
         value: "cross",
         label: "It uses a separate identity system",
+        brief: "Separate identity system",
         hint: "For example, a third-party API with its own accounts",
       },
     ],
   },
   {
     id: "runtime",
+    short: "Runs",
     title: "Where does the agent run?",
     options: [
       {
         value: "local",
         label: "On the user’s machine",
+        brief: "On the user’s machine",
         hint: "Desktop app, IDE, CLI",
       },
       {
         value: "headless",
         label: "Remote, with no browser",
+        brief: "Remote, no browser",
         hint: "Container, SSH session, CI job",
       },
       {
         value: "k8s",
         label: "Our own servers or cloud",
+        brief: "Our own servers or cloud",
         hint: "A hosted app, containers, Kubernetes",
       },
-      { value: "managed", label: "A managed agent platform" },
-      { value: "sandbox", label: "A sandbox that runs untrusted code" },
+      {
+        value: "managed",
+        label: "A managed agent platform",
+        brief: "Managed agent platform",
+      },
+      {
+        value: "sandbox",
+        label: "A sandbox that runs untrusted code",
+        brief: "Sandbox running untrusted code",
+      },
     ],
   },
   {
     id: "risk",
+    short: "Risk",
     title: "What is the worst it could do?",
     options: [
-      { value: "read", label: "Read data" },
-      { value: "write", label: "Change things that can be undone" },
+      { value: "read", label: "Read data", brief: "Read only" },
+      {
+        value: "write",
+        label: "Change things that can be undone",
+        brief: "Reversible changes",
+      },
       {
         value: "irreversible",
         label: "Something irreversible",
+        brief: "Irreversible",
         hint: "Move money, delete, send in someone’s name",
       },
+    ],
+  },
+];
+
+/**
+ * The cases the guide names. A name comes from the first two questions
+ * alone: whose authority a piece of access uses, and whether that person is
+ * there. Names taken from those two cannot overlap: every combination of
+ * answers has exactly one, which test/unit/guide.test.mjs confirms. The other
+ * questions change what is recommended, not what the case is called.
+ *
+ * A name describes one piece of access, not the agent: the same agent can act
+ * for a person in one call and on its own authority in the next. So the names
+ * say plainly whose authority it is and who is there, with no figure of speech
+ * to decode. They are this site's own, not terms from a specification, and the
+ * guide says so wherever it shows one. None may be a term the glossary defines.
+ *
+ * The wording rests on lesson 4, src/pages/learn/whose-authority.astro, and on
+ * the reasons in the rules below. It says nothing those do not: what a
+ * case needs is in the rules and the cautions, and its page lists them.
+ */
+export interface Case {
+  /** Its address: /guide/<slug>/ */
+  slug: string;
+  name: string;
+  /** The name and what it means in plain words: the title of its page, for a reader arriving from a search. */
+  title: string;
+  /** question id → the answer that makes it this one. One answer for each question named. */
+  when: Record<string, string[]>;
+  /** One sentence, shown with the name wherever it appears. */
+  short: string;
+  /** What a reader in this case needs to know first, a paragraph each. */
+  about: string[];
+}
+
+export const cases: Case[] = [
+  {
+    slug: "person-present",
+    name: "Person present",
+    title: "Person present: an agent acting for a person who is there",
+    when: { principal: ["user"], human: ["present"] },
+    short:
+      "The agent acts for a person who is in the session and can sign in or approve now.",
+    about: [
+      "The token names the person. What the agent can do is capped by what that person can do, and by what they approved.",
+      "Because the person is there, a sensitive action can be put to them at the moment it matters. Keep the everyday token narrowly scoped, and ask again for the rest.",
+    ],
+  },
+  {
+    slug: "person-reachable",
+    name: "Person reachable",
+    title: "Person reachable: an agent acting for a person it has to contact",
+    when: { principal: ["user"], human: ["reachable"] },
+    short:
+      "The agent acts for a person who is not in the session but can be reached: by phone, in chat, by email.",
+    about: [
+      "The token still names the person, but they cannot be sent through a sign-in where the agent runs.",
+      "If an action needs their approval, that action waits while they are asked. Decide what the agent does when they say no, and when no answer comes.",
+    ],
+  },
+  {
+    slug: "person-unavailable",
+    name: "Person unavailable",
+    title: "Person unavailable: an agent acting for a person who is not there",
+    when: { principal: ["user"], human: ["absent"] },
+    short:
+      "The agent acts for a person who approved in advance and is not there when it runs.",
+    about: [
+      "The agent uses access the person granted earlier. Someone has to consent once, while they are present.",
+      "Nobody is watching when it runs. Limit the access to the task, find a way to reach the person for anything that cannot be undone, and know how the access is switched off before the agent runs for the first time.",
+    ],
+  },
+  {
+    slug: "own-authority",
+    name: "Own authority",
+    title: "Own authority: an agent acting as itself",
+    when: { principal: ["self"] },
+    short:
+      "The agent uses its own authority. The token names the agent, not a person.",
+    about: [
+      "What the agent may do is what was granted to its own identity. An administrator decided that in advance. Review those grants as the job changes.",
+      "Acting as itself is right when the work is the organization’s. It is not a shortcut around sign-in: if the agent serves several people under one identity, the API cannot tell them apart.",
     ],
   },
 ];
@@ -243,7 +379,7 @@ export const rules: Rule[] = [
       human: ["absent"],
       boundary: ["same", "cross"],
     },
-    why: "Someone has to consent once. Obtain the grant while the user is present, with the narrowest scope that works, then run unattended on a refresh token. This is the riskiest arrangement on this page: plan how it is revoked.",
+    why: "Someone has to consent once. Obtain the grant while the user is present, with the narrowest scope that works. Where the authorization server issues a refresh token, the agent can then run unattended on it. Plan how the grant is revoked.",
   },
   {
     flow: "ciba",
@@ -497,11 +633,11 @@ export const cautions: Caution[] = [
   },
   {
     when: { principal: ["user"], human: ["absent"] },
-    text: "An unattended agent holding a person’s long-lived grant is the configuration most likely to end badly. Scope it narrowly, bind it to a key, and make sure someone can revoke it.",
+    text: "An unattended agent can go on using a person’s grant while that person is unavailable. Scope it narrowly, bind it to a key where both sides support that, and make sure someone can revoke it.",
   },
   {
     when: { risk: ["irreversible"], human: ["absent"] },
-    text: "Irreversible actions with no human available leave policy as the only control. Put hard limits at the API or a gateway, not in the prompt.",
+    text: "With no person available to approve an irreversible action, enforce hard limits at the API or a gateway, not in the prompt.",
   },
   {
     when: { target: ["web"], principal: ["user"] },

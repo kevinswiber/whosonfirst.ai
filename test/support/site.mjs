@@ -34,6 +34,7 @@ export const PAGES = [
   { path: "/implementations/", name: "implementations directory" },
   { path: "/implementations/dpop/", name: "implementation record" },
   { path: "/guide/", name: "decision guide" },
+  { path: "/guide/person-unavailable/", name: "case" },
   { path: "/deployments/kubernetes/", name: "deployment guide" },
 ];
 

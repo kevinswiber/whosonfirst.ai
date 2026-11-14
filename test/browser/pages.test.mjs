@@ -23,6 +23,7 @@ const LINED = [
   "concepts",
   "deployment guide",
   "implementation record",
+  "case",
 ];
 
 const site = useBrowser();

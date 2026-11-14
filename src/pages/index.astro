@@ -63,7 +63,7 @@ const authority = [
       },
       {
         when: label(human, "absent"),
-        note: "The agent runs unattended on authority the person delegated earlier. The arrangement to be most careful with.",
+        note: "The agent runs unattended on authority the person delegated earlier. Scope it narrowly, and know how it is revoked.",
         links: [
           [
             "authorization-code-pkce",
@@ -77,7 +77,7 @@ const authority = [
     id: "agent",
     choice: "Acting under its own service identity",
     token:
-      "The token names the agent. Policy an administrator sets is the only control.",
+      "The token names the agent. Its access is bounded by the permissions granted to that identity.",
     next: "Where does its identity come from?",
     branches: [
       {

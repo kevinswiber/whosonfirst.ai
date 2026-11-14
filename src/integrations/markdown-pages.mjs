@@ -86,6 +86,7 @@ const CHROME = [
   "nav.path", // the strip of lesson numbers at the head of a lesson
   "sc-choices", // a figure's buttons; every choice follows in full
   "dg-results", // where the decision guide's script writes; its rules follow in full
+  "dg-foot", // the guide's Start over, and the way down to what the script wrote
   "eyebrow", // the small label over a title
   "ov-n", // a number the list it sits in already counts
   "span.n",
@@ -512,6 +513,7 @@ function reviewed(page) {
  */
 const SECTIONS = [
   { title: "Start here", match: /^\/(learn\/|guide\/|concepts\/)?$/ },
+  { title: "Named cases", match: /^\/guide\/[^/]+\/$/, order: "/guide/" },
   { title: "Lessons", match: /^\/learn\/[^/]+\/$/, order: "/learn/" },
   { title: "Flows", match: /^\/flows\//, order: "/flows/" },
   {

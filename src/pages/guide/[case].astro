@@ -1,0 +1,281 @@
+---
+// One case the decision guide names, as a page that needs no script.
+// It rests on src/data/guide.ts: the name, what defines it and what to know
+// first come from `cases`. "Where to start" and "Watch out" are worked
+// out here from the guide's rules and cautions: every one that could apply
+// once the other questions are answered, each with the answers it
+// applies to. The guide's script answers for the answers it has; this page is
+// read ahead of them, so it leaves nothing out for want of an answer.
+import Base from "../../layouts/Base.astro";
+import { cautions, questions, rules, cases } from "../../data/guide";
+import type { Case } from "../../data/guide";
+import { flow, maturityLabel } from "../../data/flows";
+import { compatible, open, possibleStarts } from "../../lib/guide-rules";
+import type { Answers } from "../../lib/guide-rules";
+import Applies from "../../components/GuideApplies.astro";
+
+export function getStaticPaths() {
+  return cases.map((c) => ({
+    params: { case: c.slug },
+    props: { case: c },
+  }));
+}
+
+interface Props {
+  case: Case;
+}
+
+const { case: s } = Astro.props;
+
+const question = (id: string) => {
+  const q = questions.find((x) => x.id === id);
+  if (!q) throw new Error(`guide: unknown question "${id}"`);
+  return q;
+};
+const label = (id: string, value: string) => {
+  const o = question(id).options.find((x) => x.value === value);
+  if (!o) throw new Error(`guide: unknown answer "${id}=${value}"`);
+  return o.label;
+};
+const order = (id: string) => questions.findIndex((x) => x.id === id);
+
+// The answers the name stands for.
+const fixed: Answers = Object.fromEntries(
+  Object.entries(s.when).map(([q, values]) => [q, values[0]]),
+);
+const defined = Object.entries(fixed).map(([q, v]) => ({
+  question: question(q).title,
+  answer: label(q, v),
+}));
+
+/**
+ * The answers a rule still needs, in the order the guide asks and in its own
+ * words. A condition that every answer to its question meets asks nothing, and
+ * is left out.
+ */
+const applies = (when: Record<string, string[]>) =>
+  open(when, fixed)
+    .filter(([q, values]) =>
+      question(q).options.some((o) => !values.includes(o.value)),
+    )
+    .sort(([x], [y]) => order(x) - order(y))
+    .map(([q, values]) => ({
+      question: question(q).title,
+      answers: question(q)
+        .options.filter((o) => values.includes(o.value))
+        .map((o) => o.label),
+    }));
+
+// What applies whatever the other answers are comes first, then what needs the fewest of them.
+const starts = possibleStarts(rules, fixed)
+  .map((r) => {
+    const f = flow(r.flow);
+    return {
+      slug: f.slug,
+      short: f.short,
+      maturity: maturityLabel(f),
+      why: r.why,
+      weight: r.weight ?? 0,
+      applies: applies(r.when),
+    };
+  })
+  .sort((x, y) => x.applies.length - y.applies.length || y.weight - x.weight);
+
+const warn = cautions
+  .filter((c) => compatible(c.when, fixed))
+  .map((c) => ({ text: c.text, applies: applies(c.when) }))
+  .sort((x, y) => x.applies.length - y.applies.length);
+
+const guideLink = `/guide/?${new URLSearchParams(fixed)}`;
+const left = ["no", "one", "two", "three", "four", "five", "six"][
+  questions.length - Object.keys(fixed).length
+];
+const others = cases.filter((o) => o.slug !== s.slug);
+---
+
+<Base
+  title={s.title}
+  description={`${s.short} Where to start, and what to watch out for.`}
+  here={{ trail: [{ label: 'Choose a flow', href: '/guide/' }], current: s.name }}
+>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>{s.name}</h1>
+        <p class="lede">{s.short}</p>
+        <dl class="case-when">
+          {
+            defined.map((d) => (
+              <div>
+                <dt>{d.question}</dt>
+                <dd>{d.answer}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="prose">
+          <h2>What it means</h2>
+          {s.about.map((p) => <p>{p}</p>)}
+          <p class="case-own">
+            “{s.name}” is one of <a href="/guide/#cases">four names</a> the decision guide gives to the
+            cases its first two questions describe. The names are this site’s own, not terms from a
+            specification. A name describes one piece of access, not the agent: the same agent can act for a person
+            in one call and on its own authority in the next.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Where to start</h2>
+          <p>
+            Every flow the guide’s rules start with in this case. Which of them are yours depends on the guide’s
+            other {left} questions, so each one says which answers it applies to.
+          </p>
+        </div>
+        <ul class="case-flows">
+          {
+            starts.map((f) => (
+              <li>
+                <a class="case-flow" href={`/flows/${f.slug}/`}>
+                  <strong>{f.short}</strong>
+                  <span class="case-meta">{f.maturity}</span>
+                </a>
+                <p>{f.why}</p>
+                <Applies to={f.applies} />
+              </li>
+            ))
+          }
+        </ul>
+        <p class="case-more">
+          <a href={guideLink}>Answer the other {left} questions in the guide</a> to see which of these are yours, what
+          to add to them and what else is worth a look.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2>Watch out</h2>
+        <ul class="case-warn">
+          {
+            warn.map((c) => (
+              <li>
+                <p>{c.text}</p>
+                <Applies to={c.applies} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>The other three</h2>
+          <p>
+            Not this one? <a href="/guide/">The guide’s first two questions</a> say which it is.
+          </p>
+        </div>
+        <div class="grid">
+          {
+            others.map((o) => (
+              <a class="card" href={`/guide/${o.slug}/`}>
+                <h3>{o.name}</h3>
+                <p>{o.short}</p>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .case-when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 2.6rem;
+    margin: 1.4rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+  .case-when dt {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .case-when dd {
+    margin: 0.15rem 0 0;
+    font-weight: 500;
+  }
+  .case-own {
+    color: var(--fg-muted);
+  }
+
+  .case-flows,
+  .case-warn,
+  .case-more {
+    max-width: var(--prose);
+  }
+  .prose > h2:first-child {
+    margin-top: 0;
+  }
+  .case-flows {
+    border-top: 1.5px solid var(--fg);
+  }
+  .case-flows,
+  .case-warn {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .case-flows > li,
+  .case-warn > li {
+    margin: 0;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .case-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.8rem;
+    text-decoration: none;
+  }
+  .case-flow strong {
+    font-family: var(--font-heading);
+    font-size: 1.16rem;
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.18em;
+  }
+  .case-meta {
+    font-family: var(--font-label);
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .case-flows > li > p,
+  .case-warn > li > p {
+    margin: 0.25rem 0 0;
+  }
+  .case-more {
+    margin: 0.8rem 0 0;
+    font-size: 0.93rem;
+  }
+</style>
