@@ -111,7 +111,7 @@ const worksheet = (file) => {
     ),
   );
   for (const entry of entries) {
-    if (taken.has(entry.id))
+    if (!log && taken.has(entry.id))
       problems.push(`${entry.id}: already in the records`);
     for (const source of entry.sources ?? [])
       if (!source.quote || !source.section)
@@ -256,7 +256,18 @@ const logSection = (sheet, entries) => {
   };
   list("Looked.", sheet.looked);
   list("Not found.", sheet.notFound);
-  list("Second reading.", sheet.secondReading);
+  const read = sheet.secondReading ?? [];
+  const asWritten = read.filter((line) =>
+    /: accepted as written\.?$/.test(line),
+  );
+  const changed = read.filter((line) => !asWritten.includes(line));
+  if (read.length > 0)
+    list("Second reading.", [
+      ...(asWritten.length > 0
+        ? [`${asWritten.length} of ${read.length} accepted as written`]
+        : []),
+      ...changed,
+    ]);
   return lines.join("\n");
 };
 
