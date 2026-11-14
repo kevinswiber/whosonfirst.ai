@@ -1,6 +1,7 @@
 // Glossary terms in the text: each is a link that works however it is
 // followed, with or without scripts, and the words that mean something else in
 // ordinary speech are linked only where an author meant the technical sense.
+// An RFC number is a link of the same kind, to its entry in the standards tracker.
 import { strict as assert } from "node:assert";
 import { describe, test } from "node:test";
 import { frames, open, useBrowser } from "../support/browser.mjs";
@@ -158,4 +159,180 @@ describe("claim and state links refer to their technical meanings", () => {
       assert.equal((await page.locator(selector).count()) > 0, expected);
     });
   }
+});
+
+// "RFC 7519" says nothing to most readers. Where the text names a document by
+// its number, or links to its tracker entry, the reader can see in place which
+// document it is, how settled it is and what it defines, and the link goes to
+// its entry in the tracker, with or without scripts.
+for (const javaScriptEnabled of [false, true]) {
+  describe(`a document named in a flow ${javaScriptEnabled ? "with" : "without"} JavaScript`, () => {
+    for (const [selector, name, status, ref, id] of [
+      // step 4 names the specification by number: the number is not repeated in the preview
+      [
+        '#step-4 a.spec[href="/standards/#rfc7519"]',
+        "JSON Web Token (JWT)",
+        "RFC",
+        null,
+        "rfc7519",
+      ],
+      // an authored link by name: the preview adds the identifier
+      [
+        'main p a.spec[href="/standards/#wag"]',
+        "Workload Authorization Grant",
+        "Individual draft",
+        "draft-carleton-workload-authz-grant",
+        "wag",
+      ],
+    ]) {
+      test(`${name} previews its tracker entry and leads to it`, async (t) => {
+        const ctx = await site.context({
+          javaScriptEnabled,
+          reducedMotion: "reduce",
+        });
+        t.after(() => ctx.close());
+        const page = await ctx.newPage();
+        await open(page, site.url("/flows/workload-identity-federation/"));
+        const link = page.locator(selector).first();
+        assert.equal(await link.count(), 1, `nothing matches ${selector}`);
+        assert.equal(await link.getAttribute("data-term"), name);
+        if (javaScriptEnabled)
+          await t.test("hovering it shows the document in place", async () => {
+            await link.scrollIntoViewIfNeeded();
+            await page.mouse.move(0, 0);
+            await frames(page);
+            await link.hover();
+            const tip = page.locator("#term-tip");
+            assert.ok(await isOpen(tip), "no preview");
+            assert.equal(
+              await tip.locator(".term-tip-name").textContent(),
+              name,
+            );
+            assert.equal(
+              await tip.locator(".term-tip-meta .chip").textContent(),
+              status,
+            );
+            assert.equal(
+              (await tip.locator(".term-tip-ref").count()) > 0
+                ? await tip.locator(".term-tip-ref").textContent()
+                : null,
+              ref,
+            );
+            assert.ok(
+              ((await tip.locator(".term-tip-def").textContent()) ?? "")
+                .length > 20,
+              "the preview does not say what the document defines",
+            );
+            assert.equal(
+              await tip.locator(".term-tip-more").getAttribute("href"),
+              `/standards/#${id}`,
+            );
+          });
+        await t.test("activating it reaches the tracker entry", async () => {
+          await Promise.all([
+            page.waitForURL(site.url(`/standards/#${id}`)),
+            link.press("Enter"),
+          ]);
+          assert.equal(await page.locator(`[id="${id}"]`).count(), 1);
+        });
+      });
+    }
+  });
+}
+
+// A glossary term that names one specification, such as "token exchange", is
+// still the glossary's: one preview for one word. That preview says which
+// document defines it and how settled the document is, and leads to both.
+describe("a term that names a specification", () => {
+  test("its preview shows the document's status and links to the glossary and the tracker", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/workload-identity-federation/"));
+    const term = page
+      .locator('main a.term[href="/glossary/#token-exchange"]')
+      .first();
+    await term.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await term.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(
+      await tip.locator(".term-tip-meta .chip").textContent(),
+      "RFC",
+    );
+    assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 8693");
+    assert.deepEqual(
+      await tip
+        .locator(".term-tip-more")
+        .evaluateAll((links) => links.map((a) => a.getAttribute("href"))),
+      ["/glossary/#token-exchange", "/standards/#rfc8693"],
+    );
+  });
+
+  test("the glossary shows the document's status and links to it, without scripts", async (t) => {
+    const ctx = await site.context({ javaScriptEnabled: false });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/glossary/"));
+    const std = page.locator("#dpop .std");
+    assert.equal(await std.locator(".chip").textContent(), "RFC");
+    const link = std.locator('a[href="/standards/#rfc9449"]');
+    assert.equal(await link.textContent(), "RFC 9449");
+    await Promise.all([
+      page.waitForURL(site.url("/standards/#rfc9449")),
+      link.click(),
+    ]);
+    assert.equal(await page.locator('[id="rfc9449"]').count(), 1);
+  });
+});
+
+// A specification named in words that are not a glossary term is marked as a
+// document when it is written as the tracker writes it, and its number, if it
+// follows, is not marked a second time.
+describe("a document named in words", () => {
+  test("HTTP Message Signatures previews RFC 9421, once", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/dpop/"));
+    const named = page.locator('main a.spec[href="/standards/#rfc9421"]');
+    assert.equal(await named.count(), 1);
+    assert.equal(await named.textContent(), "HTTP Message Signatures");
+    await named.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await named.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 9421");
+  });
+});
+
+// The specification a flow is based on is named by its number at the top of the
+// page. That number previews its tracker entry as it does in the text.
+describe("the specification a flow is based on", () => {
+  test("“Based on: RFC 8693” previews Token Exchange and leads to its entry", async (t) => {
+    const ctx = await site.context({ reducedMotion: "reduce" });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/token-exchange/"));
+    const based = page.locator('.doc-line a.spec[href="/standards/#rfc8693"]');
+    assert.equal(await based.count(), 1);
+    await based.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await frames(page);
+    await based.hover();
+    const tip = page.locator("#term-tip");
+    assert.ok(await isOpen(tip), "no preview");
+    assert.equal(
+      await tip.locator(".term-tip-name").textContent(),
+      "Token Exchange",
+    );
+    await Promise.all([
+      page.waitForURL(site.url("/standards/#rfc8693")),
+      based.press("Enter"),
+    ]);
+  });
 });

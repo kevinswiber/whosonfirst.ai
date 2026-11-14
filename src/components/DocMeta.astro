@@ -1,4 +1,6 @@
 ---
+import { previewOf } from "../lib/gloss";
+
 /**
  * Facts about the page itself. Two are worth a reader's first glance and sit
  * on one line: the specification the page is based on, with its status and
@@ -24,8 +26,11 @@ interface Props {
     /** The label, when "Based on" would claim too much: e.g. "Diagram based on". */
     key?: string;
     refs: { ref: string; href: string }[];
-    status: string;
-    revision?: string;
+    /**
+     * What a reference's preview does not say, such as when an RFC was published
+     * or which revision a draft is at. The preview shows its status.
+     */
+    note?: string;
   };
   /** A leading fact for pages that follow no single specification, e.g. "83 entries". */
   lead?: string;
@@ -49,6 +54,11 @@ const {
 } = Astro.props;
 const columns =
   groups.length > 0 ? groups : [{ label: undefined, items: details }];
+// the number says nothing by itself: it previews its tracker entry, as it does in the text
+const preview = (href: string) => {
+  const { class: kind, ...data } = previewOf(href) ?? {};
+  return { kind, data };
+};
 // dates such as 2026-07-28 should not break across lines at their hyphens
 const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
 ---
@@ -62,12 +72,12 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
           {based.refs.map((r, i) => (
             <>
               {i > 0 && ' and '}
-              <a href={r.href} class:list={{ nowrap: r.ref.length <= 32 }}>
+              <a href={r.href} {...preview(r.href).data} class:list={[preview(r.href).kind, { nowrap: r.ref.length <= 32 }]}>
                 {r.ref}
               </a>
             </>
           ))}
-          {' — '}<span class="doc-status">{[based.status, based.revision].filter(Boolean).join(', ')}.</span>
+          {based.note ? <>{' — '}<span class="doc-status">{based.note}.</span></> : '.'}
         </span>
       )
     }

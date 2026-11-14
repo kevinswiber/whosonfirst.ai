@@ -141,7 +141,9 @@ a:hover {
   color: var(--accent);
 }
 /* links are blue and underlined wherever they sit in text */
-main :is(p, li, dd, td, figcaption, .eyebrow, h4) a:not(.btn, .card, .term) {
+main
+  :is(p, li, dd, td, figcaption, .eyebrow, h4)
+  a:not(.btn, .card, .term, .spec) {
   color: var(--accent);
   text-decoration-thickness: 1px;
   /* A link whose text is an address can be longer than a phone is wide. It
@@ -150,13 +152,15 @@ main :is(p, li, dd, td, figcaption, .eyebrow, h4) a:not(.btn, .card, .term) {
 }
 main
   :is(p, li, dd, td, figcaption, .eyebrow, h4)
-  a:not(.btn, .card, .term):hover {
+  a:not(.btn, .card, .term, .spec):hover {
   text-decoration-thickness: 2px;
 }
 
 /* A glossary term links to its entry and previews the definition on hover or
-   focus. The dotted underline distinguishes definitions from other links. */
-a.term {
+   focus. The dotted underline distinguishes definitions from other links. An RFC
+   number is marked the same way: it previews what the document is, and links to
+   its entry in the standards tracker. */
+a:is(.term, .spec) {
   color: inherit;
   text-decoration-line: underline;
   text-decoration-style: dotted;
@@ -164,8 +168,8 @@ a.term {
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.22em;
 }
-a.term:hover,
-a.term[aria-expanded="true"] {
+a:is(.term, .spec):hover,
+a:is(.term, .spec)[aria-expanded="true"] {
   color: inherit;
   text-decoration-style: solid;
   text-decoration-color: var(--accent);
@@ -200,9 +204,24 @@ a.term[aria-expanded="true"] {
 .term-tip-def {
   display: block;
 }
+/* a document's status and identifier, as its tracker entry shows them */
+.term-tip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  margin: 0.1rem 0 0.4rem;
+}
+.term-tip-ref {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+  word-break: break-word;
+}
 .term-tip-more {
   display: inline-block;
   margin-top: 0.4rem;
+  margin-right: 1rem;
   color: var(--accent);
   text-decoration-thickness: 1px;
 }

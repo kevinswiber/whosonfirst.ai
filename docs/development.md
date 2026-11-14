@@ -96,7 +96,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/data/learn/api-sees.ts`          | The figure lesson 1 and the home page share                                                        |
 | `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
 | `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
-| `src/lib/gloss.ts`                    | Marks the first use of each glossary term, so its definition can be shown in place                 |
+| `src/lib/gloss.ts`                    | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |
 | `src/data/standards.ts`               | The standards tracker                                                                              |
 | `src/data/tokens.ts`                  | Annotated example tokens for the token inspector                                                   |
 | `src/data/guide.ts`                   | Questions and rules for the decision guide, and the four cases it names                            |
@@ -228,6 +228,8 @@ The site takes the structure of an Internet-Draft, not its typewriter: fine rule
 **A long page says where the reader is.** Lessons, flows, deployment guides, the guide’s cases, Concepts and About carry a line under the site header: the trail to the page, the page's short name and, with the script, the section scrolled to. That section is a button: pressing it lists the page's sections, which is how a reader gets to another one on a phone, on a lesson or on a flow, where no contents list fits at the side. It stays in view with the header, and takes the place of the small label above the title. A layout passes `here` to the base layout to get one. Its height is `--here` in `global.css`, which anything that sticks below the header, and the allowance for a jump to an anchor, add on. A jump within a page glides; arriving from another page at a section far down does not.
 
 Nothing essential waits behind a click. A figure shows a complete answer in its first state, a lesson's comparison is also a table, and a definition that opens in place is a link to the glossary first.
+
+**One preview for one word.** A glossary term and a document in the standards tracker are marked the same way, with a dotted underline, the first time they appear in a reading, and both preview in place. A concept is the glossary's, even when one specification defines it: “DPoP” and “token exchange” are glossary terms, and a term with a `standard` in `src/data/glossary.ts` also shows that document's status and identifier, on the glossary page and in its preview. What is marked as a document is a name that is not a glossary term: an RFC number, and the names in `NAMED` in `src/lib/gloss.ts`, matched only as the tracker writes them. A name that is also used for a mechanism in general, such as “token introspection”, is not listed; authors link the uses they mean. A document's number right after a term that names it is not marked again.
 
 Pages put the task first. A page opens with what it is for, then the thing the reader came to do; supporting facts (sources, method, classification) sit behind a labeled disclosure, and history follows the lookup it belongs to.
 

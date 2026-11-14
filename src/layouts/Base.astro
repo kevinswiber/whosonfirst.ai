@@ -440,8 +440,8 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       });
       dark.addEventListener('change', follow);
 
-      // Glossary terms in running text. Each is a link to its entry that carries the
-      // definition with it. Hover or keyboard focus previews the definition where
+      // Glossary terms and RFC numbers in running text. Each is a link to its entry,
+      // in the glossary or the standards tracker, that carries what it is with it. Hover or keyboard focus previews the definition where
       // popovers are available. Activation always follows the link, including when
       // a reading mode sends that action back to this page. Touch needs no preview
       // to reach the definition, and the link also works without JavaScript.
@@ -459,7 +459,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
           if (tip.matches(':popover-open')) tip.hidePopover();
           from = null;
         };
-        document.querySelectorAll<HTMLElement>('a.term').forEach((a) => {
+        document.querySelectorAll<HTMLElement>('a.term, a.spec').forEach((a) => {
           a.setAttribute('aria-expanded', 'false');
         });
         // closed by Escape or by a press elsewhere: the browser does that, and says so here
@@ -484,11 +484,38 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
           const def = document.createElement('span');
           def.className = 'term-tip-def';
           def.textContent = a.dataset.def ?? '';
+          const spec = a.classList.contains('spec');
           const more = document.createElement('a');
           more.className = 'term-tip-more';
-          more.href = a.getAttribute('href') ?? '/glossary/';
-          more.textContent = 'In the glossary →';
-          tip.append(name, def, more);
+          more.href = a.getAttribute('href') ?? (spec ? '/standards/' : '/glossary/');
+          more.textContent = spec ? 'In the standards tracker →' : 'In the glossary →';
+          tip.append(name);
+          // a document, or a term that names one, says how settled it is, worded as the tracker words it
+          if (a.dataset.status) {
+            const meta = document.createElement('span');
+            meta.className = 'term-tip-meta';
+            const status = document.createElement('span');
+            status.className = 'chip';
+            status.dataset.tone = a.dataset.tone ?? '';
+            status.textContent = a.dataset.status;
+            meta.append(status);
+            // the identifier, unless it is what the link already says
+            if (a.dataset.ref && a.textContent?.trim() !== a.dataset.ref) {
+              const ref = document.createElement('span');
+              ref.className = 'term-tip-ref';
+              ref.textContent = a.dataset.ref;
+              meta.append(ref);
+            }
+            tip.append(meta);
+          }
+          tip.append(def, more);
+          if (a.dataset.standard) {
+            const entry = document.createElement('a');
+            entry.className = 'term-tip-more';
+            entry.href = a.dataset.standard;
+            entry.textContent = 'In the standards tracker →';
+            tip.append(entry);
+          }
           // straight after the term, so that Tab goes from the term to the link in its definition
           a.after(tip);
           tip.showPopover();
@@ -497,13 +524,13 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
           place(a);
         };
         document.addEventListener('pointerover', (e) => {
-          const a = (e.target as Element).closest<HTMLElement>('a.term');
+          const a = (e.target as Element).closest<HTMLElement>('a.term, a.spec');
           // Do not replace a preview while someone is using its link with the keyboard.
           if (e.pointerType === 'mouse' && a && showing() !== a && !tip.contains(document.activeElement)) open(a);
         });
         document.addEventListener('focusin', (e) => {
           const target = e.target as Element;
-          const a = target.closest<HTMLElement>('a.term');
+          const a = target.closest<HTMLElement>('a.term, a.spec');
           if (a && showing() !== a) open(a);
           else if (!a && !tip.contains(target)) shut();
         });

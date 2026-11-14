@@ -41,8 +41,9 @@ export function inline(text: string, g?: Gloss): string {
     },
   );
   if (g)
-    out = mark(out, g).replace(/<a class="term"[^>]*>[^<]*<\/a>/g, (a) =>
-      hold(a),
+    out = mark(out, g).replace(
+      /<a class="(?:term|spec)"[^>]*>[^<]*<\/a>/g,
+      (a) => hold(a),
     );
   out = emphasis(out);
   // a held piece can hold another (a code span inside a link's label), so put back twice

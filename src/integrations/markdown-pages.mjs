@@ -399,9 +399,10 @@ function prepare(main, page, site) {
           say(` (${text(flag).trim()})`),
         ];
     }
-    // 2. A glossary term in running text is a link to its definition. Read
-    //    straight through, a page of them is harder to follow than the words.
-    if (is(node, "a") && has(node, "term")) {
+    // 2. A glossary term in running text is a link to its definition, and an
+    //    RFC number a link to its tracker entry. Read straight through, a page
+    //    of them is harder to follow than the words.
+    if (is(node, "a") && (has(node, "term") || has(node, "spec"))) {
       parent.children.splice(index, 1, ...node.children);
       return [SKIP, index];
     }

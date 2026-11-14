@@ -5,12 +5,20 @@ export interface Term {
   def: string;
   /** Internal link for more. */
   see?: { href: string; label: string };
+  /**
+   * The tracker entry for the specification this term names, by its `id`. The
+   * glossary shows its status and identifier, and so does the term's preview
+   * wherever the term is marked. Only for a term that is the name of one
+   * document, not for a concept several specifications share.
+   */
+  standard?: string;
 }
 
 /** md-lite formatting is allowed in `def`. Keep entries to one or two sentences. */
 export const glossary: Term[] = [
   {
     term: "AAuth",
+    standard: "aauth-hardt",
     def: "A draft protocol, separate from OAuth, for agents with their own signing keys and signed requests. Depending on the access mode, an API learns the agent’s identity or accepts a person server’s assertion about the user. An unrelated OAuth draft shares the name.",
     see: { href: "/flows/aauth/", label: "AAuth" },
   },
@@ -41,15 +49,16 @@ export const glossary: Term[] = [
   },
   {
     term: "A2A",
+    standard: "a2a",
     aka: ["Agent2Agent"],
     def: "A protocol for agents to delegate tasks to one another. It declares security requirements and leaves obtaining credentials to OAuth and related standards.",
     see: { href: "/flows/agent-to-agent/", label: "Agent to agent" },
   },
   {
     term: "AIMS",
+    standard: "wimse-aims",
     aka: ["AI Identity Management System"],
     def: "An IETF WIMSE working group document describing how existing standards compose for agent identity and authorization. Its premise is that agents are workloads.",
-    see: { href: "/standards/#wimse-aims", label: "Standards tracker" },
   },
   {
     term: "API key",
@@ -71,6 +80,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Authorization details",
+    standard: "rfc9396",
     aka: ["RAR", "Rich Authorization Requests"],
     def: "A structured JSON description of exactly what is being authorized, such as one payment to one payee. More precise than a scope string.",
     see: {
@@ -90,6 +100,7 @@ export const glossary: Term[] = [
   },
   {
     term: "CIBA",
+    standard: "ciba",
     aka: ["Client-Initiated Backchannel Authentication"],
     def: "An OpenID flow in which the client asks the authorization server to obtain a named user’s approval on the user’s own device.",
     see: { href: "/flows/ciba/", label: "Backchannel approval" },
@@ -115,6 +126,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Client ID Metadata Document",
+    standard: "cimd",
     aka: ["CIMD"],
     def: "A JSON document at an HTTPS URL that serves as a client’s identifier. The authorization server fetches it instead of requiring the client to register first.",
     see: { href: "/flows/mcp-authorization/", label: "MCP authorization" },
@@ -148,6 +160,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Cross App Access",
+    standard: "id-jag",
     aka: ["XAA"],
     def: "The name vendors use for the ID-JAG pattern. The draft uses it too, as Cross-App Access.",
     see: {
@@ -165,12 +178,14 @@ export const glossary: Term[] = [
   },
   {
     term: "DPoP",
+    standard: "rfc9449",
     aka: ["Demonstrating Proof of Possession"],
     def: "A mechanism that binds a token to a key held by the client. Each request carries a small signed proof.",
     see: { href: "/flows/dpop/", label: "DPoP" },
   },
   {
     term: "Dynamic Client Registration",
+    standard: "rfc7591",
     aka: ["DCR"],
     def: "A protocol by which a client registers itself with an authorization server at runtime. Deprecated in MCP in favor of Client ID Metadata Documents.",
   },
@@ -193,6 +208,7 @@ export const glossary: Term[] = [
   },
   {
     term: "ID-JAG",
+    standard: "id-jag",
     aka: ["Identity Assertion JWT Authorization Grant"],
     def: "A short-lived grant issued by an enterprise identity provider that another application’s authorization server exchanges for an access token.",
     see: {
@@ -206,6 +222,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Identity chaining",
+    standard: "identity-chaining",
     def: "Carrying identity across trust domains by exchanging a token at home for a grant that another domain’s authorization server will accept.",
     see: { href: "/flows/identity-chaining/", label: "Identity chaining" },
   },
@@ -224,6 +241,7 @@ export const glossary: Term[] = [
   },
   {
     term: "JWT",
+    standard: "rfc7519",
     aka: ["JSON Web Token"],
     def: "A compact set of claims, usually signed and written as three chunks of text joined by dots. The common format for access tokens and ID tokens.",
   },
@@ -277,8 +295,8 @@ export const glossary: Term[] = [
   },
   {
     term: "OAuth 2.1",
+    standard: "oauth-2-1",
     def: "A consolidation of OAuth 2.0 and its security guidance into one framework. Still a draft, and already the baseline MCP builds on.",
-    see: { href: "/standards/#oauth-2-1", label: "Standards tracker" },
   },
   {
     term: "On-behalf-of",
@@ -288,6 +306,7 @@ export const glossary: Term[] = [
   },
   {
     term: "OpenID Connect",
+    standard: "oidc-core",
     aka: ["OIDC"],
     def: "A layer on top of OAuth that tells an application who signed in, with an ID token. It is what most “Sign in with” buttons run.",
   },
@@ -298,6 +317,7 @@ export const glossary: Term[] = [
   },
   {
     term: "PKCE",
+    standard: "rfc7636",
     aka: ["Proof Key for Code Exchange"],
     def: "A one-time secret that ties an authorization code to the client instance that requested it.",
     see: {
@@ -322,6 +342,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Protected resource metadata",
+    standard: "rfc9728",
     def: "A document in which an API names the authorization servers that protect it, so a client can discover where to get a token.",
     see: { href: "/flows/mcp-authorization/", label: "MCP authorization" },
   },
@@ -340,6 +361,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Resource indicator",
+    standard: "rfc8707",
     def: "The `resource` request parameter, naming the API a token is wanted for so the authorization server can restrict the audience.",
   },
   {
@@ -380,6 +402,7 @@ export const glossary: Term[] = [
   },
   {
     term: "SPIFFE",
+    standard: "spiffe",
     def: "A set of specifications for workload identity: a URI name (the SPIFFE ID), short-lived identity documents, and an API for obtaining them without a secret.",
     see: { href: "/flows/spiffe-workload-identity/", label: "SPIFFE + mTLS" },
   },
@@ -415,6 +438,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Token exchange",
+    standard: "rfc8693",
     def: "Presenting one token to an authorization server to obtain another, typically for a different audience or with an actor added.",
     see: { href: "/flows/token-exchange/", label: "Token exchange" },
   },
@@ -428,6 +452,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Transaction token",
+    standard: "txn-tokens",
     def: "A short-lived token that carries the user and the fixed details of one request through a call chain inside a trust domain.",
     see: { href: "/flows/transaction-tokens/", label: "Transaction tokens" },
   },
@@ -453,6 +478,7 @@ export const glossary: Term[] = [
   },
   {
     term: "Web Bot Auth",
+    standard: "web-bot-auth",
     def: "A scheme by which automated clients sign HTTP requests so websites can verify which operator they belong to.",
     see: { href: "/flows/web-bot-auth/", label: "Web Bot Auth" },
   },
@@ -476,12 +502,14 @@ export const glossary: Term[] = [
   },
   {
     term: "Workload Identity Token",
+    standard: "wimse-creds",
     aka: ["WIT"],
     def: "A WIMSE credential naming a workload and carrying its public key. Valid only alongside a proof of possession.",
     see: { href: "/flows/wimse-workload-tokens/", label: "Workload tokens" },
   },
   {
     term: "Workload Proof Token",
+    standard: "wimse-wpt",
     aka: ["WPT"],
     def: "A short-lived signed JWT that proves possession of the key in a Workload Identity Token for one request.",
     see: { href: "/flows/wimse-workload-tokens/", label: "Workload tokens" },

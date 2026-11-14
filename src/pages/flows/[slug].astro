@@ -75,29 +75,28 @@ const firstSentence = primary?.detail
   ?.split(/(?<=\.)\s/)[0]
   .replaceAll("`", "")
   .replace(/\.$/, "");
-// On the one-line summary: a revision or version if the entry leads with one, a date for an RFC.
-const numbered = /^(Revision|Version) ([^\s,.;]+)/.exec(firstSentence ?? "");
+// On the one-line summary: a draft's revision if the entry leads with one, a date for an RFC.
+// A versioned specification's identifier already carries its version ("A2A 1.0").
+const numbered = /^(Revision) ([^\s,.;]+)/.exec(firstSentence ?? "");
 const dated = /^([A-Z][a-z]+ \d{4})/.exec(firstSentence ?? "");
 // A flow that covers more than its diagram draws says so wherever its basis, its required
 // references and its rating are stated: all three belong to the arrangement drawn.
 const drawn = Boolean(flow.illustrated);
+// Each reference previews its tracker entry, which shows its status, so the line adds only
+// what the preview does not: when an RFC was published, or which revision a draft is at.
 const based = primary && {
   key: drawn ? "Diagram based on" : undefined,
   refs: basis.map((s) => ({ ref: s.ref, href: `/standards/#${s.id}` })),
-  status:
+  note:
     basis.length > 1
-      ? basis.every((s) => s.status === "rfc")
-        ? "published RFCs"
-        : basis.map((s) => STATUS_LABEL[s.status]).join(", ")
+      ? undefined
       : primary.status === "rfc"
         ? dated
           ? `published ${dated[1]}`
-          : "published"
-        : STATUS_LABEL[primary.status],
-  revision:
-    basis.length === 1 && primary.status !== "rfc" && numbered
-      ? `${numbered[1].toLowerCase()} ${numbered[2]}`
-      : undefined,
+          : undefined
+        : numbered
+          ? `${numbered[1].toLowerCase()} ${numbered[2]}`
+          : undefined,
 };
 
 // Flows reviewed reference by reference show their standards grouped by role.
