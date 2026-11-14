@@ -1042,6 +1042,52 @@ export const standards: Standard[] = [
       "A vendor-neutral description of the patterns on the deployments pages of this site.",
     url: draft("draft-ietf-wimse-workload-identity-practices"),
   },
+  {
+    id: "wag",
+    name: "Workload Authorization Grant",
+    ref: "draft-carleton-workload-authz-grant",
+    body: "IETF",
+    status: "draft",
+    detail:
+      "Revision -02, November 2026. Individual draft, intended as Informational. Not adopted by a working group. Its authors call it early and exploratory, and say any part of it may change, including whether it should be a document of its own.",
+    related: [
+      {
+        entry: "rfc7523",
+        kind: "builds-on",
+        note: "The JWT bearer grant it uses.",
+      },
+      {
+        entry: "id-jag",
+        kind: "builds-on",
+        note: "Its audience, scope and tenant claims, and the metadata a server advertises the grant with.",
+      },
+      {
+        name: "WIMSE interim meeting minutes",
+        url: "https://datatracker.ietf.org/doc/minutes-interim-2026-wimse-02-202610071600/",
+        kind: "source",
+        note: "The draft was presented to the WIMSE working group on 7 October 2026.",
+      },
+      {
+        name: "WIMSE interim meeting poll",
+        url: "https://datatracker.ietf.org/doc/polls-interim-2026-wimse-02-202610071700/",
+        kind: "source",
+        note: "Asked whether they were interested in the problem, with this draft as a starting point: 16 yes, none no, 2 no opinion.",
+      },
+      {
+        name: "WIMSE agenda for IETF 127",
+        url: "https://datatracker.ietf.org/doc/agenda-127-wimse-sessa/",
+        kind: "source",
+        note: "A 30-minute slot for the draft on 18 November 2026.",
+      },
+    ],
+    topics: ["workload"],
+    otherNames: ["WAG"],
+    summary:
+      "The platform that runs a workload signs a short-lived JWT naming it. The workload presents it as a JWT bearer grant at the token endpoint of an authorization server that was set up once to trust the platform. The server does not turn a workload away for being new to it.",
+    agents:
+      "Written for agent platforms: each agent reaches a third party’s API under its own identifier, without being registered there one by one. It covers an agent acting as itself, not for a person.",
+    url: draft("draft-carleton-workload-authz-grant"),
+  },
 
   /* ───────────── Kubernetes ───────────── */
   {
