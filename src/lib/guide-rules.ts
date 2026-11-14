@@ -87,3 +87,59 @@ export function open(
 ): [string, string[]][] {
   return Object.entries(when).filter(([q]) => a[q] == null);
 }
+
+/**
+ * Whether these conditions could still hold: no question that has been
+ * answered was answered against them. Unlike `matches`, none of them has to
+ * have been answered, so a rule about a question not yet asked is compatible.
+ */
+export function compatible(
+  when: Record<string, string[]>,
+  a: Answers,
+): boolean {
+  return Object.entries(when).every(
+    ([q, values]) => a[q] == null || values.includes(a[q]),
+  );
+}
+
+/**
+ * Every "start" rule that could apply once the remaining questions are
+ * answered, for a page that is read with only some of them settled.
+ *
+ * `recommend` answers for the answers it is given, and keeps one rule for each
+ * flow. Read ahead of the other answers that loses two things: a rule about a
+ * question not yet answered, and a second rule for the same flow that applies
+ * to different answers. This keeps both. It leaves out only a rule that
+ * another rule for the same flow replaces wherever it applies: one that holds
+ * for every answer the first holds for, and that `recommend` would prefer,
+ * because it matches more answers, or as many and is listed earlier.
+ *
+ * So for any way of answering the rest, the flows `recommend` starts with are
+ * the flows of the rules here whose conditions hold, and the reason it gives
+ * for each is one of theirs. test/unit/guide.test.mjs checks that against
+ * every combination of answers.
+ */
+export function possibleStarts(rules: Rule[], a: Answers): Rule[] {
+  const mine = rules.filter((r) => r.role === "start" && compatible(r.when, a));
+  const size = (r: Rule) => Object.keys(r.when).length;
+  // b holds wherever a does: each thing b still asks, a asks too, of no more answers
+  const covers = (b: Rule, r: Rule) =>
+    open(b.when, a).every(([q, values]) => {
+      const narrower = r.when[q];
+      return (
+        a[q] == null &&
+        narrower != null &&
+        narrower.every((v) => values.includes(v))
+      );
+    });
+  return mine.filter(
+    (r, i) =>
+      !mine.some(
+        (b, j) =>
+          b !== r &&
+          b.flow === r.flow &&
+          covers(b, r) &&
+          (size(b) > size(r) || (size(b) === size(r) && j < i)),
+      ),
+  );
+}

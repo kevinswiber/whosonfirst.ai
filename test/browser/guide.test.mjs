@@ -78,54 +78,88 @@ test("the situation is named once the first two questions are answered, and not 
   const ctx = await site.context();
   t.after(() => ctx.close());
   const page = await ctx.newPage();
-  const name = page.locator(".dg-sit-name a");
+  const name = page.locator(".dg-sit-name");
+  const more = page.locator(".dg-sit-more a");
 
   await open(page, site.url("/guide/?principal=user&target=api"));
   assert.equal(await name.count(), 0, "named from one answer");
 
   await page.getByRole("radio", { name: /^No\b/ }).check({ force: true });
-  assert.equal(await name.textContent(), "Standing order");
-  assert.equal(await name.getAttribute("href"), "/guide/standing-order/");
+  assert.equal(await name.textContent(), "Person away");
+  assert.equal(await more.getAttribute("href"), "/guide/person-away/");
+  // the answers the name does not stand for are beside it, in words
+  assert.equal(await page.locator(".dg-sit-rest").textContent(), "An HTTP API");
+  assert.match(
+    await page.locator(".dg-sit-label").textContent(),
+    /this site’s words/,
+  );
 
   await page.getByRole("radio", { name: /Its own/ }).check({ force: true });
-  assert.equal(await name.textContent(), "As itself");
+  assert.equal(await name.textContent(), "Own authority");
+  assert.equal(
+    await page.locator(".dg-sit-rest").textContent(),
+    "No · An HTTP API",
+  );
 });
 
-test("each situation’s page starts with the flows the guide gives for the same answers", async (t) => {
-  const ctx = await site.context();
+test("the result’s link can be copied with every answer in it", async (t) => {
+  const ctx = await site.context({
+    permissions: ["clipboard-read", "clipboard-write"],
+  });
   t.after(() => ctx.close());
   const page = await ctx.newPage();
-  await open(page, site.url("/guide/"));
+  const url = site.url(
+    "/guide/?principal=self&target=api&runtime=sandbox&risk=irreversible",
+  );
+  await open(page, url);
+  await page.click(".dg-copy");
+  await page.locator(".dg-copied", { hasText: "Copied" }).waitFor();
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), url);
+});
+
+test("a situation’s page says what each start and each caution applies to, without a script", async (t) => {
+  const ctx = await site.context({ javaScriptEnabled: false });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await page.goto(site.url("/guide/"));
   const situations = await page
     .locator('#situations a.card[href^="/guide/"]')
     .evaluateAll((cards) => cards.map((a) => a.getAttribute("href")));
   assert.equal(situations.length, 4);
 
   for (const path of situations) {
-    await open(page, site.url(path));
-    const targets = await page.locator(".sit-target").evaluateAll((sections) =>
-      sections.map((s) => ({
-        link: s.querySelector(".sit-more a").getAttribute("href"),
-        flows: [...s.querySelectorAll(".sit-flow")].map((a) =>
-          a.getAttribute("href"),
-        ),
-      })),
+    await page.goto(site.url(path));
+    const entries = await page
+      .locator(".sit-flows > li, .sit-warn > li")
+      .evaluateAll((items) =>
+        items.map((li) => ({
+          flow: li.querySelector(".sit-flow")?.getAttribute("href") ?? "",
+          applies:
+            li.querySelector(".ga")?.textContent.replace(/\s+/g, " ").trim() ??
+            "",
+        })),
+      );
+    assert.ok(entries.length > 4, path);
+    for (const e of entries)
+      assert.match(e.applies, /^Applies (when|whatever)/, `${path} ${e.flow}`);
+    const broker = entries.find((e) => e.flow === "/flows/credential-broker/");
+    assert.match(
+      broker?.applies ?? "",
+      /Where does the agent run\? A sandbox that runs untrusted code$/,
+      `${path}: what a sandbox needs`,
     );
-    assert.equal(targets.length, 4, path);
-    for (const target of targets) {
-      await open(page, site.url(target.link));
-      assert.equal(
-        await page.locator(".dg-sit-name a").getAttribute("href"),
-        path,
-        target.link,
-      );
-      assert.deepEqual(
-        await page
-          .locator(".dg-start .dg-flow")
-          .evaluateAll((flows) => flows.map((a) => a.getAttribute("href"))),
-        target.flows,
-        `${path}, ${target.link}`,
-      );
-    }
   }
+
+  await page.goto(site.url("/guide/own-authority/"));
+  const own = await page
+    .locator(
+      '.sit-flows > li:has(.sit-flow[href="/flows/client-credentials/"]) .ga',
+    )
+    .allTextContents();
+  assert.equal(
+    own.length,
+    2,
+    "client credentials, for a server and for a local installation",
+  );
+  assert.ok(own.some((t) => /On the user’s machine/.test(t)));
 });

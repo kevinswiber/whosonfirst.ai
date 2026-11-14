@@ -130,18 +130,20 @@ export const questions: Question[] = [
 
 /**
  * The situations the guide names. A name comes from the first two questions
- * alone: whose authority the agent uses, and whether a person is available.
- * Those two decide the most, and names taken from them cannot overlap: every
- * pair of answers has exactly one, which test/unit/guide.test.mjs confirms.
- * The other questions change what is recommended, not what the situation is called.
+ * alone: whose authority a piece of access uses, and whether that person is
+ * there. Names taken from those two cannot overlap: every combination of
+ * answers has exactly one, which test/unit/guide.test.mjs confirms. The other
+ * questions change what is recommended, not what the situation is called.
  *
- * The names are this site's own, not terms from a specification, and the guide
- * says so where it shows them. None may be a term the glossary defines: an
- * agent with its own authority is "As itself", as lesson 4 puts it, because
- * "service account" already means an account that belongs to software.
+ * A name describes one piece of access, not the agent: the same agent can act
+ * for a person in one call and on its own authority in the next. So the names
+ * say plainly whose authority it is and who is there, with no figure of speech
+ * to decode. They are this site's own, not terms from a specification, and the
+ * guide says so wherever it shows one. None may be a term the glossary defines.
  *
  * The wording rests on lesson 4, src/pages/learn/whose-authority.astro, and on
- * the reasons in the rules below.
+ * the reasons in the rules below. It says nothing those do not: what a
+ * situation needs is in the rules and the cautions, and its page lists them.
  */
 export interface Situation {
   /** Its address: /guide/<slug>/ */
@@ -159,51 +161,50 @@ export interface Situation {
 
 export const situations: Situation[] = [
   {
-    slug: "at-the-keyboard",
-    name: "At the keyboard",
-    title: "At the keyboard: an agent acting for a person who is present",
+    slug: "person-present",
+    name: "Person present",
+    title: "Person present: an agent acting for a person who is there",
     when: { principal: ["user"], human: ["present"] },
     short:
       "The agent acts for a person who is in the session and can sign in or approve now.",
     about: [
       "The token names the person. What the agent can do is capped by what that person can do, and by what they approved.",
-      "Because the person is there, a sensitive action can be put to them at the moment it matters. Keep the everyday token weak, and ask again for the rest.",
+      "Because the person is there, a sensitive action can be put to them at the moment it matters. Keep the everyday token narrowly scoped, and ask again for the rest.",
     ],
   },
   {
-    slug: "on-call",
-    name: "On call",
-    title: "On call: an agent acting for a person it has to reach",
+    slug: "person-reachable",
+    name: "Person reachable",
+    title: "Person reachable: an agent acting for a person it has to contact",
     when: { principal: ["user"], human: ["reachable"] },
     short:
       "The agent acts for a person who is not in the session but can be reached: by phone, in chat, by email.",
     about: [
-      "The token still names the person, but the agent cannot send them through a sign-in where it runs. Something has to contact them on a device it already knows, and the agent waits for the answer.",
-      "The wait is part of the design. The work has to be able to stop until the person answers.",
+      "The token still names the person, but they cannot be sent through a sign-in where the agent runs.",
+      "If an action needs their approval, that action waits while they are asked. Decide what the agent does when they say no, and when no answer comes.",
     ],
   },
   {
-    slug: "standing-order",
-    name: "Standing order",
-    title: "Standing order: an agent acting for a person who is not there",
+    slug: "person-away",
+    name: "Person away",
+    title: "Person away: an agent acting for a person who is not there",
     when: { principal: ["user"], human: ["absent"] },
     short:
-      "The agent acts for a person who approved once and is not there when it runs.",
+      "The agent acts for a person who approved in advance and is not there when it runs.",
     about: [
-      "Someone has to consent once. The agent obtains its grant while the person is present, then runs unattended on a refresh token.",
-      "It has a person’s full authority and no person watching. Of every arrangement in this guide, it is the one most likely to end badly.",
-      "Sometimes it is what the job needs. Ask for the narrowest scope that does the work, find a way to reach the person for anything that cannot be undone, and know how the access is switched off before the agent runs for the first time.",
+      "The agent uses access the person granted earlier. Someone has to consent once, while they are present.",
+      "Nobody is watching when it runs. Limit the access to the task, find a way to reach the person for anything that cannot be undone, and know how the access is switched off before the agent runs for the first time.",
     ],
   },
   {
-    slug: "as-itself",
-    name: "As itself",
-    title: "As itself: an agent acting on its own authority",
+    slug: "own-authority",
+    name: "Own authority",
+    title: "Own authority: an agent acting as itself",
     when: { principal: ["self"] },
     short:
-      "The agent uses its own authority. The token names the agent, and nobody approves anything at the moment it runs.",
+      "The agent uses its own authority. The token names the agent, not a person.",
     about: [
-      "An administrator decided in advance what this agent is allowed to do. It is limited only by what it was given, and those grants tend to grow.",
+      "What the agent may do is what was granted to its own identity. An administrator decided that in advance. Review those grants as the job changes.",
       "Acting as itself is right when the work is the organization’s. It is not a shortcut around sign-in: if the agent serves several people under one identity, the API cannot tell them apart.",
     ],
   },

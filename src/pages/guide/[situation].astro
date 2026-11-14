@@ -1,16 +1,18 @@
 ---
 // One situation the decision guide names, as a page that needs no script.
 // It rests on src/data/guide.ts: the name, what defines it and what to know
-// first come from `situations`, and everything under "Where to start" and
-// "Watch out" is worked out here from the same rules the guide's script
-// applies, by the same functions. For the answers the name stands for and each
-// thing the agent might call, this page says what the guide says.
+// first come from `situations`. "Where to start" and "Watch out" are worked
+// out here from the guide's rules and cautions: every one that could apply
+// once the other questions are answered, each with the answers it
+// applies to. The guide's script answers for the answers it has; this page is
+// read ahead of them, so it leaves nothing out for want of an answer.
 import Base from "../../layouts/Base.astro";
 import { cautions, questions, rules, situations } from "../../data/guide";
 import type { Situation } from "../../data/guide";
 import { flow, maturityLabel } from "../../data/flows";
-import { matches, open, recommend } from "../../lib/guide-rules";
+import { compatible, open, possibleStarts } from "../../lib/guide-rules";
 import type { Answers } from "../../lib/guide-rules";
+import Applies from "../../components/GuideApplies.astro";
 
 export function getStaticPaths() {
   return situations.map((situation) => ({
@@ -35,6 +37,7 @@ const label = (id: string, value: string) => {
   if (!o) throw new Error(`guide: unknown answer "${id}=${value}"`);
   return o.label;
 };
+const order = (id: string) => questions.findIndex((x) => x.id === id);
 
 // The answers the name stands for.
 const fixed: Answers = Object.fromEntries(
@@ -45,44 +48,48 @@ const defined = Object.entries(fixed).map(([q, v]) => ({
   answer: label(q, v),
 }));
 
-const order = (id: string) => questions.findIndex((x) => x.id === id);
-
-/** What a rule still depends on, in the order the guide asks and in its own words for each question and answer. */
-const depends = (when: Record<string, string[]>, a: Answers) =>
-  open(when, a)
+/**
+ * The answers a rule still needs, in the order the guide asks and in its own
+ * words. A condition that every answer to its question meets asks nothing, and
+ * is left out.
+ */
+const applies = (when: Record<string, string[]>) =>
+  open(when, fixed)
+    .filter(([q, values]) =>
+      question(q).options.some((o) => !values.includes(o.value)),
+    )
     .sort(([x], [y]) => order(x) - order(y))
-    .map(
-      ([q, values]) =>
-        `${question(q).title} ${values.map((v) => label(q, v)).join(", or ")}`,
-    );
+    .map(([q, values]) => ({
+      question: question(q).title,
+      answers: question(q)
+        .options.filter((o) => values.includes(o.value))
+        .map((o) => o.label),
+    }));
 
-const guideLink = (a: Answers) => `/guide/?${new URLSearchParams(a)}`;
-const lowerFirst = (t: string) => t[0].toLowerCase() + t.slice(1);
-
-// For each thing the agent might call, what the guide starts with.
-const targets = question("target").options.map((o) => {
-  const a = { ...fixed, target: o.value };
-  return {
-    id: `calls-${o.value}`,
-    heading: `If it calls ${lowerFirst(o.label)}`,
-    link: guideLink(a),
-    start: recommend(rules, a).start.map((r) => {
-      const f = flow(r.flow);
-      return {
-        slug: f.slug,
-        short: f.short,
-        maturity: maturityLabel(f),
-        why: r.why,
-        depends: depends(r.when, a),
-      };
-    }),
-  };
-});
+// What applies whatever the other answers are comes first, then what needs the fewest of them.
+const starts = possibleStarts(rules, fixed)
+  .map((r) => {
+    const f = flow(r.flow);
+    return {
+      slug: f.slug,
+      short: f.short,
+      maturity: maturityLabel(f),
+      why: r.why,
+      weight: r.weight ?? 0,
+      applies: applies(r.when),
+    };
+  })
+  .sort((x, y) => x.applies.length - y.applies.length || y.weight - x.weight);
 
 const warn = cautions
-  .filter((c) => matches(c.when, fixed))
-  .map((c) => ({ text: c.text, depends: depends(c.when, fixed) }));
+  .filter((c) => compatible(c.when, fixed))
+  .map((c) => ({ text: c.text, applies: applies(c.when) }))
+  .sort((x, y) => x.applies.length - y.applies.length);
 
+const guideLink = `/guide/?${new URLSearchParams(fixed)}`;
+const left = ["no", "one", "two", "three", "four", "five", "six"][
+  questions.length - Object.keys(fixed).length
+];
 const others = situations.filter((o) => o.slug !== s.slug);
 ---
 
@@ -117,7 +124,8 @@ const others = situations.filter((o) => o.slug !== s.slug);
           <p class="sit-own">
             “{s.name}” is one of <a href="/guide/#situations">four names</a> the decision guide gives to the
             situations its first two questions describe. The names are this site’s own, not terms from a
-            specification.
+            specification. A name describes one piece of access, not the agent: the same agent can act for a person
+            in one call and on its own authority in the next.
           </p>
         </div>
       </div>
@@ -128,70 +136,46 @@ const others = situations.filter((o) => o.slug !== s.slug);
         <div class="section-head">
           <h2>Where to start</h2>
           <p>
-            What the guide’s rules say to start with, for each thing the agent might call. Some depend on an answer the
-            name does not settle. Each of those says which.
+            Every flow the guide’s rules start with in this situation. Which of them are yours depends on the guide’s
+            other {left} questions, so each one says which answers it applies to.
           </p>
         </div>
-        {
-          targets.map((t) => (
-            <section class="sit-target" id={t.id}>
-              <h3>{t.heading}</h3>
-              <ul class="sit-flows">
-                {t.start.map((f) => (
-                  <li>
-                    <a class="sit-flow" href={`/flows/${f.slug}/`}>
-                      <strong>{f.short}</strong>
-                      <span class="sit-meta">{f.maturity}</span>
-                    </a>
-                    <p>{f.why}</p>
-                    {f.depends.length > 0 && (
-                      <div class="sit-depends">
-                        <p>Depends on</p>
-                        <ul>
-                          {f.depends.map((d) => (
-                            <li>{d}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <p class="sit-more">
-                <a href={t.link}>Answer the rest in the guide</a>, for what to add and what else is worth a look.
-              </p>
-            </section>
-          ))
-        }
+        <ul class="sit-flows">
+          {
+            starts.map((f) => (
+              <li>
+                <a class="sit-flow" href={`/flows/${f.slug}/`}>
+                  <strong>{f.short}</strong>
+                  <span class="sit-meta">{f.maturity}</span>
+                </a>
+                <p>{f.why}</p>
+                <Applies to={f.applies} />
+              </li>
+            ))
+          }
+        </ul>
+        <p class="sit-more">
+          <a href={guideLink}>Answer the other {left} questions in the guide</a> to see which of these are yours, what
+          to add to them and what else is worth a look.
+        </p>
       </div>
     </section>
 
-    {
-      warn.length > 0 && (
-        <section class="section">
-          <div class="wrap">
-            <h2>Watch out</h2>
-            <ul class="sit-warn">
-              {warn.map((c) => (
-                <li>
-                  <p>{c.text}</p>
-                  {c.depends.length > 0 && (
-                    <div class="sit-depends">
-                      <p>Depends on</p>
-                      <ul>
-                        {c.depends.map((d) => (
-                          <li>{d}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )
-    }
+    <section class="section">
+      <div class="wrap">
+        <h2>Watch out</h2>
+        <ul class="sit-warn">
+          {
+            warn.map((c) => (
+              <li>
+                <p>{c.text}</p>
+                <Applies to={c.applies} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
 
     <section class="section">
       <div class="wrap">
@@ -240,20 +224,16 @@ const others = situations.filter((o) => o.slug !== s.slug);
     color: var(--fg-muted);
   }
 
-  .sit-target,
-  .sit-warn {
+  .sit-flows,
+  .sit-warn,
+  .sit-more {
     max-width: var(--prose);
   }
   .prose > h2:first-child {
     margin-top: 0;
   }
-  .sit-target + .sit-target {
-    margin-top: 2.4rem;
-  }
-  .sit-target h3 {
-    margin: 0 0 0.2rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1.5px solid var(--fg);
+  .sit-flows {
+    border-top: 1.5px solid var(--fg);
   }
   .sit-flows,
   .sit-warn {
@@ -293,25 +273,6 @@ const others = situations.filter((o) => o.slug !== s.slug);
   .sit-flows > li > p,
   .sit-warn > li > p {
     margin: 0.25rem 0 0;
-  }
-  .sit-depends {
-    margin-top: 0.45rem;
-    font-size: 0.9rem;
-    color: var(--fg-muted);
-  }
-  .sit-depends p {
-    margin: 0;
-    font-family: var(--font-label);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  .sit-depends ul {
-    margin: 0.1rem 0 0;
-    padding-left: 1.1rem;
-  }
-  .sit-depends li {
-    margin: 0;
   }
   .sit-more {
     margin: 0.8rem 0 0;

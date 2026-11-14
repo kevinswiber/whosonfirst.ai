@@ -81,8 +81,8 @@ const data = {
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
         Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result. The first two answers also put your agent in one of{' '}
-        <a href="#situations">four situations, each with a name</a>. If the questions use words you have not met, <a href="/learn/">the
+        answers, so you can share the result. The first two answers also give the situation{' '}
+        <a href="#situations">one of four names</a>. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
         You can also <a href="/flows/">browse all {flows.length} flows</a>.
       </p>
@@ -150,8 +150,10 @@ const data = {
       <div class="section-head">
         <h2>Four situations, by name</h2>
         <p>
-          The first two answers decide the most, so they give the situation its name. The names are this site’s own,
-          not terms from a specification. Each has a page that says where to start.
+          The first two answers say whose authority a piece of access uses, and whether that person is there. Each
+          pair has a name and a page. The names are this site’s own, not terms from a specification. A name describes
+          one piece of access, not the agent: the same agent can act for a person in one call and on its own
+          authority in the next.
         </p>
       </div>
       <div class="grid two">
@@ -222,10 +224,21 @@ const data = {
         const total = groups.start.length + groups.add.length + groups.consider.length;
         html += `<p class="dg-status">${answered} of ${names.length} answered · ${total} possible ${total === 1 ? 'match' : 'matches'}</p>`;
 
-        // The name of the situation, once the questions it comes from are answered.
+        // The name of the situation, once the questions it comes from are answered,
+        // then the other answers in the form's own words: the name stands for two of
+        // them, and a reader who repeats it should see what it leaves out.
         const sit = situationFor(data.situations, a);
         if (sit) {
-          html += `<div class="dg-sit"><p class="dg-sit-label">Your situation</p><p class="dg-sit-name"><a href="/guide/${sit.slug}/">${esc(sit.name)}</a></p><p class="dg-sit-short">${esc(sit.short)}</p></div>`;
+          const rest = names
+            .filter((n) => a[n] != null && !(n in sit.when))
+            .map((n) => form.querySelector(`input[name="${n}"]:checked + span strong`)?.textContent ?? '');
+          html += `<div class="dg-sit"><p class="dg-sit-label">The situation, in this site’s words</p><p class="dg-sit-name">${esc(sit.name)}</p>`;
+          if (rest.length) html += `<p class="dg-sit-rest">${rest.map(esc).join(' · ')}</p>`;
+          html += `<p class="dg-sit-short">${esc(sit.short)}</p><p class="dg-sit-more"><a href="/guide/${sit.slug}/">More on “${esc(sit.name)}”</a>. That page covers the first ${Object.keys(sit.when).length === 1 ? 'answer' : 'two answers'} only.</p></div>`;
+        }
+        // The address holds every answer. Where the browser can copy it, a button does.
+        if (navigator.clipboard) {
+          html += `<p class="dg-share"><button class="btn small ghost dg-copy" type="button">Copy a link to this result</button> <span class="dg-copied"></span></p>`;
         }
 
         if (total === 0) {
@@ -275,6 +288,18 @@ const data = {
         if (input) input.checked = true;
       }
       render(false);
+
+      out.addEventListener('click', async (e) => {
+        const button = (e.target as Element).closest('.dg-copy');
+        if (!button) return;
+        const said = out.querySelector('.dg-copied');
+        try {
+          await navigator.clipboard.writeText(location.href);
+          if (said) said.textContent = 'Copied, with every answer.';
+        } catch {
+          if (said) said.textContent = 'Not copied. The address bar has the same link.';
+        }
+      });
 
       form.addEventListener('change', () => render());
       form.addEventListener('reset', () => {
@@ -465,10 +490,23 @@ const data = {
     font-weight: 560;
     line-height: 1.2;
   }
-  .dg-out :global(.dg-sit-short) {
-    margin-top: 0.25rem;
+  .dg-out :global(.dg-sit-rest) {
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .dg-out :global(.dg-sit-short),
+  .dg-out :global(.dg-sit-more) {
+    margin-top: 0.35rem;
     font-size: 0.93rem;
     line-height: 1.5;
+  }
+  .dg-out :global(.dg-share) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.8rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.9rem;
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);
