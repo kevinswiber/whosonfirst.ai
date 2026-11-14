@@ -186,6 +186,7 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
     "oidc-discovery",
     "rfc8693",
     "rfc7523",
+    "wag",
     "k8s-sa-tokens",
     "spiffe",
     "github-actions-oidc",
@@ -207,6 +208,7 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
     "oidc-discovery": "required", // step 3 shows the discovery document the receiver reads to find the issuer's keys
     rfc8693: "optional", // one request format (Google Cloud, and the worked example); no general step depends on it
     rfc7523: "optional", // the client assertion format Microsoft Entra uses; named, not drawn
+    wag: "optional", // a proposed request for OAuth authorization servers, in the note on request formats; not drawn
     "k8s-sa-tokens": "optional", // the worked example's identity credential; one implementation of step 1
     spiffe: "optional", // one identity provider for workloads outside a cluster or cloud; named in the comparison
     "github-actions-oidc": "optional", // the CI row: one identity provider
@@ -246,7 +248,11 @@ With native workload identity there is less still. A function, virtual machine o
 
 **AWS, outbound.** A workload that already has AWS credentials can call \`GetWebIdentityToken\` for a short-lived JWT to present to a service outside AWS. The feature has to be enabled for the account first, and the caller needs permission for the operation. The caller names the audience and the signing algorithm. The token lasts from one minute to an hour, five minutes by default. The issuer URL is specific to the account, and the operation is not available on the STS global endpoint. AWS describes the token as proof of identity, to be exchanged at the outside service for that service’s own credentials.
 
-Audience values, credential lifetimes, the claims a rule can match on and the way keys are discovered are each provider’s own. Do not carry one provider’s settings over to another.`,
+Audience values, credential lifetimes, the claims a rule can match on and the way keys are discovered are each provider’s own. Do not carry one provider’s settings over to another.
+
+**A proposed common request.** The [Workload Authorization Grant](/standards/#wag) proposes one request for a receiver that is an OAuth authorization server, such as a third-party service’s. The credential goes in \`assertion\` on a JWT bearer grant (RFC 7523), and the draft recommends naming the API in \`resource\`. The credential’s audience is the authorization server’s issuer identifier. No client authentication is required, and no refresh token is issued. It is an individual draft, not adopted by a working group, and any part of it may change.
+
+Its trust rule names the platform, not the workload. The authorization server is set up once to trust the platform’s issuer, and then accepts agents it has not seen before, so the platform decides which agents exist. Where one issuer signs for several customers, the rule also names a claim and the value that sets this customer apart, and an assertion without that value does not match. What each agent may do comes from the server’s own policy, which can read claims the platform includes, such as a team or a role. A claim means what that platform means by it: the draft says not to read a claim of the same name from another platform as the same thing. The server keeps each agent’s records under the trust rule it matched and its subject together, never under the subject alone, and a display name the platform sends must never decide access. Whether to require proof of possession is still open in the draft.`,
     },
     {
       title: "Stopping access",
