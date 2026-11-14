@@ -2,6 +2,7 @@
 import type { ImplementationProfile } from "../data/implementations";
 import {
   ATTRIBUTION_LABEL,
+  citedSources,
   EVENT_LABEL,
   evidenceDate,
 } from "../data/implementations";
@@ -104,9 +105,9 @@ const evidenceNames = new Map(
                 <p class="evidence-limits"><strong>Limits.</strong> {entry.limits}</p>
               </div>
               <div class="evidence-sources">
-                <p class="doc-key">{entry.sources.length === 1 ? 'Source' : 'Sources'}</p>
+                <p class="doc-key">{citedSources(entry.sources).length === 1 ? 'Source' : 'Sources'}</p>
                 <ul role="list">
-                  {entry.sources.map((source) => (
+                  {citedSources(entry.sources).map((source) => (
                     <li>
                       <a href={source.url}>{source.title}</a>
                       <p>
