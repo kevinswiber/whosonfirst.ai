@@ -28,7 +28,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
     "**Grant the least access that works.** The role or permission behind the trust rule is what a stolen credential is worth.",
     "**Do not share one identity between agents.** Agents that share a service account, a role or a job identity are one principal to every system downstream. They cannot be limited, audited or cut off separately.",
     "**Short-lived credentials still need protecting.** A bearer token, such as a JWT identity credential or an access token issued for it, can be replayed by whoever holds a copy until it expires. Certificate-based authentication is different: it requires proof of possession of the matching private key, so the key is what has to stay private. Keep tokens and private keys out of logs, prompts and tool output. Limit what can reach the platform’s credential endpoints too: anything that can make requests from inside the workload, including a tool the agent was talked into calling, may be able to ask for the same credentials.",
-    "**Deleting the workload does not cut off its credentials.** It stops the platform issuing or renewing the identity credential. A copy that has not expired can still be exchanged for new access while the receiver’s trust rule stands, and what the receiver already issued has a lifetime of its own. See the note on stopping access.",
+    "**Deleting the workload does not cut off its credentials.** A copy that has not expired can still be exchanged while the receiver’s trust rule stands, and what was already issued lasts its own lifetime. See the note on stopping access.",
     "**The receiver has to reach the issuer’s keys.** A private cluster or an internal identity provider has to publish its discovery document and keys somewhere the receiver can fetch them, or upload the keys where the receiver allows that.",
     "**Workload identity is not a user’s authority.** Federation establishes which workload is calling. It does not carry a person’s identity or consent, and it does not turn the agent’s access into the user’s. Carrying a user’s authority is delegation: see [token exchange](/flows/token-exchange/).",
   ],
@@ -81,7 +81,7 @@ What the pattern removes is the need to provision and manage a long-lived applic
       kind: "back",
       label: "Workload identity credential",
       title: "The platform gives the workload an identity credential",
-      body: `The workload identity provider is whatever established which workload this is: a cloud’s metadata service, a Kubernetes cluster, a CI system, a SPIFFE implementation. It supplies a short-lived, signed statement of that identity, most often a JWT (RFC 7519) like the one shown. How it arrives depends on the platform: a file that is kept fresh, a local endpoint, a request the workload makes when it needs one. Some receivers accept other proofs instead, such as an X.509 certificate or a signed request.
+      body: `The workload identity provider is whatever established which workload this is: a cloud’s metadata service, a Kubernetes cluster, a CI system, a SPIFFE implementation. It supplies a short-lived, signed statement of that identity, most often a JWT (RFC 7519) like the one shown. How it arrives depends on the platform: a file that is kept fresh, a local endpoint, a request the workload makes when it needs one.
 
 *Usually handled by the platform, and read by an SDK.*`,
       code: {
@@ -409,12 +409,8 @@ grants:   role/model-inference`,
     {
       id: "permissions",
       title: "From identity to permissions",
-      intro: `A validated credential says who is calling. What the caller may do is a separate decision, and the system that receives the call makes it. Three jobs are involved. Keeping them apart is what lets workload identity support roles and permissions of your own.`,
+      intro: `A validated credential says who is calling. What the caller may do is a separate decision, made by the system that receives the call. Keeping the two apart is what lets workload identity support roles and permissions of your own.`,
       parts: [
-        {
-          title: "Trust the issuer",
-          body: `The receiver accepts credentials only from issuers it was configured to trust, and checks each one’s signature, audience and expiry. That establishes that the statement is authentic and meant for this receiver. It grants nothing yet.`,
-        },
         {
           title: "Identify the workload, or the user",
           body: `The validated claims name the caller: a subject such as a service account, a SPIFFE ID, or a repository and environment. A token issued for a user names that user as well, or instead. Only claims from a validated credential count. A name sent in a request body or a header is only the caller’s word.`,
@@ -434,7 +430,6 @@ may:
           },
         },
       ],
-      after: `Workload identity can underpin custom roles and permissions like these. It does not define them, and it does not convey a human user’s authority. The API, gateway or authorization service has to enforce the resulting policy.`,
     },
     {
       id: "implementations",
