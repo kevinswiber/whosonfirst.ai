@@ -93,7 +93,7 @@ const evidenceNames = new Map(
                     </p>
                   </>
                 )}
-                <p>{entry.summary}</p>
+                <p class="field-entry-summary">{entry.summary}</p>
                 {entry.kind === 'implementation' && (
                   <p class="field-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
                 )}

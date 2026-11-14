@@ -823,12 +823,11 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "device-aws-cli",
-        qualification: "IAM Identity Center only.",
         organization: "Amazon Web Services",
         product: "AWS CLI",
         role: "CLI client",
         summary:
-          "Uses device authorization for IAM Identity Center sign-in when invoked with the use-device-code option on AWS CLI 2.22.0 and later.",
+          "For IAM Identity Center sign-in, AWS CLI 2.22.0 and later use device authorization with the use-device-code option.",
         limits:
           "The guide scopes this behavior to IAM Identity Center. The CLI defaults to PKCE from 2.22.0. The date of device authorization’s introduction is unstated.",
         sources: [
@@ -1014,12 +1013,11 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "client-creds-okta",
-        qualification: "Access to Okta APIs.",
         organization: "Okta",
         product: "Okta OAuth service apps",
         role: "Authorization server",
         summary:
-          "Documents client_credentials and requires private_key_jwt for service apps requesting Okta scopes.",
+          "Requires private_key_jwt for client_credentials requests from service apps accessing Okta APIs.",
         limits:
           "This guide covers access to Okta APIs under configured scopes and admin roles. It does not establish the same client authentication requirement for every custom authorization server.",
         sources: [
@@ -1169,8 +1167,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "exchange-keycloak-v2",
-        qualification:
-          "Same-realm exchange; actor delegation is Preview; no resource parameter.",
+        qualification: "Actor delegation is Preview; no resource parameter.",
         organization: "Keycloak",
         product: "Keycloak Standard Token Exchange V2",
         role: "Authorization server",
@@ -1451,7 +1448,7 @@ export const profiles: FieldProfile[] = [
             "The guide lists Standard, Advanced, Custom and legacy Enterprise editions, with a compatible license key needed for legacy customers.",
         },
         id: "ciba-duende",
-        qualification: "Poll mode; edition restrictions apply.",
+        qualification: "Edition restrictions apply.",
         summary:
           "IdentityServer exposes a backchannel authentication endpoint and supports poll-mode retrieval at the token endpoint.",
         limits:
@@ -1715,7 +1712,6 @@ export const profiles: FieldProfile[] = [
         setting: "Buzz assistant and three specialist agents",
         attribution: "operator-report",
         id: "a2a-eon",
-        qualification: "A2A 0.3 when reported.",
         summary:
           "Eon reported using A2A 0.3 to delegate tasks from its Buzz assistant to three separately deployed specialists. The orchestrator reads Agent Cards to import skills and route requests.",
         limits:
@@ -1876,7 +1872,6 @@ export const profiles: FieldProfile[] = [
       {
         kind: "deployment",
         id: "step-up-mozilla",
-        qualification: "Authorization-server side only.",
         organization: "Mozilla",
         setting: "Mozilla Accounts authorization service",
         summary:
@@ -2265,7 +2260,7 @@ export const profiles: FieldProfile[] = [
       {
         kind: "implementation",
         id: "txn-kontxt",
-        qualification: "Draft -08; later revisions unverified.",
+        qualification: "Later draft revisions unverified.",
         organization: "kontxt project",
         product: "kontxt",
         role: "Transaction-token service, client and verifier",
@@ -2526,7 +2521,6 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "url-elicitation-claude-code",
-        qualification: "The 2026-07-28 exchange requires the v2 runtime.",
         kind: "implementation",
         organization: "Anthropic",
         product: "Claude Code",
@@ -2538,7 +2532,7 @@ export const profiles: FieldProfile[] = [
             "The cited documentation does not name a feature release stage.",
         },
         summary:
-          "Claude Code asks the user whether to open the elicitation URL in a browser. Anthropic documents this UI and says its v2 client runtime adds MCP revision 2026-07-28.",
+          "Claude Code asks the user whether to open the elicitation URL in a browser. The MCP 2026-07-28 exchange requires its v2 client runtime.",
         limits:
           "Runtime selection depends on the installed Claude Code version and session. The 2026-07-28 wire path requires the v2 runtime and a server that supports that revision. Older runtimes and connection types have separate elicitation limits in the linked guide.",
         sources: [
@@ -2781,8 +2775,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "wimse-spire",
-        qualification:
-          "WIT issuance; HTTP proof generation and verification unverified.",
+        qualification: "HTTP proof generation and verification unverified.",
         kind: "implementation",
         organization: "SPIFFE project",
         product: "SPIRE",
@@ -2794,7 +2787,7 @@ export const profiles: FieldProfile[] = [
             "The 1.16.0 release notes name the experimental feature and its opt-in server and agent settings.",
         },
         summary:
-          "SPIRE 1.16.0 adds experimental issuance and Workload API delivery of SPIFFE-profile WIT-SVIDs, with a fetch command and configurable lifetimes.",
+          "Issues SPIFFE-profile WIT-SVIDs through the Workload API, with a fetch command and configurable lifetimes.",
         limits:
           "This is the SPIFFE credential profile and Workload API. The release notes do not establish HTTP WPT generation, verification or cross-product interoperability.",
         sources: [
@@ -2819,7 +2812,7 @@ export const profiles: FieldProfile[] = [
       },
       {
         id: "wimse-solo",
-        qualification: "WIT propagation; proof verification unverified.",
+        qualification: "Proof verification unverified.",
         kind: "implementation",
         organization: "Solo.io",
         product: "Solo Enterprise for Istio with agentgateway",
@@ -2879,8 +2872,7 @@ export const profiles: FieldProfile[] = [
     implementations: [
       {
         id: "web-bot-auth-cloudflare",
-        qualification:
-          "Earlier wire format; rejects the format this guide illustrates.",
+        qualification: "Rejects the format this guide illustrates.",
         kind: "implementation",
         organization: "Cloudflare",
         product: "Cloudflare Verified Bots",
@@ -3675,8 +3667,7 @@ export const profiles: FieldProfile[] = [
             "The project tags its 2.x releases beta and describes the auth service as a reference implementation.",
         },
         id: "gnap-rafiki",
-        qualification:
-          "Open Payments profile; full RFC interoperability unverified.",
+        qualification: "Full RFC interoperability unverified.",
         summary:
           "Rafiki provides a GNAP authorization server for Open Payments grants. Its backend uses a GNAP introspection client to check access tokens with the auth service.",
         limits:
@@ -3717,7 +3708,6 @@ export const profiles: FieldProfile[] = [
             "The source documents the feature without naming its release stage.",
         },
         id: "gnap-open-payments-js",
-        qualification: "Open Payments profile.",
         summary:
           "The client can continue an Open Payments GNAP grant after browser interaction, sending the interaction reference and continuation token to the server’s continuation endpoint.",
         limits:
@@ -3749,7 +3739,7 @@ export const profiles: FieldProfile[] = [
         setting: "Public Open Payments wallet",
         attribution: "project-report",
         id: "gnap-gatehub-open-payments",
-        qualification: "Open Payments profile; report predates RFC 9635.",
+        qualification: "Report predates RFC 9635.",
         summary:
           "The Interledger Foundation reports that GateHub announced a public launch of Open Payments at a 2024 community call. The Foundation’s availability report lists GateHub as an active Open Payments wallet provider in the EU.",
         limits:
@@ -3824,10 +3814,8 @@ export const profiles: FieldProfile[] = [
             "Anthropic marks vaults Beta in its Managed Agents documentation.",
         },
         id: "credential-broker-anthropic",
-        qualification:
-          "Environment-variable credentials require managed sandboxes.",
         summary:
-          "Places an opaque environment variable in the managed sandbox and substitutes the real secret in configured locations on egress to allowed hosts.",
+          "Environment-variable credentials require a managed sandbox. It places an opaque variable there, then substitutes the real secret in configured locations on egress to allowed hosts.",
         limits:
           "Environment variable credentials are unavailable for self-hosted sandboxes. Substitution does not cover local request signing, and tokens returned by an upstream exchange can reach the sandbox.",
         sources: [
@@ -3966,7 +3954,7 @@ export const profiles: FieldProfile[] = [
         setting: "Internal developer and coding-agent API access",
         attribution: "operator-report",
         id: "credential-broker-postman",
-        qualification: "Developer-machine proxy; no sandbox boundary claimed.",
+        qualification: "No sandbox boundary claimed.",
         summary:
           "Postman reports replacing keys on developer machines with credential references. A daemon routes calls to a corporate-network proxy that checks the request’s identity and scope, resolves the reference in a vault and calls the API.",
         limits:

@@ -14,7 +14,7 @@ const { slug, entries, label, cards = false, searchable = false } = Astro.props;
 const Name = cards ? "h3" : "div";
 ---
 
-<ul class:list={["field-examples", { grid: cards, "field-example-cards": cards }]} role="list" aria-label={label}>
+<ul class:list={["field-examples", { grid: cards, "field-example-cards": cards, "field-example-list": !cards }]} role="list" aria-label={label}>
   {entries.map((entry) => (
     <li
       data-name={searchable ? (entry.kind === 'implementation' ? entry.product : entry.organization) : undefined}
@@ -26,10 +26,15 @@ const Name = cards ? "h3" : "div";
           {entry.kind === 'implementation' ? entry.product : entry.organization}
         </a>
       </Name>{' '}
-      <span class="field-example-role">
+      <p class="field-example-role">
         {entry.kind === 'implementation' ? entry.role : entry.setting}
-      </span>{' '}
-      {fieldQualification(entry) && <span class="field-example-qualification">{fieldQualification(entry)}</span>}
+      </p>
+      <p class="field-example-summary">{entry.summary}</p>
+      {fieldQualification(entry) && (
+        <p class="field-example-qualification">
+          {!cards && 'Note: '}{fieldQualification(entry)}
+        </p>
+      )}
       {(cards || searchable) && <span class:list={["chip", "field-example-kind", { "field-example-kind-inline": searchable }]}>{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>}
     </li>
   ))}
@@ -44,7 +49,7 @@ const Name = cards ? "h3" : "div";
     line-height: 1.45;
   }
   .field-examples li { margin: 0; }
-  .field-examples li + li { margin-top: 0.6rem; }
+  .field-examples li + li { margin-top: 1rem; }
   .field-example-cards a { font-weight: 600; }
   .field-example-name { margin: 0; font-size: 1rem; }
   .field-example-cards { margin: 0; }
@@ -64,15 +69,43 @@ const Name = cards ? "h3" : "div";
     margin-top: auto;
     padding-top: 0.9rem;
   }
+  .field-example-kind-inline { margin-top: 0.3rem; padding-top: 0; }
+  .field-example-role,
   .field-example-qualification {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.9rem;
+    margin: 0.1rem 0 0;
   }
-  .field-example-kind-inline { margin-top: 0.3rem; padding-top: 0; }
-  .field-example-role {
-    display: block;
-    margin-top: 0.1rem;
+  .field-example-cards .field-example-role {
+    margin-top: 0.3rem;
+    font: 500 0.7rem/1.35 var(--font-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--fg-muted);
+  }
+  .field-example-summary,
+  .field-example-qualification {
+    max-width: 65ch;
+    font-size: 0.94rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .field-example-summary { margin: 0.4rem 0 0; }
+  .field-example-qualification { margin-top: 0.35rem; }
+  .field-example-list { line-height: var(--body-leading); }
+  .field-example-list .field-example-role {
+    margin: 0.12rem 0 0.5rem;
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+  }
+  .field-example-list .field-example-summary {
+    margin-top: 0.45rem;
+    font-size: 1rem;
+    line-height: inherit;
+    color: var(--fg);
+  }
+  .field-example-list .field-example-qualification {
+    margin-top: 0.45rem;
+    font-size: 0.95rem;
+    line-height: inherit;
   }
 </style>

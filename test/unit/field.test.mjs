@@ -148,13 +148,14 @@ test("compact qualifications retain early release wording and material limitatio
   );
   assert.match(
     fieldQualification(entry("gnap-rafiki")),
-    /^Beta releases documented · Open Payments profile/,
+    /^Beta releases documented · Full RFC interoperability unverified/,
   );
   assert.match(
     fieldQualification(entry("web-bot-auth-cloudflare")),
-    /rejects the format this guide illustrates/,
+    /Rejects the format this guide illustrates/,
   );
-  assert.equal(fieldQualification(entry("a2a-eon")), "A2A 0.3 when reported.");
+  assert.equal(fieldQualification(entry("a2a-eon")), "");
+  assert.match(entry("a2a-eon").summary, /reported using A2A 0[.]3/);
   const invalid = dpop();
   invalid.implementations[0].qualification = " ";
   assert.throws(

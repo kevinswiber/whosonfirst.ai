@@ -15,9 +15,10 @@ export interface EvidenceReview {
 
 interface Evidence {
   id: string;
+  /** Short, source-backed description shared by cards, the directory and the full record. */
   summary: string;
   limits: string;
-  /** Brief, source-backed condition that must accompany the name in compact views. */
+  /** Material condition not already stated in the summary, also shown in compact views. */
   qualification?: string;
   sources: FieldSource[];
   review: EvidenceReview;
