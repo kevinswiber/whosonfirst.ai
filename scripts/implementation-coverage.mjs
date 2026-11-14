@@ -23,6 +23,7 @@ export const coverage = (flow, record) => {
       id: p.id,
       label: p.label,
       entries: entries.filter((e) => e.parties.includes(p.id)),
+      generic: (record?.genericParties ?? []).includes(p.id),
     }));
   return {
     slug: flow.slug,
@@ -84,16 +85,16 @@ for (const c of all) {
   }
   for (const p of c.parties) {
     const n = p.entries.length;
-    if (n === 0) empty++;
-    if (n === 1) single++;
-    const mark = n === 0 ? "none" : `${n}`;
+    if (n === 0 && !p.generic) empty++;
+    if (n === 1 && !p.generic) single++;
+    const mark = n > 0 ? `${n}` : p.generic ? "generic" : "none";
     console.log(
-      `  ${`${p.label} (${p.id})`.padEnd(34)} ${mark.padEnd(5)} ${ids(p.entries)}`,
+      `  ${`${p.label} (${p.id})`.padEnd(34)} ${mark.padEnd(8)} ${ids(p.entries)}`,
     );
   }
   if (c.deployments.length === 0) unreported++;
   console.log(
-    `  ${"Deployment reports".padEnd(34)} ${`${c.deployments.length || "none"}`.padEnd(5)} ${ids(c.deployments)}`,
+    `  ${"Deployment reports".padEnd(34)} ${`${c.deployments.length || "none"}`.padEnd(8)} ${ids(c.deployments)}`,
   );
   if (c.unspecified.length > 0)
     console.log(`  Stage unspecified: ${ids(c.unspecified)}`);
@@ -104,5 +105,5 @@ for (const c of all) {
 
 if (only.length === 0)
   console.log(
-    `\n${all.length} flows: ${empty} parties with no entry, ${single} with one, ${unreported} flows with no deployment report.`,
+    `\n${all.length} flows: ${empty} parties with no entry, ${single} with one, ${unreported} flows with no deployment report. Parties marked generic need nothing particular to the flow.`,
   );

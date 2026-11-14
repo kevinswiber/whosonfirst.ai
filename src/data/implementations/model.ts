@@ -79,6 +79,12 @@ export interface ImplementationProfile {
   reviewedOn: string;
   scope: string;
   searchNote: string;
+  /**
+   * Parties of the flow that need nothing particular to it, such as an API
+   * that checks an ordinary access token. Research does not look for them, and
+   * the coverage report does not count them as gaps.
+   */
+  genericParties?: string[];
   implementations: ImplementationEvidence[];
   deployments: DeploymentEvidence[];
   observations: ObservationEvidence[];
@@ -129,6 +135,13 @@ export function validateProfiles(
     ), `${profile.slug}: invalid review date`);
     require(profile.scope.trim() &&
       profile.searchNote.trim(), `${profile.slug}: describe review scope`);
+    const own =
+      parties && Object.hasOwn(parties, profile.slug)
+        ? parties[profile.slug]
+        : undefined;
+    for (const party of profile.genericParties ?? [])
+      require(!own ||
+        own.includes(party), `${profile.slug}: has no party ${party}`);
     const evidence = [
       ...profile.implementations,
       ...profile.deployments,

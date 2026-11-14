@@ -7,6 +7,7 @@ export const profiles: ImplementationProfile[] = [
     reviewedOn: "2026-11-12",
     scope:
       "Authorization code with PKCE, including S256 for the illustrated client. Client libraries and authorization servers supply different parts of this flow.",
+    genericParties: ["api"],
     searchNote:
       "Selected authorization-server documentation, one client library and a release announcement were reviewed. Generic OAuth support alone was excluded. No qualifying operator deployment account was selected from these sources.",
     implementations: [
@@ -766,6 +767,7 @@ export const profiles: ImplementationProfile[] = [
     reviewedOn: "2026-11-12",
     scope:
       "RFC 8628 device authorization for input-constrained clients. The client requests a code and polls while the user approves in a browser. Support for resource indicators and specific phishing mitigations is a separate question.",
+    genericParties: ["api"],
     searchNote:
       "Selected issuer and client documentation and two first-party CLI reports. Browser-based code flow and generic device sign-in fall outside this review. No survey or production login was run.",
     implementations: [
@@ -2536,6 +2538,7 @@ export const profiles: ImplementationProfile[] = [
     reviewedOn: "2026-11-13",
     scope:
       "MCP URL-mode elicitation for a tool call that needs an out-of-band user interaction. The flow illustrates 2026-07-28 multi-round-trip requests. Earlier server-initiated URL requests are labeled separately.",
+    genericParties: ["third"],
     searchNote:
       "Reviewed client, server SDK and gateway documentation for explicit URL mode. The search found no qualifying operator account for a tool using the illustrated retry path.",
     implementations: [

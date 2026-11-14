@@ -277,3 +277,17 @@ test("a quote copied from a page is found in the HTML or Markdown the server sen
   );
   assert.ok(plain("It’s “quoted”").includes(plain(`It's "quoted"`)));
 });
+
+test("a party called generic is one the flow has, and the coverage report does not count it", () => {
+  const parties = { dpop: ["agent", "as", "api"] };
+  const profile = dpop();
+  profile.genericParties = ["api"];
+  assert.doesNotThrow(() => validateProfiles([profile], undefined, parties));
+  profile.genericParties = ["third"];
+  assert.throws(
+    () => validateProfiles([profile], undefined, parties),
+    /dpop: has no party third/,
+  );
+  const report = run("implementation-coverage.mjs", "url-elicitation").stdout;
+  assert.match(report, /Third-party service \(third\) +generic/);
+});

@@ -113,6 +113,9 @@ const worksheet = (file) => {
           `${entry.id}: ${source.url} needs a quote and its section`,
         );
   }
+  for (const party of sheet.generic ?? [])
+    if (!parties[sheet.flow]?.includes(party))
+      problems.push(`${sheet.flow}: has no party ${party} to call generic`);
   try {
     validateProfiles(
       [
@@ -196,6 +199,18 @@ const write = (sheet, accepted) => {
       evidenceIds: accepted.map((e) => e.id),
     },
   ]);
+  const generic = [
+    ...new Set([
+      ...(record(sheet.flow)?.genericParties ?? []),
+      ...(sheet.generic ?? []),
+    ]),
+  ];
+  if (generic.length > 0) {
+    const line = `\n    genericParties: ${JSON.stringify(generic).replaceAll(",", ", ")},`;
+    block = /\n {4}genericParties: [^\n]*/.test(block)
+      ? block.replace(/\n {4}genericParties: [^\n]*/, () => line)
+      : block.replace(/\n {4}searchNote:/, () => `${line}\n    searchNote:`);
+  }
   block = block.replace(
     /reviewedOn: "[^"]*"/,
     () => `reviewedOn: "${sheet.checkedOn}"`,
@@ -203,6 +218,7 @@ const write = (sheet, accepted) => {
   writeFileSync(RECORDS, text.slice(0, start) + block + text.slice(end));
 };
 
+const record = (slug) => profiles.find((p) => p.slug === slug);
 const lower = (text) => text.charAt(0).toLowerCase() + text.slice(1);
 const links = (entry) =>
   (entry.sources ?? []).map((s) => `[${s.title}](${s.url})`).join(" · ");
