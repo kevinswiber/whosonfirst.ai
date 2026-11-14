@@ -70,7 +70,7 @@ const rows = [
       <div class="grid two">
         {
           places.map((p) => (
-            <a class="card place" href={p.href}>
+            <a class="card" href={p.href}>
               <h2>{p.title}</h2>
               <p>{p.blurb}</p>
               <div class="chips">
@@ -132,13 +132,6 @@ const rows = [
 </Base>
 
 <style>
-  .place h2 {
-    margin: 0 0 0.4rem;
-    font-size: 1.5rem;
-  }
-  .place p {
-    font-size: 0.98rem;
-  }
   td {
     min-width: 11rem;
   }

@@ -146,7 +146,7 @@ test("standard status and reference have a literal separator in HTML and Markdow
     if (!exists(copyOf(p))) continue;
     const md = file(copyOf(p));
     for (const card of main(p).matchAll(
-      /<article\b[^>]*class="std(?: compact)?"[^>]*>\s*<header\b[^>]*>([\s\S]*?)<\/header>/g,
+      /<a\b[^>]*class="card std"[^>]*>\s*<h4\b[^>]*>[^<]*<\/h4>\s*<div\b[^>]*class="std-meta"[^>]*>([\s\S]*?)<\/div>/g,
     )) {
       cards++;
       const row = plain(card[1]);

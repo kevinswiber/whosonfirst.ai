@@ -488,7 +488,7 @@ const detailGroups = [
               )}
               <div class="grid">
                 {g.items.map((s) => (
-                  <StandardCard standard={s} compact />
+                  <StandardCard standard={s} />
                 ))}
               </div>
             </div>
@@ -496,7 +496,7 @@ const detailGroups = [
         ) : (
           <div class="grid">
             {standards.map((s) => (
-              <StandardCard standard={s} compact />
+              <StandardCard standard={s} />
             ))}
           </div>
         )
