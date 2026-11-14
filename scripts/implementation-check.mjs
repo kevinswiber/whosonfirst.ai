@@ -3,7 +3,9 @@
 // Run with `npm run implementations:check -- worksheet.json`, or with no file
 // to check every quote already in the records. `--emit` prints a worksheet's
 // accepted entries ready to paste into records.ts, and `--apply` writes them
-// there with the day's evidence-added event; neither fetches anything.
+// there with the day's evidence-added event, and `--log` prints the
+// worksheets as a section of docs/adoption/evidence-review.md. None of the
+// three fetches anything.
 // docs/implementation-research.md says what a worksheet is and how to read
 // the answers.
 //
@@ -22,6 +24,7 @@ import { flows as readFlows } from "./sources.mjs";
 const args = process.argv.slice(2);
 const files = args.filter((a) => !a.startsWith("--"));
 const emit = args.includes("--emit");
+const log = args.includes("--log");
 const apply = args.includes("--apply");
 const RECORDS = fileURLToPath(
   new URL("../src/data/implementations/records.ts", import.meta.url),
@@ -200,6 +203,41 @@ const write = (sheet, accepted) => {
   writeFileSync(RECORDS, text.slice(0, start) + block + text.slice(end));
 };
 
+const lower = (text) => text.charAt(0).toLowerCase() + text.slice(1);
+const links = (entry) =>
+  (entry.sources ?? []).map((s) => `[${s.title}](${s.url})`).join(" · ");
+const sentence = (text) =>
+  /[.!?”)]$/.test(text.trim()) ? text.trim() : `${text.trim()}.`;
+/** One flow's worksheet as the evidence review writes it. */
+const logSection = (sheet, entries) => {
+  const flow = flows.find((f) => f.slug === sheet.flow);
+  const lines = [`### ${flow?.title ?? sheet.flow}`, ""];
+  for (const e of entries) {
+    const who = e.kind === "deployment" ? e.organization : e.product;
+    const what = e.kind === "deployment" ? e.setting : e.role;
+    const state = e.review?.state;
+    const label = { accepted: "Accept", pending: "Lead", excluded: "Exclude" }[
+      state
+    ];
+    if (!label) continue;
+    const body =
+      state === "accepted"
+        ? [e.summary, e.limits].filter(Boolean).map(sentence).join(" ")
+        : sentence(e.review.rationale);
+    lines.push(
+      `- **${label} · ${who}${what ? `, ${lower(what)}` : ""}.** ${body} ${links(e)}`.trim(),
+    );
+  }
+  const list = (title, items) => {
+    if (!items?.length) return;
+    lines.push("", `**${title}** ${items.map(sentence).join(" ")}`);
+  };
+  list("Looked.", sheet.looked);
+  list("Not found.", sheet.notFound);
+  list("Second reading.", sheet.secondReading);
+  return lines.join("\n");
+};
+
 let refused = 0;
 const queue = [];
 if (files.length === 0) {
@@ -224,6 +262,13 @@ if (files.length === 0) {
       }
       continue;
     }
+    if (log) {
+      const shown = (sheet.implementations ?? []).concat(
+        sheet.deployments ?? [],
+      );
+      console.log(`${logSection(sheet, shown)}\n`);
+      continue;
+    }
     if (emit) {
       for (const kind of ["implementation", "deployment"]) {
         const some = accepted.filter((e) => e.kind === kind);
@@ -239,7 +284,7 @@ if (files.length === 0) {
   }
 }
 
-if (!emit && !apply) {
+if (!emit && !apply && !log) {
   let at = 0;
   await Promise.all(
     Array.from({ length: 6 }, async () => {

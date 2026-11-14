@@ -267,7 +267,7 @@ An entry that fails one is corrected from the source or excluded. The second rea
    This also sets the profile’s `reviewedOn` to the day of the run and adds an `evidence-added` event for that day naming the new entries. Earlier events and existing entries’ `checkedOn` stay as they are. It writes nothing from a worksheet the check refuses. With `--emit` in place of `--apply` it prints the entries and changes nothing, for pasting by hand.
 2. Add a `release` or `report-published` event only where a new entry’s source carries that date as `publishedOn`.
 3. Bring the profile’s `searchNote` up to date in a sentence or two: what kinds of source were read, and what was looked for and not found.
-4. Add a dated section to [the evidence review](adoption/evidence-review.md): for each flow, what was accepted, what was excluded and why, and the `looked` and `notFound` lists. Correct the counts at the top of that document.
+4. Add a dated section to [the evidence review](adoption/evidence-review.md). `npm run implementations:check -- --log path/to/*.json` prints one from the worksheets, to be read and edited before it goes in: for each flow, what was accepted, what was excluded and why, and the `looked` and `notFound` lists. Correct the counts at the top of that document.
 5. Add each new host to [Domains a run needs](source-review.md#domains-a-run-needs), then record the new sources:
 
    ```bash
