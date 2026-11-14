@@ -239,19 +239,20 @@ const data = {
         // then every other answer as a fact with the word for its question: the name
         // stands for two of them, and a reader who repeats it should see the rest.
         const sit = situationFor(data.situations, a);
-        if (sit) {
-          html += `<p class="dg-sit-label">Situation · this site’s wording</p><p class="dg-sit-name">${esc(sit.name)}</p>`;
-        }
         const facts = names
           .filter((n) => a[n] != null && !(sit && n in sit.when))
           .map((n) => {
             const input = form.querySelector<HTMLInputElement>(`input[name="${n}"]:checked`)!;
             return `<div><dt>${esc(input.dataset.fact ?? '')}</dt><dd>${esc(input.dataset.brief ?? '')}</dd></div>`;
           });
-        if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
+        // A section like the ones after it: a heading, then the name as those
+        // list a flow, with what the name stands for where a flow has its status.
+        html += `<section class="dg-group dg-answers"><h2>Your answers</h2>`;
         if (sit) {
-          html += `<p class="dg-sit-note"><a href="/guide/${sit.slug}/">About “${esc(sit.name)}”</a> · Covers the first ${Object.keys(sit.when).length === 1 ? 'answer' : 'two answers'} only.</p>`;
+          html += `<a class="dg-flow" href="/guide/${sit.slug}/"><strong>${esc(sit.name)}</strong><span class="dg-meta">${Object.keys(sit.when).length === 1 ? 'First answer' : 'First two answers'}</span></a>`;
         }
+        if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
+        html += `</section>`;
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -516,27 +517,15 @@ const data = {
   .dg-out :global(.dg-copied:empty) {
     display: none;
   }
-  .dg-out :global(.dg-sit-label) {
-    font-family: var(--font-label);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin: 1rem 0 0;
-  }
-  .dg-out :global(.dg-sit-name) {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    font-weight: 560;
-    line-height: 1.25;
-    margin: 0.2rem 0 0;
+  .dg-out :global(.dg-answers .dg-flow) {
+    padding-top: 0.7rem;
   }
   /* each answer on a line of its own: the word for the question, then the answer */
   .dg-out :global(.dg-facts) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
     gap: 0.15rem 1.6rem;
-    margin: 0.6rem 0 0;
+    margin: 0.5rem 0 0;
     font-size: 0.93rem;
     line-height: 1.5;
   }
@@ -548,10 +537,6 @@ const data = {
   }
   .dg-out :global(.dg-facts dd) {
     margin: 0;
-  }
-  .dg-out :global(.dg-sit-note) {
-    margin: 0.4rem 0 0;
-    font-size: 0.88rem;
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);

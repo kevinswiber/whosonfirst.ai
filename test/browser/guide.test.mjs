@@ -88,7 +88,7 @@ test("the situation is named once the first two questions are answered, and not 
   const ctx = await site.context();
   t.after(() => ctx.close());
   const page = await ctx.newPage();
-  const name = page.locator(".dg-sit-name");
+  const name = page.locator(".dg-answers .dg-flow strong");
 
   // one of the two answered: no name, and the answers there are, each with its word
   await open(page, site.url("/guide/?principal=user&target=api"));
@@ -100,18 +100,15 @@ test("the situation is named once the first two questions are answered, and not 
 
   await page.getByRole("radio", { name: /^No\b/ }).check({ force: true });
   assert.equal(await name.textContent(), "Person unavailable");
-  const note = page.locator(".dg-sit-note");
-  assert.match(await note.textContent(), /Covers the first two answers only/);
+  // the name leads to its page, and says how much of the result it stands for
+  const link = page.locator(".dg-answers .dg-flow");
+  assert.equal(await link.getAttribute("href"), "/guide/person-unavailable/");
   assert.equal(
-    await note.locator("a").getAttribute("href"),
-    "/guide/person-unavailable/",
+    await link.locator(".dg-meta").textContent(),
+    "First two answers",
   );
   // the answers the name does not stand for are beside it
   assert.deepEqual(await facts(page), [["Calls", "HTTP API"]]);
-  assert.match(
-    await page.locator(".dg-sit-label").textContent(),
-    /this site’s wording/,
-  );
 
   await page.getByRole("radio", { name: /Its own/ }).check({ force: true });
   assert.equal(await name.textContent(), "Own authority");
