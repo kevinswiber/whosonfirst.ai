@@ -14,7 +14,7 @@
 // "Found" means the page has the passage today. Whether the passage supports
 // the claim is for whoever reads it.
 import { readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   publishProfile,
   validateProfiles,
@@ -32,9 +32,14 @@ const REVIEW = fileURLToPath(
   new URL("../docs/source-review.md", import.meta.url),
 );
 const apply = args.includes("--apply");
-const RECORDS = fileURLToPath(
-  new URL("../src/data/implementations/records.ts", import.meta.url),
-);
+// The records a worksheet is applied to. Tests point this at a copy.
+const RECORDS =
+  process.env.IMPLEMENTATION_RECORDS ??
+  fileURLToPath(
+    new URL("../src/data/implementations/records.ts", import.meta.url),
+  );
+const freshRecords = async () =>
+  (await import(`${pathToFileURL(RECORDS).href}?${Date.now()}`)).profiles;
 const flows = await readFlows();
 const parties = Object.fromEntries(
   flows.map((f) => [
@@ -195,16 +200,29 @@ const write = (sheet, accepted) => {
     "deployments",
     accepted.filter((e) => e.kind === "deployment"),
   );
-  into("events", [
-    {
-      id: `${sheet.flow}-added-${sheet.checkedOn}`,
-      kind: "evidence-added",
-      date: sheet.checkedOn,
-      summary:
-        "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
-      evidenceIds: accepted.map((e) => e.id),
-    },
-  ]);
+  // One evidence-added event a day: a second worksheet applied to the same
+  // flow on the same day adds its entries to the event already there.
+  const eventId = `${sheet.flow}-added-${sheet.checkedOn}`;
+  const ids = accepted.map((e) => e.id);
+  const at = block.indexOf(`id: "${eventId}",`);
+  if (at === -1) {
+    into("events", [
+      {
+        id: eventId,
+        kind: "evidence-added",
+        date: sheet.checkedOn,
+        summary:
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
+        evidenceIds: ids,
+      },
+    ]);
+  } else {
+    const open = block.indexOf("evidenceIds: [", at) + "evidenceIds: [".length;
+    const close = block.indexOf("]", open);
+    const inner = block.slice(open, close).trim().replace(/,$/, "");
+    const added = ids.map((id) => JSON.stringify(id)).join(", ");
+    block = `${block.slice(0, open)}${inner}, ${added}${block.slice(close)}`;
+  }
   const generic = [
     ...new Set([
       ...(record(sheet.flow)?.genericParties ?? []),
@@ -222,6 +240,7 @@ const write = (sheet, accepted) => {
     () => `reviewedOn: "${sheet.checkedOn}"`,
   );
   writeFileSync(RECORDS, text.slice(0, start) + block + text.slice(end));
+  return text;
 };
 
 const record = (slug) => profiles.find((p) => p.slug === slug);
@@ -273,9 +292,7 @@ const logSection = (sheet, entries) => {
 
 /** Adds the hosts the records link to that a source review's list lacks. */
 const addHosts = async () => {
-  const { profiles: now } = await import(
-    `../src/data/implementations/records.ts?${Date.now()}`
-  );
+  const now = await freshRecords();
   const text = readFileSync(REVIEW, "utf8");
   const at = text.match(/## Domains a run needs[\s\S]*?```text\n([\s\S]*?)```/);
   if (!at) throw new Error("docs/source-review.md has no list of domains");
@@ -324,7 +341,17 @@ if (files.length === 0) {
     const accepted = entries.filter((e) => e.review?.state === "accepted");
     if (apply) {
       if (problems.length === 0 && accepted.length > 0) {
-        write(sheet, accepted);
+        const before = write(sheet, accepted);
+        try {
+          validateProfiles(await freshRecords(), undefined, parties);
+        } catch (e) {
+          writeFileSync(RECORDS, before);
+          console.error(
+            `Refused: ${e.message}. ${sheet.flow} was left as it was.`,
+          );
+          refused++;
+          continue;
+        }
         console.log(`${sheet.flow}: ${accepted.length} entries written.`);
       }
       continue;

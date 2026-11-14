@@ -1,9 +1,10 @@
 import { strict as assert } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 import { plain } from "../../scripts/quote-text.mjs";
 import {
   deploymentOrganizations,
@@ -292,4 +293,57 @@ test("a party called generic is one the flow has, and the coverage report does n
   );
   const report = run("implementation-coverage.mjs", "url-elicitation").stdout;
   assert.match(report, /Third-party service \(third\) +generic/);
+});
+
+test("two worksheets applied to a flow on the same day share one evidence-added event", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "records-"));
+  const data = new URL("../../src/data/implementations/", import.meta.url);
+  for (const file of ["records.ts", "model.ts"])
+    writeFileSync(join(dir, file), readFileSync(new URL(file, data)));
+  const records = join(dir, "records.ts");
+  const entry = dpop().implementations[0];
+  const apply = (id) => {
+    const candidate = structuredClone(entry);
+    candidate.id = id;
+    for (const source of candidate.sources) {
+      source.section = "DPoP";
+      source.quote = "DPoP is supported.";
+    }
+    const file = join(dir, `${id}.json`);
+    writeFileSync(
+      file,
+      JSON.stringify({
+        flow: "dpop",
+        checkedOn: "2027-01-02",
+        implementations: [candidate],
+      }),
+    );
+    return spawnSync(
+      process.execPath,
+      ["scripts/implementation-check.mjs", "--apply", file],
+      {
+        cwd: new URL("../..", import.meta.url),
+        encoding: "utf8",
+        env: { ...process.env, IMPLEMENTATION_RECORDS: records },
+      },
+    );
+  };
+  try {
+    for (const id of ["dpop-first-candidate", "dpop-second-candidate"]) {
+      const result = apply(id);
+      assert.equal(result.status, 0, result.stderr);
+    }
+    const { profiles: applied } = await import(pathToFileURL(records).href);
+    assert.doesNotThrow(() => validateProfiles(applied));
+    const events = applied
+      .find((p) => p.slug === "dpop")
+      .events.filter((e) => e.id === "dpop-added-2027-01-02");
+    assert.equal(events.length, 1);
+    assert.deepEqual(events[0].evidenceIds, [
+      "dpop-first-candidate",
+      "dpop-second-candidate",
+    ]);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
 });
