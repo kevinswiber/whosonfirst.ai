@@ -637,7 +637,7 @@ export const cautions: Caution[] = [
   },
   {
     when: { risk: ["irreversible"], human: ["absent"] },
-    text: "Irreversible actions with no human available leave policy as the only control. Put hard limits at the API or a gateway, not in the prompt.",
+    text: "With no person available to approve an irreversible action, enforce hard limits at the API or a gateway, not in the prompt.",
   },
   {
     when: { target: ["web"], principal: ["user"] },
