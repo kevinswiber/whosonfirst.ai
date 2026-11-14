@@ -105,6 +105,7 @@ export interface Flow {
   /** Name used in cards and nav. */
   short: string;
   group: FlowGroup;
+  /** Human involvement in the scenario the diagram illustrates. */
   human: HumanPresence;
   maturity: FlowRating;
   /** One sentence for cards. */
@@ -255,14 +256,14 @@ export interface FlowSection {
 export const GROUPS: { id: FlowGroup; title: string; blurb: string }[] = [
   {
     id: "human-present",
-    title: "Human present",
-    blurb: "Someone is at the keyboard and can sign in and consent right now.",
+    title: "Get access on behalf of a user",
+    blurb: "Get permission for an agent to act for someone.",
   },
   {
     id: "human-in-the-loop",
-    title: "Human in the loop",
+    title: "Get user input during a task",
     blurb:
-      "The agent works on its own, but pauses for a person to approve specific actions.",
+      "Pause work to ask someone to approve an action or complete a separate sign-in.",
   },
   {
     id: "delegation",
@@ -272,8 +273,9 @@ export const GROUPS: { id: FlowGroup; title: string; blurb: string }[] = [
   },
   {
     id: "autonomous",
-    title: "No human",
-    blurb: "The agent acts as itself: workload identity, not user identity.",
+    title: "Authenticate as an agent",
+    blurb:
+      "The agent proves its own identity, for example as an OAuth client or with a workload identity.",
   },
   {
     id: "agent-to-agent",
@@ -292,13 +294,6 @@ export const HUMAN_LABEL: Record<HumanPresence, string> = {
   reachable: "Human reachable",
   absent: "No human",
   any: "With or without a human",
-};
-
-export const HUMAN_TONE: Record<HumanPresence, string> = {
-  present: "red",
-  reachable: "amber",
-  absent: "blue",
-  any: "",
 };
 
 export const MATURITY_LABEL: Record<FlowRating, string> = {

@@ -48,21 +48,21 @@ Each answers one question and builds on the one before, with one example through
 
 ### Flows
 
-Grouped by the question that matters most when choosing between them: is a person involved, and when? Each flow is rated by how settled the standards it requires are.
+Grouped by what the flows help you do. Each flow is rated by how settled the standards it requires are.
 
-**A person is present**
+**Get access on behalf of a user**
 
 - [Authorization code with PKCE](https://whosonfirst.ai/flows/authorization-code-pkce/): the baseline. A person signs in, approves specific scopes, and the agent receives a token that says so.
 - [Device authorization](https://whosonfirst.ai/flows/device-authorization/): for agents with no browser of their own.
 - [GNAP](https://whosonfirst.ai/flows/gnap/): sign a grant request, send the user to approve it, and continue the grant for a token bound to the agent’s key.
 - [MCP authorization](https://whosonfirst.ai/flows/mcp-authorization/): how an MCP client that has never seen a server before discovers where to sign in, identifies itself, and gets a token good for that server alone.
+- [AAuth](https://whosonfirst.ai/flows/aauth/): the agent signs requests with its own key; in the calendar flow shown, a user-chosen server vouches for the person and their consent.
 
-**A person is in the loop**
+**Get user input during a task**
 
 - [Step-up authorization](https://whosonfirst.ai/flows/step-up-authorization/): start with a weak token, and ask the user for exactly what a sensitive action needs.
 - [Backchannel approval (CIBA)](https://whosonfirst.ai/flows/ciba/): approval arrives as a push notification, not a redirect.
 - [URL elicitation](https://whosonfirst.ai/flows/url-elicitation/): a tool hands back a link, the user signs in elsewhere, and the secret never touches the agent.
-- [AAuth](https://whosonfirst.ai/flows/aauth/): the agent signs requests with its own key; in the calendar flow shown, a user-chosen server vouches for the person and their consent.
 
 **Delegation chains**
 
@@ -72,7 +72,7 @@ Grouped by the question that matters most when choosing between them: is a perso
 - [Identity chaining](https://whosonfirst.ai/flows/identity-chaining/): carry who-is-this-for across an organizational boundary.
 - [Transaction tokens](https://whosonfirst.ai/flows/transaction-tokens/): a short-lived token that pins down one transaction and travels the whole call chain.
 
-**No human**
+**Authenticate as an agent**
 
 - [Client credentials](https://whosonfirst.ai/flows/client-credentials/): the agent authenticates as itself.
 - [Workload identity federation](https://whosonfirst.ai/flows/workload-identity-federation/): the platform the agent runs on vouches for it, and nothing long-lived is stored.

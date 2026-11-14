@@ -224,9 +224,9 @@ async function readSite() {
         title: text(one(".page-head h1")),
         lede: text(one(".page-head .lede")),
         groups: all(".fl-group").map((g) => ({
-          title: text(one("h2", g)),
+          title: text(one(".section-head h3", g)),
           flows: all(".flow-card", g).map((a) => ({
-            name: text(one("h3", a)),
+            name: text(one("h4", a)),
             rating: text(all(".chip", a).at(-1)),
           })),
         })),
@@ -577,8 +577,8 @@ code {
 /* the flows, by group; a flow's rating is a marker, named in the key beneath */
 .flows h2 { font-size: 50px; }
 .flows .lede { font-size: 28px; margin-top: 22px; }
-.groups { margin-top: 30px; columns: 2; column-gap: 56px; }
-.group { break-inside: avoid; padding-bottom: 26px; }
+.groups { margin-top: 24px; columns: 2; column-gap: 56px; }
+.group { break-inside: avoid; padding-bottom: 16px; }
 .group .label { padding-bottom: 8px; border-bottom: 2px solid var(--fg); color: var(--fg); font-size: 23px; letter-spacing: 0.04em; }
 .group li, .key span {
   display: flex;
@@ -588,7 +588,7 @@ code {
   line-height: 1.3;
   list-style: none;
 }
-.group li { padding: 8px 0; border-bottom: 1px solid var(--border); font-weight: 500; }
+.group li { padding: 3px 0; border-bottom: 1px solid var(--border); font-weight: 500; }
 .rating { flex: none; width: 15px; height: 15px; border: 2px solid var(--fg); }
 .rating.r0 { background: var(--fg); }
 .rating.r1 { background: linear-gradient(to right, var(--fg) 50%, transparent 50%); }

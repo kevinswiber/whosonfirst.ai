@@ -338,7 +338,7 @@ const toc = [
         when access is needed.
       </p>
       <div class="grid modes">
-        <a class="card" href="/flows/#g-human-present">
+        <a class="card" href="/guide/?human=present">
           <h3 id="human-present-title">Someone is at the keyboard</h3>
           <p>
             They can be redirected to sign in and shown a consent screen. The agent ends up with a token that carries
@@ -346,7 +346,7 @@ const toc = [
           </p>
           <div class="chips"><span class="chip" data-tone="red">Human present</span></div>
         </a>
-        <a class="card" href="/flows/#g-human-in-the-loop">
+        <a class="card" href="/guide/?human=reachable">
           <h3 id="human-reachable-title">Someone can be asked</h3>
           <p>
             The agent works alone but stops for approval at specific points. The approval must reach the person on a
@@ -355,11 +355,11 @@ const toc = [
           </p>
           <div class="chips"><span class="chip" data-tone="amber">Human reachable</span></div>
         </a>
-        <a class="card" href="/flows/#g-autonomous">
+        <a class="card" href="/guide/?human=absent">
           <h3 id="no-human-title">Nobody is there</h3>
           <p>
-            The agent is the principal. Its identity should come from the platform it runs on, not from a stored
-            secret, and its permissions are whatever an administrator granted in advance. Policy is the only control.
+            The agent can use its own identity with permissions granted in advance. If it acts for a person instead,
+            it needs a grant obtained earlier that still allows the action.
           </p>
           <div class="chips"><span class="chip" data-tone="blue">No human</span></div>
         </a>
