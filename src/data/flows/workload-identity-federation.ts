@@ -231,12 +231,6 @@ That is the agent’s own authority. Nothing in this flow carries a human user�
   ],
   notes: [
     {
-      title: "What the platform and the SDK do for you",
-      body: `In most deployments you write none of the eight steps. The platform issues the identity credential and keeps it fresh. A cloud SDK or credential library, pointed at that credential, makes the exchange, caches what comes back, renews it, and attaches it to requests or signs them. The receiving system does the validation. What is left to you is configuration: which identity the workload runs as, the trust rule on the receiving side, and the access behind it.
-
-With native workload identity there is less still. A function, virtual machine or managed container calling its own cloud’s APIs is handed credentials for that cloud’s identity system by the platform, and nothing is exchanged. Federation starts when the system being called is not the one that established the identity.`,
-    },
-    {
       title: "One exchange, several request formats",
       body: `No single specification defines this pattern. What the implementations share is a signed identity credential, usually a JWT, and a published way to find the issuer’s keys, usually OpenID Connect discovery. The exchange itself is where they differ.
 
