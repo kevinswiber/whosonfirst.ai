@@ -11,33 +11,44 @@ interface Props {
 }
 
 const { slug, entries, label, cards = false, searchable = false } = Astro.props;
-const Name = cards ? "h3" : "div";
+const Entry = cards ? "a" : "div";
 ---
 
 <ul class:list={["field-examples", { grid: cards, "field-example-cards": cards, "field-example-list": !cards }]} role="list" aria-label={label}>
-  {entries.map((entry) => (
-    <li
-      data-name={searchable ? (entry.kind === 'implementation' ? entry.product : entry.organization) : undefined}
-      data-owner={searchable && entry.kind === 'implementation' ? entry.organization : undefined}
-      data-role={searchable ? (entry.kind === 'implementation' ? entry.role : entry.setting) : undefined}
-    >
-      <Name class="field-example-name">
-        <a href={`/implementations/${slug}/#field-${entry.id}`}>
-          {entry.kind === 'implementation' ? entry.product : entry.organization}
-        </a>
-      </Name>{' '}
-      <p class="field-example-role">
-        {entry.kind === 'implementation' ? entry.role : entry.setting}
-      </p>
-      <p class="field-example-summary">{entry.summary}</p>
-      {fieldQualification(entry) && (
-        <p class="field-example-qualification">
-          {!cards && 'Note: '}{fieldQualification(entry)}
-        </p>
-      )}
-      {(cards || searchable) && <span class:list={["chip", "field-example-kind", { "field-example-kind-inline": searchable }]}>{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>}
-    </li>
-  ))}
+  {entries.map((entry) => {
+    const href = `/implementations/${slug}/#field-${entry.id}`;
+    const name = entry.kind === "implementation" ? entry.product : entry.organization;
+    const qualification = fieldQualification(entry);
+    return (
+      <li
+        data-name={searchable ? (entry.kind === 'implementation' ? entry.product : entry.organization) : undefined}
+        data-owner={searchable && entry.kind === 'implementation' ? entry.organization : undefined}
+        data-role={searchable ? (entry.kind === 'implementation' ? entry.role : entry.setting) : undefined}
+      >
+        <Entry class={cards ? "card" : undefined} href={cards ? href : undefined}>
+          {cards ? (
+            <h3 class="field-example-name">{name}</h3>
+          ) : (
+            <div class="field-example-name"><a href={href}>{name}</a></div>
+          )}{' '}
+          <p class="field-example-role">
+            {entry.kind === 'implementation' ? entry.role : entry.setting}
+          </p>
+          <p class="field-example-summary">{entry.summary}</p>
+          {qualification && (
+            <p class="field-example-qualification">
+              {!cards && 'Note: '}{qualification}
+            </p>
+          )}
+          {(cards || searchable) && (
+            <div class:list={{ chips: cards, "field-example-kind-inline": searchable }}>
+              <span class="chip field-example-kind">{entry.kind === 'implementation' ? 'Implementation' : 'Deployment report'}</span>
+            </div>
+          )}
+        </Entry>
+      </li>
+    );
+  })}
 </ul>
 
 <style>
@@ -50,33 +61,21 @@ const Name = cards ? "h3" : "div";
   }
   .field-examples li { margin: 0; }
   .field-examples li + li { margin-top: 1rem; }
-  .field-example-cards a { font-weight: 600; }
-  .field-example-name { margin: 0; font-size: 1rem; }
+  .field-example-list .field-example-name { margin: 0; font-size: 1rem; }
   .field-example-cards { margin: 0; }
   .field-example-cards li {
-    display: flex;
-    flex-direction: column;
-    padding: 0.85rem 1rem 0.95rem;
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    display: grid;
     break-inside: avoid;
   }
   .field-example-cards li + li { margin-top: 0; }
-  .field-example-cards .field-example-name { font-size: 1.1rem; }
-  .field-example-kind {
-    display: block;
-    margin-top: auto;
-    padding-top: 0.9rem;
-  }
-  .field-example-kind-inline { margin-top: 0.3rem; padding-top: 0; }
+  .field-example-kind-inline { margin-top: 0.3rem; }
   .field-example-role,
   .field-example-qualification {
     display: block;
     margin: 0.1rem 0 0;
   }
   .field-example-cards .field-example-role {
-    margin-top: 0.3rem;
+    margin: 0;
     font: 500 0.7rem/1.35 var(--font-label);
     letter-spacing: 0.06em;
     text-transform: uppercase;

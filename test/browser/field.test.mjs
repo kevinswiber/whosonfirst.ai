@@ -111,8 +111,7 @@ test("the compact directory, full record and flow guide connect without JavaScri
     "/implementations/dpop/",
   );
   const springCard = summary.getByRole("link", {
-    name: "Spring Security",
-    exact: true,
+    name: /^Spring Security\b/,
   });
   assert.equal(
     await springCard.getAttribute("href"),
@@ -419,14 +418,15 @@ test("example cards and compact lists keep roles visible and link to the exact e
       });
       assert.equal(
         await products
-          .getByRole("link", { name: /^(Claude Code|Workers OAuth Provider)$/ })
+          .getByRole("link", {
+            name: /^(Claude Code|Workers OAuth Provider)\b/,
+          })
           .count(),
         2,
       );
       const workers = products.getByRole("listitem").filter({
         has: page.getByRole("link", {
-          name: "Workers OAuth Provider",
-          exact: true,
+          name: /^Workers OAuth Provider\b/,
         }),
       });
       assert.ok(
@@ -443,7 +443,9 @@ test("example cards and compact lists keep roles visible and link to the exact e
       const rolePosition = await workers
         .locator(".field-example-role")
         .boundingBox();
-      const namePosition = await workers.getByRole("link").boundingBox();
+      const namePosition = await workers
+        .locator(".field-example-name")
+        .boundingBox();
       assert.ok(
         rolePosition.y >= namePosition.y + namePosition.height,
         "role reads beneath its product name",
@@ -456,9 +458,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
           "type follows the visible role",
         );
       }
-      await products
-        .getByRole("link", { name: "Claude Code", exact: true })
-        .click();
+      await products.getByRole("link", { name: /^Claude Code\b/ }).click();
       assert.match(
         page.url(),
         /\/implementations\/mcp-authorization\/#field-mcp-claude-code$/,
@@ -481,7 +481,7 @@ test("example cards and compact lists keep roles visible and link to the exact e
           .getByText("Hosted remote MCP service", { exact: true })
           .isVisible(),
       );
-      await report.getByRole("link", { name: "Stripe", exact: true }).click();
+      await report.getByRole("link", { name: /^Stripe\b/ }).click();
       assert.match(
         page.url(),
         /\/implementations\/mcp-authorization\/#field-mcp-stripe$/,
@@ -525,7 +525,7 @@ test("flow cards include every implementation and deployment entry from the full
     const actual = await cards.evaluateAll((items) =>
       items.map((item) => ({
         id: item.querySelector("a").hash.slice(1),
-        name: item.querySelector("a").textContent.trim(),
+        name: item.querySelector(".field-example-name").textContent.trim(),
         summary: item
           .querySelector(".field-example-summary")
           .textContent.trim(),
@@ -533,7 +533,7 @@ test("flow cards include every implementation and deployment entry from the full
       })),
     );
     assert.deepEqual(actual, entries, slug);
-    await cards.last().getByRole("link").click();
+    await cards.last().locator(".field-example-summary").click();
     assert.equal(new URL(page.url()).hash, `#${entries.at(-1).id}`);
     assert.ok(
       await page
@@ -738,8 +738,7 @@ test("material qualifications accompany product and report names without JavaScr
       : page.locator("#web-bot-auth");
     const cloudflare = scope.getByRole("listitem").filter({
       has: page.getByRole("link", {
-        name: "Cloudflare Verified Bots",
-        exact: true,
+        name: /^Cloudflare Verified Bots\b/,
       }),
     });
     assert.ok(
@@ -750,7 +749,7 @@ test("material qualifications accompany product and report names without JavaScr
       /Rejects the format this guide illustrates/,
     );
     const google = scope.getByRole("listitem").filter({
-      has: page.getByRole("link", { name: "Google-Agent", exact: true }),
+      has: page.getByRole("link", { name: /^Google-Agent\b/ }),
     });
     assert.ok(await google.locator(".field-example-qualification").isVisible());
     assert.match(await google.textContent(), /Experimental signing/);
@@ -767,7 +766,7 @@ test("material qualifications accompany product and report names without JavaScr
   await open(page, site.url("/flows/agent-to-agent/"));
   const eon = page
     .locator(".field-summary li")
-    .filter({ has: page.getByRole("link", { name: "Eon", exact: true }) });
+    .filter({ has: page.getByRole("link", { name: /^Eon\b/ }) });
   assert.match(await eon.textContent(), /Eon reported using A2A 0.3/);
 });
 

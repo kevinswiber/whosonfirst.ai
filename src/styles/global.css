@@ -708,20 +708,24 @@ a.chip::before {
 }
 /* a card that is a link says so in its edge and its title */
 a.card {
+  display: flex;
+  flex-direction: column;
   border-color: var(--border-strong);
   transition: border-color 0.12s;
 }
-a.card:hover {
+a.card:is(:hover, :focus-visible) {
   color: inherit;
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.card h3,
-.card h4 {
+a.card:focus-visible {
+  border-radius: var(--radius);
+}
+.card > :is(h2, h3, h4) {
   margin: 0 0 0.35rem;
   font-size: 1.14rem;
 }
-a.card :is(h3, h4) {
+a.card > :is(h2, h3, h4) {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -733,8 +737,9 @@ a.card :is(h3, h4) {
   color: var(--fg-muted);
   line-height: 1.5;
 }
-.card .chips {
-  margin-top: 0.8rem;
+a.card > .chips {
+  margin-top: auto;
+  padding-top: 0.9rem;
 }
 
 .grid {

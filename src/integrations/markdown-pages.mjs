@@ -377,22 +377,6 @@ function prepare(main, page, site) {
         );
       }
     }
-    // A reference card names the standard under its status. As text, the name comes first.
-    if (
-      is(node, "article") &&
-      is(
-        node.children.find((c) => c.type === "element"),
-        "header",
-      )
-    ) {
-      const [head, ...rest] = node.children.filter((c) => c.type === "element");
-      const at = rest.findIndex((c) => is(c, "h2", "h3", "h4")) + 1;
-      node.children = [
-        ...rest.slice(0, at),
-        element("p", {}, head.children),
-        ...rest.slice(at),
-      ];
-    }
     // A question in a set of choices is its heading, and its number wants a period.
     if (is(node, "legend")) {
       node.tagName = "p";
