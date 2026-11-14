@@ -34,6 +34,8 @@ test("the reviewed evidence has sources, scope, valid dates and event links", ()
 
 test("only accepted deployments count operators, regardless of observed support or project totals", () => {
   const profile = dpop();
+  const operators = deploymentOrganizations(publishProfile(dpop()));
+  assert.ok(operators >= 1);
   const report = structuredClone(profile.deployments[0]);
   report.id = "second-account";
   report.organization = ` ${report.organization.toUpperCase()} `;
@@ -72,7 +74,7 @@ test("only accepted deployments count operators, regardless of observed support 
   });
   validateProfiles([profile]);
   const published = publishProfile(profile);
-  assert.equal(deploymentOrganizations(published), 1);
+  assert.equal(deploymentOrganizations(published), operators);
   assert.equal(published.observations[1].unit, "projects");
   assert.equal(published.observations[1].numerator, 13000);
   assert.ok(!published.deployments.some((p) => p.id === "pending"));

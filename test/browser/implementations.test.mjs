@@ -237,7 +237,10 @@ test("search shows every matching entry, including when the query names the flow
     (await matches.getByRole("link").allTextContents())
       .map((name) => name.trim())
       .sort(),
-    ["Auth0", "Curity Identity Server", "Keycloak"],
+    publishProfile(profiles.find((p) => p.slug === "dpop"))
+      .implementations.filter((e) => /authorization server/i.test(e.role))
+      .map((e) => e.product)
+      .sort(),
   );
   await input.fill("dpop");
   for (const product of [
@@ -391,12 +394,16 @@ test("flow evidence follows the standards and links to the full review beneath i
     if (slug === "dpop") assert.match(copy, /Norsk helsenett/);
   }
   await open(page, site.url("/implementations/"));
-  const pkce = await page
-    .locator("#authorization-code-pkce .evidence-overview")
+  const unreported = profiles
+    .map(publishProfile)
+    .find((p) => p.deployments.length === 0 && p.implementations.length > 0);
+  assert.ok(unreported, "a reviewed flow with no deployment report");
+  const overview = await page
+    .locator(`#${unreported.slug} .evidence-overview`)
     .textContent();
-  assert.match(pkce, /GitHub OAuth Apps and GitHub Apps/);
-  assert.match(pkce, /No report included in this review/);
-  assert.doesNotMatch(pkce, /None found|No production report found/);
+  assert.ok(overview.includes(unreported.implementations[0].product));
+  assert.match(overview, /No report included in this review/);
+  assert.doesNotMatch(overview, /None found|No production report found/);
 });
 
 test("example cards and compact lists keep roles visible and link to the exact entries without scripts", async (t) => {
