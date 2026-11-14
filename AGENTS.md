@@ -54,6 +54,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **A lesson simplifies and does not contradict.** The flow page or data file it rests on is named in a comment at the top of the lesson.
 - **Nothing essential waits behind a click, a hover or a script.** What a figure or a diagram shows is also on the page in words.
 - **Vendors are described from their own documentation.** Mention is not recommendation.
+- **An implementation or a deployment report is added by the procedure in [docs/implementation-research.md](docs/implementation-research.md):** start from `npm run implementations:coverage`, copy the passage that carries the claim from the source, and run `npm run implementations:check` on the worksheet before anything goes into `src/data/implementations/records.ts`.
 - **Write as the site does:** plain words, short sentences, no selling. The site’s prose uses typographic quotes and apostrophes (“ ” ’), and its code does not.
 - New flows, lessons and pages start as an issue, not a pull request. What the site leaves out is deliberate.
 

@@ -1,4 +1,8 @@
 import { strict as assert } from "node:assert";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
   deploymentOrganizations,
@@ -162,4 +166,95 @@ test("compact qualifications retain early release wording and material limitatio
     () => validateProfiles([invalid]),
     /qualification must not be empty/,
   );
+});
+
+test("an entry names parties its flow has, and a quote comes with its section", () => {
+  const parties = { dpop: ["agent", "as", "api"] };
+  assert.doesNotThrow(() => validateProfiles([dpop()], undefined, parties));
+  const noParty = dpop();
+  noParty.implementations[0].parties = [];
+  assert.throws(() => validateProfiles([noParty]), /which parties/);
+  const twice = dpop();
+  twice.implementations[0].parties = ["as", "as"];
+  assert.throws(() => validateProfiles([twice]), /which parties/);
+  const stranger = dpop();
+  stranger.implementations[0].parties = ["as", "mcp"];
+  assert.throws(
+    () => validateProfiles([stranger], undefined, parties),
+    /dpop has no party mcp/,
+  );
+  const quoted = dpop();
+  quoted.implementations[0].sources[0].quote = "DPoP is supported.";
+  assert.throws(() => validateProfiles([quoted]), /quote is a short passage/);
+  quoted.implementations[0].sources[0].section = "DPoP";
+  assert.doesNotThrow(() => validateProfiles([quoted]));
+  quoted.implementations[0].sources[0].quote = "x".repeat(301);
+  assert.throws(() => validateProfiles([quoted]), /quote is a short passage/);
+});
+
+const run = (script, ...args) =>
+  spawnSync(process.execPath, [`scripts/${script}`, ...args], {
+    cwd: new URL("../..", import.meta.url),
+    encoding: "utf8",
+  });
+
+test("the coverage report names every flow and every party software can fill", () => {
+  const report = run("implementation-coverage.mjs");
+  assert.equal(report.status, 0, report.stderr);
+  for (const profile of profiles) {
+    assert.ok(report.stdout.includes(`\n${profile.slug}\n`), profile.slug);
+    for (const entry of profile.implementations)
+      assert.ok(report.stdout.includes(entry.id), entry.id);
+  }
+  assert.equal(run("implementation-coverage.mjs", "no-such-flow").status, 1);
+  assert.match(
+    run("implementation-coverage.mjs", "--products").stdout,
+    /^Keycloak \(Keycloak\)\n(?: {4}\S.*\n){2,}/m,
+  );
+});
+
+test("a worksheet is refused for a used id, an unknown party or a source with no quote", () => {
+  const dir = mkdtempSync(join(tmpdir(), "worksheet-"));
+  const file = join(dir, "dpop.json");
+  const entry = dpop().implementations[0];
+  const sheet = (change) => {
+    const candidate = structuredClone(entry);
+    candidate.id = "dpop-candidate";
+    for (const source of candidate.sources) {
+      source.section = "DPoP";
+      source.quote = "DPoP is supported.";
+    }
+    change(candidate);
+    writeFileSync(
+      file,
+      JSON.stringify({
+        flow: "dpop",
+        checkedOn: "2026-11-14",
+        implementations: [candidate],
+      }),
+    );
+    return run("implementation-check.mjs", "--emit", file);
+  };
+  try {
+    const ok = sheet(() => {});
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.match(ok.stdout, /id: "dpop-candidate"/);
+    const used = sheet((c) => {
+      c.id = entry.id;
+    });
+    assert.equal(used.status, 1);
+    assert.match(used.stderr, /already in the records/);
+    const stranger = sheet((c) => {
+      c.parties = ["mcp"];
+    });
+    assert.equal(stranger.status, 1);
+    assert.match(stranger.stderr, /dpop has no party mcp/);
+    const unquoted = sheet((c) => {
+      delete c.sources[0].quote;
+    });
+    assert.equal(unquoted.status, 1);
+    assert.match(unquoted.stderr, /needs a quote and its section/);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
 });

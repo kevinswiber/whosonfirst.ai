@@ -53,6 +53,14 @@ If nothing changed, say so in one line and still give sections 3 and 5.
 
 Review `src/data/implementations/records.ts` against [the implementation evidence review](adoption/evidence-review.md). Re-read the cited source for the exact role, release condition and claim before changing its review date. A production report remains a dated account; an inaccessible source does not prove retirement. Publication dates, evidence-added events and checked dates are independent. The evidence review date must not change the site-wide standards-review date.
 
+Where an entry’s source carries a `quote`, ask whether the page still has it:
+
+```bash
+npm run implementations:check
+```
+
+**Found** means the passage is on the page today. **Not found** means read the page: it may have been reworded, or the fact may have changed. **Not reached** is not checked. An entry with no quote is read as before. Adding entries is a different job, with its own procedure in [Implementation research](implementation-research.md).
+
 Implementation evidence sources are included in `scripts/sources.mjs`. `--add` requests only previously unrecorded sources, preserves existing validators and drops unused addresses. It does not perform or mark a whole-site source review.
 
 ### IETF drafts in the tracker

@@ -24,7 +24,7 @@ export const sourceOf = (url) => {
 };
 
 /** Every flow, read file by file: flows/index.ts imports more than Node can load. */
-const flows = async () => {
+export const flows = async () => {
   const dir = new URL("../src/data/flows/", import.meta.url);
   const found = [];
   for (const file of readdirSync(dir).sort()) {
