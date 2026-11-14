@@ -116,16 +116,6 @@ const asks: { group: string; rows: [string, string][] }[] = [
     ],
   },
 ];
-
-const toc = [
-  ["roles", "The roles"],
-  ["different", "Why agents are different"],
-  ["verify", "What the API can verify"],
-  ["delegation", "Delegation or impersonation"],
-  ["human", "With and without a human"],
-  ["tokens", "What is in a token"],
-  ["rules", "Rules of thumb"],
-];
 ---
 
 <Base
@@ -147,9 +137,6 @@ const toc = [
         This is the whole model on one page, with the caveats left in. If the vocabulary is new,{' '}
         <a href="/learn/">six short lessons</a> cover the same ground from the start.
       </p>
-      <nav class="toc" aria-label="On this page">
-        {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
-      </nav>
     </div>
   </div>
 
@@ -439,23 +426,6 @@ const toc = [
     margin: 1rem 0 0;
     max-width: 42rem;
     color: var(--fg-muted);
-  }
-  .toc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.2rem;
-    margin-top: 1.4rem;
-    font-family: var(--font-label);
-    font-size: 0.76rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .toc a {
-    color: var(--fg-muted);
-    text-decoration-color: var(--border-strong);
-  }
-  .toc a:hover {
-    color: var(--accent);
   }
   .section h2 {
     margin-top: 0;
