@@ -191,14 +191,14 @@ test("a situation’s page says what each start and each caution applies to, wit
   const ctx = await site.context({ javaScriptEnabled: false });
   t.after(() => ctx.close());
   const page = await ctx.newPage();
-  await page.goto(site.url("/guide/"));
+  await open(page, site.url("/guide/"));
   const situations = await page
     .locator('#situations a.card[href^="/guide/"]')
     .evaluateAll((cards) => cards.map((a) => a.getAttribute("href")));
   assert.equal(situations.length, 4);
 
   for (const path of situations) {
-    await page.goto(site.url(path));
+    await open(page, site.url(path));
     const entries = await page
       .locator(".sit-flows > li, .sit-warn > li")
       .evaluateAll((items) =>
@@ -220,7 +220,7 @@ test("a situation’s page says what each start and each caution applies to, wit
     );
   }
 
-  await page.goto(site.url("/guide/own-authority/"));
+  await open(page, site.url("/guide/own-authority/"));
   const own = await page
     .locator(
       '.sit-flows > li:has(.sit-flow[href="/flows/client-credentials/"]) .ga',
