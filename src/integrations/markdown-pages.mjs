@@ -491,8 +491,20 @@ export async function markdownFor(page, site) {
     .stringify(mdast)
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-  const checked = reviewed(page);
-  return `${body}\n\n---\n\nFrom ${page.site}, a field guide to agent authentication and authorization. This page: ${new URL(page.path, site).href}${checked ? `\n\n${checked}` : ""}\n`;
+  const dated = [changed(page), reviewed(page)].filter(Boolean).join(" ");
+  return `${body}\n\n---\n\nFrom ${page.site}, a field guide to agent authentication and authorization. This page: ${new URL(page.path, site).href}${dated ? `\n\n${dated}` : ""}\n`;
+}
+
+/**
+ * When the page itself last changed, in the words of its footer. A build that
+ * could not read the repository's history has no such line, and neither does
+ * the copy.
+ */
+function changed(page) {
+  const day = /This page last changed <time[^>]*>([^<]*)<\/time>/.exec(
+    page.html,
+  )?.[1];
+  return day && `This page last changed ${day.trim()}.`;
 }
 
 /**

@@ -331,3 +331,53 @@ test("the sitemap includes every indexable page, including implementation record
     [],
   );
 });
+
+// A date is given only where it is known, and then the same one everywhere it
+// is given: a search engine trusts a sitemap's dates only while they hold up.
+test("a page's date in the sitemap is the one in its structured data and in its footer, and none is in the future", () => {
+  const listed = new Map(
+    [
+      ...file("sitemap.xml").matchAll(
+        /<loc>([^<]+)<\/loc>(?:<lastmod>([^<]+)<\/lastmod>)?/g,
+      ),
+    ].map(([, loc, lastmod]) => [new URL(loc).pathname, lastmod]),
+  );
+  const wrong = [];
+  for (const p of indexed) {
+    const graph = JSON.parse(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
+        head(p),
+      )[1],
+    )["@graph"];
+    const said = graph.find((n) => n["@type"] === "WebPage").dateModified;
+    const lastmod = listed.get(p.path);
+    if (said !== lastmod)
+      wrong.push(`${p.path} (sitemap ${lastmod}, structured data ${said})`);
+    for (const n of graph.filter((n) => n["@type"] === "TechArticle"))
+      if (n.dateModified !== said)
+        wrong.push(`${p.path} (its article says ${n.dateModified})`);
+    if (said && !(Date.parse(said) <= Date.now()))
+      wrong.push(`${p.path} (${said} is not a date that has passed)`);
+    const shown = /This page last changed <time datetime="([^"]*)"/.exec(
+      p.html,
+    )?.[1];
+    if (shown && shown !== said)
+      wrong.push(`${p.path} (footer ${shown}, structured data ${said})`);
+    const published = graph.find((n) => n["@type"] === "WebPage").datePublished;
+    if (published && !(Date.parse(published) <= Date.parse(said)))
+      wrong.push(`${p.path} (published ${published}, after it last changed)`);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+test("a page's Markdown copy ends with the date its footer gives", () => {
+  const wrong = [];
+  for (const p of withCopy) {
+    const day = /This page last changed <time[^>]*>([^<]*)<\/time>/.exec(
+      p.html,
+    )?.[1];
+    if (day && !file(copyOf(p)).includes(`This page last changed ${day}.`))
+      wrong.push(p.path);
+  }
+  assert.deepEqual(some(wrong), []);
+});
