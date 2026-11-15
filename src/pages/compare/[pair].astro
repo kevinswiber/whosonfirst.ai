@@ -417,12 +417,14 @@ const title = `${a.short} vs ${b.short}: the two flows side by side`;
       grid-template-columns: 1fr;
     }
   }
+  /* On paper nothing scrolls, and the table is wider than a sheet. So a sheet
+     gets the blocks, whatever the width of the window it was printed from. */
   @media print {
     .compare-wide {
-      display: block;
+      display: none;
     }
     .compare-narrow {
-      display: none;
+      display: block;
     }
   }
 </style>
