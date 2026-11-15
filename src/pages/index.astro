@@ -230,7 +230,11 @@ const news = [
         title="What can the API tell?"
         setup="Alice asks an agent what is on her calendar tomorrow. The agent calls the calendar API and attaches one of three things."
         so="Each key names one party. **Only the token answers all three.**"
-        more={{ href: `/learn/${lessons[0].slug}/`, text: 'Lesson 1 shows why, one request at a time' }}
+        more={{
+          href: `/learn/${lessons[0].slug}/`,
+          text: 'Why can’t a key do it?',
+          note: `Lesson 1, ${lessons[0].minutes} minutes`,
+        }}
       />
 
       <div class="hero-meta">

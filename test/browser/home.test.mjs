@@ -130,6 +130,18 @@ for (const theme of THEMES) {
           };
           return {
             controls: fig.querySelectorAll("input, button, select").length,
+            // each party is tinted where the sentence over the table first names it
+            parties: [...fig.querySelectorAll(".ag-setup .ag-who")].map((w) =>
+              [...w.classList].find((c) => c.startsWith("role-")),
+            ),
+            // a verdict's cell is tinted, and no two verdicts share a tint
+            tints: Object.fromEntries(
+              [...fig.querySelectorAll("tbody td")].map((td) => [
+                td.textContent.trim(),
+                getComputedStyle(td).backgroundColor,
+              ]),
+            ),
+            panel: getComputedStyle(fig).backgroundColor,
             rows: [...fig.querySelectorAll("tbody tr")].map((tr) => ({
               name: tr.querySelector(".ag-name").textContent.trim(),
               sends: tr.querySelectorAll(".ag-sends").length,
@@ -156,6 +168,21 @@ for (const theme of THEMES) {
           JSON.stringify(f.rows),
         );
         assert.ok(f.so > 0, "no conclusion under the table");
+      });
+      test("figure has color: each party tinted as in the lessons, each verdict in a tint of its own", async () => {
+        const f = await figure();
+        assert.deepEqual(f.parties, [
+          "role-human",
+          "role-agent",
+          "role-resource",
+        ]);
+        const tints = Object.values(f.tints);
+        assert.ok(
+          tints.length === 3 &&
+            new Set(tints).size === 3 &&
+            !tints.includes(f.panel),
+          JSON.stringify(f.tints),
+        );
       });
       test("figure ends on the credential that answers all three, and leads to lesson 1", async () => {
         const f = await figure();
