@@ -31,7 +31,7 @@ Both begin with a token exchange request. The caller presents the token it holds
   ],
   figure: {
     intro:
-      "Here is the same need met both ways: a caller holds a token for Alice and has to call one more service. Both begin with a token exchange request. Before you look, make a guess. In one of the two, that request does not return a token any API should accept. Which?",
+      "Here is the same need met both ways: a caller holds a token for Alice and has to call one more service. Both begin with a token exchange request. Before you look, make a guess. In one of the two, that request returns something other than an access token. Which?",
     legend: "The caller uses",
     cast: [
       {
