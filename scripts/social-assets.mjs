@@ -10,6 +10,7 @@
  *
  *   npm run build && node scripts/social-assets.mjs
  *   node scripts/social-assets.mjs --flow dpop     step through another flow
+ *   node scripts/social-assets.mjs --all-flows     a video for every flow the flows page lists
  *   node scripts/social-assets.mjs --no-video
  *   node scripts/social-assets.mjs --dark          the same pictures in the dark theme
  *
@@ -22,7 +23,16 @@
  *   flows.png                    every flow, grouped
  *   standards.png                how settled the specifications are
  *   flow-<slug>.mp4              one flow, stepped through, with flow-<slug>-cover.png
+ *   flow-<slug>.vtt, .srt        its captions: the words of each frame, while it is shown
+ *   flow-<slug>.txt              a description to paste under it, with its chapters
  *   repository.png               1280 × 640, for the repository's social preview
+ *
+ * The video holds each frame for as long as its words take to read: about
+ * three words a second, at least two seconds and at most ten. The captions and
+ * the chapters are timed from the same list of frames, and are written only
+ * when the video is. With --all-flows the video, its cover, its captions and
+ * its description are made for every flow. The other pictures are still made
+ * once, with the flow that --flow names.
  *
  * Needs Chromium for Playwright, as the rendered checks do. The video also
  * needs ffmpeg on the path, and is left out with a note where there is none.
@@ -55,6 +65,8 @@ const option = (name, fallback) => {
 /** The flow the video steps through, and the carousel shows a step of. */
 const FLOW = option("flow", "mcp-authorization");
 const VIDEO = !args.includes("--no-video");
+/** A video for every flow the flows page lists, not for FLOW alone. */
+const ALL = args.includes("--all-flows");
 /**
  * Light unless asked. Every color on the site is a light and dark pair, and the
  * mark carries both, so the dark pictures are the same drawing in the site's
@@ -67,10 +79,19 @@ const ADDRESS = "whosonfirst.ai";
 const TALL = { width: 1080, height: 1350 };
 const WIDE = { width: 1600, height: 900 };
 const REPOSITORY = { width: 1280, height: 640 };
-/** Seconds each step of the video is held, and the frames it takes to move to the next. */
-const HOLD = 2.1;
+/**
+ * The video. A frame is held for as long as its words take to read: READ words
+ * a second, and never under or over HOLD seconds. GLIDE is the frames it takes
+ * to move to the next step, which come out of that step's time.
+ */
+const READ = 3.25;
+const HOLD = { least: 2.1, most: 10 };
 const GLIDE = 8;
 const FPS = 30;
+/** A caption: at most two lines of this many characters. */
+const LINE = 42;
+/** What a video site asks of chapters: the least one may last, in seconds, and the fewest in a list. */
+const CHAPTER = { least: 10, fewest: 3 };
 
 const root = fileURLToPath(new URL("../dist/client/", import.meta.url));
 const out = fileURLToPath(
@@ -227,6 +248,7 @@ async function readSite() {
         groups: all(".fl-group").map((g) => ({
           title: text(one(".section-head h3", g)),
           flows: all(".flow-card", g).map((a) => ({
+            slug: a.getAttribute("href").split("/").filter(Boolean).at(-1),
             name: text(one("h4", a)),
             rating: text(all(".chip", a).at(-1)),
           })),
@@ -297,6 +319,14 @@ async function readFlow(slug) {
       return {
         title: text(one(".page-head h1")),
         tagline: text(one(".page-head .lede")),
+        // the page's own address, the specification it follows and the month it
+        // was checked, and the license it names: what goes under a video of it
+        address: one('link[rel="canonical"]').href,
+        basis: text(one(".page-facts .doc-line")),
+        license: all('script[type="application/ld+json"]')
+          .flatMap((s) => JSON.parse(s.textContent)["@graph"] ?? [])
+          .map((thing) => thing.license)
+          .find(Boolean),
         count: text(one(".flow-stage-count", d)),
         width: lines.width,
         height: lines.height,
@@ -315,6 +345,10 @@ async function readFlow(slug) {
           return {
             part,
             phase,
+            // whether the phase starts here: the page names it over this step
+            opens: Boolean(heading),
+            // what the diagram writes on this step's row
+            label: all('svg .step[data-step="' + i + '"] text:not(.badge-num)', d).map(text).join(" "),
             from: { label: text(who[0]), role: role(who[0]) },
             to: who[1] ? { label: text(who[1]), role: role(who[1]) } : null,
             kind: text(one(".step-kind", li)),
@@ -333,6 +367,15 @@ async function readFlow(slug) {
     step.lines = uri(await page.locator(".flow-lines").screenshot());
   }
   await context.close();
+  if (!flow.steps.length) throw new Error(`found no steps on /flows/${slug}/`);
+  if (!/reviewed/i.test(flow.basis))
+    throw new Error(`/flows/${slug}/ no longer says when it was reviewed`);
+  if (new URL(flow.address).host !== ADDRESS)
+    throw new Error(
+      `/flows/${slug}/ no longer gives its address on ${ADDRESS}`,
+    );
+  if (!flow.license)
+    throw new Error(`/flows/${slug}/ no longer names the site's license`);
   return { slug, ...flow };
 }
 
@@ -889,6 +932,9 @@ function offset(flow, i) {
   const want = flow.steps[i].at * tall - room * 0.46;
   return Math.max(0, Math.min(want, tall - room));
 }
+/** Who a step goes from and to, in words. */
+const route = (s) => `${s.from.label}${s.to ? ` to ${s.to.label}` : ""}`;
+const counter = (flow, i) => `Step ${i + 1} of ${flow.steps.length}`;
 function step(flow, i, y) {
   const s = flow.steps[i];
   const scale = INNER / flow.width;
@@ -897,12 +943,12 @@ function step(flow, i, y) {
   return `
     <div class="flow-head">
       <h2>${esc(flow.title)}</h2>
-      <p class="label">Step ${i + 1} of ${flow.steps.length}</p>
+      <p class="label">${counter(flow, i)}</p>
     </div>
     <div class="ticks">${flow.steps.map((_, k) => `<i class="${k < i ? "done" : k === i ? "now" : ""}"></i>`).join("")}</div>
     <div class="window" style="--window:${WINDOW}px">
       <img class="heads" src="${s.heads}" alt="">
-      <img src="${s.lines}" alt="${esc(`The sequence diagram at step ${i + 1} of ${flow.steps.length}: ${s.from.label}${s.to ? ` to ${s.to.label}` : ""}.`)}" style="top:${(headsH - y).toFixed(1)}px">
+      <img src="${s.lines}" alt="${esc(`The sequence diagram at step ${i + 1} of ${flow.steps.length}: ${route(s)}.`)}" style="top:${(headsH - y).toFixed(1)}px">
     </div>
     <div class="step">
       <p class="label"><span>${esc(s.part)}</span><span>${esc(s.phase)}</span></p>
@@ -912,6 +958,222 @@ function step(flow, i, y) {
       </div>
       <h3>${esc(s.title)}</h3>
     </div>`;
+}
+
+/* ---------- a flow as a video: its timing, its captions, its chapters ---------- */
+
+/** The words in what a picture shows. A dash or an arrow is not one. */
+const count = (...shown) =>
+  shown
+    .join(" ")
+    .split(/\s+/)
+    .filter((word) => /[\p{L}\p{N}]/u.test(word)).length;
+/** The frames a picture is held for: the time its words take to read. */
+const hold = (...shown) =>
+  Math.round(
+    Math.min(HOLD.most, Math.max(HOLD.least, count(...shown) / READ)) * FPS,
+  );
+
+/**
+ * The video before any of it is drawn: its pictures in order, the frames each
+ * is held for, when each starts, and what a caption says while it is shown.
+ *
+ * A step is timed by the words that are new on its frame: who the message goes
+ * between and how, the step's title, and what the diagram writes on its row.
+ * The phase's name counts on the step that opens it, and not on the steps
+ * after, where it has been read. The numbering is seen at a glance and is not
+ * counted.
+ *
+ * A caption says the frame's own words: the phase where one opens, then the
+ * step's number and title. The step's explanation is left out. The frame does
+ * not show it, and it would take several times longer to read than the frame
+ * is held. Who the message goes between is left out too: a caption with it
+ * would often be gone before it was read.
+ */
+function timeline(flow, site) {
+  const shots = [
+    {
+      shot: "cover",
+      frames: hold(flow.count, flow.title, flow.tagline),
+      says: [flow.title, flow.tagline],
+    },
+  ];
+  let at = shots[0].frames;
+  for (const [i, s] of flow.steps.entries()) {
+    // A chapter starts on a whole second, so a phase does: the picture before
+    // it is held until the next one.
+    if (s.opens && at % FPS) {
+      const wait = FPS - (at % FPS);
+      shots.at(-1).frames += wait;
+      at += wait;
+    }
+    const frames = hold(
+      s.opens ? s.phase : "",
+      route(s),
+      s.kind,
+      s.title,
+      s.label,
+    );
+    shots.push({
+      step: i,
+      frames,
+      says: [
+        ...(s.opens ? [`${s.part}: ${s.phase}`] : []),
+        `${counter(flow, i)}: ${s.title}`,
+      ],
+    });
+    at += frames;
+  }
+  shots.push({
+    shot: "closing",
+    frames: hold(
+      site.flows.title,
+      site.home.question,
+      site.flows.lede,
+      ADDRESS,
+    ),
+    says: [site.home.question, site.flows.lede, `${ADDRESS}/flows`],
+  });
+  let start = 0;
+  for (const shot of shots) {
+    shot.start = start;
+    start += shot.frames;
+  }
+  return shots;
+}
+const seconds = (shots) => (shots.at(-1).start + shots.at(-1).frames) / FPS;
+
+/** A sentence to a caption, where the text is more than one. */
+const sentences = (said) => said.split(/(?<=[.?!])\s+(?=\p{Lu})/u);
+/**
+ * A sentence as captions of one or two lines, none longer than LINE, broken
+ * where the two lines come out most even. One too long for two lines is cut
+ * near its middle, and each half is a caption.
+ */
+function wrap(said) {
+  const all = said.split(" ");
+  if (said.length <= LINE || all.length === 1) return [[said]];
+  const cuts = all
+    .slice(1)
+    .map((_, k) => [all.slice(0, k + 1).join(" "), all.slice(k + 1).join(" ")])
+    .sort(
+      ([a, b], [c, d]) =>
+        Math.abs(a.length - b.length) - Math.abs(c.length - d.length),
+    );
+  const pair = cuts.find(([a, b]) => a.length <= LINE && b.length <= LINE);
+  return pair ? [pair] : cuts[0].flatMap(wrap);
+}
+/**
+ * The captions: what each picture says, while it is shown. Where that is more
+ * than one caption they share the time by length, each with a little added,
+ * so that a short one is not gone before it is found.
+ */
+function captions(shots) {
+  const cues = [];
+  for (const shot of shots) {
+    const mine = [];
+    for (const lines of shot.says.flatMap(sentences).flatMap(wrap)) {
+      // two short lines that follow each other are one caption
+      if (mine.length && mine.at(-1).length + lines.length <= 2)
+        mine.at(-1).push(...lines);
+      else mine.push([...lines]);
+    }
+    const size = (lines) => lines.join(" ").length + 20;
+    const whole = mine.reduce((n, lines) => n + size(lines), 0);
+    let read = 0;
+    let from = shot.start / FPS;
+    for (const lines of mine) {
+      read += size(lines);
+      const to = (shot.start + (shot.frames * read) / whole) / FPS;
+      cues.push({ from, to, lines });
+      from = to;
+    }
+  }
+  return cues;
+}
+/** A time as a caption file writes it, never later than it is. */
+const clock = (s, point) => {
+  const ms = Math.floor(s * 1000 + 1e-6);
+  const p = (n, width = 2) => String(Math.floor(n)).padStart(width, "0");
+  return `${p(ms / 3600000)}:${p((ms / 60000) % 60)}:${p((ms / 1000) % 60)}${point}${p(ms % 1000, 3)}`;
+};
+const cue = (c, i, point, text) =>
+  `${i + 1}\n${clock(c.from, point)} --> ${clock(c.to, point)}\n${c.lines.map(text).join("\n")}`;
+const vtt = (cues) =>
+  `WEBVTT\n\n${cues
+    .map((c, i) =>
+      cue(c, i, ".", (line) =>
+        line.replace(
+          /[&<>]/g,
+          (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[ch],
+        ),
+      ),
+    )
+    .join("\n\n")}\n`;
+const srt = (cues) =>
+  `${cues.map((c, i) => cue(c, i, ",", (line) => line)).join("\n\n")}\n`;
+
+/**
+ * The flow's phases as chapters: where each starts, and its name. A video site
+ * takes a list that starts at 0:00, has at least three chapters, and has none
+ * shorter than ten seconds. A phase too short to be one joins the shorter of
+ * its neighbors, under both names. A flow that cannot make such a list gets
+ * none, and this returns an empty one.
+ */
+function chapters(flow, shots) {
+  // The cover is part of the first chapter, so the first phase has to open the flow.
+  if (!flow.steps[0].opens) return [];
+  const list = shots
+    .filter((shot) => flow.steps[shot.step]?.opens)
+    .map((shot) => ({
+      at: shot.start / FPS,
+      titles: [flow.steps[shot.step].phase],
+    }));
+  list[0].at = 0;
+  const length = (k) => (list[k + 1]?.at ?? seconds(shots)) - list[k].at;
+  for (;;) {
+    const k = list.reduce(
+      (least, _, k) => (length(k) < length(least) ? k : least),
+      0,
+    );
+    if (length(k) >= CHAPTER.least) break;
+    if (list.length <= CHAPTER.fewest) return [];
+    const first =
+      k === 0 || (k < list.length - 1 && length(k + 1) < length(k - 1))
+        ? k
+        : k - 1;
+    list.splice(first, 2, {
+      at: list[first].at,
+      titles: [...list[first].titles, ...list[first + 1].titles],
+    });
+  }
+  return list.length >= CHAPTER.fewest ? list : [];
+}
+/** A time as a chapter list writes it. */
+const stamp = (s) =>
+  `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+/** What goes under the video: what it is, where the page is, its chapters, what it rests on. */
+function description(flow, list) {
+  // the license's short name is in its address: /licenses/by/4.0/ is CC BY 4.0
+  const license = /creativecommons\.org\/licenses\/([a-z-]+)\/([\d.]+)/.exec(
+    flow.license,
+  );
+  if (!license)
+    throw new Error(
+      `the license /flows/${flow.slug}/ names is not a Creative Commons one: ${flow.license}`,
+    );
+  return `${[
+    flow.title,
+    flow.tagline,
+    "",
+    flow.address,
+    "",
+    ...list.map((c) => `${stamp(c.at)} ${c.titles.join("; ")}`),
+    ...(list.length ? [""] : []),
+    flow.basis,
+    `Text and diagrams are licensed CC ${license[1].toUpperCase()} ${license[2]}: ${flow.license}`,
+  ].join("\n")}\n`;
 }
 
 /* ---------- drawing ---------- */
@@ -1036,101 +1298,126 @@ await picture(
   }),
 );
 
-// The video: a cover, each step held and then moved on from, and where to find the rest.
-const cover = slide({
-  tag: "Flow",
-  body: `
-    <p class="eyebrow">${esc(flow.count)}</p>
-    <h1>${esc(flow.title)}</h1>
-    <p class="lede">${esc(flow.tagline)}</p>`,
-  path: `/flows/${flow.slug}`,
-});
-await picture(`flow-${flow.slug}-cover.png`, TALL, cover);
+// A flow's video: a cover, each step moved to and then held, and where to find
+// the rest. Beside it, its captions and the description to post it with.
+const ffmpeg = VIDEO && spawnSync("ffmpeg", ["-version"]).status === 0;
+if (VIDEO && !ffmpeg)
+  console.log("ffmpeg is not on the path: no video was made.");
 
-if (VIDEO) {
-  const has = spawnSync("ffmpeg", ["-version"]).status === 0;
-  if (!has) {
-    console.log("ffmpeg is not on the path: no video was made.");
-  } else {
-    const dir = mkdtempSync(join(tmpdir(), "social-"));
-    const s = await sheet(TALL, 1);
-    const frames = [];
-    const frame = async (html, seconds) => {
-      const file = join(dir, `${String(frames.length).padStart(4, "0")}.png`);
-      for (const p of await s.draw(html))
-        tight.add(p.replace(/^page 1/, "a step"));
-      await s.page.screenshot({ path: file });
-      frames.push({ file, seconds });
-    };
-    const tight = new Set();
-    const at = (i, y) =>
-      slide({
-        tag: "Flow",
-        main: "from-top",
-        body: step(flow, i, y),
-        path: `/flows/${flow.slug}`,
-      });
-    await frame(cover, 1.8);
-    for (const i of flow.steps.keys()) {
-      const to = offset(flow, i);
-      const from = i === 0 ? to : offset(flow, i - 1);
-      // the diagram glides to the next step; where it does not have to move, it does not
-      const moves = Math.abs(to - from) > 0.5 ? GLIDE : 0;
-      for (let k = 1; k <= moves; k++) {
-        const t = k / (moves + 1);
-        const ease = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-        await frame(at(i, from + (to - from) * ease), 1 / FPS);
-      }
-      await frame(at(i, to), HOLD - moves / FPS);
+async function film(flow) {
+  const name = `flow-${flow.slug}`;
+  const cover = slide({
+    tag: "Flow",
+    body: `
+      <p class="eyebrow">${esc(flow.count)}</p>
+      <h1>${esc(flow.title)}</h1>
+      <p class="lede">${esc(flow.tagline)}</p>`,
+    path: `/flows/${flow.slug}`,
+  });
+  await picture(`${name}-cover.png`, TALL, cover);
+  if (!ffmpeg) return "the cover only";
+
+  // What is written beside the video is timed from the same list of pictures,
+  // and is worked out first: a page that cannot be described stops it here.
+  const shots = timeline(flow, site);
+  const cues = captions(shots);
+  const list = chapters(flow, shots);
+  const beside = [
+    [`${name}.vtt`, vtt(cues)],
+    [`${name}.srt`, srt(cues)],
+    [`${name}.txt`, description(flow, list)],
+  ];
+  const closing = slide({
+    body: `
+      <p class="eyebrow">${esc(site.flows.title)}</p>
+      <h1>${esc(site.home.question)}</h1>
+      <p class="lede">${esc(site.flows.lede)}</p>`,
+    path: "/flows",
+    note: site.home.descriptor,
+  });
+  const dir = mkdtempSync(join(tmpdir(), "social-"));
+  const s = await sheet(TALL, 1);
+  const pictures = [];
+  const tight = new Set();
+  const frame = async (html, frames) => {
+    const file = join(dir, `${String(pictures.length).padStart(4, "0")}.png`);
+    for (const p of await s.draw(html))
+      tight.add(p.replace(/^page 1/, "a step"));
+    await s.page.screenshot({ path: file });
+    pictures.push({ file, frames });
+  };
+  const at = (i, y) =>
+    slide({
+      tag: "Flow",
+      main: "from-top",
+      body: step(flow, i, y),
+      path: `/flows/${flow.slug}`,
+    });
+  for (const shot of shots) {
+    if (shot.shot) {
+      await frame(shot.shot === "cover" ? cover : closing, shot.frames);
+      continue;
     }
-    await frame(
-      slide({
-        body: `
-          <p class="eyebrow">${esc(site.flows.title)}</p>
-          <h1>${esc(site.home.question)}</h1>
-          <p class="lede">${esc(site.flows.lede)}</p>`,
-        path: "/flows",
-        note: site.home.descriptor,
-      }),
-      3.2,
-    );
-    await s.close();
-    // The last picture is named twice: the format takes a length from the line after it.
-    const listing = `${frames.map((f) => `file '${f.file}'\nduration ${f.seconds.toFixed(4)}`).join("\n")}\nfile '${frames.at(-1).file}'\n`;
-    writeFileSync(join(dir, "frames.txt"), listing);
-    const file = `flow-${flow.slug}.mp4`;
-    const made = spawnSync(
-      "ffmpeg",
-      [
-        "-y",
-        "-loglevel",
-        "error",
-        "-f",
-        "concat",
-        "-safe",
-        "0",
-        "-i",
-        join(dir, "frames.txt"),
-        "-vf",
-        `fps=${FPS},format=yuv420p`,
-        "-c:v",
-        "libx264",
-        "-preset",
-        "slow",
-        "-crf",
-        "18",
-        "-movflags",
-        "+faststart",
-        join(out, file),
-      ],
-      { encoding: "utf8" },
-    );
-    rmSync(dir, { recursive: true, force: true });
-    for (const t of tight) problems.push(`${file}: ${t}`);
-    if (made.status !== 0)
-      problems.push(`${file}: ffmpeg failed. ${made.stderr}`);
-    else note(file);
+    const i = shot.step;
+    const to = offset(flow, i);
+    const from = i === 0 ? to : offset(flow, i - 1);
+    // the diagram glides to the next step; where it does not have to move, it does not
+    const moves = Math.abs(to - from) > 0.5 ? GLIDE : 0;
+    for (let k = 1; k <= moves; k++) {
+      const t = k / (moves + 1);
+      const ease = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      await frame(at(i, from + (to - from) * ease), 1);
+    }
+    await frame(at(i, to), shot.frames - moves);
   }
+  await s.close();
+  // The last picture is named twice: the format takes a length from the line after it.
+  const listing = `${pictures.map((p) => `file '${p.file}'\nduration ${(p.frames / FPS).toFixed(6)}`).join("\n")}\nfile '${pictures.at(-1).file}'\n`;
+  writeFileSync(join(dir, "frames.txt"), listing);
+  const made = spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-loglevel",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      join(dir, "frames.txt"),
+      "-vf",
+      `fps=${FPS},format=yuv420p`,
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "18",
+      "-movflags",
+      "+faststart",
+      join(out, `${name}.mp4`),
+    ],
+    { encoding: "utf8" },
+  );
+  rmSync(dir, { recursive: true, force: true });
+  for (const t of tight) problems.push(`${name}.mp4: ${t}`);
+  if (made.status !== 0) {
+    problems.push(`${name}.mp4: ffmpeg failed. ${made.stderr}`);
+    return "no video";
+  }
+  note(`${name}.mp4`);
+  for (const [file, text] of beside) {
+    writeFileSync(join(out, file), text);
+    note(file);
+  }
+  return `${stamp(seconds(shots))}, ${cues.length} captions, ${list.length ? `${list.length} chapters` : "no chapters"}`;
+}
+
+const listed = site.flows.groups.flatMap((g) => g.flows.map((f) => f.slug));
+for (const slug of ALL ? listed : [FLOW]) {
+  const one = slug === FLOW ? flow : await readFlow(slug);
+  console.log(`${slug}: ${one.steps.length} steps, ${await film(one)}`);
 }
 
 await browser.close();

@@ -22,6 +22,7 @@ On `feat/search-and-answer-engines`:
 - **The next page is loaded while the pointer rests on its link**, by speculation rules. Chromium only; other browsers ignore them.
 - **`npm run indexnow`** tells Bing and the other engines that take part in IndexNow which pages changed. Google does not take part ([IndexNow](https://www.indexnow.org/faq)).
 - **A card's description ends at a sentence**, not at an ellipsis.
+- **A flow's video comes with captions and a description with chapters**, for every flow in one run. See [Video](#video).
 
 On `feat/flow-comparisons`, which builds on the first:
 
@@ -41,7 +42,7 @@ In order. None of these can be done from the repository.
 6. **Submit the main pages to Brave** at search.brave.com/submit-url. Claude's web search is reported to use Brave's index; that rests on secondary sources.
 7. **Run `site:whosonfirst.ai` in Google, Bing and Brave.** No such search was made for this review, to keep the site's name out of searches made on the owner's behalf.
 8. **Give the repository on GitHub a description, the site's address and topics.** Cheap. No study supports it.
-9. **Post a video for each flow.** `npm run social:assets -- --flow <slug>` makes one from the built site. See [Video](#video).
+9. **Post a video for each flow.** `npm run social:assets -- --all-flows` makes a video, its captions and a description with chapters for every flow, in about eleven minutes. See [Video](#video).
 
 Two things seen on the live site that the repository does not control: an address without its closing slash is redirected with a 307, which says “temporarily”; and the host's own “not found” response carries none of the site's headers. Both are small.
 
@@ -68,7 +69,7 @@ Each is a new page or a new section, so each starts as an issue. In order of wha
 
 **On a video site, linked from here.** YouTube is reported as the domain most often cited in AI Overviews, and mentions there go with a brand's visibility in AI answers; both are vendors' figures and correlations ([Ahrefs, December 2025](https://ahrefs.com/blog/ai-brand-visibility-correlations/)). The content security policy forbids an embed, so the site links out.
 
-The site can already make its own videos: `scripts/social-assets.mjs` steps through any flow's diagram from the built page and writes an MP4, with no hand work. What a video site also wants can come from the same steps: captions, and a description with chapters. A video's chapters need a first one at 00:00, at least three, and ten seconds each ([YouTube](https://support.google.com/youtube/answer/9884579)), so a flow's phases suit them better than its steps. Each step should be held for as long as it takes to read, not for a fixed two seconds. A spoken version would need a text-to-speech program, which is a new dependency and a decision: Kokoro is reported to run on a laptop, with weights under Apache-2.0; say in the description that the voice is synthetic.
+The site makes its own videos, with no hand work. `scripts/social-assets.mjs` steps through a flow's diagram from the built page and writes an MP4, and now also its captions and a description with chapters, all timed from one list of frames. Each step is held for as long as its frame takes to read, so a video runs one to two minutes. A video's chapters need a first one at 00:00, at least three, and ten seconds each ([YouTube](https://support.google.com/youtube/answer/9884579)), so they are the flow's phases, not its steps. A spoken version would need a text-to-speech program, which is a new dependency and a decision: Kokoro is reported to run on a laptop, with weights under Apache-2.0; say in the description that the voice is synthetic.
 
 ## Turned down
 
