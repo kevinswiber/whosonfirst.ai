@@ -401,3 +401,34 @@ test("no two pages a search engine may list share a title or a description", () 
   }
   assert.deepEqual(some(shared), []);
 });
+
+// What a page offers a reader who wants it as text, and a browser that can
+// load the next page ahead. Both are in every page, so both are read here.
+test("every page with a Markdown copy links to it in its footer, and every page's speculation rules name only pages", () => {
+  const wrong = [];
+  for (const p of withCopy) {
+    const footer = p.html.slice(p.html.indexOf('<footer class="site-footer"'));
+    if (!footer.includes(`href="${copyOf(p)}" type="text/markdown"`))
+      wrong.push(`${p.path} (no link to ${copyOf(p)} in its footer)`);
+  }
+  for (const p of built) {
+    const rules = /<script type="speculationrules">([\s\S]*?)<\/script>/.exec(
+      head(p),
+    )?.[1];
+    try {
+      const where = JSON.parse(rules).prerender[0].where.and;
+      // a page's address has no dot in it; every file's has
+      assert.deepEqual(where, [
+        { href_matches: "/*" },
+        { not: { href_matches: "/*.*" } },
+      ]);
+    } catch {
+      wrong.push(`${p.path} (no speculation rules, or not the ones expected)`);
+    }
+  }
+  assert.ok(
+    built.every((p) => !p.path.includes(".")),
+    "a page has a dot in its address, which the speculation rules take for a file",
+  );
+  assert.deepEqual(some(wrong), []);
+});

@@ -207,6 +207,16 @@ const nav = [
   { href: "/glossary/", label: "Glossary" },
 ];
 const path = Astro.url.pathname;
+const SPECULATION = JSON.stringify({
+  prerender: [
+    {
+      where: {
+        and: [{ href_matches: "/*" }, { not: { href_matches: "/*.*" } }],
+      },
+      eagerness: "moderate",
+    },
+  ],
+});
 const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
 ---
 
@@ -243,6 +253,13 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     <meta name="twitter:image:alt" content={cardAlt} />
     <meta name="twitter:creator" content={AUTHOR.x} />
     {!noindex && <script is:inline type="application/ld+json" set:html={jsonLd} />}
+    {/*
+      A browser that reads these rules starts loading a page of the site when
+      the reader's pointer rests on a link to it, so the page is there when the
+      link is pressed. Only pages: a file, such as a page's Markdown copy, has a
+      dot in its address. A browser that does not read them does nothing.
+    */}
+    <script is:inline type="speculationrules" set:html={SPECULATION} />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0e0f11" media="(prefers-color-scheme: dark)" />
     <script is:inline>
@@ -320,6 +337,18 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             Made by <a href={AUTHOR.url} rel="author">{AUTHOR.name}</a>. The <a href={SOURCE}>source is on GitHub</a>.
             Found something wrong or out of date? <a href="/about/#corrections">Say so</a>.
           </p>
+          {
+            markdown && (
+              <p class="as-text">
+                Reading with an assistant? <a href={markdownHref} type="text/markdown">This page as Markdown</a> is the
+                same words without the layout, and <a href="/llms.txt">llms.txt</a> lists every page that way.
+              </p>
+              <p class="as-text-copy" hidden>
+                <button class="btn small ghost" type="button" data-copy={markdownHref}>Copy this page as Markdown</button>{' '}
+                <span class="as-text-said" aria-live="polite"></span>
+              </p>
+            )
+          }
         </div>
         <ul>
           {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
@@ -429,6 +458,27 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
         } else if (menu && !popovers) {
           // without popovers the list would sit open on the page: put it away
           menu.hidden = true;
+        }
+      }
+
+      // The page as Markdown, copied, for pasting into an assistant. The link
+      // beside the button leads to the same text, so the button appears only
+      // where the browser can copy.
+      {
+        const button = document.querySelector<HTMLButtonElement>('.site-footer [data-copy]');
+        const said = document.querySelector<HTMLElement>('.site-footer .as-text-said');
+        if (button && said && navigator.clipboard) {
+          button.parentElement!.hidden = false;
+          button.addEventListener('click', async () => {
+            try {
+              const copy = await fetch(button.dataset.copy!);
+              if (!copy.ok) throw new Error(String(copy.status));
+              await navigator.clipboard.writeText(await copy.text());
+              said.textContent = 'Copied';
+            } catch {
+              said.textContent = 'Not copied: the link has the same text';
+            }
+          });
         }
       }
 
@@ -606,7 +656,8 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .menu-toggle,
     .quick,
     nav,
-    .theme {
+    .theme,
+    .as-text-copy {
       display: none !important;
     }
     .site-header {
@@ -861,8 +912,16 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     max-width: 30rem;
     margin: 0.4rem 0 0;
   }
-  .foot .by {
+  .foot .by,
+  .foot .as-text {
     margin-top: 0.9rem;
+  }
+  .foot .as-text-copy {
+    margin-top: 0.6rem;
+  }
+  .foot .as-text-said {
+    color: var(--fg-muted);
+    font-size: 0.85rem;
   }
   .foot ul {
     list-style: none;
