@@ -1,0 +1,114 @@
+# Tells the search engines that take part in IndexNow which pages a push to
+# main changed, once the site that has them is deployed. Before this, someone
+# had to run `npm run indexnow -- --since <day>` by hand after a deploy, and
+# remember the day.
+#
+# The site is not deployed from here: Cloudflare's Workers Builds builds and
+# deploys every push to main, a minute or two after it. So this workflow
+# builds the same commit for itself, from the whole history, since the dates
+# in the sitemap are read from it. Then scripts/indexnow.mjs does three things:
+#
+#   chooses  the pages whose date is the date of a commit this push brought
+#            to main: the commits after `github.event.before`. No page, and
+#            it says so and sends nothing
+#   waits    until the deployed sitemap lists each of those pages with a date
+#            no older than this build's, looking every fifteen seconds. An
+#            engine that is told about a page goes and reads it, and should
+#            find the new one. After ten minutes it fails with nothing sent
+#   sends    the list
+#
+# What `before` can be: the commit main was at, which is the usual case. All
+# zeros, for the first push of a branch, which the script reads as "every
+# page". Or, after a forced push, a commit that is no longer in main's
+# history: it is fetched by name, and the pages sent are those changed by the
+# commits main has now and did not have then. If it cannot be fetched, every
+# page is sent, with a warning on the run.
+#
+# Run by hand, it sends every page or the pages changed since a day or a
+# commit, and with "dry run" it only prints the list.
+#
+# One run at a time, in the order they were asked for. GitHub keeps one run
+# waiting behind the one in progress, so a third push inside those few minutes
+# takes the place of the second run, whose pages are then not sent: run it
+# again from its page, or run this by hand with a day.
+#
+# The key that proves the list comes from whoever runs the site is the file in
+# public/ named for it. It is not a secret, and this workflow needs none. It
+# does not run on a pull request, on a branch other than main or in a fork.
+name: IndexNow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: Which pages to send
+        type: choice
+        options: [since, all]
+        default: since
+      since:
+        description: "With “since”: a day (YYYY-MM-DD) or a commit. Pages changed on or after the day, or by the commits after that one"
+        type: string
+      dry_run:
+        description: Print the list and send nothing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  submit:
+    name: Tell IndexNow what changed
+    if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # The build takes about a minute, and the wait for the deploy up to ten.
+    timeout-minutes: 20
+    steps:
+      # The whole history: a shallow clone cannot date a page, and the build
+      # fetches the rest by itself only in Workers Builds.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+      # What the event and the form say is read from the environment, never
+      # written into the script.
+      - name: Choose the pages, wait for the deploy and send
+        env:
+          BEFORE: ${{ github.event.before }}
+          PAGES: ${{ inputs.pages }}
+          SINCE: ${{ inputs.since }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            set -- --since "$BEFORE"
+            # A commit that is not all zeros and not in this clone was taken
+            # out of main's history by a forced push.
+            if [ -n "${BEFORE//0/}" ] && ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              if ! git fetch --quiet origin "$BEFORE"; then
+                echo "::warning::The commit main was at before this push, $BEFORE, could not be fetched, so every page is sent."
+                set -- --all
+              fi
+            fi
+          elif [ "$PAGES" = all ]; then
+            set -- --all
+          else
+            set -- --since "$SINCE"
+          fi
+          if [ "$DRY_RUN" = true ]; then set -- "$@" --dry-run; fi
+          npm run --silent indexnow -- "$@" --wait
