@@ -18,7 +18,7 @@
     "check:rating": "node --test --test-reporter=spec test/unit/rating.test.mjs",
     "check:contrast": "node --test --test-reporter=spec test/unit/contrast.test.mjs",
     "check:sources": "node --test --test-reporter=spec test/unit/sources.test.mjs",
-    "check:rendered": "node scripts/built-site.mjs && node --test --test-reporter=spec \"test/build/*.test.mjs\" \"test/browser/*.test.mjs\"",
+    "check:rendered": "node scripts/built-site.mjs && node --test --test-reporter=spec \"test/build/*.test.mjs\" \"test/browser/*.test.mjs\" \"test/worker/*.test.mjs\"",
     "readme:figure": "node scripts/readme-figure.mjs",
     "social:assets": "node scripts/social-assets.mjs",
     "indexnow": "node scripts/indexnow.mjs",

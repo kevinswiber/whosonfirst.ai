@@ -124,7 +124,7 @@ Every page of the guide is also published as Markdown, made from the page as bui
 | Every page in one file, about 1.2 MB | [`https://whosonfirst.ai/llms-full.txt`](https://whosonfirst.ai/llms-full.txt)                                                |
 | One page                             | The page’s address and `index.md`: [`https://whosonfirst.ai/flows/dpop/index.md`](https://whosonfirst.ai/flows/dpop/index.md) |
 
-Each page also names its copy in a `<link rel="alternate" type="text/markdown">`, and `robots.txt` says, in the terms of [contentsignals.org](https://contentsignals.org/), that the site may be indexed, used to answer questions, and used for training.
+A request for a page that asks for Markdown, with `Accept: text/markdown`, gets the copy at the page’s own address. Each page also names its copy in a `<link rel="alternate" type="text/markdown">`, and `robots.txt` says, in the terms of [contentsignals.org](https://contentsignals.org/), that the site may be indexed, used to answer questions, and used for training.
 
 Some ways to put that to work:
 

@@ -2,6 +2,7 @@ import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
 import { defineConfig } from "astro/config";
 import markdownPages from "./src/integrations/markdown-pages.mjs";
+import markdownWorker from "./src/integrations/markdown-worker.mjs";
 import pageDates from "./src/integrations/page-dates.mjs";
 import socialCards from "./src/integrations/social-cards.mjs";
 import { codeThemes } from "./src/lib/code-themes.mjs";
@@ -9,10 +10,17 @@ import { codeThemes } from "./src/lib/code-themes.mjs";
 export default defineConfig({
   site: "https://whosonfirst.ai",
   // pageDates reads the repository's history before the pages are built, so each
-  // can say when it last changed. The last two run once the pages are built. Each
+  // can say when it last changed. The next two run once the pages are built. Each
   // makes another form of every page from the page itself: a card for where its
-  // link is shared, and Markdown.
-  integrations: [mdx(), pageDates(), socialCards(), markdownPages()],
+  // link is shared, and Markdown. markdownWorker then puts a Worker in front of
+  // the pages, which sends the Markdown to a request that asks for it.
+  integrations: [
+    mdx(),
+    pageDates(),
+    socialCards(),
+    markdownPages(),
+    markdownWorker(),
+  ],
 
   markdown: {
     shikiConfig: {

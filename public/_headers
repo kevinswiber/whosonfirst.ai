@@ -12,8 +12,8 @@
 # names this host only, not subdomains.
 #
 # Link tells a program where the list of pages in Markdown is. Vary is there
-# because the host can be set to answer a request that asks for Markdown
-# (Accept: text/markdown) with a page's Markdown copy at the page's own address.
+# because a request that asks for Markdown (Accept: text/markdown) is answered
+# with a page's Markdown copy at the page's own address, by src/worker.ts.
 #
 # If something from another origin is ever added (analytics, an embed, a font),
 # it has to be allowed here as well. `npm run check:rendered` serves the built
