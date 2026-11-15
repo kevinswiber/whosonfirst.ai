@@ -123,7 +123,9 @@ const rows: { on: string; cells: [string, string] }[] = [
   },
 ];
 
-const compared = both.flatMap((f) => basisOf(f).slice(0, 1)).map(std);
+// Every specification either flow's page names as its basis, once each. The line says the
+// diagrams are based on them, which is the most a flow's own page claims for some of them.
+const compared = [...new Set(both.flatMap(basisOf))].map(std);
 const taught = both
   .map((f) => (f.lesson ? lessonBySlug(f.lesson) : undefined))
   .filter((l, i, all) => l && all.indexOf(l) === i);
@@ -178,7 +180,7 @@ const details = [
           <Fragment set:html={block(c.shared, g)} />
           <DocMeta
             based={compared.length > 0
-              ? { key: 'Compares', refs: compared.map((s) => ({ ref: s.ref, href: `/standards/#${s.id}` })) }
+              ? { key: 'Diagrams based on', refs: compared.map((s) => ({ ref: s.ref, href: `/standards/#${s.id}` })) }
               : undefined}
             reviewed={REVIEWED}
             subject="Comparison"
