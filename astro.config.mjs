@@ -2,14 +2,17 @@ import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
 import { defineConfig } from "astro/config";
 import markdownPages from "./src/integrations/markdown-pages.mjs";
+import pageDates from "./src/integrations/page-dates.mjs";
 import socialCards from "./src/integrations/social-cards.mjs";
 import { codeThemes } from "./src/lib/code-themes.mjs";
 
 export default defineConfig({
   site: "https://whosonfirst.ai",
-  // The last two run once the pages are built. Each makes another form of every
-  // page from the page itself: a card for where its link is shared, and Markdown.
-  integrations: [mdx(), socialCards(), markdownPages()],
+  // pageDates reads the repository's history before the pages are built, so each
+  // can say when it last changed. The last two run once the pages are built. Each
+  // makes another form of every page from the page itself: a card for where its
+  // link is shared, and Markdown.
+  integrations: [mdx(), pageDates(), socialCards(), markdownPages()],
 
   markdown: {
     shikiConfig: {

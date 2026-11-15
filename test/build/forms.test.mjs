@@ -3,7 +3,7 @@
 // from the page when the site is built (src/integrations/), and each is named
 // in the page's own head, so the head is where this starts.
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -330,4 +330,115 @@ test("the sitemap includes every indexable page, including implementation record
     missing.map((page) => page.path),
     [],
   );
+});
+
+// A date is given only where it is known, and then the same one everywhere it
+// is given: a search engine trusts a sitemap's dates only while they hold up.
+test("a page's date in the sitemap is the one in its structured data and in its footer, and none is in the future", () => {
+  const listed = new Map(
+    [
+      ...file("sitemap.xml").matchAll(
+        /<loc>([^<]+)<\/loc>(?:<lastmod>([^<]+)<\/lastmod>)?/g,
+      ),
+    ].map(([, loc, lastmod]) => [new URL(loc).pathname, lastmod]),
+  );
+  const wrong = [];
+  for (const p of indexed) {
+    const graph = JSON.parse(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
+        head(p),
+      )[1],
+    )["@graph"];
+    const said = graph.find((n) => n["@type"] === "WebPage").dateModified;
+    const lastmod = listed.get(p.path);
+    if (said !== lastmod)
+      wrong.push(`${p.path} (sitemap ${lastmod}, structured data ${said})`);
+    for (const n of graph.filter((n) => n["@type"] === "TechArticle"))
+      if (n.dateModified !== said)
+        wrong.push(`${p.path} (its article says ${n.dateModified})`);
+    if (said && !(Date.parse(said) <= Date.now()))
+      wrong.push(`${p.path} (${said} is not a date that has passed)`);
+    const shown = /This page last changed <time datetime="([^"]*)"/.exec(
+      p.html,
+    )?.[1];
+    if (shown && shown !== said)
+      wrong.push(`${p.path} (footer ${shown}, structured data ${said})`);
+    const published = graph.find((n) => n["@type"] === "WebPage").datePublished;
+    if (published && !(Date.parse(published) <= Date.parse(said)))
+      wrong.push(`${p.path} (published ${published}, after it last changed)`);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+test("a page's Markdown copy ends with the date its footer gives", () => {
+  const wrong = [];
+  for (const p of withCopy) {
+    const day = /This page last changed <time[^>]*>([^<]*)<\/time>/.exec(
+      p.html,
+    )?.[1];
+    if (day && !file(copyOf(p)).includes(`This page last changed ${day}.`))
+      wrong.push(p.path);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+// A search result is a title and a description. Two pages that give the same
+// one cannot be told apart there, and a search engine may show only one.
+test("no two pages a search engine may list share a title or a description", () => {
+  const shared = [];
+  for (const [what, read] of [
+    ["title", (p) => /<title>([^<]*)<\/title>/.exec(head(p))?.[1]],
+    ["description", (p) => attr(p, /name="description"/, "content")],
+  ]) {
+    const seen = new Map();
+    for (const p of indexed) {
+      const text = read(p);
+      if (!text) shared.push(`${p.path} (no ${what})`);
+      else if (seen.has(text))
+        shared.push(`${p.path} and ${seen.get(text)} (the same ${what})`);
+      else seen.set(text, p.path);
+    }
+  }
+  assert.deepEqual(some(shared), []);
+});
+
+// What a page offers a reader who wants it as text, and a browser that can
+// load the next page ahead. Both are in every page, so both are read here.
+test("every page with a Markdown copy links to it in its footer, and every page's speculation rules name only pages", () => {
+  const wrong = [];
+  for (const p of withCopy) {
+    const footer = p.html.slice(p.html.indexOf('<footer class="site-footer"'));
+    if (!footer.includes(`href="${copyOf(p)}" type="text/markdown"`))
+      wrong.push(`${p.path} (no link to ${copyOf(p)} in its footer)`);
+  }
+  for (const p of built) {
+    const rules = /<script type="speculationrules">([\s\S]*?)<\/script>/.exec(
+      head(p),
+    )?.[1];
+    try {
+      const where = JSON.parse(rules).prerender[0].where.and;
+      // a page's address has no dot in it; every file's has
+      assert.deepEqual(where, [
+        { href_matches: "/*" },
+        { not: { href_matches: "/*.*" } },
+      ]);
+    } catch {
+      wrong.push(`${p.path} (no speculation rules, or not the ones expected)`);
+    }
+  }
+  assert.ok(
+    built.every((p) => !p.path.includes(".")),
+    "a page has a dot in its address, which the speculation rules take for a file",
+  );
+  assert.deepEqual(some(wrong), []);
+});
+
+// IndexNow takes a list of changed pages only from whoever can put a key at
+// the site's root: a file named for the key, holding the key.
+test("the IndexNow key is served from the site's root and holds its own name", () => {
+  const keys = readdirSync(root).filter((name) =>
+    /^[0-9a-f]{8,128}\.txt$/.test(name),
+  );
+  assert.equal(keys.length, 1, `${keys.length} key files in the build`);
+  assert.equal(file(keys[0]).trim(), keys[0].slice(0, -4));
 });

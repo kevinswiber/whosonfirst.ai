@@ -98,10 +98,16 @@ const el = (type, style, children, props = {}) => ({
   props: { style: { display: "flex", ...style }, children, ...props },
 });
 
-/** Cut at a word, so a long description ends cleanly inside its three lines. */
+/**
+ * A long description, cut to fit its three lines. It ends at the end of a
+ * sentence where one falls in the second half of the room there is, so that
+ * nothing is left hanging; otherwise it is cut at a word and says so.
+ */
 const clip = (text, max) => {
   if (text.length <= max) return text;
-  const cut = text.slice(0, max);
+  const cut = text.slice(0, max + 1);
+  const sentence = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("? "));
+  if (sentence >= max / 2) return cut.slice(0, sentence + 1);
   return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:.]$/, "")}…`;
 };
 

@@ -13,6 +13,7 @@ export const lessons: Lesson[] = [
   {
     slug: "what-the-api-sees",
     title: "What does the API actually see?",
+    searchTitle: "What does an API see when an agent calls it?",
     short: "What the API sees",
     promise:
       "Say what an API can and cannot know about a request from an agent, and why an API key is not enough.",
@@ -34,6 +35,7 @@ export const lessons: Lesson[] = [
   {
     slug: "tokens",
     title: "What is a token?",
+    searchTitle: "What is an access token?",
     short: "What a token is",
     promise:
       "Read an access token, name the five checks an API runs before believing it, and say what a valid token still does not prove.",
@@ -105,6 +107,7 @@ export const lessons: Lesson[] = [
   {
     slug: "whose-authority",
     title: "What if nobody is there to sign in?",
+    searchTitle: "Should an agent act for a person or as itself?",
     short: "The agent’s own identity",
     promise:
       "Decide whether an agent should act for a person or as itself, and say where an agent’s own identity comes from.",

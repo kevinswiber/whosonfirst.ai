@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const agentPayments: Flow = {
   slug: "agent-payments",
   title: "Agent payments with signed mandates",
+  searchTitle: "Agent payments (AP2) with signed mandates",
   short: "Agent payments (AP2)",
   group: "agent-to-agent",
   human: "reachable",

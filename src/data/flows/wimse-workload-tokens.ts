@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const wimseWorkloadTokens: Flow = {
   slug: "wimse-workload-tokens",
   title: "Workload identity tokens with proof of possession",
+  searchTitle: "WIMSE workload identity tokens with proof of possession",
   short: "Workload tokens (WIMSE)",
   group: "autonomous",
   human: "absent",

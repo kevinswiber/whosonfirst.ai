@@ -102,6 +102,13 @@ export const REF_ROLE_BLURB: Record<RefRole, string> = {
 export interface Flow {
   slug: string;
   title: string;
+  /**
+   * The page's title where it is read away from the site: in a search result, a
+   * browser tab, a shared link. Give one where `title` does not carry the name
+   * people type for the flow, and keep it to `title` with that name added. The
+   * heading on the page stays `title`.
+   */
+  searchTitle?: string;
   /** Name used in cards and nav. */
   short: string;
   group: FlowGroup;

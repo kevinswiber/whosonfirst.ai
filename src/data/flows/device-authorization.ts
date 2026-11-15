@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const deviceAuthorization: Flow = {
   slug: "device-authorization",
   title: "Device authorization grant",
+  searchTitle: "Device authorization grant (device flow)",
   short: "Device authorization",
   group: "human-present",
   human: "present",

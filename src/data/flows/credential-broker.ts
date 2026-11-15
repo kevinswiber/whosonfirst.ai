@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const credentialBroker: Flow = {
   slug: "credential-broker",
   title: "Credential injection at the egress proxy",
+  searchTitle: "Credential broker: credential injection at the egress proxy",
   short: "Credential broker",
   group: "cross-cutting",
   human: "any",

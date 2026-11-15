@@ -3,8 +3,14 @@ import type { Role } from "../types";
 
 export interface Lesson {
   slug: string;
-  /** The question the lesson answers. It is the page's title. */
+  /** The question the lesson answers. It is the page's heading. */
   title: string;
+  /**
+   * The question as it reads away from the site, in a search result or a shared
+   * link, where nothing says the subject is agents and access. Only for a
+   * lesson whose question needs the lessons around it to be understood.
+   */
+  searchTitle?: string;
   /** A few words for lists and the progress strip. */
   short: string;
   /** What the reader will be able to do afterwards. One sentence. */
