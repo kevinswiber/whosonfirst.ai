@@ -429,6 +429,38 @@ Every word in these pictures is read from the pages as built: the home page's qu
 
 The PDF is made to be read without being seen. LinkedIn lets anyone who can see a document post download the document, and gives accessibility as the reason, so the file a reader downloads is the accessible form of the carousel. It is tagged: its headings, tables and lists are marked as such, in reading order, its language is set, and the one picture in it, the diagram, has a description. Its title is the home page's question. The pages of the carousel are written with the elements that say what they are, a heading as a heading and a table as a table, and the tags come from those, so keep them that way.
 
+### A flow as a film
+
+A pilot, for one flow so far. `scripts/flow-film.mjs` tells the DPoP flow as a short film at 1920 × 1080: the question the flow answers, its steps one at a time, and what it does not protect. It is another thing than the stepped video above, which shows the flow's page a step to a frame. The film shows only what has happened so far, dims the parties that take no part in a step, and marks a line of a listing when it is spoken of.
+
+```bash
+npm run build
+```
+
+```bash
+npm run film -- --flow dpop
+```
+
+It writes `film-<slug>.mp4` to `social/`, with captions (`.vtt`, `.srt`) and a description with chapters (`.txt`).
+
+[Films](films.md) says how one is told: what it holds to, what has been decided about how it looks and sounds, and what the next one needs.
+
+**What is said, and what is drawn.** What is said is in `scripts/films/<slug>.mjs`, a line to a beat, written for the ear and held to what the flow's page says: each line's source on the page is in a comment beside it. What is drawn is the flow's own data, read from `src/data/flows/<slug>.ts`: its parties, each step's arrow and label, the lines of its listings, and what a party comes to hold. `scripts/film-stage.js` draws it, and runs in the page the script opens. The scenes before and after the steps (the problem, the copied token refused, the caveat) are written for DPoP: another flow needs its own.
+
+**A frame at a time.** The stage can be put at any second, and each frame is a photograph of it at its own. Nothing waits on a clock, so the same film comes out every time. A frame like the one before it is not photographed again.
+
+**With a voice.** `--voice kokoro` has each line said by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open text-to-speech model that runs on a processor. A beat then lasts as long as its recording, and what happens on the stage happens at the word that names it. The words are left off the picture, since the same words said and written at once get in each other's way; they are in the caption files, and `--captions on` puts them back. Without a voice a beat lasts as long as its words take to say, and they are written under the scene.
+
+Kokoro is not one of this repository's dependencies. It needs a Python of its own, set up as the top of `scripts/film-voice.py` says, and named in `FILM_PYTHON`:
+
+```bash
+FILM_PYTHON=~/.venvs/kokoro/bin/python npm run film -- --flow dpop --voice kokoro
+```
+
+A line is said once and kept in `social/voice/`, so a film made again says only what has changed. A word the voice would say wrong is written for it as it sounds, under `speak` in the film's script. A word that is not said as it is spelled can be written on the stage as it is said, with `gloss`: JWT is said “jot” ([RFC 7519](https://www.rfc-editor.org/rfc/rfc7519#section-1)).
+
+Nobody has to listen for the film to be made, and nothing checks how it sounds. Listen to a voiced film before it is posted.
+
 ## Response headers
 
 `public/_headers` is sent with every page and file the site serves: a content security policy that allows this origin and nothing else, headers that forbid framing, content sniffing and the device features the site never uses, and one that tells a browser to come back over HTTPS only. A `Link` header points a program at `llms.txt` and the sitemap. The Markdown copies and the two files that list them carry `X-Robots-Tag: noindex`, so a search engine sends people to the page. The `.md` and `.txt` files are declared as UTF-8, because the host names no encoding for a `.txt` file and a browser then reads its quotes and dashes as Windows-1252. The build adds its cache rule for `/_astro/` to the same file. Cloudflare does not add these headers to its own “not found” response.
