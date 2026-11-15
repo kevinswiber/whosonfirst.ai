@@ -12,7 +12,7 @@ export const clientCredentialsVsWorkloadIdentityFederation: Comparison = {
   flows: ["client-credentials", "workload-identity-federation"],
   question: "Client credentials or workload identity federation?",
   answer:
-    "Both let an agent with no user authenticate as itself and call an API with its own permissions. Client credentials, as its page draws it, has the agent sign a short-lived proof with a private key it holds. In workload identity federation the place the agent runs supplies a short-lived, signed identity credential, and the receiving system issues access for it. Prefer federation where the platform can identify the workload and the destination supports the trust arrangement, and client credentials with a private key elsewhere.",
+    "Both let an agent with no user authenticate as itself and call an API with its own permissions. In client credentials the agent shows the authorization server that it is a client registered there: with a client secret, or, as compared here, with a short-lived proof it signs with a private key it holds. In workload identity federation the place the agent runs supplies a short-lived, signed identity credential, and the receiving system issues access for it. Prefer federation where the platform can identify the workload and the destination supports the trust arrangement, and client credentials with a private key elsewhere.",
   description:
     "Two ways for an agent to authenticate as itself with no user, compared: what the agent holds, who signs what it presents, what is set up in advance, what a copy is worth, and when to choose which.",
   gist: "An agent authenticates as itself: with a key it holds, or with an identity its platform supplies.",
