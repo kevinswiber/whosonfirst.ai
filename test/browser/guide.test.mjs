@@ -313,3 +313,38 @@ test("a case’s page says what each start and each caution applies to, without 
   );
   assert.ok(own.some((t) => /On the user’s machine/.test(t)));
 });
+
+// Where the guide names two flows that people weigh against each other, it
+// says where that is done: this is the moment a reader is choosing. It says
+// nothing where it names only one of a pair.
+test("answers that bring up both flows of a comparison link to it, and answers that do not, do not", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  const weigh = (pair) =>
+    page.locator(`.dg-weigh .dg-flow[href="/compare/${pair}/"]`);
+  const result = (slug) => page.locator(`.dg-flow[href="/flows/${slug}/"]`);
+
+  await open(
+    page,
+    site.url(
+      "/guide/?principal=user&human=present&target=api&boundary=same&runtime=local&risk=read",
+    ),
+  );
+  for (const slug of ["dpop", "oauth-mtls"])
+    assert.equal(await result(slug).count(), 1, slug);
+  assert.equal(await weigh("dpop-vs-oauth-mtls").count(), 1);
+  assert.equal(
+    (await weigh("dpop-vs-oauth-mtls").locator("strong").textContent()).trim(),
+    "DPoP or OAuth mTLS?",
+  );
+
+  await open(
+    page,
+    site.url(
+      "/guide/?principal=user&human=present&target=web&boundary=same&runtime=local&risk=read",
+    ),
+  );
+  assert.ok((await page.locator(".dg-flow").count()) > 0, "no flow was named");
+  assert.equal(await page.locator(".dg-weigh").count(), 0);
+});

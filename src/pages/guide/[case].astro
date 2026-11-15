@@ -7,6 +7,7 @@
 // applies to. The guide's script answers for the answers it has; this page is
 // read ahead of them, so it leaves nothing out for want of an answer.
 import Base from "../../layouts/Base.astro";
+import { comparisons, comparisonSlug } from "../../data/comparisons";
 import { cautions, questions, rules, cases } from "../../data/guide";
 import type { Case } from "../../data/guide";
 import { flow, maturityLabel } from "../../data/flows";
@@ -81,6 +82,12 @@ const starts = possibleStarts(rules, fixed)
   })
   .sort((x, y) => x.applies.length - y.applies.length || y.weight - x.weight);
 
+// Where two of the flows this case starts with are ones people weigh against
+// each other, the page says where that is done.
+const weigh = comparisons.filter((c) =>
+  c.flows.every((slug) => starts.some((f) => f.slug === slug)),
+);
+
 const warn = cautions
   .filter((c) => compatible(c.when, fixed))
   .map((c) => ({ text: c.text, applies: applies(c.when) }))
@@ -154,6 +161,15 @@ const others = cases.filter((o) => o.slug !== s.slug);
             ))
           }
         </ul>
+        {
+          weigh.map((c) => (
+            <p class="case-more">
+              Two of these are often weighed against each other.{' '}
+              <a href={`/compare/${comparisonSlug(c)}/`}>{c.question}</a>{' '}
+              answers that first, then asks the same questions of each.
+            </p>
+          ))
+        }
         <p class="case-more">
           <a href={guideLink}>Answer the other {left} questions in the guide</a> to see which of these are yours, what
           to add to them and what else is worth a look.

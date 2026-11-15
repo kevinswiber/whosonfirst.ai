@@ -93,6 +93,11 @@ export const lessons: Lesson[] = [
         note: "The same flow when the agent has never seen the server before.",
       },
       {
+        href: "/compare/mcp-authorization-vs-authorization-code-pkce/",
+        label: "MCP authorization or authorization code with PKCE?",
+        note: "What MCP adds in front of the sign-in this lesson walks through, and when the plain flow is enough.",
+      },
+      {
         href: "/flows/device-authorization/",
         label: "Device authorization",
         note: "For an agent with no browser where it runs.",
@@ -132,6 +137,11 @@ export const lessons: Lesson[] = [
         note: "The platform vouches for the agent, across clouds, CI and Kubernetes.",
       },
       {
+        href: "/compare/client-credentials-vs-workload-identity-federation/",
+        label: "Client credentials or workload identity federation?",
+        note: "The two set against each other: a key the agent holds, or an identity its platform supplies.",
+      },
+      {
         href: "/deployments/",
         label: "Deployments",
         note: "Where the first credential comes from on each kind of platform.",
@@ -158,6 +168,11 @@ export const lessons: Lesson[] = [
         href: "/flows/token-exchange/",
         label: "Token exchange",
         note: "The exchange step by step, with the request and the token that comes back.",
+      },
+      {
+        href: "/compare/token-exchange-vs-identity-chaining/",
+        label: "Token exchange or identity chaining?",
+        note: "What changes when the next service belongs to another organization.",
       },
       {
         href: "/flows/biscuit-delegation/",
@@ -200,6 +215,11 @@ export const lessons: Lesson[] = [
         href: "/flows/oauth-mtls/",
         label: "OAuth access tokens bound to a TLS certificate",
         note: "How the API matches a token’s binding to the certificate presented over TLS.",
+      },
+      {
+        href: "/compare/dpop-vs-oauth-mtls/",
+        label: "DPoP or OAuth mTLS?",
+        note: "Those two ways of binding a token to a key, with the same questions asked of each.",
       },
       {
         href: "/flows/credential-broker/",
