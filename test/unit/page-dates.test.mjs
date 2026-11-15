@@ -62,3 +62,12 @@ test("where there is no history to read, no file is dated and the reason is give
   assert.deepEqual(dates, {});
   assert.match(found, /pages carry no date/);
 });
+
+test("a build that is not the deployed one never fetches: a shallow clone is reported and left as it is", () => {
+  // this repository's own clone, whatever its depth, with no sign of Workers Builds
+  const { found } = historyDates(
+    new URL("../../", import.meta.url).pathname,
+    {},
+  );
+  assert.doesNotMatch(found, /fetch/);
+});

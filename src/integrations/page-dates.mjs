@@ -17,6 +17,14 @@
  * the oldest of them: a date read from that would be wrong, and no date is
  * better than a wrong one. The build says which it found.
  *
+ * The build that is deployed is one of those: Cloudflare's Workers Builds
+ * clones shallowly, and its settings have nothing to change that. So there,
+ * and only there, the build fetches the rest of the history first. Workers
+ * Builds says where it is with `WORKERS_CI=1`:
+ * https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
+ * Anywhere else a shallow clone is left as it is, and a build never goes to
+ * the network on a contributor's machine or in the checks.
+ *
  * A commit listed in `.git-blame-ignore-revs` only reformats, so it is not a
  * change to what a page says and is passed over.
  */
@@ -62,21 +70,38 @@ export function readLog(log, ignored = new Set()) {
   return dates;
 }
 
-/** The map for the repository at `root`, and a sentence on what was found. */
-export function historyDates(root) {
+/**
+ * The map for the repository at `root`, and a sentence on what was found.
+ * `env` is the build's environment, which says whether this is the deployed build.
+ */
+export function historyDates(root, env = process.env) {
   const git = (...args) =>
     execFileSync("git", args, {
       cwd: root,
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
       stdio: ["ignore", "pipe", "ignore"],
+      timeout: 120_000,
     });
+  const shallow = () =>
+    git("rev-parse", "--is-shallow-repository").trim() !== "false";
   try {
-    if (git("rev-parse", "--is-shallow-repository").trim() !== "false")
+    let fetched = "";
+    if (shallow() && env.WORKERS_CI === "1") {
+      try {
+        git("fetch", "--unshallow", "--quiet");
+        fetched = ", after fetching the rest of it";
+      } catch {
+        // said below: the clone is still shallow
+      }
+    }
+    if (shallow())
       return {
         dates: {},
         found:
-          "the clone is shallow, so its history cannot date a page: pages carry no date",
+          env.WORKERS_CI === "1"
+            ? "the clone is shallow and the rest of its history could not be fetched: pages carry no date"
+            : "the clone is shallow, so its history cannot date a page: pages carry no date",
       };
     const revs = join(root, ".git-blame-ignore-revs");
     const ignored = existsSync(revs)
@@ -88,7 +113,7 @@ export function historyDates(root) {
     );
     return {
       dates,
-      found: `${Object.keys(dates).length} files dated from the history`,
+      found: `${Object.keys(dates).length} files dated from the history${fetched}`,
     };
   } catch {
     return {
