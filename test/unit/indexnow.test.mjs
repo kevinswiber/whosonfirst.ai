@@ -160,6 +160,11 @@ describe("the commits after one", () => {
     hashes[name] = git(root, "rev-parse", "HEAD");
   };
 
+  // A commit's date as an instant: git writes one in UTC as +00:00 or as Z,
+  // by its version, and the script compares instants.
+  const instants = (cwd, from) =>
+    commitsAfter(cwd, from).dates.map((date) => Date.parse(date));
+
   // one, two, three on main; "rewritten" is a second commit on one, as main
   // would be after a forced push that replaced two and three
   before(() => {
@@ -180,22 +185,27 @@ describe("the commits after one", () => {
   });
 
   test("are those made since, newest first, and none for the commit checked out", () => {
-    assert.deepEqual(commitsAfter(root, hashes.one), {
-      dates: ["2026-11-12T08:00:00+00:00", "2026-11-11T08:00:00+00:00"],
-    });
-    assert.deepEqual(commitsAfter(root, hashes.three), { dates: [] });
-    assert.deepEqual(commitsAfter(root, hashes.two.slice(0, 10)), {
-      dates: ["2026-11-12T08:00:00+00:00"],
-    });
+    assert.deepEqual(
+      instants(root, hashes.one),
+      ["2026-11-12T08:00:00+00:00", "2026-11-11T08:00:00+00:00"].map(
+        Date.parse,
+      ),
+    );
+    assert.deepEqual(instants(root, hashes.three), []);
+    assert.deepEqual(
+      instants(root, hashes.two.slice(0, 10)),
+      ["2026-11-12T08:00:00+00:00"].map(Date.parse),
+    );
   });
 
   test("where history was rewritten, are those that are here and were not there", () => {
     git(root, "checkout", "--quiet", "rewritten");
     try {
       // main was at three, and is now at a commit three is not behind
-      assert.deepEqual(commitsAfter(root, hashes.three), {
-        dates: ["2026-11-13T08:00:00+00:00"],
-      });
+      assert.deepEqual(
+        instants(root, hashes.three),
+        ["2026-11-13T08:00:00+00:00"].map(Date.parse),
+      );
     } finally {
       git(root, "checkout", "--quiet", "main");
     }
@@ -204,9 +214,10 @@ describe("the commits after one", () => {
   test("leave out a commit that only reformats", () => {
     writeFileSync(join(root, ".git-blame-ignore-revs"), `${hashes.three}\n`);
     try {
-      assert.deepEqual(commitsAfter(root, hashes.one), {
-        dates: ["2026-11-11T08:00:00+00:00"],
-      });
+      assert.deepEqual(
+        instants(root, hashes.one),
+        ["2026-11-11T08:00:00+00:00"].map(Date.parse),
+      );
     } finally {
       rmSync(join(root, ".git-blame-ignore-revs"));
     }
