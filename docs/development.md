@@ -36,7 +36,7 @@ npm run check:rendered
 
 `npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule, the decision guide’s names, the color contrast audit and the list of sources. `npm run check:rendered` reads the built site, then opens it in a browser. It does not build the site: run `npm run build` first, and again after a change, or it stops and names a file that is newer than the build.
 
-`npm run build` writes a fully static site to `dist/client/`. There is no server component and no client-side framework: interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
+`npm run build` writes a fully static site to `dist/client/`. There is no client-side framework, and one small piece of code that runs when a page is asked for: a Worker that sends a page's Markdown copy to a request that asks for it, described under [Markdown at the page's own address](#markdown-at-the-pages-own-address). Interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
 
 Once the pages are written, the build makes two more forms of each one from the page itself: a card for where its link is shared, and a copy in Markdown. See [Other forms of a page](#other-forms-of-a-page).
 
@@ -85,47 +85,50 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 
 ## Where things are
 
-| Path                                  | What                                                                                               |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `src/data/learn/lessons.ts`           | The lessons, in order: the question each answers, the terms it teaches, where to go deeper         |
-| `src/pages/learn/*.astro`             | One file per lesson: its text, its figure and its questions                                        |
-| `src/layouts/Lesson.astro`            | The shape every lesson shares                                                                      |
-| `src/components/Scenario.astro`       | A lesson's figure: a small cast, one thing that varies, the same questions asked of each variation |
-| `src/components/Check.astro`          | Questions with feedback that says why                                                              |
-| `src/components/Here.astro`           | The line under the site header that says which page this is, on the long pages                     |
-| `src/data/learn/api-sees.ts`          | Lesson 1's figure                                                                                  |
-| `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
-| `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
-| `src/data/comparisons/*.ts`           | One file per comparison of two flows: the answer, what decides it, a figure and the points         |
-| `src/pages/compare/[pair].astro`      | The shape every comparison shares                                                                  |
-| `src/lib/gloss.ts`                    | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |
-| `src/data/standards.ts`               | The standards tracker                                                                              |
-| `src/data/tokens.ts`                  | Annotated example tokens for the token inspector                                                   |
-| `src/data/guide.ts`                   | Questions and rules for the decision guide, and the four cases it names                            |
-| `src/lib/guide-rules.ts`              | How answers become recommendations and a name: the guide’s script and each case’s page use it      |
-| `src/data/glossary.ts`                | Glossary terms                                                                                     |
-| `src/data/site.ts`                    | The "last reviewed" date shown across the site, who makes it, and where the source is              |
-| `src/integrations/page-dates.mjs`     | Reads the repository's history when the site is built, so each page can say when it last changed   |
-| `src/lib/page-sources.ts`             | What each page is made from, file by file and entry by entry, and so which dates are its own       |
-| `src/integrations/social-cards.mjs`   | Draws each page's card for where its link is shared, and the home-screen icon                      |
-| `src/integrations/markdown-pages.mjs` | Writes each page again as Markdown, and `llms.txt` and `llms-full.txt` from those                  |
-| `src/components/FlowDiagram.astro`    | Sequence diagram and step-through panel; a step narrative on a phone                               |
-| `src/data/verify.ts`                  | “What can the API verify?”: two credentials, four checks, and the wording of each verdict          |
-| `src/components/VerifyDetail.astro`   | The full comparison, on the Concepts page                                                          |
-| `src/components/LastHop.astro`        | The same question across a longer chain, on the Concepts page                                      |
-| `src/components/DocMeta.astro`        | Page facts: one line for the specification followed and the review date, the rest in a disclosure  |
-| `src/components/K8sIdentityMap.astro` | Kubernetes identity layers diagram                                                                 |
-| `src/pages/deployments/*.mdx`         | Long-form deployment guides                                                                        |
-| `docs/source-review.md`               | What goes out of date, where to check it, and where each fact has to be changed                    |
-| `docs/implementation-research.md`     | How an implementation or a deployment report is found, checked and added                           |
-| `README.md`                           | What a visitor to the repository reads first: what the site is and where to start in it            |
-| `scripts/readme-figure.mjs`           | Draws the picture at the top of the README from the built site, in each theme                      |
-| `scripts/social-assets.mjs`           | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
-| `scripts/implementation-coverage.mjs` | Says which parties of each flow have no implementation recorded, and what else is thin             |
-| `scripts/implementation-check.mjs`    | Checks a research worksheet, and asks each source whether it still has the passage an entry quotes |
-| `scripts/built-site.mjs`              | Stops a script that reads the built site when the build is older than its sources                  |
-| `test/`                               | The checks, as tests: see [Checks](#checks)                                                        |
-| `AGENTS.md`                           | What a coding agent working in this repository needs to know                                       |
+| Path                                   | What                                                                                               |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `src/data/learn/lessons.ts`            | The lessons, in order: the question each answers, the terms it teaches, where to go deeper         |
+| `src/pages/learn/*.astro`              | One file per lesson: its text, its figure and its questions                                        |
+| `src/layouts/Lesson.astro`             | The shape every lesson shares                                                                      |
+| `src/components/Scenario.astro`        | A lesson's figure: a small cast, one thing that varies, the same questions asked of each variation |
+| `src/components/Check.astro`           | Questions with feedback that says why                                                              |
+| `src/components/Here.astro`            | The line under the site header that says which page this is, on the long pages                     |
+| `src/data/learn/api-sees.ts`           | Lesson 1's figure                                                                                  |
+| `src/data/flows/*.ts`                  | One file per flow: participants, steps, example messages, cautions, and its overview               |
+| `src/components/FlowOverview.astro`    | “In short” and “Who does what”, before a flow's diagram                                            |
+| `src/data/comparisons/*.ts`            | One file per comparison of two flows: the answer, what decides it, a figure and the points         |
+| `src/pages/compare/[pair].astro`       | The shape every comparison shares                                                                  |
+| `src/lib/gloss.ts`                     | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |
+| `src/data/standards.ts`                | The standards tracker                                                                              |
+| `src/data/tokens.ts`                   | Annotated example tokens for the token inspector                                                   |
+| `src/data/guide.ts`                    | Questions and rules for the decision guide, and the four cases it names                            |
+| `src/lib/guide-rules.ts`               | How answers become recommendations and a name: the guide’s script and each case’s page use it      |
+| `src/data/glossary.ts`                 | Glossary terms                                                                                     |
+| `src/data/site.ts`                     | The "last reviewed" date shown across the site, who makes it, and where the source is              |
+| `src/integrations/page-dates.mjs`      | Reads the repository's history when the site is built, so each page can say when it last changed   |
+| `src/lib/page-sources.ts`              | What each page is made from, file by file and entry by entry, and so which dates are its own       |
+| `src/integrations/social-cards.mjs`    | Draws each page's card for where its link is shared, and the home-screen icon                      |
+| `src/integrations/markdown-pages.mjs`  | Writes each page again as Markdown, and `llms.txt` and `llms-full.txt` from those                  |
+| `src/worker.ts`                        | The Worker in front of the pages: sends a page's Markdown copy to a request that asks for it       |
+| `src/lib/markdown-negotiation.ts`      | Reads an `Accept` header as RFC 9110 defines it, and chooses between a page and its copy           |
+| `src/integrations/markdown-worker.mjs` | Adds that Worker to the configuration the site is deployed with, in front of pages only            |
+| `src/components/FlowDiagram.astro`     | Sequence diagram and step-through panel; a step narrative on a phone                               |
+| `src/data/verify.ts`                   | “What can the API verify?”: two credentials, four checks, and the wording of each verdict          |
+| `src/components/VerifyDetail.astro`    | The full comparison, on the Concepts page                                                          |
+| `src/components/LastHop.astro`         | The same question across a longer chain, on the Concepts page                                      |
+| `src/components/DocMeta.astro`         | Page facts: one line for the specification followed and the review date, the rest in a disclosure  |
+| `src/components/K8sIdentityMap.astro`  | Kubernetes identity layers diagram                                                                 |
+| `src/pages/deployments/*.mdx`          | Long-form deployment guides                                                                        |
+| `docs/source-review.md`                | What goes out of date, where to check it, and where each fact has to be changed                    |
+| `docs/implementation-research.md`      | How an implementation or a deployment report is found, checked and added                           |
+| `README.md`                            | What a visitor to the repository reads first: what the site is and where to start in it            |
+| `scripts/readme-figure.mjs`            | Draws the picture at the top of the README from the built site, in each theme                      |
+| `scripts/social-assets.mjs`            | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
+| `scripts/implementation-coverage.mjs`  | Says which parties of each flow have no implementation recorded, and what else is thin             |
+| `scripts/implementation-check.mjs`     | Checks a research worksheet, and asks each source whether it still has the passage an entry quotes |
+| `scripts/built-site.mjs`               | Stops a script that reads the built site when the build is older than its sources                  |
+| `test/`                                | The checks, as tests: see [Checks](#checks)                                                        |
+| `AGENTS.md`                            | What a coding agent working in this repository needs to know                                       |
 
 ## Implementation evidence
 
@@ -334,18 +337,33 @@ The conversion knows the site's components by class name: which are controls (`C
 
 ### Markdown at the page's own address
 
-Some agents ask for Markdown with `Accept: text/markdown`. The site has no server code to answer that, and putting a Worker in front of every page to do it would make page views count against the Workers request limit. The host can do it with a rule instead. In the Cloudflare dashboard, under Rules, a URL rewrite rule:
+Some agents ask for Markdown with `Accept: text/markdown`. A request that does gets the page's Markdown copy at the page's own address, and a request that does not gets the page.
 
-- **When:** `any(http.request.headers["accept"][*] contains "text/markdown") and ends_with(http.request.uri.path, "/") and not starts_with(http.request.uri.path, "/styleguide/")`
-- **Rewrite the path to (dynamic):** `concat(http.request.uri.path, "index.md")`
+That choice is the one thing the site does when a page is asked for. `src/worker.ts` is a Worker that stands in front of the pages, and `src/lib/markdown-negotiation.ts` is how it chooses. It makes nothing: either answer is a file the build wrote. If it fails, the request gets what is at its address.
 
-To see whether it is in place:
+The header is read as [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110#section-12.5.1) defines it. It is a list of media ranges, each with a weight from 0 to 1. A range with no weight has 1, a weight of 0 means “not acceptable”, and where more than one range fits a type the most specific counts. So a header that only has `text/markdown` somewhere in it may be refusing Markdown (`text/html, text/markdown;q=0`) or ranking it below the page (`text/html, text/markdown;q=0.5`), and both get the page.
+
+**A request gets Markdown when it names `text/markdown` itself, gives it a weight above 0, and gives the page no greater one.** Naming it is asked for because a browser's header ends with a range that allows anything, Markdown included, and a browser wants the page. Between equals Markdown wins: nothing names it by accident, and Claude Code sends `text/markdown, text/html, */*`, with the two at the same weight ([Checkly, February 2026](https://www.checklyhq.com/blog/state-of-ai-agent-content-negotation/)).
+
+The copy is sent with `Content-Location`, which gives the address where that form lives on its own, and with `Vary: Accept`. It is sent without the `X-Robots-Tag: noindex` it has at its own address: there the header keeps a search engine from listing the copy, and here the address is the page's. A page with no copy, such as the style guide, answers with the page.
+
+**Which addresses the Worker stands in front of.** Pages, and nothing else: a request for a file is served as a file, without the Worker, and does not count as a Worker request. `src/integrations/markdown-worker.mjs` says which is which by the rule the site already keeps, that a page's address has no dot in it and a file's has one (`run_worker_first: ["/*", "!/*.*"]`). So the Markdown copies at their own addresses, `llms.txt`, the styles and the pictures never reach it.
+
+**Why a build step adds it.** Every page is built ahead of time, and for such a site the Cloudflare adapter writes a deployed configuration with files and no Worker: `dist/client/wrangler.json`, which leaves out the `main` of `wrangler.jsonc`. `wrangler deploy` is sent to that file by `.wrangler/deploy/config.json`. The integration adds the Worker to it once the site is built, and stops the build if the file is not there or already has a Worker. Wrangler bundles `src/worker.ts` when it deploys.
+
+`npm run check:rendered` does not run the Worker: it serves the built files itself. `npm test` covers how the header is read and what the Worker sends for each case, with a table standing in for the files. To run the real thing, `npm run preview` builds the site and serves it in the Workers runtime on port 8787:
 
 ```bash
-curl -sI -H "Accept: text/markdown" https://whosonfirst.ai/flows/dpop/ | grep -i content-type
+curl -sI -H "Accept: text/markdown" http://localhost:8787/flows/dpop/ | grep -i -E "content-(type|location)"
 ```
 
-The rule is not kept in this repository. Until it exists, a request that asks for Markdown gets the page, which is still a correct answer.
+```bash
+curl -sI -H "Accept: text/html, text/markdown;q=0" http://localhost:8787/flows/dpop/ | grep -i content-type
+```
+
+The first says `text/markdown` and where the copy lives; the second says `text/html`. The same two requests work against the site and against a branch's preview.
+
+Before the Worker, a URL rewrite rule in the Cloudflare dashboard did this, by looking for `text/markdown` in the header. The host's rules cannot read a weight, so it could not tell a request that refused Markdown from one that asked for it. With the Worker deployed, that rule should be deleted: it runs before the Worker and would go on answering in its place.
 
 ## Pictures for a post
 
