@@ -2,8 +2,9 @@
 // questions that can be passed by habit, and a figure choice that must not be
 // built but is not marked as such everywhere.
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { built, LESSONS, main, pageAt, some } from "../support/site.mjs";
+import { built, FLOWS, LESSONS, main, pageAt, some } from "../support/site.mjs";
 
 // A line break in a template between a word and an inline element loses its
 // space, and the two run together on the page ("calls thisclient credentials").
@@ -114,4 +115,62 @@ test("the style guide's second-level headings are its sections and nothing else"
     sections.length,
     `${sections.length} sections, but these headings: ${headings.join(", ")}`,
   );
+});
+
+// A flow's implementation record is read entry by entry: a reader often
+// arrives at one from a link to it. So each entry marks every specification it
+// names, once, whether or not the flow lists it; a number after a term that
+// names it is left to that term. General glossary terms are the vocabulary all
+// its entries share, and are marked once on the page. The directory and the
+// flow cards mark nothing: they are summaries that link to the record, and a
+// card is itself a link.
+test("implementation records mark each specification in every entry, and a general term once", () => {
+  const tracked = new Set(
+    [
+      ...readFileSync(
+        new URL("../../src/data/standards.ts", import.meta.url),
+        "utf8",
+      ).matchAll(/ref: "RFC (\d+)"/g),
+    ].map((m) => m[1]),
+  );
+  const wrong = [];
+  let marks = 0;
+  for (const p of built.filter((p) =>
+    /^\/implementations\/[^/]+\/$/.test(p.path),
+  )) {
+    const terms = new Set();
+    for (const [entry, id] of main(p).matchAll(
+      /<li class="evidence-entry" id="([^"]+)"[\s\S]*?<div class="evidence-sources"/g,
+    )) {
+      const named = new Set();
+      for (const [, kind, rest, text] of entry.matchAll(
+        /<a class="(term|spec)"([^>]*)>([^<]*)<\/a>/g,
+      )) {
+        marks++;
+        const spec =
+          kind === "spec"
+            ? rest.match(/href="\/standards\/#([^"]+)"/)?.[1]
+            : rest.match(/data-standard="\/standards\/#([^"]+)"/)?.[1];
+        const key = spec ?? rest.match(/href="([^"]+)"/)?.[1];
+        const where = spec ? named : terms;
+        if (where.has(key)) wrong.push(`${p.path}#${id} marks “${text}” again`);
+        where.add(key);
+      }
+      const words = entry
+        .replace(/<a [^>]*>[^<]*<\/a>/g, " ")
+        .replace(/<[^>]+>/g, " ");
+      for (const [, n] of words.matchAll(/RFC (\d{4,5})/g))
+        if (tracked.has(n) && !named.has(`rfc${n}`))
+          wrong.push(`${p.path}#${id} leaves RFC ${n} unmarked`);
+    }
+  }
+  assert.ok(marks > 0, "no implementation record marks anything");
+  assert.deepEqual(some(wrong), []);
+  const summaries = [pageAt("/implementations/"), ...FLOWS.map(pageAt)].flatMap(
+    (p) =>
+      [...main(p).matchAll(/<ul class="evidence-examples[\s\S]*?<\/ul>/g)]
+        .filter((m) => /class="(term|spec)"/.test(m[0]))
+        .map(() => p.path),
+  );
+  assert.deepEqual(some(summaries), []);
 });

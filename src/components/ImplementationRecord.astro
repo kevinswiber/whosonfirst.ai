@@ -6,6 +6,7 @@ import {
   EVENT_LABEL,
   evidenceDate,
 } from "../data/implementations";
+import { evidenceGloss, marked } from "../lib/gloss";
 
 interface Props {
   profile: ImplementationProfile;
@@ -37,6 +38,11 @@ const categories = [
       ]
     : []),
 ];
+// The scope and each entry are readings of their own, which mark the specifications they
+// name; a general glossary term is marked once on the page. See evidenceGloss.
+const terms = new Set<string>();
+const reading = () => evidenceGloss(`/implementations/${profile.slug}/`, terms);
+const scope = reading();
 const events = [...profile.events].sort((a, b) => b.date.localeCompare(a.date));
 const evidenceNames = new Map(
   categories.flatMap(({ entries }) =>
@@ -58,8 +64,8 @@ const evidenceNames = new Map(
 <div class="implementation-record">
   <section class="prose evidence-scope" aria-labelledby="field-scope">
     <h2 id="field-scope">Scope</h2>
-    <p>{profile.scope}</p>
-    <p>{profile.searchNote}</p>
+    <p set:html={marked(profile.scope, scope)} />
+    <p set:html={marked(profile.searchNote, scope)} />
     <p><a href="/about/#how-implementation-evidence-is-reviewed">How evidence is reviewed</a></p>
   </section>
 
@@ -68,7 +74,9 @@ const evidenceNames = new Map(
       <h2 id={id}>{title}</h2>
       {entries.length ? (
         <ul class="evidence-entries" role="list">
-          {entries.map((entry) => (
+          {entries.map((entry) => {
+            const g = reading();
+            return (
             <li class="evidence-entry" id={`field-${entry.id}`}>
               <div class="evidence-claim">
                 {entry.kind === 'implementation' && (
@@ -98,11 +106,11 @@ const evidenceNames = new Map(
                     </p>
                   </>
                 )}
-                <p class="evidence-entry-summary">{entry.summary}</p>
+                <p class="evidence-entry-summary" set:html={marked(entry.summary, g)} />
                 {entry.kind === 'implementation' && (
-                  <p class="evidence-limits"><strong>{entry.release.label}.</strong> {entry.release.detail}</p>
+                  <p class="evidence-limits"><strong>{entry.release.label}.</strong> <Fragment set:html={marked(entry.release.detail, g)} /></p>
                 )}
-                <p class="evidence-limits"><strong>Limits.</strong> {entry.limits}</p>
+                <p class="evidence-limits"><strong>Limits.</strong> <Fragment set:html={marked(entry.limits, g)} /></p>
               </div>
               <div class="evidence-sources">
                 <p class="doc-key">{citedSources(entry.sources).length === 1 ? 'Source' : 'Sources'}</p>
@@ -121,7 +129,8 @@ const evidenceNames = new Map(
                 <p class="evidence-checked">Checked <time datetime={entry.review.checkedOn}>{evidenceDate(entry.review.checkedOn)}</time></p>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       ) : (
         <p class="prose evidence-none">{empty}</p>
