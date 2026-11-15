@@ -178,6 +178,9 @@ test("a request that does not name Markdown gets the page, whatever else it allo
     "text/*",
     "text/html",
     "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    // a wider range that weighs more than the page does not name Markdown
+    "text/html;q=0.4, */*;q=0.5",
+    "text/html;q=0.4, text/*",
     "application/json",
     "text/x-markdown",
     "text/markdownx",
@@ -451,4 +454,189 @@ test("the Worker is added to a configuration that has files and no Worker, and t
   assert.ok(
     existsSync(fileURLToPath(new URL(`../../${WORKER}`, import.meta.url))),
   );
+});
+
+// The tests above are the cases someone thought of. These hold the reading
+// to what must be true of any header, over a few thousand made from the
+// grammar: the same ranges, weights and parameters, drawn by a generator that
+// gives the same headers on every run.
+const MADE = 3000;
+const made = (seed) => {
+  // mulberry32: small, and the same numbers on every machine
+  let a = seed;
+  const next = () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const pick = (list) => list[Math.floor(next() * list.length)];
+  const range = () => {
+    const type = pick([
+      "text/markdown",
+      "text/markdown",
+      "text/html",
+      "text/html",
+      "text/*",
+      "*/*",
+      "text/plain",
+      "image/png",
+      "application/xhtml+xml",
+    ]);
+    return {
+      type,
+      charset:
+        /^text\/(markdown|html)$/.test(type) && next() < 0.25
+          ? pick(["utf-8", "utf-8", "iso-8859-1"])
+          : undefined,
+      q: pick([undefined, undefined, "1", "1.0", "0.9", "0.5", "0.001", "0"]),
+    };
+  };
+  return {
+    next,
+    pick,
+    header: () => Array.from({ length: 1 + Math.floor(next() * 5) }, range),
+  };
+};
+/** A header as a careful sender writes it. */
+const plainly = (header) =>
+  header
+    .map(
+      (r) =>
+        r.type +
+        (r.charset ? `;charset=${r.charset}` : "") +
+        (r.q === undefined ? "" : `;q=${r.q}`),
+    )
+    .join(", ");
+/** The same header as the grammar also allows it: other case, spacing, order of parameters, quotes. */
+const loosely = (header, { next, pick }) =>
+  header
+    .map((r) => {
+      const cased = (s) => (next() < 0.5 ? s.toUpperCase() : s);
+      const parameters = [];
+      if (r.charset)
+        parameters.push(
+          `${cased("charset")}=${next() < 0.5 ? `"${cased(r.charset)}"` : cased(r.charset)}`,
+        );
+      if (r.q !== undefined) parameters.push(`${cased("q")}=${r.q}`);
+      if (next() < 0.5) parameters.reverse();
+      if (next() < 0.2) parameters.splice(Math.floor(next() * 2), 0, "");
+      const gap = () => pick(["", " ", "\t", "  "]);
+      return [cased(r.type), ...parameters].join(`${gap()};${gap()}`);
+    })
+    .join(`${pick(["", " ", "\t"])},${pick(["", " ", "\t", " ,"])}`);
+const COPY_TYPE = "text/markdown;charset=utf-8";
+const PAGE_TYPE = "text/html;charset=utf-8";
+/** Runs `check` on each made header, and names the first few it fails for. */
+const forEachMade = (check) => {
+  const source = made(20261115);
+  const failed = [];
+  for (let i = 0; i < MADE; i++) {
+    const header = source.header();
+    const why = check(header, source);
+    if (why) failed.push(`${plainly(header)} (${why})`);
+  }
+  assert.deepEqual(failed.slice(0, 5), []);
+};
+
+test("how a header is spelled does not change what it says", () => {
+  forEachMade((header, source) => {
+    const a = plainly(header);
+    const b = loosely(header, source);
+    if (weightOf(a, COPY_TYPE) !== weightOf(b, COPY_TYPE))
+      return `the copy weighs differently as ${JSON.stringify(b)}`;
+    if (weightOf(a, PAGE_TYPE) !== weightOf(b, PAGE_TYPE))
+      return `the page weighs differently as ${JSON.stringify(b)}`;
+    if (prefersMarkdown(a) !== prefersMarkdown(b))
+      return `the answer differs as ${JSON.stringify(b)}`;
+  });
+});
+
+test("the order of the ranges does not change the weight of any type", () => {
+  forEachMade((header, { next }) => {
+    const shuffled = header
+      .map((r) => [next(), r])
+      .sort(([a], [b]) => a - b)
+      .map(([, r]) => r);
+    for (const type of [COPY_TYPE, PAGE_TYPE, "text/plain", "image/png"])
+      if (weightOf(plainly(header), type) !== weightOf(plainly(shuffled), type))
+        return `${type} weighs differently as ${plainly(shuffled)}`;
+  });
+});
+
+test("a weight of 1 written out is the weight a range has without one", () => {
+  forEachMade((header) => {
+    const written = header.map((r) => ({ ...r, q: r.q ?? "1" }));
+    if (prefersMarkdown(plainly(header)) !== prefersMarkdown(plainly(written)))
+      return "the answer differs with q=1 written out";
+  });
+});
+
+test("a range for a type the site does not send changes nothing", () => {
+  forEachMade((header, { next }) => {
+    const other = { type: "image/png", q: next() < 0.5 ? undefined : "0.3" };
+    const at = Math.floor(next() * (header.length + 1));
+    const wider = [...header.slice(0, at), other, ...header.slice(at)];
+    if (prefersMarkdown(plainly(header)) !== prefersMarkdown(plainly(wider)))
+      return `the answer differs as ${plainly(wider)}`;
+  });
+});
+
+// The weights are held to the RFC's own tables above. The answer has to
+// follow from them: never Markdown where it is not named, is refused or
+// weighs less than the page, and always where it is named and weighs more.
+test("the answer follows from the weights", () => {
+  let markdown = 0;
+  let ties = 0;
+  forEachMade((header) => {
+    const sent = plainly(header);
+    const named = header.some(
+      (r) =>
+        r.type === "text/markdown" &&
+        (r.charset === undefined || r.charset === "utf-8"),
+    );
+    const copy = weightOf(sent, COPY_TYPE);
+    const page = weightOf(sent, PAGE_TYPE);
+    const answer = prefersMarkdown(sent);
+    if (answer) markdown++;
+    if (named && copy > 0 && copy === page) ties++;
+    if (answer && !named) return "Markdown, and it is not named";
+    if (answer && copy === 0) return "Markdown, and it is refused";
+    if (answer && copy < page) return "Markdown, and the page weighs more";
+    if (!answer && named && copy > page)
+      return "the page, and Markdown weighs more";
+  });
+  // the generator reaches each kind of answer, so the test is not empty
+  assert.ok(
+    markdown > MADE / 20 && markdown < MADE / 2,
+    `${markdown} got Markdown`,
+  );
+  assert.ok(ties > MADE / 50, `${ties} ties`);
+});
+
+// Between equal weights the choice is the server's, and it is made the same
+// way whichever of the two forms it favors: turn the list around, and where
+// both are named as specifically, the answer turns with it.
+test("between equal weights named as specifically, the one listed first wins", () => {
+  let turned = 0;
+  forEachMade((header) => {
+    const bare = header.filter((r) => r.charset === undefined);
+    const copies = bare.filter((r) => r.type === "text/markdown");
+    const pages = bare.filter((r) => r.type === "text/html");
+    // one of each and no other way to weigh either, so order alone decides
+    if (copies.length !== 1 || pages.length !== 1) return;
+    if (header.length !== bare.length) return;
+    const weight = (r) => Number(r.q ?? "1");
+    if (weight(copies[0]) !== weight(pages[0]) || weight(copies[0]) === 0)
+      return;
+    turned++;
+    const first = bare.indexOf(copies[0]) < bare.indexOf(pages[0]);
+    if (prefersMarkdown(plainly(header)) !== first)
+      return first
+        ? "Markdown is first and the page won"
+        : "the page is first and Markdown won";
+    if (prefersMarkdown(plainly([...header].reverse())) === first)
+      return "turned around, the answer did not turn";
+  });
+  assert.ok(turned > 20, `${turned} headers had such a tie`);
 });

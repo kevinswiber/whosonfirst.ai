@@ -53,13 +53,14 @@ Biome does not handle `.mdx`, so the deployment guides and the About page are no
 
 The checks are tests for Node's own test runner, `node:test`, in `test/`. Each file runs in a process of its own, and several run at once.
 
-| Directory       | What its tests read                               | Run by                   |
-| --------------- | ------------------------------------------------- | ------------------------ |
-| `test/unit/`    | The data and the color tokens. No build is needed | `npm test`               |
-| `test/build/`   | The built site, as files                          | `npm run check:rendered` |
-| `test/browser/` | The built site, opened in Chromium                | `npm run check:rendered` |
+| Directory       | What its tests read                                                      | Run by                   |
+| --------------- | ------------------------------------------------------------------------ | ------------------------ |
+| `test/unit/`    | The data, the color tokens and how a request is read. No build is needed | `npm test`               |
+| `test/build/`   | The built site, as files                                                 | `npm run check:rendered` |
+| `test/browser/` | The built site, opened in Chromium                                       | `npm run check:rendered` |
+| `test/worker/`  | The built site, served by the Workers runtime as it is deployed          | `npm run check:rendered` |
 
-What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves `dist/client/` with the site's own headers and starts a browser, one for each test file. It also opens pages: `open()` waits for the load event, the fonts and a drawn frame: enough to measure what is drawn, and no longer. The content security policy sweep, `test/browser/csp.test.mjs`, waits longer, until a page has sent nothing for half a second. A script can ask for something from another origin a moment after the load event, and a request the policy refuses is never sent, so only the console shows it, and only once the script has asked. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to. `mermaid.mjs` says whether a piece of text parses as Mermaid. It asks [mmdflux](https://github.com/kevinswiber/mmdflux), from the `@mmds/wasm` package, which reads Mermaid without a browser.
+What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves `dist/client/` with the site's own headers and starts a browser, one for each test file. `worker.mjs` starts `wrangler dev` on the configuration the site is deployed with, on ports that were free when it asked, and stops it when the file is done; it runs on the machine and needs no account. It also opens pages: `open()` waits for the load event, the fonts and a drawn frame: enough to measure what is drawn, and no longer. The content security policy sweep, `test/browser/csp.test.mjs`, waits longer, until a page has sent nothing for half a second. A script can ask for something from another origin a moment after the load event, and a request the policy refuses is never sent, so only the console shows it, and only once the script has asked. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to. `mermaid.mjs` says whether a piece of text parses as Mermaid. It asks [mmdflux](https://github.com/kevinswiber/mmdflux), from the `@mmds/wasm` package, which reads Mermaid without a browser.
 
 While working on one thing, run the test file for it. It still needs a current build:
 
@@ -355,7 +356,15 @@ The copy is sent with `Content-Location`, which gives the address where that for
 
 **Why a build step adds it.** Every page is built ahead of time, and for such a site the Cloudflare adapter writes a deployed configuration with files and no Worker: `dist/client/wrangler.json`, which leaves out the `main` of `wrangler.jsonc`. `wrangler deploy` is sent to that file by `.wrangler/deploy/config.json`. The integration adds the Worker to it once the site is built, and stops the build if the file is not there or already has a Worker. Wrangler bundles `src/worker.ts` when it deploys.
 
-`npm run check:rendered` does not run the Worker: it serves the built files itself. `npm test` covers how the header is read and what the Worker sends for each case, with a table standing in for the files. To run the real thing, `npm run preview` builds the site and serves it in the Workers runtime on port 8787:
+It is tested at three levels:
+
+- **How the header is read**, in `test/unit/markdown-negotiation.test.mjs`, which `npm test` runs. The weights are held to the examples RFC 9110 and RFC 7231 work through. Each rule above has its cases. Then a few thousand headers are made from the grammar, the same ones on every run, and held to what must be true of any header: how one is spelled does not change what it says, the order of its ranges does not change any type's weight, and the answer follows from the weights. The same file covers what the Worker sends for each case, with a table standing in for the files.
+- **The deployed configuration**, in `test/build/deploy.test.mjs`: it names the Worker, the files, and the addresses the Worker stands in front of.
+- **The site as it is deployed**, in `test/worker/`, which `npm run check:rendered` runs. `wrangler dev` serves the build in the Workers runtime, and the tests ask it: every page's copy is the one the build wrote, a browser gets every page, both answers keep the headers every response has, a file answers as itself, and a reader that has the copy is told so.
+
+The browser tests do not go through the Worker: they serve the built files themselves, with the site's headers.
+
+To ask the running site by hand, `npm run preview` builds it and serves it in the Workers runtime on port 8787:
 
 ```bash
 curl -sI -H "Accept: text/markdown" http://localhost:8787/flows/dpop/ | grep -i -E "content-(type|location)"

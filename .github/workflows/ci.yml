@@ -4,8 +4,9 @@
 #   checks    formatting and lint (Biome), types, and the tests in test/unit/:
 #             the rating rule, the contrast audit and the list of sources
 #   rendered  the build, which refuses a broken cross-reference, and then the
-#             tests in test/build/, which read the built site as files, and in
-#             test/browser/, which open it in a browser
+#             tests in test/build/, which read the built site as files, in
+#             test/browser/, which open it in a browser, and in test/worker/,
+#             which serve it in the Workers runtime as it is deployed
 #
 # The tests are run by Node's own test runner, a file in a process of its own
 # and several files at once. Every check runs on every change: a change to any
