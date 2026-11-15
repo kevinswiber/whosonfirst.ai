@@ -3,6 +3,8 @@ import type { Flow } from "../types";
 export const crossAppAccess: Flow = {
   slug: "cross-app-access",
   title: "Enterprise-managed authorization (ID-JAG)",
+  searchTitle:
+    "ID-JAG and Cross-App Access (XAA): enterprise-managed authorization",
   short: "Enterprise-managed (ID-JAG)",
   group: "delegation",
   human: "present",

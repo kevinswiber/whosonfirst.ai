@@ -1,7 +1,7 @@
 ---
 /**
  * Layout for long-form MDX pages. Set it with `layout:` in frontmatter.
- * Frontmatter: title, description, lede, section ({ label, href }).
+ * Frontmatter: title, searchTitle, description, lede, section ({ label, href }).
  */
 import Base from "./Base.astro";
 import DocMeta from "../components/DocMeta.astro";
@@ -17,6 +17,8 @@ interface Heading {
 interface Props {
   frontmatter: {
     title: string;
+    /** The title where the page is read away from the site, when `title` needs its subject named. */
+    searchTitle?: string;
     description?: string;
     lede?: string;
     section?: { label: string; href: string };
@@ -60,7 +62,7 @@ const here = fm.section
 ---
 
 <Base
-  title={fm.title}
+  title={fm.searchTitle ?? fm.title}
   description={fm.description ?? fm.lede}
   here={here}
   article={Boolean(kind)}

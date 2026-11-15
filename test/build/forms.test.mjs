@@ -381,3 +381,23 @@ test("a page's Markdown copy ends with the date its footer gives", () => {
   }
   assert.deepEqual(some(wrong), []);
 });
+
+// A search result is a title and a description. Two pages that give the same
+// one cannot be told apart there, and a search engine may show only one.
+test("no two pages a search engine may list share a title or a description", () => {
+  const shared = [];
+  for (const [what, read] of [
+    ["title", (p) => /<title>([^<]*)<\/title>/.exec(head(p))?.[1]],
+    ["description", (p) => attr(p, /name="description"/, "content")],
+  ]) {
+    const seen = new Map();
+    for (const p of indexed) {
+      const text = read(p);
+      if (!text) shared.push(`${p.path} (no ${what})`);
+      else if (seen.has(text))
+        shared.push(`${p.path} and ${seen.get(text)} (the same ${what})`);
+      else seen.set(text, p.path);
+    }
+  }
+  assert.deepEqual(some(shared), []);
+});

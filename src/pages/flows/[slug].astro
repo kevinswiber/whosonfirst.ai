@@ -82,6 +82,27 @@ const dated = /^([A-Z][a-z]+ \d{4})/.exec(firstSentence ?? "");
 // A flow that covers more than its diagram draws says so wherever its basis, its required
 // references and its rating are stated: all three belong to the arrangement drawn.
 const drawn = Boolean(flow.illustrated);
+// What a search result says under the title: the flow in a sentence, the
+// specification it follows under the name people type for it, and how much
+// there is to read. An RFC is known by its number. A draft or an extension is
+// known by its name, not by the file name its reference is, and a draft is
+// called one.
+const follows = new Intl.ListFormat("en", { type: "conjunction" }).format(
+  basis.map((s) =>
+    s.ref.startsWith("draft-")
+      ? `the ${s.name} draft`
+      : s.ref.includes("/")
+        ? s.name
+        : s.ref,
+  ),
+);
+const description = [
+  flow.tagline,
+  flow.noBasis
+    ? `${flow.noBasis}.`
+    : `${drawn ? "The diagram follows" : "Follows"} ${follows}.`,
+  `${flow.steps.length} steps between ${flow.participants.length} parties, each drawn and explained.`,
+].join(" ");
 // Each reference previews its tracker entry, which shows its status, so the line adds only
 // what the preview does not: when an RFC was published, or which revision a draft is at.
 const based = primary && {
@@ -238,9 +259,9 @@ const detailGroups = [
 ---
 
 <Base
-  title={flow.title}
+  title={flow.searchTitle ?? flow.title}
   reviewMetadata={!implementationEvidence}
-  description={flow.tagline}
+  description={description}
   article
   here={{ trail: [{ label: 'Flows', href: '/flows/' }, { label: group.title }], current: flow.short }}
 >

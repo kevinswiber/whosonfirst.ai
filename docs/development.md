@@ -103,7 +103,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/lib/guide-rules.ts`              | How answers become recommendations and a name: the guide’s script and each case’s page use it      |
 | `src/data/glossary.ts`                | Glossary terms                                                                                     |
 | `src/data/site.ts`                    | The "last reviewed" date shown across the site, who makes it, and where the source is              |
-| `src/integrations/page-dates.mjs`     | Reads the repository's history when the site is built, so each page can say when it last changed  |
+| `src/integrations/page-dates.mjs`     | Reads the repository's history when the site is built, so each page can say when it last changed   |
 | `src/lib/page-dates.ts`               | Which files a page is made from, and so which dates are its own                                    |
 | `src/integrations/social-cards.mjs`   | Draws each page's card for where its link is shared, and the home-screen icon                      |
 | `src/integrations/markdown-pages.mjs` | Writes each page again as Markdown, and `llms.txt` and `llms-full.txt` from those                  |
@@ -146,6 +146,8 @@ See [the initial evidence review](adoption/evidence-review.md) for scope and exc
 Most changes are data changes.
 
 **Add or change a flow.** Edit or create a file in `src/data/flows/` and register it in `src/data/flows/index.ts`. Arrow labels wrap onto two lines automatically; the build warns if one is still too long. Add the flow to the comparison table in `src/pages/flows/index.astro`, or the build will tell you to.
+
+A flow's `title` is the heading on its page. Where that heading does not carry the name people type for the flow, as “OAuth access tokens bound to a TLS certificate” does not carry “OAuth mTLS”, give a `searchTitle`: the title with that name added. It is what a search result, a browser tab and a shared link show, and the card is drawn from it. Add no claim to it that the page does not make. A short name that is also something else, such as “DPoP” or “CIBA”, finds little without the words beside it, so the name alone is not a title. A lesson and a deployment guide take a `searchTitle` the same way. A flow's description for a search result is put together from its `tagline`, the specification it follows and its count of steps, in `src/pages/flows/[slug].astro`; nothing is written for it.
 
 A flow that is a pattern more than a protocol can keep its steps general and add two optional sections: `comparison`, how the pattern appears in different settings, and `example`, one setting worked through with its own listings. A comparison is drawn as a table on wide screens and as one block of labeled fields per row on narrow ones, both from the same data, so its text must not refer to rows or columns. The parts of an example are not numbered, because "a numbered step" means a step of the diagram when references are classified.
 

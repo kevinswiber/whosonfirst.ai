@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const oauthMtls: Flow = {
   slug: "oauth-mtls",
   title: "OAuth access tokens bound to a TLS certificate",
+  searchTitle: "OAuth mTLS: access tokens bound to a TLS certificate",
   short: "OAuth mTLS",
   group: "cross-cutting",
   human: "any",

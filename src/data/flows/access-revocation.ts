@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const accessRevocation: Flow = {
   slug: "access-revocation",
   title: "Withdrawing an agent’s access",
+  searchTitle: "Access revocation: withdrawing an agent’s access",
   short: "Access revocation",
   group: "cross-cutting",
   human: "any",

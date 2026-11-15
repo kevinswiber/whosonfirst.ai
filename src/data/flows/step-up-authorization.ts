@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const stepUpAuthorization: Flow = {
   slug: "step-up-authorization",
   title: "Step-up and transaction-specific consent",
+  searchTitle: "Step-up authorization and transaction-specific consent",
   short: "Step-up authorization",
   group: "human-in-the-loop",
   human: "present",

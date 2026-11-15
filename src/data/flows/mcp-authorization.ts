@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const mcpAuthorization: Flow = {
   slug: "mcp-authorization",
   title: "MCP authorization",
+  searchTitle: "MCP authorization: OAuth 2.1 for MCP clients and servers",
   short: "MCP authorization",
   group: "human-present",
   human: "present",

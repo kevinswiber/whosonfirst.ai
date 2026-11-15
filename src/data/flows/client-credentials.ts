@@ -3,6 +3,7 @@ import type { Flow } from "../types";
 export const clientCredentials: Flow = {
   slug: "client-credentials",
   title: "Client credentials",
+  searchTitle: "OAuth client credentials: an agent authenticating as itself",
   short: "Client credentials",
   group: "autonomous",
   human: "absent",
