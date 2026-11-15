@@ -467,6 +467,40 @@ test("a page's date in the sitemap is the one in its structured data and in its 
   assert.deepEqual(some(wrong), []);
 });
 
+// A record's page shows the day its evidence was reviewed. That is one fact
+// and the day the page last changed is another, so it gives both, and a
+// review cannot be later than the last change to the record that carries it.
+test("where pages are dated, a record's page says when it last changed as well as when its evidence was reviewed", () => {
+  const changedOn = (p) =>
+    /This page last changed <time datetime="([^"]*)"/.exec(p.html)?.[1];
+  const records = indexed.filter((p) =>
+    /^\/implementations\/[^/]+\/$/.test(p.path),
+  );
+  assert.ok(records.length > 1);
+  if (!indexed.some(changedOn)) return; // a build without the history dates nothing
+  const wrong = [];
+  for (const p of records) {
+    const changed = changedOn(p);
+    const reviewed = /Evidence reviewed <time datetime="([^"]*)"/.exec(
+      p.html,
+    )?.[1];
+    if (!changed) wrong.push(`${p.path} (does not say when it last changed)`);
+    else if (!reviewed)
+      wrong.push(`${p.path} (does not say when its evidence was reviewed)`);
+    // a review is dated by its day alone, wherever it was made, so a day's grace
+    else if (Date.parse(reviewed) - Date.parse(changed) > 24 * 60 * 60 * 1000)
+      wrong.push(`${p.path} (reviewed ${reviewed}, after it last changed)`);
+    if (
+      changed &&
+      !/\(<a href="[^"]*\/commits\/main\/src\/data\/implementations\/records\.ts"/.test(
+        p.html,
+      )
+    )
+      wrong.push(`${p.path} (does not link to the history of the records)`);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
 test("a page's Markdown copy ends with the date its footer gives", () => {
   const wrong = [];
   for (const p of withCopy) {

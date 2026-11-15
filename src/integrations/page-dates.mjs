@@ -14,10 +14,11 @@
  * Some files hold many entries, and a page shows only a few of them: a flow
  * lists some of the tracker's standards, a lesson teaches some of the
  * glossary's terms. Dating such a page by the whole file would say it changed
- * whenever any entry did. So for the files in `ENTRIES` the map also has a
- * date for each entry, under `<file>#<name>`: the last commit that changed
- * that entry's own text. It is found by reading the file as it stood at each
- * of its commits, which sees a line taken out as well as one put in.
+ * whenever any entry did. So for the files in `ENTRIES` the map also has the
+ * dates of each entry, under `<file>#<name>`: the commit that added it and the
+ * last one that changed its own text. They are found by reading the file as
+ * it stood at each of its commits, which sees a line taken out as well as one
+ * put in.
  *
  * Where the history is not all there, the map is empty and the pages carry no
  * date. A shallow clone, which is what a hosted build usually makes, has only
@@ -180,6 +181,22 @@ export function entryDates(versions, key) {
 }
 
 /**
+ * When each entry of a file was added: the date of the oldest commit that has
+ * an entry by its name. `versions` is as for `entryDates`.
+ */
+export function entryFirsts(versions, key) {
+  const dates = {};
+  if (versions.length === 0) return dates;
+  const now = entriesOf(versions[0].text, key);
+  for (const version of versions) {
+    const then = entriesOf(version.text, key);
+    for (const name of now.keys())
+      if (then.has(name)) dates[name] = version.date;
+  }
+  return dates;
+}
+
+/**
  * The map for the repository at `root`, and a sentence on what was found.
  * `env` is the build's environment, which says whether this is the deployed build.
  */
@@ -236,8 +253,9 @@ export function historyDates(root, env = process.env) {
             return { date, text: "" };
           }
         });
+      const firsts = entryFirsts(versions, key);
       for (const [name, date] of Object.entries(entryDates(versions, key)))
-        dates[`${file}#${name}`] = { last: date };
+        dates[`${file}#${name}`] = { first: firsts[name], last: date };
     }
     return {
       dates,
