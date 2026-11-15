@@ -71,7 +71,7 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
           <span class="doc-key">{based.key ?? 'Based on'}:</span>{' '}
           {based.refs.map((r, i) => (
             <>
-              {i > 0 && ' and '}
+              {i > 0 && (i === based.refs.length - 1 ? ' and ' : ', ')}
               <a href={r.href} {...preview(r.href).data} class:list={[preview(r.href).kind, { nowrap: r.ref.length <= 32 }]}>
                 {r.ref}
               </a>
