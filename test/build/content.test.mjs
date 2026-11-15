@@ -211,3 +211,23 @@ test("every listing in a comparison's figure is one of its two flows' own, and b
   }
   assert.deepEqual(some(wrong), []);
 });
+
+// A word the glossary defines can be part of a longer name that means
+// something else. A "client certificate" is a TLS client's, not the OAuth
+// client's, so "client" is not marked as the glossary's term there.
+test("no page marks the OAuth client inside “client certificate”", () => {
+  const marked = [];
+  for (const p of built)
+    for (const m of p.html.matchAll(
+      /<a class="term" href="\/glossary\/#client"[^>]*>clients?<\/a>[\s-]+certificate/gi,
+    ))
+      marked.push(`${p.path} “${m[0].replace(/<[^>]+>/g, "")}”`);
+  assert.deepEqual(some(marked), []);
+  // and the term is still marked where it stands for itself
+  assert.ok(
+    built.some((p) =>
+      /<a class="term" href="\/glossary\/#client"/.test(p.html),
+    ),
+    "the client is no longer marked anywhere",
+  );
+});
