@@ -93,7 +93,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/components/Scenario.astro`       | A lesson's figure: a small cast, one thing that varies, the same questions asked of each variation |
 | `src/components/Check.astro`          | Questions with feedback that says why                                                              |
 | `src/components/Here.astro`           | The line under the site header that says which page this is, on the long pages                     |
-| `src/data/learn/api-sees.ts`          | The figure lesson 1 and the home page share                                                        |
+| `src/data/learn/api-sees.ts`          | Lesson 1's figure                                                                                  |
 | `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
 | `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
 | `src/lib/gloss.ts`                    | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |

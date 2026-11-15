@@ -1,7 +1,6 @@
 /**
  * "What does the API see?": one person, one agent, one API, and three things
- * the agent might attach to its request. Used by the first lesson and, with
- * the same data, by the home page, so the two cannot drift apart.
+ * the agent might attach to its request. The first lesson's figure.
  *
  * This is the plain-words version of data/verify.ts, which keeps the full
  * account for the Concepts page: a fourth check (proof of who is sending),
@@ -33,8 +32,8 @@ export const apiSees: Scenario = {
           lang: "http",
           text: `GET /events?day=tomorrow HTTP/1.1
 Host: calendar.example
-X-API-Key: sk_agent_7f3a9c…
-X-User: alice`,
+API-Key: sk_agent_7f3a9c…
+User: alice`,
         },
       ],
       findings: [
@@ -63,7 +62,7 @@ X-User: alice`,
           lang: "http",
           text: `GET /events?day=tomorrow HTTP/1.1
 Host: calendar.example
-X-API-Key: sk_user_2b9e41d…`,
+API-Key: sk_user_2b9e41d…`,
         },
       ],
       findings: [

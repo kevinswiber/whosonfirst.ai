@@ -1,9 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
-import Scenario from "../components/Scenario.astro";
 import DocMeta from "../components/DocMeta.astro";
 import { byGroup, flow, flows } from "../data/flows";
-import { apiSees } from "../data/learn/api-sees";
 import { lessons, totalMinutes } from "../data/learn/lessons";
 import { standards } from "../data/standards";
 import { REVIEWED } from "../data/site";
@@ -192,45 +190,39 @@ const news = [
 <Base>
   <section class="hero">
     <div class="wrap hero-grid">
+      <p class="eyebrow">Authentication and authorization for AI agents</p>
       <div class="hero-text">
-        <p class="eyebrow">Authentication and authorization for AI agents</p>
         <h1>Who is acting, for whom, and who said they could?</h1>
         <p class="lede">
           Every API your agent calls needs those three answers, whether it is a calendar, a repository or a
           customer’s account. An API key gives it one. This guide starts from that key and goes as deep as the
           specifications.
         </p>
-        <nav class="routes" aria-label="Start here">
-          <ul>
-            <li>
-              <span class="who">New to this?</span>
-              <a href="/learn/">Start with the lessons</a>
-              <span>
-                {lessons.length} short lessons, about {totalMinutes} minutes. No OAuth knowledge needed.
-              </span>
-            </li>
-            <li>
-              <span class="who">Designing an agent?</span>
-              <a href="/guide/">Choose an authorization flow</a>
-              <span>Six questions, starting with whose authority the agent uses.</span>
-            </li>
-            <li>
-              <span class="who">Know what you are looking for?</span>
-              <a href="/flows/">Browse flows and standards</a>
-              <span>
-                {flows.length} flows, step by step, and a <a href="/standards/">tracker of {standards.length} specifications</a>.
-              </span>
-            </li>
-          </ul>
-        </nav>
       </div>
 
-      <Scenario
-        scenario={apiSees}
-        title="What can the API tell?"
-        brief
-        more={{ href: `/learn/${lessons[0].slug}/`, text: 'A token Alice approved answers all three. Lesson 1 shows why' }}
-      />
+      <nav class="routes" aria-label="Start here">
+        <ul>
+          <li>
+            <span class="who">New to this?</span>
+            <a href="/learn/">Start with the lessons</a>
+            <span>
+              {lessons.length} short lessons, about {totalMinutes} minutes. No OAuth knowledge needed.
+            </span>
+          </li>
+          <li>
+            <span class="who">Designing an agent?</span>
+            <a href="/guide/">Choose an authorization flow</a>
+            <span>Six questions, starting with whose authority the agent uses.</span>
+          </li>
+          <li>
+            <span class="who">Know what you are looking for?</span>
+            <a href="/flows/">Browse flows and standards</a>
+            <span>
+              {flows.length} flows, step by step, and a <a href="/standards/">tracker of {standards.length} specifications</a>.
+            </span>
+          </li>
+        </ul>
+      </nav>
 
       <div class="hero-meta">
         <DocMeta lead="An independent guide, not a specification" reviewed={REVIEWED} />
@@ -410,15 +402,24 @@ const news = [
     background: var(--bg);
     padding-block: clamp(2.5rem, 7vw, 5rem) clamp(2rem, 5vw, 3.5rem);
   }
+  /* The question and what it means on one side, the three ways in on the other.
+     The label over the question has a row to itself, so the rule over the ways in
+     starts level with the question and not with the label. */
   .hero-grid {
     display: grid;
-    gap: 2rem 3rem;
+    gap: 0 4rem;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
+  .hero-grid > .eyebrow {
+    grid-column: 1 / -1;
+  }
   @media (min-width: 64rem) {
     .hero-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    }
+    .hero .routes {
+      margin-top: 0.7rem;
     }
   }
   .hero h1 {
@@ -434,16 +435,20 @@ const news = [
 
   .hero-meta {
     grid-column: 1 / -1;
+    margin-top: 2rem;
   }
   .hero-meta :global(.page-facts) {
     margin-top: 0;
   }
 
   /* three ways in, set as a short list of links */
+  .routes {
+    margin-top: 1.6rem;
+  }
   .routes ul {
     list-style: none;
     padding: 0;
-    margin: 1.6rem 0 0;
+    margin: 0;
     border-top: 1px solid var(--fg);
     max-width: 36rem;
   }

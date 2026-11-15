@@ -52,7 +52,7 @@ const checks: CheckQuestion[] = [
       "Which of these tells the API the request is for Alice, without it having to take the agent’s word?",
     options: [
       {
-        text: "A header the agent adds: `X-User: alice`.",
+        text: "A header the agent adds: `User: alice`.",
         why: "The API can read that header, and apply its rules to the name in it. But the agent wrote it, and can write any name there. So can anyone else who has the agent’s key.",
       },
       {
