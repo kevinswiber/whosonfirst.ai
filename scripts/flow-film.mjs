@@ -89,6 +89,7 @@ const LEAST = {
   cast: 6,
   refuse: 6.6,
   caveat: 5,
+  recap: 4,
   end: 4,
   step: 2.6,
   listing: 3.4,
@@ -185,7 +186,7 @@ function reckoned(say, length) {
 }
 
 let clock = 0;
-const beats = script.beats.map((beat) => {
+const beats = script.beats.map((beat, index) => {
   const count = beat.say ? beat.say.trim().split(/\s+/).length : 0;
   const least = beat.step
     ? beat.show
@@ -198,7 +199,14 @@ const beats = script.beats.map((beat) => {
     throw new Error(`${script.flow} has no step ${beat.step}`);
   const clip = beat.say ? voiced?.get(beat.say) : undefined;
   const length = clip ? clip.duration : count / SPEAK;
-  const dur = Math.max(least, LEAD + length + (clip ? 0.35 : BREATH));
+  // A step that has been told is given a moment before the next begins: a
+  // little longer than the breath between two lines of the same step.
+  const next = script.beats[index + 1];
+  const boundary = !beat.step || next?.step !== beat.step;
+  const dur = Math.max(
+    least,
+    LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH),
+  );
   const words = clip
     ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))
     : beat.say
@@ -257,6 +265,16 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
   .held.large { width: auto; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
   .held.large .glyph { width: 46px; height: 46px; }
+  .cargo { position: absolute; z-index: 3; top: 0; transform: translate(-50%, -50%) var(--move); display: flex; gap: 10px; }
+  .sent { display: flex; align-items: center; gap: 8px; height: 46px; box-sizing: border-box; padding: 0 16px; border-radius: 24px; border: 3px solid var(--fg); background: var(--bg); font: 500 21px var(--font-mono); white-space: nowrap; }
+  .sent i { display: grid; place-items: center; width: 32px; height: 32px; margin-right: -8px; border-radius: 50%; background: var(--amber-soft); color: var(--amber); border: 2px solid var(--amber); }
+  .sent .glyph { width: 24px; height: 24px; }
+  .sent-proof { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .sent-missing { border: 3px dashed var(--border-strong); color: var(--fg-subtle); }
+  .sent-ok { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  .heading { position: absolute; z-index: 40; left: 130px; top: 46px; display: grid; gap: 6px; }
+  .heading small { font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); }
+  .heading strong { font: 600 42px/1.15 var(--font-body); }
   .gloss { position: absolute; transform: translate(-50%, -50%) var(--move); display: flex; align-items: baseline; gap: 16px; padding: 8px 22px; border: 2px dashed var(--border-strong); border-radius: 8px; background: var(--bg); white-space: nowrap; }
   .gloss b { font: 600 34px var(--font-mono); }
   .gloss span { font: 400 30px var(--font-body); color: var(--fg-muted); }
