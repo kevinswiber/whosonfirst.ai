@@ -10,10 +10,14 @@
  *   shows the standards it lists and not the whole tracker, so it is dated by
  *   those entries and not by every change to the tracker.
  *
- * What a page shows of an entry has to be named here, or a change that reaches
- * the page through that entry leaves its date where it was. The parts of a
- * page that are the same on every page, such as the footer's review month, are
- * not named: they are not what the page is about.
+ * What is followed is what a page states: a figure, a definition, a status, a
+ * rating. Such a fact has to be named here, or a change that reaches the page
+ * through it leaves the page's date where it was. What is not followed is
+ * what a page borrows to point somewhere else: the name of a page it links to,
+ * that page's one-line description, a count. Nor are the parts that are the
+ * same on every page, such as the footer's review month. `NOT_FOLLOWED` lists
+ * each of those by the file it comes from, with the reason, and the unit tests
+ * hold every page's imports to one list or the other.
  *
  * Nothing here reads the repository or the site's data. src/lib/page-dates.ts
  * gives it both, and the unit tests give it small ones of their own.
@@ -27,6 +31,8 @@ export interface Site {
   lessons: { slug: string; teaches: string[] }[];
   /** The flows that have a published implementation record. */
   records: string[];
+  /** The tracker ids of the glossary terms that name a standard. */
+  glossaryStandards: string[];
 }
 
 /** Each source's first and last commit. An entry has only a last. */
@@ -37,12 +43,22 @@ const GLOSSARY = "src/data/glossary.ts";
 const LESSONS = "src/data/learn/lessons.ts";
 const RECORDS = "src/data/implementations/records.ts";
 
+/**
+ * The data a lesson's figure is drawn from, where it is kept apart from the
+ * lesson's page. Most lessons hold their own.
+ */
+const LESSON_DATA: Record<string, string[]> = {
+  "what-the-api-sees": ["src/data/learn/api-sees.ts"],
+};
+
+/** The tracker's entries for some ids, each once. */
+const standardsFor = (ids: string[]): string[] =>
+  [...new Set(ids)].map((id) => `${STANDARDS}#${id}`);
+
 /** A flow's page: its own data, the standards it lists, and the evidence it summarizes. */
 const flowSources = (slug: string, site: Site): string[] => [
   `src/data/flows/${slug}.ts`,
-  ...(site.flows.find((f) => f.slug === slug)?.standards ?? []).map(
-    (id) => `${STANDARDS}#${id}`,
-  ),
+  ...standardsFor(site.flows.find((f) => f.slug === slug)?.standards ?? []),
   ...(site.records.includes(slug) ? [`${RECORDS}#${slug}`] : []),
 ];
 
@@ -51,7 +67,16 @@ const MADE_FROM: [
   sources: (slug: string, site: Site) => string[],
 ][] = [
   [/^\/$/, () => ["src/pages/index.astro"]],
-  [/^\/flows\/$/, () => ["src/pages/flows/index.astro", "src/data/flows/"]],
+  // The list of flows rates each one, and a rating is taken from the standards
+  // the flow lists.
+  [
+    /^\/flows\/$/,
+    (_, site) => [
+      "src/pages/flows/index.astro",
+      "src/data/flows/",
+      ...standardsFor(site.flows.flatMap((f) => f.standards)),
+    ],
+  ],
   [/^\/flows\/([^/]+)\/$/, flowSources],
   [/^\/learn\/$/, () => ["src/pages/learn/index.astro", LESSONS]],
   // A lesson: its page, its entry in the list of lessons, which holds its
@@ -60,6 +85,7 @@ const MADE_FROM: [
     /^\/learn\/([^/]+)\/$/,
     (slug, site) => [
       `src/pages/learn/${slug}.astro`,
+      ...(LESSON_DATA[slug] ?? []),
       `${LESSONS}#${slug}`,
       ...(site.lessons.find((l) => l.slug === slug)?.teaches ?? []).map(
         (term) => `${GLOSSARY}#${term}`,
@@ -69,7 +95,15 @@ const MADE_FROM: [
   [/^\/guide\/$/, () => ["src/pages/guide/index.astro", "src/data/guide.ts"]],
   [/^\/guide\/([^/]+)\/$/, () => ["src/data/guide.ts"]],
   [/^\/standards\/$/, () => ["src/pages/standards/index.astro", STANDARDS]],
-  [/^\/glossary\/$/, () => ["src/pages/glossary/index.astro", GLOSSARY]],
+  // A term that names a standard shows that standard's status.
+  [
+    /^\/glossary\/$/,
+    (_, site) => [
+      "src/pages/glossary/index.astro",
+      GLOSSARY,
+      ...standardsFor(site.glossaryStandards),
+    ],
+  ],
   [
     /^\/concepts\/$/,
     () => [
@@ -89,6 +123,55 @@ const MADE_FROM: [
   // A record's page gives the day its evidence was reviewed, which it shows.
   [/^\/implementations\/([^/]+)\/$/, () => []],
 ];
+
+/**
+ * Data a page imports and is not dated by, with the reason: by the file under
+ * src/pages/ that imports it, or under "*" for every page. A page's date
+ * follows what the page states, not what it borrows to point elsewhere.
+ */
+export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
+  "*": {
+    "src/data/types.ts": "types and the labels every page shares",
+    "src/data/learn/types.ts": "types and the labels every lesson shares",
+    "src/data/site.ts":
+      "the review month and the site's own details, the same on every page",
+  },
+  "src/pages/index.astro": {
+    "src/data/flows/index.ts": "the names of the flows it links to",
+    "src/data/learn/lessons.ts": "the names of the lessons it links to",
+    "src/data/guide.ts": "the names of the cases it links to",
+    "src/data/standards.ts": "a count of the tracker's entries",
+  },
+  "src/pages/flows/[slug].astro": {
+    "src/data/learn/lessons.ts": "the name of the lesson it links to",
+  },
+  "src/pages/guide/[case].astro": {
+    "src/data/flows/index.ts": "the names and ratings of the flows it links to",
+  },
+  "src/pages/guide/index.astro": {
+    "src/data/flows/index.ts": "the names and ratings of the flows it links to",
+    "src/data/implementations/index.ts":
+      "whether a flow it links to has a record",
+  },
+  "src/pages/implementations/index.astro": {
+    "src/data/flows/index.ts": "the names and groups of the flows it links to",
+  },
+  "src/pages/implementations/[slug].astro": {
+    "src/data/implementations/index.ts":
+      "the page gives the day its evidence was reviewed, which the record carries",
+    "src/data/flows/index.ts": "the name of the flow it links to",
+  },
+  "src/pages/learn/index.astro": {
+    "src/data/flows/index.ts": "a count of the flows",
+  },
+  "src/pages/standards/index.astro": {
+    "src/data/flows/index.ts": "the names of the flows that list a standard",
+  },
+  "src/pages/styleguide/index.astro": {
+    "src/data/flows/index.ts": "a flow borrowed to show how one is drawn",
+    "src/data/learn/api-sees.ts": "a figure borrowed to show how one is drawn",
+  },
+};
 
 /** What a page is made from. Any other page is made from its own file. */
 export function madeFrom(path: string, site: Site): string[] {
