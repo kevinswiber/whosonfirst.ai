@@ -6,6 +6,7 @@ import { strict as assert } from "node:assert";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
+import { faults, kind } from "../support/mermaid.mjs";
 import {
   attr,
   built,
@@ -135,6 +136,102 @@ test("every page's Markdown copy opens with its title, has each of its sections,
       copies.push(`${p.path} (does not say when the site was last reviewed)`);
   }
   assert.deepEqual(some(copies), []);
+});
+
+// A sequence diagram is the one drawing with a form in text: Mermaid, written
+// from the drawing when the copy is made. The steps in words are beside it on
+// the page and under it in the copy, so each is checked against the other.
+test("every sequence diagram is in its page's Markdown copy as Mermaid that parses, with each party and each step as the page's list of steps has it", () => {
+  const wrong = [];
+  let seen = 0;
+  for (const p of withCopy) {
+    const body = main(p);
+    const drawn = body.split("<flow-diagram").length - 1;
+    if (!drawn) continue;
+    const md = file(copyOf(p));
+    const blocks = [...md.matchAll(/^```mermaid\n([\s\S]*?)^```$/gm)].map(
+      (m) => m[1],
+    );
+    if (blocks.length !== drawn) {
+      wrong.push(
+        `${p.path} (${drawn} sequence diagrams on the page, ${blocks.length} in the copy)`,
+      );
+      continue;
+    }
+    // one diagram to a page is all the site has, and all this reads
+    if (drawn > 1) continue;
+    seen++;
+    const [source] = blocks;
+    const said =
+      kind(source) === "sequence" ? faults(source) : ["not a sequence diagram"];
+    if (said.length) wrong.push(`${p.path} (${said[0]})`);
+
+    const parties = [
+      ...body.matchAll(/<text class="actor-label"[^>]*>([\s\S]*?)<\/text>/g),
+    ].map((m) => plain(m[1]));
+    const named = new Map(
+      [...source.matchAll(/^ {4}participant (\w+) as (.+)$/gm)].map((m) => [
+        m[1],
+        m[2].replace(/#(\d+);/g, (_, c) => String.fromCharCode(c)),
+      ]),
+    );
+    const names = [...named.values()];
+    if (
+      names.length !== parties.length ||
+      parties.some((label, i) => !names[i].startsWith(label))
+    )
+      wrong.push(
+        `${p.path} (the page draws ${parties.join(", ")}; the copy has ${names.join(", ")})`,
+      );
+
+    // each step of the list: its kind, and who acts on whom
+    const steps = body
+      .split(/<li class="flow-step /)
+      .slice(1)
+      .map((li) => ({
+        kind: /^kind-(\w+)/.exec(li)?.[1],
+        who: [
+          ...li
+            .slice(0, li.indexOf("<h3"))
+            .matchAll(/<span class="who [^>]*>([\s\S]*?)<\/span>/g),
+        ].map((m) => plain(m[1])),
+      }));
+    const lines = [
+      ...source.matchAll(
+        /^ {4}(?:Note over (\w+)|(\w+)(-->>|->>|--\)|-\))(\w+)): (\d+)\. \S/gm,
+      ),
+    ].map(([, alone, from, arrow, to, n]) => ({
+      n: Number(n),
+      arrow,
+      who: (alone ? [alone] : [from, to]).map((id) => named.get(id) ?? id),
+    }));
+    if (lines.length !== steps.length || lines.some((l, i) => l.n !== i + 1)) {
+      wrong.push(
+        `${p.path} (${steps.length} steps on the page; the copy's diagram numbers ${lines.map((l) => l.n).join(", ")})`,
+      );
+      continue;
+    }
+    for (const [i, step] of steps.entries()) {
+      const line = lines[i];
+      const route =
+        line.who.length === step.who.length &&
+        step.who.every((label, k) => line.who[k].startsWith(label));
+      // a response and a message out of band are dashed; one through the
+      // browser or out of band has an open head; a local action is a note
+      const style =
+        step.who.length === 1
+          ? !line.arrow
+          : line.arrow?.startsWith("--") ===
+              ["resp", "oob"].includes(step.kind) &&
+            line.arrow?.endsWith(")") === ["front", "oob"].includes(step.kind);
+      if (!route || !style)
+        wrong.push(
+          `${p.path} step ${i + 1} (the page: ${step.who.join(" → ")}, ${step.kind}; the copy: ${line.who.join(" → ")}, ${line.arrow ?? "a note"})`,
+        );
+    }
+  }
+  assert.ok(seen > 0, "no page with a copy draws a sequence diagram");
+  assert.deepEqual(some(wrong), []);
 });
 
 // Reader modes discard CSS gaps. The status and reference need punctuation

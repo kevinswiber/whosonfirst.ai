@@ -106,7 +106,7 @@ The flows are the same everywhere. What changes with the runtime is the starting
 
 ## Read it with an agent
 
-Every page of the guide is also published as Markdown, made from the page as built, so an assistant or a coding agent can read the guide without picking it out of HTML. A copy keeps what the page says in words: a flow’s steps, every variation of a figure, the decision guide’s rules.
+Every page of the guide is also published as Markdown, made from the page as built, so an assistant or a coding agent can read the guide without picking it out of HTML. A copy keeps what the page says in words: a flow’s steps, every variation of a figure, the decision guide’s rules. A flow’s sequence diagram is there too, as Mermaid.
 
 | What                                 | Address                                                                                                                       |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
