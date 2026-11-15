@@ -64,9 +64,12 @@ test("the compact directory, full record and flow guide connect without JavaScri
     await dpop.textContent(),
     /examples shown|entries reviewed/,
   );
-  await dpop
-    .getByRole("link", { name: "Sources and review details for DPoP" })
-    .click();
+  await Promise.all([
+    page.waitForURL(site.url("/implementations/dpop/")),
+    dpop
+      .getByRole("link", { name: "Sources and review details for DPoP" })
+      .click(),
+  ]);
   assert.match(page.url(), /\/implementations\/dpop\/$/);
   assert.ok(
     await page
@@ -96,7 +99,10 @@ test("the compact directory, full record and flow guide connect without JavaScri
     /Norsk helsenett/,
   );
 
-  await page.getByRole("link", { name: "How DPoP works" }).click();
+  await Promise.all([
+    page.waitForURL(site.url("/flows/dpop/")),
+    page.getByRole("link", { name: "How DPoP works" }).click(),
+  ]);
   assert.match(page.url(), /\/flows\/dpop\/$/);
   assert.ok(
     await page
@@ -118,7 +124,10 @@ test("the compact directory, full record and flow guide connect without JavaScri
     "/implementations/dpop/#field-dpop-spring",
   );
   assert.equal(await page.locator("#field-dpop-spring").count(), 0);
-  await springCard.click();
+  await Promise.all([
+    page.waitForURL(site.url("/implementations/dpop/#field-dpop-spring")),
+    springCard.click(),
+  ]);
   assert.match(page.url(), /\/implementations\/dpop\/#field-dpop-spring$/);
   assert.ok(
     await page
@@ -160,9 +169,10 @@ test("search links to exact entries and keeps product and role together", async 
   await input.fill("dpop spring resource-server verifier");
   assert.equal(await count.textContent(), "1 flow shown");
   assert.equal(await page.locator(records).first().getAttribute("id"), "dpop");
-  await page
-    .getByRole("link", { name: "Spring Security", exact: true })
-    .click();
+  await Promise.all([
+    page.waitForURL(site.url("/implementations/dpop/#field-dpop-spring")),
+    page.getByRole("link", { name: "Spring Security", exact: true }).click(),
+  ]);
   assert.match(page.url(), /\/implementations\/dpop\/#field-dpop-spring$/);
   assert.ok(
     await page
@@ -467,7 +477,12 @@ test("example cards and compact lists keep roles visible and link to the exact e
           "type follows the visible role",
         );
       }
-      await products.getByRole("link", { name: /^Claude Code\b/ }).click();
+      await Promise.all([
+        page.waitForURL(
+          site.url("/implementations/mcp-authorization/#field-mcp-claude-code"),
+        ),
+        products.getByRole("link", { name: /^Claude Code\b/ }).click(),
+      ]);
       assert.match(
         page.url(),
         /\/implementations\/mcp-authorization\/#field-mcp-claude-code$/,
@@ -490,7 +505,12 @@ test("example cards and compact lists keep roles visible and link to the exact e
           .getByText("Hosted remote MCP service", { exact: true })
           .isVisible(),
       );
-      await report.getByRole("link", { name: /^Stripe\b/ }).click();
+      await Promise.all([
+        page.waitForURL(
+          site.url("/implementations/mcp-authorization/#field-mcp-stripe"),
+        ),
+        report.getByRole("link", { name: /^Stripe\b/ }).click(),
+      ]);
       assert.match(
         page.url(),
         /\/implementations\/mcp-authorization\/#field-mcp-stripe$/,
@@ -542,7 +562,12 @@ test("flow cards include every implementation and deployment entry from the full
       })),
     );
     assert.deepEqual(actual, entries, slug);
-    await cards.last().locator(".evidence-example-summary").click();
+    await Promise.all([
+      page.waitForURL(
+        site.url(`/implementations/${slug}/#${entries.at(-1).id}`),
+      ),
+      cards.last().locator(".evidence-example-summary").click(),
+    ]);
     assert.equal(new URL(page.url()).hash, `#${entries.at(-1).id}`);
     assert.ok(
       await page
