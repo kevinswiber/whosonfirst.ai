@@ -64,6 +64,20 @@ describe("phone flow", () => {
     await page.setViewportSize(size);
     await settle();
   };
+  // Narrowed with the diagram open, the page closes it and then takes the
+  // diagram's entry back off the history: a toggle event, then a step back
+  // through the history, and neither is done when the window has its new
+  // size. A Back pressed before they are would use up that entry itself and
+  // leave the reader on the flow. So this waits for the entry to be gone, as
+  // a reader would have: however long the page takes, and no longer.
+  const narrow = async () => {
+    await page.setViewportSize(PHONE);
+    await page.waitForFunction(() => {
+      const stage = document.querySelector(".flow-stage");
+      return stage && !stage.open && !history.state?.diagram;
+    });
+    await settle();
+  };
   // each from a fresh arrival, from the home page, with the diagram opened
   const arrive = async () => {
     await page.setViewportSize(PHONE);
@@ -186,7 +200,7 @@ describe("phone flow", () => {
     await goTo("#step-6");
     await resize(WIDE);
     await back();
-    await resize(PHONE);
+    await narrow();
     const narrowed = await now();
     assert.ok(
       narrowed.path === FLOW && narrowed.open === false,
@@ -200,7 +214,7 @@ describe("phone flow", () => {
     await resize(WIDE);
     await page.click('[data-act="next"]');
     await settle();
-    await resize(PHONE);
+    await narrow();
     await page.goForward();
     await settle();
     const stepped = await now();
@@ -215,7 +229,7 @@ describe("phone flow", () => {
     await page.setViewportSize(WIDE);
     await page.reload({ waitUntil: "load" });
     await settle();
-    await resize(PHONE);
+    await narrow();
     await back();
     assert.equal(page.url(), site.url("/"));
   });
