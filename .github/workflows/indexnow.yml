@@ -8,29 +8,38 @@
 # builds the same commit for itself, from the whole history, since the dates
 # in the sitemap are read from it. Then scripts/indexnow.mjs does three things:
 #
-#   chooses  the pages whose date is the date of a commit this push brought
-#            to main: the commits after `github.event.before`. No page, and
-#            it says so and sends nothing
+#   chooses  the pages whose date is the date of a commit that main has now
+#            and did not have when this workflow last succeeded on a push.
+#            No page, and it says so and sends nothing
 #   waits    until the deployed sitemap lists each of those pages with a date
 #            no older than this build's, looking every fifteen seconds. An
 #            engine that is told about a page goes and reads it, and should
 #            find the new one. After ten minutes it fails with nothing sent
 #   sends    the list
 #
-# What `before` can be: the commit main was at, which is the usual case. All
-# zeros, for the first push of a branch, which the script reads as "every
+# The commit to start from is asked of GitHub: the commit of the last run of
+# this workflow that succeeded on a push to main. A run that succeeded sent
+# its pages or had none to send, so everything since is still owed. That
+# covers a run that failed because the deploy never showed up, and a run that
+# never started: the next push sends their pages with its own. Asking is what
+# `actions: read` is for. Where there is no such run yet, or GitHub does not
+# answer, the commit is `github.event.before`, the one main was at before the
+# push.
+#
+# What that commit can be: one in main's history, which is the usual case.
+# All zeros, for the first push of a branch, which the script reads as "every
 # page". Or, after a forced push, a commit that is no longer in main's
 # history: it is fetched by name, and the pages sent are those changed by the
 # commits main has now and did not have then. If it cannot be fetched, every
 # page is sent, with a warning on the run.
 #
 # Run by hand, it sends every page or the pages changed since a day or a
-# commit, and with "dry run" it only prints the list.
+# commit, and with "dry run" it only prints the list. A run by hand does not
+# move where the next push starts from, so a dry run cannot hide a page.
 #
 # One run at a time, in the order they were asked for. GitHub keeps one run
-# waiting behind the one in progress, so a third push inside those few minutes
-# takes the place of the second run, whose pages are then not sent: run it
-# again from its page, or run this by hand with a day.
+# waiting behind the one in progress and drops any other, which loses
+# nothing: the run that does go starts from the last one that succeeded.
 #
 # The key that proves the list comes from whoever runs the site is the file in
 # public/ named for it. It is not a secret, and this workflow needs none. It
@@ -55,8 +64,10 @@ on:
         type: boolean
         default: false
 
+# `actions: read` lets a run ask which run of this workflow last succeeded.
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: indexnow
@@ -91,17 +102,26 @@ jobs:
       - name: Choose the pages, wait for the deploy and send
         env:
           BEFORE: ${{ github.event.before }}
+          GH_TOKEN: ${{ github.token }}
           PAGES: ${{ inputs.pages }}
           SINCE: ${{ inputs.since }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = push ]; then
-            set -- --since "$BEFORE"
+            # The commit of the last run that succeeded on a push to main.
+            runs="repos/$GITHUB_REPOSITORY/actions/workflows/indexnow.yml/runs?branch=main&event=push&status=success&per_page=1"
+            if ! last=$(gh api "$runs" --jq '.workflow_runs[0].head_sha // empty'); then
+              echo "::warning::GitHub did not say which run last succeeded, so the pages are those changed since the commit before this push."
+              last=
+            fi
+            from=${last:-$BEFORE}
+            echo "Pages changed since $from."
+            set -- --since "$from"
             # A commit that is not all zeros and not in this clone was taken
             # out of main's history by a forced push.
-            if [ -n "${BEFORE//0/}" ] && ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
-              if ! git fetch --quiet origin "$BEFORE"; then
-                echo "::warning::The commit main was at before this push, $BEFORE, could not be fetched, so every page is sent."
+            if [ -n "${from//0/}" ] && ! git cat-file -e "$from^{commit}" 2>/dev/null; then
+              if ! git fetch --quiet origin "$from"; then
+                echo "::warning::The commit to start from, $from, could not be fetched, so every page is sent."
                 set -- --all
               fi
             fi
