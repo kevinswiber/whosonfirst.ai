@@ -34,8 +34,8 @@ export const apiSees: Scenario = {
           lang: "http",
           text: `GET /events?day=tomorrow HTTP/1.1
 Host: calendar.example
-X-API-Key: sk_agent_7f3a9c…
-X-User: alice`,
+API-Key: sk_agent_7f3a9c…
+User: alice`,
         },
       ],
       findings: [
@@ -64,7 +64,7 @@ X-User: alice`,
           lang: "http",
           text: `GET /events?day=tomorrow HTTP/1.1
 Host: calendar.example
-X-API-Key: sk_user_2b9e41d…`,
+API-Key: sk_user_2b9e41d…`,
         },
       ],
       findings: [
