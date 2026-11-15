@@ -102,6 +102,14 @@ test("a page was published when its own file was, however old the entries it sho
   });
   assert.equal(dates.published, day(9));
   assert.equal(dates.modified, day(12));
+  // an index is as old as its own page, not as the oldest file it lists
+  assert.equal(
+    datesFor(madeFrom("/flows/", site), {
+      "src/pages/flows/index.astro": { first: day(10), last: day(10) },
+      "src/data/flows/dpop.ts": { first: day(9), last: day(12) },
+    }).published,
+    day(10),
+  );
   // and with no file of its own in the history, it has no dates at all
   assert.equal(
     datesFor(madeFrom("/flows/dpop/", site), {

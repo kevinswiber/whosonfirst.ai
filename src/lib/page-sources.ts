@@ -101,7 +101,7 @@ export function madeFrom(path: string, site: Site): string[] {
 }
 
 export interface PageDates {
-  /** The first commit of the oldest of the page's files. ISO 8601. */
+  /** The first commit of the page's own file: the first one named. ISO 8601. */
   published: string;
   /** The last commit to change anything the page is made from. ISO 8601. */
   modified: string;
@@ -113,9 +113,10 @@ const time = (iso: string) => new Date(iso).getTime();
 
 /**
  * A page's dates from what it is made from, or nothing where the history
- * could not be read or does not have the page. It was published when its
- * oldest file was first committed. An entry does not say: it has no first
- * commit of its own, and a flow is not as old as the oldest standard it lists.
+ * could not be read or does not have the page. It was published when its own
+ * file was first committed, which is the first file named for it: a page is
+ * not as old as the oldest thing it shows. An entry has no first commit, and
+ * so cannot be a page's own file.
  */
 export function datesFor(
   named: string[],
@@ -127,13 +128,13 @@ export function datesFor(
       name.endsWith("/") ? all.filter((f) => f.startsWith(name)) : [name],
     )
     .filter((name) => history[name]);
-  const first = sources.flatMap((name) => history[name].first ?? []);
-  if (first.length === 0) return undefined;
+  const published = sources.flatMap((name) => history[name].first ?? [])[0];
+  if (published === undefined) return undefined;
   const latest = sources.reduce((a, b) =>
     time(history[b].last) > time(history[a].last) ? b : a,
   );
   return {
-    published: first.reduce((a, b) => (time(b) < time(a) ? b : a)),
+    published,
     modified: history[latest].last,
     source: latest.split("#")[0],
   };
