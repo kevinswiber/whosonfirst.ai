@@ -82,6 +82,8 @@ A new check is a test in the file for what it reads. Tests in a suite run in ord
 
 `.github/workflows/ci.yml` runs the same commands on every pull request and on every change to `main`, as two jobs side by side: Biome, then `npm test`; and the build, then `npm run check:rendered`. It needs no secret and deploys nothing, so it runs the same on a pull request from a fork.
 
+`.github/workflows/indexnow.yml` is not a check. It runs after a push to `main` and tells search engines which pages changed: see [Telling a search engine that a page changed](#other-forms-of-a-page).
+
 The workflow names each action by commit, not by tag. `.github/dependabot.yml` opens one pull request a month when those have moved.
 
 ## Where things are
@@ -315,13 +317,24 @@ The dates need the whole history. In a shallow clone every file appears to have 
 
 The site is deployed by Cloudflare's Workers Builds, which also clones shallowly. There, and only there, the build fetches the rest of the history before it reads it: Workers Builds sets `WORKERS_CI=1`, and `src/integrations/page-dates.mjs` runs `git fetch --unshallow` when it sees that. Look for `[page-dates] … files dated from the history, after fetching the rest of it` in the build's output. If the fetch fails the build goes on without dates and says so. A build made any other way has to start from a full clone to have dates, or run `git fetch --unshallow` itself first. A new section whose pages are made from data needs a line in `MADE_FROM` in `src/lib/page-sources.ts`; any other page is dated by its own file.
 
-**Telling a search engine that a page changed.** Google reads the sitemap. Bing, and the other engines that take part in [IndexNow](https://www.indexnow.org/), can be told directly, and read a page again without waiting to find out. After a deploy:
+**Telling a search engine that a page changed.** Google reads the sitemap. Bing, and the other engines that take part in [IndexNow](https://www.indexnow.org/), can be told directly, and read a page again without waiting to find out.
+
+Nobody has to do it by hand. `.github/workflows/indexnow.yml` runs on every push to `main`: it builds that commit from the whole history, waits for Cloudflare to deploy it, and sends the pages the push changed. It runs `scripts/indexnow.mjs`, which can also be run from a full clone, after a build:
 
 ```bash
-npm run indexnow -- --since 2026-11-14
+npm run indexnow -- --since 4c1c6a6 --dry-run
 ```
 
-That sends every page whose date in the built sitemap is on or after the day given. `--all` sends every page, for the first run. `--dry-run` prints the list and sends nothing. The script reads the build and does not make it, and stops on a build older than its sources, as the other scripts that read the build do. It proves the list comes from whoever runs the site with a key: the file in `public/` named for a string of hexadecimal digits, which holds that string. The key is not a secret. Replace it by replacing the file. Run the script after the deploy and not before, since an engine that is told about a page goes and reads it.
+`--since` takes a commit or a day, and `--all` sends every page.
+
+- **A commit** gives the pages changed by the commits after it, up to the one checked out. A page's date in the sitemap is the date of the last commit that changed what it is made from, so these are the pages whose date is the date of one of those commits. It is asked of the history and not of a clock: a commit made last week and merged today counts, where a day would miss it. The workflow gives the commit of its own last run that succeeded on a push to `main`, which it asks GitHub for. Where no run has succeeded yet it sends every page, and where GitHub does not answer it fails with nothing sent. Where history was rewritten, the commits are those that are here and were not there. All zeros, which is what GitHub calls the commit before a branch's first push, means every page. A commit the clone does not have is refused, and so is any commit in a shallow clone.
+- **A day**, as `2026-11-14`, gives the pages dated on or after it, the day starting in UTC.
+
+`--dry-run` prints the list and sends nothing. `--wait` waits for the deploy first: an engine that is told about a page goes and reads it, and should find the new one. It reads the deployed sitemap every fifteen seconds until each page to be sent is listed there with a date no older than the build's, and after ten minutes it stops with nothing sent. Without `--wait`, run the script after the deploy and not before.
+
+The script reads the build and does not make it, and stops on a build older than its sources, as the other scripts that read the build do. It proves the list comes from whoever runs the site with a key: the file in `public/` named for a string of hexadecimal digits, which holds that string. The key is not a secret. Replace it by replacing the file. How the pages are chosen and how the wait ends are tested in `test/unit/indexnow.test.mjs`, without a build or the network.
+
+The workflow can be run by hand from the Actions tab, for every page, or for the pages since a day or a commit, and as a dry run. A run that succeeded sent its pages or had none to send, so the next run starts from its commit. If a run fails because the deploy never showed up, look at the deploy: the next push sends that run's pages with its own, and running the failed run again sends them sooner. One run goes at a time, and GitHub drops all but one of those waiting, which loses nothing for the same reason. A run by hand does not move where the next push starts from. If the deployed build ever fails to fetch the history, its sitemap has no dates, and the wait ends with nothing sent.
 
 **For a program that reads.** `src/integrations/markdown-pages.mjs` writes each page again as Markdown beside it: `/flows/dpop/` has `/flows/dpop/index.md`. The page names it in a `<link rel="alternate" type="text/markdown">`. The copy leaves out the header, the footer, controls and drawings, and keeps what the page says in words: a flow's steps, a figure's every variation and its table, the decision guide's rules. One drawing is kept, in a form a program reads: a sequence diagram is written again as a `mermaid` code block, above its steps. It is read from the drawing in the built page, so there is nothing to keep in step by hand: the parties from the boxes, each arrow and note with its number and label, and a note across the diagram where a part begins. The style of a line says the kind of message, as it does on the page, and a sentence under the block names each kind the diagram uses. A kind of message with no arrow in `ARROWS` in the integration stops the build, which says so. Other drawings have no such form, and their tables and lists stand for them. It ends with the page's address and the footer's line on when the site was last reviewed, which on a lesson is the only place the month appears. Two files are made from the copies:
 
