@@ -7,13 +7,24 @@
  * RFC 9110 defines it and gives the answer. src/worker.ts runs it in front of
  * the pages.
  *
- * The header is a list of media ranges, each with a weight from 0 to 1. A
- * range with no weight has 1, and 0 means “not acceptable” (section 12.4.2).
- * Where more than one range fits a type, the most specific one is the one
- * that counts: `text/markdown` before `text/*` before the range that allows
- * anything (section 12.5.1). So `text/html, text/markdown;q=0` refuses
- * Markdown, though it has the words in it.
+ * The header is a list of media ranges, each with a weight from 0 to 1
+ * (sections 12.4.2 and 12.5.1). The rules, as they are kept here:
  * https://www.rfc-editor.org/rfc/rfc9110#section-12.5.1
+ *
+ * - A range is a type, a whole family of types (`text/*`) or anything. It may
+ *   have parameters, and then it fits only a form sent with each of them:
+ *   `text/markdown;charset=utf-8` fits the copy, and `;charset=iso-8859-1`
+ *   does not.
+ * - Its weight is the parameter named `q`, wherever among the parameters it
+ *   is written. A range with none has 1, and 0 means “not acceptable”.
+ * - Where more than one range fits a form, the most specific counts: a type
+ *   with parameters, before the type, before its family, before anything. So
+ *   `text/html, text/markdown;q=0` refuses Markdown, though it has the words
+ *   in it, and `text/*;q=0.3, text/markdown` weighs it at 1.
+ * - Names of types and parameters, and `q`, are read in either case. Spaces
+ *   and tabs may stand around a comma or a semicolon. A comma or semicolon
+ *   inside a quoted string is part of the string.
+ * - A range that is not written as the grammar has it is left out.
  *
  * A request gets Markdown when it names `text/markdown` itself, gives it a
  * weight above 0, and prefers it to the page. Naming it is asked for because
@@ -35,7 +46,7 @@
 interface Range {
   type: string;
   subtype: string;
-  /** Its parameters before the weight, names in lower case. */
+  /** Its parameters other than the weight, names in lower case. */
   params: Map<string, string>;
   /** Its weight, 0 to 1. */
   q: number;
@@ -92,7 +103,7 @@ export function ranges(accept: string): Range[] {
     // "*/markdown" is not a range: only a whole type or everything is
     if (type === "*" && subtype !== "*") continue;
     const params = new Map<string, string>();
-    let q = 1;
+    let q: number | undefined;
     let valid = true;
     for (const parameter of parameters) {
       const at = parameter.indexOf("=");
@@ -100,15 +111,16 @@ export function ranges(accept: string): Range[] {
         .trim()
         .toLowerCase();
       const value = at < 0 ? "" : unquoted(parameter.slice(at + 1).trim());
+      // The weight is the parameter named "q", wherever it is written: a
+      // parameter after it is still one of the media type's. A weight that is
+      // not a weight, or a second one, makes the range one to leave out.
       if (name === "q") {
-        if (WEIGHT.test(value)) q = Number(value);
+        if (q === undefined && WEIGHT.test(value)) q = Number(value);
         else valid = false;
-        // what follows the weight is not about the media type
-        break;
-      }
-      if (name) params.set(name, value.toLowerCase());
+      } else if (name) params.set(name, value.toLowerCase());
     }
-    if (valid) found.push({ type, subtype, params, q, at: found.length });
+    if (valid)
+      found.push({ type, subtype, params, q: q ?? 1, at: found.length });
   }
   return found;
 }
@@ -167,6 +179,20 @@ function standing(accept: Range[], form: Form): Standing {
       best = { q: range.q, specific, at: range.at };
   }
   return best;
+}
+
+/**
+ * The weight an `Accept` header gives a media type, written as it would be
+ * sent: `text/plain;format=flowed`. 0 where the header does not allow it.
+ */
+export function weightOf(accept: string, mediaType: string): number {
+  const [form] = ranges(mediaType);
+  if (!form) return 0;
+  return standing(ranges(accept), {
+    type: form.type,
+    subtype: form.subtype,
+    params: Object.fromEntries(form.params),
+  }).q;
 }
 
 /** Whether a request with this `Accept` header gets a page's Markdown copy. */

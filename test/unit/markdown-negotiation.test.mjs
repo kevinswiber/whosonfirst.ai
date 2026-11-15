@@ -14,10 +14,75 @@ import {
   prefersMarkdown,
   ranges,
   respond,
+  weightOf,
 } from "../../src/lib/markdown-negotiation.ts";
 import worker from "../../src/worker.ts";
 
 const which = (headers) => headers.filter((accept) => !prefersMarkdown(accept));
+
+// The examples the specifications give, with the weights they say follow.
+test("the weights are the ones the RFCs' own examples give", () => {
+  // RFC 9110, section 12.5.1, Table 5. Its sixth row, text/html;level=3 at
+  // 0.7, is the last row of the older example below, whose header gives it.
+  // https://www.rfc-editor.org/rfc/rfc9110#section-12.5.1
+  const now =
+    "text/*;q=0.3, text/plain;q=0.7, text/plain;format=flowed, text/plain;format=fixed;q=0.4, */*;q=0.5";
+  assert.deepEqual(
+    [
+      "text/plain;format=flowed",
+      "text/plain",
+      "text/html",
+      "image/jpeg",
+      "text/plain;format=fixed",
+    ].map((type) => weightOf(now, type)),
+    [1, 0.7, 0.3, 0.5, 0.4],
+  );
+  // RFC 7231, section 5.3.2
+  // https://www.rfc-editor.org/rfc/rfc7231#section-5.3.2
+  const before =
+    "text/*;q=0.3, text/html;q=0.7, text/html;level=1, text/html;level=2;q=0.4, */*;q=0.5";
+  assert.deepEqual(
+    [
+      "text/html;level=1",
+      "text/html",
+      "text/plain",
+      "image/jpeg",
+      "text/html;level=2",
+      "text/html;level=3",
+    ].map((type) => weightOf(before, type)),
+    [1, 0.7, 0.3, 0.5, 0.4, 0.7],
+  );
+  // and the two in prose: "I prefer audio/basic, but send me any audio type"
+  assert.equal(weightOf("audio/*; q=0.2, audio/basic", "audio/basic"), 1);
+  assert.equal(weightOf("audio/*; q=0.2, audio/basic", "audio/ogg"), 0.2);
+  assert.equal(weightOf("audio/*; q=0.2, audio/basic", "text/html"), 0);
+  const elaborate = "text/plain; q=0.5, text/html, text/x-dvi; q=0.8, text/x-c";
+  assert.deepEqual(
+    ["text/html", "text/x-c", "text/x-dvi", "text/plain"].map((type) =>
+      weightOf(elaborate, type),
+    ),
+    [1, 1, 0.8, 0.5],
+  );
+});
+
+// "Recipients SHOULD process any parameter named 'q' as weight, regardless of
+// parameter ordering." The older grammar gave what followed the weight a
+// meaning of its own, and RFC 9110 took that away.
+test("the weight is the parameter named q, wherever it is written", () => {
+  for (const header of [
+    "text/markdown;charset=utf-8;q=0.4",
+    "text/markdown;q=0.4;charset=utf-8",
+    "text/markdown;Q=0.4;CHARSET=UTF-8",
+  ]) {
+    assert.equal(weightOf(header, "text/markdown;charset=utf-8"), 0.4, header);
+    // and the other parameter is still the type's: a copy without it does not fit
+    assert.equal(weightOf(header, "text/markdown"), 0, header);
+  }
+  assert.ok(!prefersMarkdown("text/html, text/markdown;q=0;charset=utf-8"));
+  // a parameter the copy is not sent with, before the weight or after it
+  assert.ok(!prefersMarkdown("text/markdown;q=1;ext=1"));
+  assert.ok(!prefersMarkdown("text/markdown;ext=1;q=1"));
+});
 
 test("the agents known to ask for Markdown get it", () => {
   // What each sends, from Checkly's survey of February 2026:
@@ -52,8 +117,8 @@ test("a request that names Markdown and prefers it to the page gets Markdown", (
       // the charset the copy is sent in
       "text/markdown;charset=utf-8",
       'text/markdown; charset="UTF-8"; q=0.8, text/html;q=0.8',
-      // what follows the weight is not about the type
-      "text/markdown;q=1;ext=1",
+      // empty places in the list and among the parameters
+      ", text/markdown;;q=0.9 ,, text/html;q=0.8,",
     ]),
     [],
   );
@@ -131,6 +196,7 @@ test("a range that is not written as the grammar has it is left out", () => {
     "text/markdown;q=0.1234",
     "text/markdown;q=",
     "text/markdown;q=high",
+    "text/markdown;q=1;q=1",
     "*/markdown",
     "text/markdown/extra",
     "markdown",
