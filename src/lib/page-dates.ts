@@ -13,6 +13,7 @@
  */
 import history from "virtual:page-dates";
 import { flows } from "../data/flows";
+import { glossary } from "../data/glossary";
 import { implementationProfiles } from "../data/implementations";
 import { lessons } from "../data/learn/lessons";
 import type { PageDates, Site } from "./page-sources";
@@ -25,6 +26,7 @@ const site: Site = {
   flows,
   lessons,
   records: implementationProfiles.map((profile) => profile.slug),
+  glossaryStandards: glossary.flatMap((term) => term.standard ?? []),
 };
 
 /** A page's dates, or nothing where the history could not be read or does not have the page. */

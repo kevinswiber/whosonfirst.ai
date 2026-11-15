@@ -90,12 +90,56 @@ export function readLog(log, ignored = new Set()) {
 }
 
 /**
+ * Source text without its layout, so that code that was only laid out again
+ * reads as the same: no spacing between its parts, no comments, no comma
+ * before a closing bracket, and one kind of quote mark.
+ *
+ * What is inside a string is what a page says, and is kept exactly: a space
+ * put into a quoted word, or a line break taken out of a template, is a
+ * change. Only an escaped quote mark is read as the mark, since which marks
+ * need escaping depends on the kind that encloses them.
+ */
+export function withoutLayout(source) {
+  let out = "";
+  let i = 0;
+  while (i < source.length) {
+    const c = source[i];
+    if (c === '"' || c === "'" || c === "`") {
+      let text = "";
+      let j = i + 1;
+      while (j < source.length && source[j] !== c) {
+        if (source[j] === "\\" && j + 1 < source.length) {
+          text += /["'`]/.test(source[j + 1])
+            ? source[j + 1]
+            : source.slice(j, j + 2);
+          j += 2;
+        } else text += source[j++];
+      }
+      // NUL stands for the quote mark: no string here has one in it
+      out += `\u0000${text}\u0000`;
+      i = j + 1;
+    } else if (c === "/" && source[i + 1] === "/") {
+      while (i < source.length && source[i] !== "\n") i++;
+    } else if (c === "/" && source[i + 1] === "*") {
+      const end = source.indexOf("*/", i + 2);
+      i = end < 0 ? source.length : end + 2;
+    } else if (/\s/.test(c)) {
+      i++;
+    } else {
+      if (/[}\])]/.test(c) && out.endsWith(",")) out = out.slice(0, -1);
+      out += c;
+      i++;
+    }
+  }
+  // the comma after an entry is the list's, and the last entry may have none
+  return out.endsWith(",") ? out.slice(0, -1) : out;
+}
+
+/**
  * The entries of a file that is a list of them: a map from each entry's name
- * to its text. An entry is an object of the file's outermost array, from a
- * line that is "  {" to the next that is "  }," and its name is its `key`.
- * The text is kept without its spacing, the kind of its quote marks and its
- * trailing commas, so that an entry that was only laid out again reads as the
- * same.
+ * to its text, without its layout. An entry is an object of the file's
+ * outermost array, from a line that is "  {" to the next that is "  }," and
+ * its name is its `key`.
  */
 export function entriesOf(text, key) {
   const entries = new Map();
@@ -107,16 +151,7 @@ export function entriesOf(text, key) {
     else if (/^ {2}\},?\s*$/.test(line) && open !== undefined) {
       const entry = lines.slice(open, i + 1).join("\n");
       const name = named.exec(entry)?.[2];
-      if (name !== undefined)
-        entries.set(
-          name,
-          entry
-            .replace(/\s+/g, "")
-            .replace(/['`]/g, '"')
-            .replace(/,(?=[}\])])/g, "")
-            // the comma after the entry is the list's, and the last entry may have none
-            .replace(/,$/, ""),
-        );
+      if (name !== undefined) entries.set(name, withoutLayout(entry));
       open = undefined;
     }
   });

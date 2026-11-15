@@ -11,6 +11,7 @@ import {
   historyDates,
   ignoredRevisions,
   readLog,
+  withoutLayout,
 } from "../../src/integrations/page-dates.mjs";
 
 const A = "a".repeat(40);
@@ -91,7 +92,6 @@ test("a list's entries are read by name, each without its layout", () => {
     "id",
   );
   assert.deepEqual([...entries.keys()], ["rfc1", "draft-2"]);
-  assert.equal(entries.get("rfc1"), '{id:"rfc1",status:"rfc"}');
   // the same entry on one line less, in the other quote marks, is the same entry
   assert.equal(
     entriesOf(
@@ -160,4 +160,36 @@ test("every file read entry by entry is a list this reading can take apart", () 
     assert.equal(entries.size, text.match(/^ {2}\{\s*$/gm).length, file);
     assert.ok(entries.size > 0, file);
   }
+});
+
+// Layout is everything between the strings. What is inside one is what a page
+// says, so nothing inside one is layout.
+test("code that was only laid out again reads as the same, and a change inside a string does not", () => {
+  const same = (a, b) => withoutLayout(a) === withoutLayout(b);
+  // spacing, line breaks, a trailing comma, a comment and the kind of quote mark
+  assert.ok(
+    same(
+      `{ id: "a", scopes: ["read", "write"] }`,
+      `{\n  // which scopes\n  id: 'a',\n  scopes: [\n    "read",\n    "write",\n  ],\n}`,
+    ),
+  );
+  assert.ok(same(`{ note: "it's" }`, `{ note: 'it\\'s' }`));
+  // a space put into a quoted word
+  assert.ok(!same(`{ scope: "readwrite" }`, `{ scope: "read write" }`));
+  // a line break taken out of a template, where a blank line is a paragraph
+  assert.ok(!same("{ body: `One.\n\nTwo.` }", "{ body: `One. Two.` }"));
+  // two slashes in an address are not a comment, and what follows them counts
+  assert.ok(
+    !same(`{ url: "https://a.example/x" }`, `{ url: "https://a.example/y" }`),
+  );
+  // a comma before a bracket inside a string is the string's own
+  assert.ok(!same(`{ code: "[1,]" }`, `{ code: "[1]" }`));
+});
+
+test("an entry's date moves when only the inside of one of its strings changes", () => {
+  const versions = [
+    { date: "2026-11-14", text: list(entry("a", 'scope: "read write"')) },
+    { date: "2026-11-10", text: list(entry("a", 'scope: "readwrite"')) },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), { a: "2026-11-14" });
 });
