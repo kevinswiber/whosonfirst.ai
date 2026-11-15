@@ -2,8 +2,12 @@
 // the reading: which commit is a file's first and which its last, and that a
 // commit that only reformats is not counted as a change.
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  ENTRIES,
+  entriesOf,
+  entryDates,
   historyDates,
   ignoredRevisions,
   readLog,
@@ -70,4 +74,90 @@ test("a build that is not the deployed one never fetches: a shallow clone is rep
     {},
   );
   assert.doesNotMatch(found, /fetch/);
+});
+
+// A page that shows a few entries of a long list is dated by those entries.
+// What follows checks that an entry's date moves when its own text does, by a
+// line put in or one taken out, and not when its neighbor's does or when the
+// file is only laid out again.
+const list = (...entries) =>
+  `export const standards = [\n${entries.join("\n")}\n];\n`;
+const entry = (id, ...fields) =>
+  `  {\n    id: "${id}",\n${fields.map((f) => `    ${f},\n`).join("")}  },`;
+
+test("a list's entries are read by name, each without its layout", () => {
+  const entries = entriesOf(
+    list(entry("rfc1", 'status: "rfc"'), entry("draft-2", 'status: "draft"')),
+    "id",
+  );
+  assert.deepEqual([...entries.keys()], ["rfc1", "draft-2"]);
+  assert.equal(entries.get("rfc1"), '{id:"rfc1",status:"rfc"}');
+  // the same entry on one line less, in the other quote marks, is the same entry
+  assert.equal(
+    entriesOf(
+      "export const x = [\n  {\n    id: 'rfc1', status: 'rfc'\n  }\n];",
+      "id",
+    ).get("rfc1"),
+    entries.get("rfc1"),
+  );
+});
+
+test("an entry's date is the last commit that changed its own text, and its neighbor's change leaves it alone", () => {
+  const versions = [
+    {
+      date: "2026-11-14",
+      text: list(
+        entry("a", 'status: "rfc"'),
+        entry("b", 'status: "draft"', 'note: "new"'),
+      ),
+    },
+    {
+      date: "2026-11-12",
+      text: list(entry("a", 'status: "rfc"'), entry("b", 'status: "draft"')),
+    },
+    {
+      date: "2026-11-10",
+      text: list(entry("a", 'status: "draft"'), entry("b", 'status: "draft"')),
+    },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), {
+    a: "2026-11-12",
+    b: "2026-11-14",
+  });
+});
+
+test("a line taken out of an entry is a change to it, and an entry that is new is dated from the commit that added it", () => {
+  const versions = [
+    { date: "2026-11-14", text: list(entry("a"), entry("c", 'status: "rfc"')) },
+    { date: "2026-11-12", text: list(entry("a", 'level: "emerging"')) },
+    { date: "2026-11-10", text: list(entry("a", 'level: "emerging"')) },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), {
+    a: "2026-11-14",
+    c: "2026-11-14",
+  });
+});
+
+test("an entry that was only laid out again keeps its date", () => {
+  const versions = [
+    { date: "2026-11-14", text: list(entry("a", 'status: "rfc"')) },
+    {
+      date: "2026-11-10",
+      text: "export const standards = [\n  {\n    id: 'a', status: 'rfc'\n  }\n];",
+    },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), { a: "2026-11-10" });
+});
+
+test("every file read entry by entry is a list this reading can take apart", () => {
+  for (const { file, key } of ENTRIES) {
+    const text = readFileSync(
+      new URL(`../../${file}`, import.meta.url),
+      "utf8",
+    );
+    const entries = entriesOf(text, key);
+    // every object of the outermost array has a name, and no two share one
+    assert.equal(entries.size, text.match(/^ {2}\{\s*$/gm).length, file);
+    assert.ok(entries.size > 0, file);
+  }
 });

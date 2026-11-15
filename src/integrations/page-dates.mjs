@@ -11,6 +11,14 @@
  * from a file's path to `{ first, last }`, each an ISO 8601 date and time.
  * `src/lib/page-dates.ts` turns a page's address into the files it is made from.
  *
+ * Some files hold many entries, and a page shows only a few of them: a flow
+ * lists some of the tracker's standards, a lesson teaches some of the
+ * glossary's terms. Dating such a page by the whole file would say it changed
+ * whenever any entry did. So for the files in `ENTRIES` the map also has a
+ * date for each entry, under `<file>#<name>`: the last commit that changed
+ * that entry's own text. It is found by reading the file as it stood at each
+ * of its commits, which sees a line taken out as well as one put in.
+ *
  * Where the history is not all there, the map is empty and the pages carry no
  * date. A shallow clone, which is what a hosted build usually makes, has only
  * its last few commits, and every file in it appears to have been written in
@@ -38,6 +46,17 @@ const ID = "virtual:page-dates";
 const WATCHED = ["src/pages", "src/data"];
 /** Marks a commit's line in the log, so a file name cannot be taken for one. */
 const MARK = "\u0001";
+/**
+ * The files that are a list of entries, each shown on pages of its own, and
+ * the field that names an entry. Each is one array of objects, an entry to an
+ * object, laid out as Biome lays them out.
+ */
+export const ENTRIES = [
+  { file: "src/data/standards.ts", key: "id" },
+  { file: "src/data/glossary.ts", key: "term" },
+  { file: "src/data/learn/lessons.ts", key: "slug" },
+  { file: "src/data/implementations/records.ts", key: "slug" },
+];
 
 /** The commits `.git-blame-ignore-revs` names, as a set of full hashes. */
 export function ignoredRevisions(text) {
@@ -65,6 +84,61 @@ export function readLog(log, ignored = new Set()) {
       // each older one replaces what was taken for its first
       dates[line] ??= { first: date, last: date };
       dates[line].first = date;
+    }
+  }
+  return dates;
+}
+
+/**
+ * The entries of a file that is a list of them: a map from each entry's name
+ * to its text. An entry is an object of the file's outermost array, from a
+ * line that is "  {" to the next that is "  }," and its name is its `key`.
+ * The text is kept without its spacing, the kind of its quote marks and its
+ * trailing commas, so that an entry that was only laid out again reads as the
+ * same.
+ */
+export function entriesOf(text, key) {
+  const entries = new Map();
+  const named = new RegExp(`^\\s+${key}:\\s*(["'\`])(.*?)\\1`, "m");
+  const lines = text.split("\n");
+  let open;
+  lines.forEach((line, i) => {
+    if (/^ {2}\{\s*$/.test(line)) open = i;
+    else if (/^ {2}\},?\s*$/.test(line) && open !== undefined) {
+      const entry = lines.slice(open, i + 1).join("\n");
+      const name = named.exec(entry)?.[2];
+      if (name !== undefined)
+        entries.set(
+          name,
+          entry
+            .replace(/\s+/g, "")
+            .replace(/['`]/g, '"')
+            .replace(/,(?=[}\])])/g, "")
+            // the comma after the entry is the list's, and the last entry may have none
+            .replace(/,$/, ""),
+        );
+      open = undefined;
+    }
+  });
+  return entries;
+}
+
+/**
+ * When each entry of a file last changed. `versions` is the file at each of
+ * its commits, newest first, as `{ date, text }`. An entry's date is that of
+ * the oldest commit since which its text has stayed as it is now.
+ */
+export function entryDates(versions, key) {
+  const dates = {};
+  if (versions.length === 0) return dates;
+  const now = entriesOf(versions[0].text, key);
+  const settled = new Set();
+  for (const version of versions) {
+    const then = entriesOf(version.text, key);
+    for (const [name, text] of now) {
+      if (settled.has(name)) continue;
+      if (then.get(name) === text) dates[name] = version.date;
+      else settled.add(name);
     }
   }
   return dates;
@@ -111,9 +185,28 @@ export function historyDates(root, env = process.env) {
       git("log", `--format=${MARK}%H %cI`, "--name-only", "--", ...WATCHED),
       ignored,
     );
+    const files = Object.keys(dates).length;
+    // Each list of entries, as it stood at each commit that changed it.
+    for (const { file, key } of ENTRIES) {
+      const versions = git("log", "--format=%H %cI", "--", file)
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => line.split(" "))
+        .filter(([hash]) => !ignored.has(hash))
+        .map(([hash, date]) => {
+          try {
+            return { date, text: git("show", `${hash}:${file}`) };
+          } catch {
+            // the commit that took the file away or moved it: nothing was in it
+            return { date, text: "" };
+          }
+        });
+      for (const [name, date] of Object.entries(entryDates(versions, key)))
+        dates[`${file}#${name}`] = { last: date };
+    }
     return {
       dates,
-      found: `${Object.keys(dates).length} files dated from the history${fetched}`,
+      found: `${files} files and ${Object.keys(dates).length - files} entries dated from the history${fetched}`,
     };
   } catch {
     return {
