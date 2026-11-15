@@ -305,7 +305,7 @@ What is followed is what a page states: a figure, a definition, a status, a rati
 
 An entry is compared without its layout: spacing between its parts, comments, a comma before a closing bracket and the kind of quote mark are not changes. What is inside a string is what a page says and is compared exactly, so a space put into a quoted word is a change.
 
-A page whose data carries a date of its own passes it to the base layout as `modified`: an implementation record gives the day its evidence was reviewed, which its page already shows.
+An implementation record's page is made from its entry in `records.ts`, and is as old as the commit that added the entry. It shows two dates, and they are two facts: “Evidence reviewed”, from the record, is the day its sources were last checked, and the footer's date is the day the page last changed. A correction made after a review moves the second and not the first.
 
 The dates need the whole history. In a shallow clone every file appears to have been written in the oldest commit the clone has, so the build gives no dates there, and says so in its output: `[page-dates] the clone is shallow …`. Continuous integration builds from a shallow clone and so checks the site without dates.
 

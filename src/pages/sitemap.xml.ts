@@ -16,17 +16,6 @@ const pages = Object.keys(import.meta.glob("./**/*.{astro,mdx}"))
   .filter((p) => !p.includes("[") && p !== "/404")
   .map((p) => (p.endsWith("/") ? p : `${p}/`));
 
-/**
- * When each record under /implementations/ was last reviewed: the date its
- * page shows, and the one its structured data gives.
- */
-const reviewed = new Map(
-  implementationProfiles.map((profile) => [
-    `/implementations/${profile.slug}/`,
-    profile.reviewedOn,
-  ]),
-);
-
 export const GET: APIRoute = ({ site }) => {
   const base = site ?? new URL("https://whosonfirst.ai");
   const urls = [
@@ -34,13 +23,13 @@ export const GET: APIRoute = ({ site }) => {
     ...flows.map((f) => `/flows/${f.slug}/`),
     ...comparisons.map((c) => `/compare/${comparisonSlug(c)}/`),
     ...cases.map((s) => `/guide/${s.slug}/`),
-    ...reviewed.keys(),
+    ...implementationProfiles.map((p) => `/implementations/${p.slug}/`),
   ].sort();
   // A page says when it last changed only where that is known: from the
   // repository's history, which a build may not have. The date is the one in
   // the page's own structured data, so the two cannot disagree.
   const entry = (u: string) => {
-    const lastmod = reviewed.get(u) ?? pageDates(u)?.modified;
+    const lastmod = pageDates(u)?.modified;
     return `  <url><loc>${new URL(u, base).href}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
   };
   const body = `<?xml version="1.0" encoding="UTF-8"?>

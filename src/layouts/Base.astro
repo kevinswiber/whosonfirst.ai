@@ -45,11 +45,6 @@ interface Props {
   reviewMetadata?: boolean;
   /** Further schema.org nodes about this page, added to the ones every page carries. */
   schema?: Record<string, unknown>[];
-  /**
-   * When the page last changed, as an ISO 8601 date, for a page that carries a
-   * date of its own. Any other page is dated from the history of its files.
-   */
-  modified?: string;
 }
 
 // The publication's name is "Who’s on First". whosonfirst.ai is its address, and
@@ -64,7 +59,6 @@ const {
   markdown = !noindex,
   schema = [],
   reviewMetadata = true,
-  modified,
   description = `${DESCRIPTOR}: the flows, the deployments and the standards, with and without a human in the loop.`,
 } = Astro.props;
 // Seen outside the site, a title has to say what the page is about and where it is from.
@@ -85,20 +79,16 @@ const markdownHref = `${Astro.url.pathname}index.md`;
 // words schema.org has for them. Without the history a page says neither.
 const history = pageDates(Astro.url.pathname);
 // A reader is told the same date, in the footer, with the history it was read
-// from. A page that carries a date of its own shows that one where it belongs.
+// from.
 const changed = history &&
-  !modified &&
   !noindex && {
     iso: history.modified,
     day: longDate(history.modified),
     log: `${SOURCE}/commits/main/${history.source}`,
   };
-const dates = {
-  ...(history && !modified ? { datePublished: history.published } : {}),
-  ...(modified || history
-    ? { dateModified: modified ?? history?.modified }
-    : {}),
-};
+const dates: { datePublished?: string; dateModified?: string } = history
+  ? { datePublished: history.published, dateModified: history.modified }
+  : {};
 
 // What the page is, for a search engine or an answer engine: the site, who makes
 // it, this page and when it was last checked, and the trail to it.

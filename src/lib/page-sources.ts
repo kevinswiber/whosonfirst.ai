@@ -35,7 +35,7 @@ export interface Site {
   glossaryStandards: string[];
 }
 
-/** Each source's first and last commit. An entry has only a last. */
+/** Each source's first and last commit. An entry's first is the commit that added it. */
 export type History = Record<string, { first?: string; last: string }>;
 
 const STANDARDS = "src/data/standards.ts";
@@ -140,8 +140,8 @@ const MADE_FROM: [
     /^\/implementations\/$/,
     () => ["src/pages/implementations/index.astro", RECORDS],
   ],
-  // A record's page gives the day its evidence was reviewed, which it shows.
-  [/^\/implementations\/([^/]+)\/$/, () => []],
+  // A record's page is its entry in the records, and is as old as that entry.
+  [/^\/implementations\/([^/]+)\/$/, (slug) => [`${RECORDS}#${slug}`]],
 ];
 
 /**
@@ -186,8 +186,6 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
     "src/data/flows/index.ts": "the names and groups of the flows it links to",
   },
   "src/pages/implementations/[slug].astro": {
-    "src/data/implementations/index.ts":
-      "the page gives the day its evidence was reviewed, which the record carries",
     "src/data/flows/index.ts": "the name of the flow it links to",
   },
   "src/pages/learn/index.astro": {
@@ -213,7 +211,7 @@ export function madeFrom(path: string, site: Site): string[] {
 }
 
 export interface PageDates {
-  /** The first commit of the page's own file: the first one named. ISO 8601. */
+  /** The first commit of the page's own source: the first one named. ISO 8601. */
   published: string;
   /** The last commit to change anything the page is made from. ISO 8601. */
   modified: string;
@@ -240,7 +238,12 @@ export function datesFor(
       name.endsWith("/") ? all.filter((f) => f.startsWith(name)) : [name],
     )
     .filter((name) => history[name]);
-  const published = sources.flatMap((name) => history[name].first ?? [])[0];
+  // A page is as old as its own source, which is named first. That is a file,
+  // or for a page that is one entry of a list, the entry. An entry a page only
+  // shows, named after its own source, says nothing of the page's age.
+  const published = sources
+    .filter((name) => !name.includes("#") || name === named[0])
+    .flatMap((name) => history[name].first ?? [])[0];
   if (published === undefined) return undefined;
   const latest = sources.reduce((a, b) =>
     time(history[b].last) > time(history[a].last) ? b : a,

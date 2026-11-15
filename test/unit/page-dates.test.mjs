@@ -8,6 +8,7 @@ import {
   ENTRIES,
   entriesOf,
   entryDates,
+  entryFirsts,
   historyDates,
   ignoredRevisions,
   readLog,
@@ -136,6 +137,21 @@ test("a line taken out of an entry is a change to it, and an entry that is new i
     a: "2026-11-14",
     c: "2026-11-14",
   });
+});
+
+test("an entry is as old as the commit that added it, whatever has changed in it since", () => {
+  const versions = [
+    { date: "2026-11-14", text: list(entry("a", 'status: "rfc"'), entry("c")) },
+    { date: "2026-11-12", text: list(entry("a", 'status: "draft"')) },
+    { date: "2026-11-10", text: list(entry("a")) },
+    // before the list had any entry by these names
+    { date: "2026-11-09", text: list(entry("z")) },
+  ];
+  assert.deepEqual(entryFirsts(versions, "id"), {
+    a: "2026-11-10",
+    c: "2026-11-14",
+  });
+  assert.deepEqual(entryFirsts([], "id"), {});
 });
 
 test("an entry that was only laid out again keeps its date", () => {

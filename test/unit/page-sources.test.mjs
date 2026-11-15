@@ -130,6 +130,41 @@ test("a page was published when its own file was, however old the entries it sho
   );
 });
 
+// A record's page shows the day its evidence was reviewed, and that is not the
+// day the page last changed: a correction after a review changes the page.
+test("a record's page is made from its entry in the records, is as old as the entry and moves when it does", () => {
+  assert.deepEqual(madeFrom("/implementations/dpop/", site), [
+    "src/data/implementations/records.ts#dpop",
+  ]);
+  const dates = datesFor(madeFrom("/implementations/dpop/", site), {
+    "src/data/implementations/records.ts": { first: day(8), last: day(16) },
+    "src/data/implementations/records.ts#dpop": {
+      first: day(11),
+      last: day(14),
+    },
+    "src/data/implementations/records.ts#gnap": {
+      first: day(9),
+      last: day(16),
+    },
+  });
+  assert.equal(dates.published, day(11));
+  assert.equal(dates.modified, day(14));
+  assert.equal(dates.source, "src/data/implementations/records.ts");
+});
+
+test("a page is no older for an entry it only shows", () => {
+  // the flow's own file is not in the history, and its record's entry is
+  assert.equal(
+    datesFor(madeFrom("/flows/dpop/", site), {
+      "src/data/implementations/records.ts#dpop": {
+        first: day(11),
+        last: day(14),
+      },
+    }),
+    undefined,
+  );
+});
+
 test("an index that lists every entry is made from the whole file", () => {
   assert.ok(madeFrom("/standards/", site).includes("src/data/standards.ts"));
   assert.ok(madeFrom("/glossary/", site).includes("src/data/glossary.ts"));
