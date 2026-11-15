@@ -95,7 +95,13 @@ Grouped by what the flows help you do. Each flow is rated by how settled the sta
 
 ### Which of the two?
 
-Some flows are asked about in pairs, because either could do the job. [Which of the two?](https://whosonfirst.ai/compare/) answers the question first, then sets the two against each other: what decides it, the same call made both ways, and the differences point by point. It starts with [DPoP or OAuth mTLS?](https://whosonfirst.ai/compare/dpop-vs-oauth-mtls/).
+Some flows are asked about in pairs, because either could do the job. [Which of the two?](https://whosonfirst.ai/compare/) answers the question first, then sets the two against each other: what decides it, the same call made both ways, and the differences point by point.
+
+- [DPoP or OAuth mTLS?](https://whosonfirst.ai/compare/dpop-vs-oauth-mtls/): two ways to bind a token to a key, in an HTTP header or in the TLS connection.
+- [CIBA or device authorization?](https://whosonfirst.ai/compare/ciba-vs-device-authorization/): the server finds a user it knows, or the user carries a code from the agent.
+- [Client credentials or workload identity federation?](https://whosonfirst.ai/compare/client-credentials-vs-workload-identity-federation/): the agent proves itself with a key it holds, or with an identity its platform supplies.
+- [Token exchange or identity chaining?](https://whosonfirst.ai/compare/token-exchange-vs-identity-chaining/): a token for the next hop inside one trust domain, or across to another organization.
+- [MCP authorization or authorization code with PKCE?](https://whosonfirst.ai/compare/mcp-authorization-vs-authorization-code-pkce/): what MCP adds in front of the same sign-in.
 
 ### Deployment guides
 
