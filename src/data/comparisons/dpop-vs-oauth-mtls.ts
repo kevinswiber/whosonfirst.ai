@@ -14,6 +14,7 @@ export const dpopVsOauthMtls: Comparison = {
     "Both bind an access token to a key, so that a copy of the token is not enough to use it. DPoP proves the key in an HTTP header on every request. OAuth mTLS proves it in the TLS connection, with a client certificate. Which one fits depends on whether the agent can hold a certificate, and on where TLS ends.",
   description:
     "Two ways to bind an access token to a key, compared: where the proof travels, what a copied request is worth, what each needs from the agent and the API, and when to choose which.",
+  gist: "Two ways to bind a token to a key: a proof in an HTTP header, or the TLS connection itself.",
   shared: `A bearer token works for whoever holds a copy. Both of these make it a **sender-constrained token** instead. The authorization server records in the token which key it belongs to, and the API refuses the token unless the caller proves it holds that key.
 
 Both need the authorization server and the API to take part. An API that accepts the token without checking the binding has gained nothing. And neither stops a compromised agent from using its own key: what they stop is a token being useful somewhere else. So with either one, keep the private key where the model cannot read it.`,

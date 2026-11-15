@@ -48,6 +48,8 @@ export interface Comparison {
   answer: string;
   /** One sentence for a search result and a card. */
   description: string;
+  /** What the choice is between, in a line, for the list of comparisons. */
+  gist: string;
   /** What the two have in common, before what sets them apart. md-lite blocks. */
   shared: string;
   /**

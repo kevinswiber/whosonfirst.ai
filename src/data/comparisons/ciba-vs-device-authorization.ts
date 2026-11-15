@@ -14,6 +14,7 @@ export const cibaVsDeviceAuthorization: Comparison = {
     "Both separate the device that needs a token from the device where the person approves. In CIBA the authorization server reaches out to a user it already knows. In the device authorization grant the user carries a code from the agent to the server. Use CIBA to ask a known user for approval when they are somewhere else, and the device grant to sign in someone who is sitting there.",
   description:
     "Two ways for a person to approve on one device what an agent needs on another, compared: who brings the request to the user, what has to be in place first, how each is misused, and when to choose which.",
+  gist: "A person approves on another device: the server finds a user it knows, or the user carries a code from the agent.",
   shared: `Sometimes there is no browser to redirect: the agent runs in a remote container, or the user is not looking at it. Both of these separate the device that needs a token from the device where the person approves. The agent sends its request to the authorization server and is told how often it may ask for the result. The person authenticates and approves on another device. In the flows shown here, the agent polls the token endpoint for the answer.
 
 In both, the person approves at the authorization server, and the server issues nothing until they do. They can also say no. So both depend on what the person is shown at that moment, and each is misused there. With CIBA, an agent that prompts whenever it likes trains its user to tap “approve”. With the device grant, an attacker starts the flow and sends the victim the code.`,
@@ -46,7 +47,7 @@ In both, the person approves at the authorization server, and the server issues 
     questions: [
       "Does the server go and find the user?",
       "Can it start without naming a user?",
-      "Does the request reach the user over a channel the agent cannot forge?",
+      "Does the request reach the user from the server?",
       "Is it widely deployed?",
     ],
     sides: [

@@ -35,6 +35,7 @@ test("each comparison answers its question and gives each flow the conditions th
     assert.match(c.question, /\?$/, `${file}: the heading is a question`);
     for (const text of [c.answer, c.description, c.shared])
       assert.ok(text.trim().length > 60, `${file}: an opening is missing`);
+    assert.ok(c.gist.trim().length > 30, `${file}: no line for the list`);
     assert.equal(c.choose.length, 2, file);
     for (const conditions of c.choose)
       assert.ok(
@@ -48,6 +49,9 @@ test("a figure asks the same questions of both flows, and shows each flow's own 
   for (const { file, comparison: c, flows } of comparisons) {
     const { cast, questions, sides } = c.figure;
     assert.ok(questions.length >= 3, `${file}: fewer than three questions`);
+    // a question heads a column of the figure's table, where a long one crowds the rest
+    for (const question of questions)
+      assert.ok(question.length <= 52, `${file}: “${question}” is too long`);
     assert.equal(sides.length, 2, file);
     sides.forEach((side, i) => {
       assert.equal(side.hops.length, cast.length - 1, `${file}: hops`);

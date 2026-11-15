@@ -1,20 +1,20 @@
 ---
 /**
- * The comparisons, at /compare/: each one's question and its answer. The
- * list is src/data/comparisons/index.ts.
+ * The comparisons, at /compare/: each one's question and what the choice is
+ * between. The list is src/data/comparisons/index.ts. It is laid out as the
+ * list of deployment guides is: a card for each, two across.
  */
 import Base from "../../layouts/Base.astro";
 import { comparisons, comparisonSlug, flowsOf } from "../../data/comparisons";
-import { inline } from "../../lib/md";
 ---
 
 <Base
   title="Which of the two? Agent authentication flows compared"
-  description="Flows that are asked about in pairs, such as DPoP or OAuth mTLS, set against each other: the answer first, then what each holds up against, point by point."
+  description="Flows that are asked about in pairs, such as DPoP or OAuth mTLS, set against each other: the answer first, then the same questions asked of both, point by point."
 >
   <div class="page-head">
     <div class="wrap">
-      <p class="eyebrow"><a href="/flows/">Flows</a></p>
+      <p class="eyebrow">Comparisons</p>
       <h1>Which of the two?</h1>
       <p class="lede">
         Some flows are asked about in pairs, because either could do the job. Each page here answers the question
@@ -23,61 +23,35 @@ import { inline } from "../../lib/md";
     </div>
   </div>
 
-  <div class="wrap body">
-    <ol class="pairs">
-      {
-        comparisons.map((c) => {
-          const [a, b] = flowsOf(c);
-          return (
-            <li>
-              <h2>
-                <a href={`/compare/${comparisonSlug(c)}/`}>{c.question}</a>
-              </h2>
-              <p set:html={inline(c.answer)} />
-              <p class="of">
-                {a.short} and {b.short}
-              </p>
-            </li>
-          );
-        })
-      }
-    </ol>
-    <p class="prose">
-      Not sure either is the one? The <a href="/guide/">decision guide</a> starts from your agent, not from a name, and{' '}
-      <a href="/flows/">every flow</a> is listed with what it is for.
-    </p>
-  </div>
-</Base>
+  <section class="section">
+    <div class="wrap">
+      <div class="grid two">
+        {
+          comparisons.map((c) => (
+            <a class="card" href={`/compare/${comparisonSlug(c)}/`}>
+              <h2>{c.question}</h2>
+              <p>{c.gist}</p>
+              <div class="chips">
+                {flowsOf(c).map((f) => (
+                  <span class="chip">{f.short}</span>
+                ))}
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
 
-<style>
-  .body {
-    padding-block: clamp(1.8rem, 4vw, 2.6rem) clamp(2.5rem, 5vw, 3.75rem);
-  }
-  /* a ruled list, as the lessons are listed */
-  .pairs {
-    max-width: var(--prose);
-    margin: 0 0 2rem;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--fg);
-  }
-  .pairs li {
-    padding: 1.1rem 0 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .pairs h2 {
-    margin: 0 0 0.4rem;
-    font-size: 1.3rem;
-  }
-  .pairs p {
-    margin: 0;
-  }
-  .pairs .of {
-    margin-top: 0.5rem;
-    font-family: var(--font-label);
-    font-size: 0.74rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-  }
-</style>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Not sure either is the one?</h2>
+        <p>
+          The <a href="/guide/">decision guide</a> starts from your agent, not from a name, and{' '}
+          <a href="/flows/">every flow</a> is listed with what it is for.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -14,6 +14,7 @@ export const tokenExchangeVsIdentityChaining: Comparison = {
     "Both get a caller a new token for the next service in a chain of calls, one that still says who the call is for. Token exchange does it in one request, where every hop trusts the same authorization server. Identity chaining is for a next service in another organization with an authorization server of its own: the caller gets a short-lived grant at home, and the other side’s server turns that into a token of its own. So the question is whether the call crosses that boundary.",
   description:
     "Two ways to carry who a call is for to the next service in a chain, compared: who issues the new token, how many requests it takes, what trust has to exist first, and when to choose which.",
+  gist: "A token for the next service in a chain: inside one trust domain, or across to another organization.",
   shared: `Something holds a token and has to call one more service. The token it holds is not the one to send. Where one authorization server stands behind every hop, that token was issued for the service that received it, not for the API behind it, and passing it along makes every hop a place where it can be stolen and replayed. Where the next service belongs to another organization, that organization will not accept the first one’s tokens, and should not.
 
 Both begin with a token exchange request. The caller presents the token it holds as the \`subject_token\` and names what the new credential is for, and an authorization server decides whether this client may have it. In both, who the call is for travels with it. And both repeat for a longer chain: another exchange for another hop, another grant for another boundary.`,
@@ -49,7 +50,7 @@ Both begin with a token exchange request. The caller presents the token it holds
       "Does the next service learn who the call is for?",
       "Does it reach a service in another organization?",
       "Is one request enough to get the token?",
-      "Does it work without trust agreed between two authorization servers?",
+      "Does one authorization server do the whole job?",
     ],
     sides: [
       {

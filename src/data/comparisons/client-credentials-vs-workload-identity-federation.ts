@@ -15,6 +15,7 @@ export const clientCredentialsVsWorkloadIdentityFederation: Comparison = {
     "Both let an agent with no user authenticate as itself and call an API with its own permissions. Client credentials, as its page draws it, has the agent sign a short-lived proof with a private key it holds. In workload identity federation the place the agent runs supplies a short-lived, signed identity credential, and the receiving system issues access for it. Prefer federation where the platform can identify the workload and the destination supports the trust arrangement, and client credentials with a private key elsewhere.",
   description:
     "Two ways for an agent to authenticate as itself with no user, compared: what the agent holds, who signs what it presents, what is set up in advance, what a copy is worth, and when to choose which.",
+  gist: "An agent authenticates as itself: with a key it holds, or with an identity its platform supplies.",
   shared: `In both, there is no user. The agent is the principal: it calls the API with its own permissions, which an administrator set in advance. Neither flow carries a person’s identity or consent. If the agent is acting for a person, that authority has to come from somewhere else, and [token exchange](/flows/token-exchange/) is one such flow.
 
 In both, what the agent is issued should be short-lived, and the agent asks again when it expires. And in both, agents that share one identity are one caller to the API: its log cannot tell them apart.
@@ -43,9 +44,9 @@ The two also meet. What the agent authenticates a client credentials request wit
     asks: "How it holds up",
     questions: [
       "Does it work without a key the agent has to keep?",
-      "Does it work without registering a key for each agent?",
+      "Can an agent be added with no key to register?",
       "Is a copy of what the agent presents refused?",
-      "Does it work without an identity provider for the workload?",
+      "Does it work with no identity provider?",
     ],
     sides: [
       {

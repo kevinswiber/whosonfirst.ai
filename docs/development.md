@@ -162,9 +162,10 @@ A flow can also supply `credentials`: a short introduction and a list of tokens 
 **Compare two flows.** Some flows are asked about in pairs, because either could do the job: “DPoP or mTLS?”. A comparison answers that at `/compare/<a>-vs-<b>/`. It is written, as a lesson is, in a file of its own in `src/data/comparisons/`, registered in `index.ts` there. `types.ts` says what one holds, and every comparison has the same shape, which `src/pages/compare/[pair].astro` supplies:
 
 - `answer`: the answer, in two or three sentences. The page opens with it.
+- `gist`: what the choice is between, in a line, for the card on `/compare/`.
 - `shared`: what the two have in common, before what sets them apart.
 - `choose`: for each flow, the conditions that make it the one to choose. Each has to decide between the two. A condition that is true of both belongs in `shared`.
-- `figure`: the same situation met both ways, with the same questions asked of each. It is the lessons' figure, `Scenario.astro`, with the two flows as its two choices, so it works with no script and is also a table. Ask each question so that “yes” is the answer a reader would want. What each side shows is the flow's own listings, named by step: a comparison does not write a message a second time.
+- `figure`: the same situation met both ways, with the same questions asked of each. It is the lessons' figure, `Scenario.astro`, with the two flows as its two choices, so it works with no script and is also a table. Ask each question so that “yes” is the answer a reader would want, and keep it short: it heads a column of the figure's table. A comparison's answers run to a sentence or two where a lesson's are a line, so the page asks for the figure's `roomy` form, which puts the listings side by side and the answers beneath them at the figure's full width. What each side shows is the flow's own listings, named by step: a comparison does not write a message a second time.
 - `points`: the same aspect of each flow, one row to an aspect, with the steps of each flow that show it. The page adds what each flow follows and how settled that is, from the flows' own data.
 - `mixup`: a mistaken belief the question is often tangled up with, and the correction.
 
