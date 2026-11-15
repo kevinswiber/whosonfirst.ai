@@ -155,10 +155,9 @@ async function readSite() {
         eyebrow: text(one(".hero .eyebrow")),
         question: text(one(".hero h1")),
         lede: text(one(".hero .lede")),
-        figure: text(one(".hero .ag-title")),
         description: one('meta[name="description"]').content,
         descriptor: text(one(".site-footer p")).split(".")[0],
-        // the facts under the figure: what kind of guide this is, and when it was checked
+        // the facts under the question: what kind of guide this is, and when it was checked
         // (a fact's label and its value are set apart by a margin, not a space)
         facts: all(".hero-meta .doc-fact").map((f) => {
           const key = text(f.querySelector(".doc-key"));
@@ -186,6 +185,8 @@ async function readSite() {
       const f = one("figure.sc#api-sees");
       const panels = all(".sc-panel", f);
       return {
+        // the question the lesson answers, which is the label over its figure
+        title: text(one("h1")),
         legend: text(one("legend", f)),
         asks: text(one(".sc-findings caption", f)),
         questions: all(".sc-findings th", panels[0]).map(text),
@@ -763,14 +764,14 @@ function pages({ home, figure, flows, standards }, flow) {
         </table>
         <p class="so">${esc(o.so)}</p>`,
       path: "/learn/what-the-api-sees",
-      note: home.figure,
+      note: figure.title,
     });
   }
 
   list.push({
     name: "three-questions",
     body: `
-      <p class="eyebrow">${esc(home.figure)}</p>
+      <p class="eyebrow">${esc(figure.title)}</p>
       <h2>${esc(home.question)}</h2>
       <div style="margin-top:44px">${chain(figure.cast)}</div>
       <div style="margin-top:44px">${grid(figure)}</div>
@@ -1016,7 +1017,7 @@ await picture(
         <p class="lede">${esc(site.home.lede)}</p>
       </div>
       <div>
-        <p class="eyebrow">${esc(site.home.figure)}</p>
+        <p class="eyebrow">${esc(site.figure.title)}</p>
         ${chain(site.figure.cast)}
         <div style="margin-top:36px">${grid(site.figure)}</div>
       </div>`,

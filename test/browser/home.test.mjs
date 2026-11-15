@@ -1,5 +1,5 @@
 // The home page, in each theme, on a desktop and on a phone: the header and its
-// menu, the figure in the hero, the question of whose authority, and the ways in.
+// menu, the hero, the question of whose authority, and the ways in.
 import { strict as assert } from "node:assert";
 import { after, before, beforeEach, describe, test } from "node:test";
 import {
@@ -118,88 +118,65 @@ for (const theme of THEMES) {
         });
       }
 
-      // The figure in the hero is lesson 1's comparison, with nothing to choose:
-      // every credential against every question, on screen as the page arrives.
-      const figure = () =>
+      // The hero is the question, what it means, and the three ways in. Nothing in
+      // it is a figure or a control, and nothing in it is set heavier than the question.
+      const hero = () =>
         page.evaluate(() => {
-          const fig = document.querySelector(".hero .ag");
-          const box = fig.getBoundingClientRect();
-          const seen = (el) => {
-            const r = el.getBoundingClientRect();
-            return r.width > 0 && r.left >= box.left && r.right <= box.right;
-          };
+          const el = document.querySelector(".hero");
+          const box = (s) => el.querySelector(s).getBoundingClientRect();
+          const weight = (n) => Number(getComputedStyle(n).fontWeight);
+          const size = (n) => parseFloat(getComputedStyle(n).fontSize);
+          const h1 = el.querySelector("h1");
           return {
-            controls: fig.querySelectorAll("input, button, select").length,
-            // each party is tinted where the sentence over the table first names it
-            parties: [...fig.querySelectorAll(".ag-setup .ag-who")].map((w) =>
-              [...w.classList].find((c) => c.startsWith("role-")),
-            ),
-            // a verdict's cell is tinted, and no two verdicts share a tint
-            tints: Object.fromEntries(
-              [...fig.querySelectorAll("tbody td")].map((td) => [
-                td.textContent.trim(),
-                getComputedStyle(td).backgroundColor,
-              ]),
-            ),
-            panel: getComputedStyle(fig).backgroundColor,
-            rows: [...fig.querySelectorAll("tbody tr")].map((tr) => ({
-              name: tr.querySelector(".ag-name").textContent.trim(),
-              sends: tr.querySelectorAll(".ag-sends").length,
-              marks: [...tr.querySelectorAll(".ag-mark")]
-                .filter(seen)
-                .map((m) => m.textContent.trim()),
-            })),
-            so: fig.querySelector(".ag-so").textContent.trim().length,
-            more: fig.querySelector(".ag-more a").getAttribute("href"),
-            height: box.height,
+            extras: el.querySelectorAll(
+              "figure, table, input, button, select, .btn",
+            ).length,
+            louder: [...el.querySelectorAll("*")].filter(
+              (n) =>
+                n !== h1 &&
+                n.textContent.trim() &&
+                (size(n) > size(h1) ||
+                  (size(n) === size(h1) && weight(n) >= weight(h1))),
+            ).length,
+            h1: box("h1"),
+            routes: box(".routes ul"),
+            bottom: el.getBoundingClientRect().bottom,
             pageWider: document.documentElement.scrollWidth > innerWidth,
           };
         });
-      test("figure shows every credential against every question, with nothing to click", async () => {
-        const f = await figure();
-        assert.equal(f.controls, 0, "the figure has a control");
+      test("hero has no figure and no control, and nothing in it is set as large as the question", async () => {
+        const h = await hero();
         assert.deepEqual(
-          f.rows.map((r) => [r.marks.length, r.sends > 0]),
-          [
-            [3, true],
-            [3, true],
-            [3, true],
-          ],
-          JSON.stringify(f.rows),
+          { extras: h.extras, louder: h.louder },
+          { extras: 0, louder: 0 },
         );
-        assert.ok(f.so > 0, "no conclusion under the table");
+        assert.ok(!h.pageWider, "the page scrolls sideways");
       });
-      test("figure has color: each party tinted as in the lessons, each verdict in a tint of its own", async () => {
-        const f = await figure();
-        assert.deepEqual(f.parties, [
-          "role-human",
-          "role-agent",
-          "role-resource",
-        ]);
-        const tints = Object.values(f.tints);
-        assert.ok(
-          tints.length === 3 &&
-            new Set(tints).size === 3 &&
-            !tints.includes(f.panel),
-          JSON.stringify(f.tints),
-        );
-      });
-      test("figure ends on the credential that answers all three, and leads to lesson 1", async () => {
-        const f = await figure();
-        assert.deepEqual(f.rows.at(-1).marks, ["Yes", "Yes", "Yes"]);
-        assert.equal(f.more, LESSON_ORDER[0]);
-      });
-      // beside the text on a wide screen it fits the window; on a phone, where
-      // each credential is a block of its own, it may run a little past one
-      test("figure fits in about one screen, and inside the page", async () => {
-        const f = await figure();
-        const room = vp.name === "phone" ? vp.height * 1.3 : vp.height;
-        assert.ok(
-          f.height <= room,
-          `${Math.round(f.height)}px, allowed ${Math.round(room)}px`,
-        );
-        assert.ok(!f.pageWider, "the page scrolls sideways");
-      });
+      if (vp.name === "desktop") {
+        test("the ways in sit beside the question, starting level with it, and the hero fits the window", async () => {
+          const h = await hero();
+          assert.ok(
+            h.routes.left >= h.h1.right &&
+              Math.abs(h.routes.top - h.h1.top) <= 16,
+            `question at ${Math.round(h.h1.top)}px, ways in at ${Math.round(h.routes.top)}px`,
+          );
+          assert.ok(h.bottom <= vp.height, `${Math.round(h.bottom)}px`);
+        });
+      } else {
+        test("the ways in follow the question, and the first is on the first screen", async () => {
+          const h = await hero();
+          const first = await page.evaluate(
+            () =>
+              document
+                .querySelector(".hero .routes li > a")
+                .getBoundingClientRect().bottom,
+          );
+          assert.ok(
+            h.routes.top >= h.h1.bottom && first <= vp.height,
+            `first way in ends at ${Math.round(first)}px`,
+          );
+        });
+      }
 
       // both answers to "whose authority" are on screen together, before either list of flows
       const authority = () =>

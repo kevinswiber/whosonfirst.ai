@@ -1,8 +1,6 @@
 /**
  * "What does the API see?": one person, one agent, one API, and three things
- * the agent might attach to its request. The first lesson shows it one request
- * at a time. The home page shows the same data as a table, every credential
- * against every question, so the two cannot drift apart.
+ * the agent might attach to its request. The first lesson's figure.
  *
  * This is the plain-words version of data/verify.ts, which keeps the full
  * account for the Concepts page: a fourth check (proof of who is sending),
