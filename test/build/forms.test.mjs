@@ -3,7 +3,7 @@
 // from the page when the site is built (src/integrations/), and each is named
 // in the page's own head, so the head is where this starts.
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -431,4 +431,14 @@ test("every page with a Markdown copy links to it in its footer, and every page'
     "a page has a dot in its address, which the speculation rules take for a file",
   );
   assert.deepEqual(some(wrong), []);
+});
+
+// IndexNow takes a list of changed pages only from whoever can put a key at
+// the site's root: a file named for the key, holding the key.
+test("the IndexNow key is served from the site's root and holds its own name", () => {
+  const keys = readdirSync(root).filter((name) =>
+    /^[0-9a-f]{8,128}\.txt$/.test(name),
+  );
+  assert.equal(keys.length, 1, `${keys.length} key files in the build`);
+  assert.equal(file(keys[0]).trim(), keys[0].slice(0, -4));
 });

@@ -285,6 +285,14 @@ A page whose data carries a date of its own passes it to the base layout as `mod
 
 The dates need the whole history. In a shallow clone every file appears to have been written in the oldest commit the clone has, so the build gives no dates there, and says so in its output: `[page-dates] the clone is shallow …`. Continuous integration builds from a shallow clone and so checks the site without dates. **The build that is deployed has to be made from a full clone**, or the live site has none: look for `[page-dates] … files dated from the history` in its output. A new section whose pages are made from data needs a line in `MADE_FROM` in `src/lib/page-dates.ts`; any other page is dated by its own file.
 
+**Telling a search engine that a page changed.** Google reads the sitemap. Bing, and the other engines that take part in [IndexNow](https://www.indexnow.org/), can be told directly, and read a page again without waiting to find out. After a deploy:
+
+```bash
+npm run indexnow -- --since 2026-11-14
+```
+
+That sends every page whose date in the built sitemap is on or after the day given. `--all` sends every page, for the first run. `--dry-run` prints the list and sends nothing. The script reads the build and does not make it, and stops on a build older than its sources, as the other scripts that read the build do. It proves the list comes from whoever runs the site with a key: the file in `public/` named for a string of hexadecimal digits, which holds that string. The key is not a secret. Replace it by replacing the file. Run the script after the deploy and not before, since an engine that is told about a page goes and reads it.
+
 **For a program that reads.** `src/integrations/markdown-pages.mjs` writes each page again as Markdown beside it: `/flows/dpop/` has `/flows/dpop/index.md`. The page names it in a `<link rel="alternate" type="text/markdown">`. The copy leaves out the header, the footer, controls and drawings, and keeps what the page says in words: a flow's steps, a figure's every variation and its table, the decision guide's rules. It ends with the page's address and the footer's line on when the site was last reviewed, which on a lesson is the only place the month appears. Two files are made from the copies:
 
 - `/llms.txt` says what the site is and links to every page's Markdown, in reading order.
