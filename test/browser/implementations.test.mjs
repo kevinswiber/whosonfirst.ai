@@ -805,3 +805,39 @@ test("a flow fragment reveals a record excluded by saved filters", async (t) => 
   assert.equal(new URL(page.url()).search, "");
   assert.equal(new URL(page.url()).hash, "#dpop");
 });
+
+// A specification from outside the flow, named in an entry, previews its
+// tracker entry and leads to it, with or without scripts.
+for (const javaScriptEnabled of [false, true])
+  test(`a specification named in an entry leads to the tracker ${javaScriptEnabled ? "with" : "without"} JavaScript`, async (t) => {
+    const ctx = await site.context({
+      javaScriptEnabled,
+      reducedMotion: "reduce",
+    });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/implementations/token-exchange/"));
+    const named = page.locator(
+      '.evidence-entry a.spec[href="/standards/#rfc7523"]',
+    );
+    assert.equal(await named.count(), 1);
+    assert.equal(await named.textContent(), "RFC 7523");
+    if (javaScriptEnabled) {
+      await named.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      await named.hover();
+      const tip = page.locator("#term-tip");
+      assert.ok(
+        await tip.evaluate((el) => el.matches(":popover-open")),
+        "no preview",
+      );
+      assert.equal(
+        await tip.locator(".term-tip-name").textContent(),
+        "JWT Client Authentication and Grants",
+      );
+    }
+    await Promise.all([
+      page.waitForURL(site.url("/standards/#rfc7523")),
+      named.press("Enter"),
+    ]);
+  });
