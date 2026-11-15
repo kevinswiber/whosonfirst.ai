@@ -16,10 +16,17 @@
  * https://www.rfc-editor.org/rfc/rfc9110#section-12.5.1
  *
  * A request gets Markdown when it names `text/markdown` itself, gives it a
- * weight above 0, and gives the page no greater one. Naming it is asked for
- * because a browser's header ends with a range that allows anything, Markdown
- * included, and a browser wants the page. Between equals Markdown wins:
- * nothing names it by accident.
+ * weight above 0, and prefers it to the page. Naming it is asked for because
+ * a browser's header ends with a range that allows anything, Markdown
+ * included, and a browser wants the page.
+ *
+ * Which of two it prefers is settled by weight. The RFC calls two types of
+ * the same weight “equally preferred” and leaves the choice to the server.
+ * This follows the custom of the libraries that read the header: the one
+ * named more specifically, and then the one the request lists first. So
+ * `text/markdown, text/html` gets Markdown and `text/html, text/markdown` gets
+ * the page. The order is in the negotiator library that Express uses:
+ * https://github.com/jshttp/negotiator/blob/master/lib/mediaType.js
  *
  * Nothing here knows about Cloudflare, so the unit tests can run it.
  */
@@ -32,6 +39,8 @@ interface Range {
   params: Map<string, string>;
   /** Its weight, 0 to 1. */
   q: number;
+  /** Where it comes in the header, counting from 0. */
+  at: number;
 }
 
 /** A token, as RFC 9110 section 5.6.2 defines one. */
@@ -99,7 +108,7 @@ export function ranges(accept: string): Range[] {
       }
       if (name) params.set(name, value.toLowerCase());
     }
-    if (valid) found.push({ type, subtype, params, q });
+    if (valid) found.push({ type, subtype, params, q, at: found.length });
   }
   return found;
 }
@@ -122,13 +131,22 @@ const PAGE: Form = {
   params: { charset: "utf-8" },
 };
 
+/** What a header says of one form: its weight, and the range that gave it. */
+interface Standing {
+  /** The form's weight, or 0 where no range fits it. */
+  q: number;
+  /** How specific that range is: 0 for anything, 1 for a family, 2 or more for the type itself. */
+  specific: number;
+  /** Where that range comes in the header. */
+  at: number;
+}
+
 /**
- * The weight a header gives a form: that of the most specific range that
- * fits it, or 0 where none does. `named` says whether that range names the
- * form's own type, and not a whole family of types.
+ * What a header says of a form: the weight of the most specific range that
+ * fits it. Of two as specific, the greater weight counts.
  */
-function weightOf(accept: Range[], form: Form): { q: number; named: boolean } {
-  let best: { q: number; specific: number } | undefined;
+function standing(accept: Range[], form: Form): Standing {
+  let best: Standing = { q: 0, specific: -1, at: Number.MAX_SAFE_INTEGER };
   for (const range of accept) {
     const fits =
       (range.type === "*" || range.type === form.type) &&
@@ -143,23 +161,27 @@ function weightOf(accept: Range[], form: Form): { q: number; named: boolean } {
           ? 1
           : 2 + range.params.size;
     if (
-      !best ||
       specific > best.specific ||
       (specific === best.specific && range.q > best.q)
     )
-      best = { q: range.q, specific };
+      best = { q: range.q, specific, at: range.at };
   }
-  return { q: best?.q ?? 0, named: (best?.specific ?? 0) >= 2 };
+  return best;
 }
 
 /** Whether a request with this `Accept` header gets a page's Markdown copy. */
 export function prefersMarkdown(accept: string | null): boolean {
   if (!accept) return false;
   const sent = ranges(accept);
-  const markdown = weightOf(sent, MARKDOWN);
-  return (
-    markdown.named && markdown.q > 0 && markdown.q >= weightOf(sent, PAGE).q
-  );
+  const markdown = standing(sent, MARKDOWN);
+  // it has to be named, and not refused
+  if (markdown.specific < 2 || markdown.q <= 0) return false;
+  const page = standing(sent, PAGE);
+  // by weight, then by which is named more specifically, then by which comes first
+  if (markdown.q !== page.q) return markdown.q > page.q;
+  if (markdown.specific !== page.specific)
+    return markdown.specific > page.specific;
+  return markdown.at < page.at;
 }
 
 /** Where the site's files are read from: the host's own store of them. */

@@ -32,17 +32,16 @@ test("the agents known to ask for Markdown get it", () => {
   );
 });
 
-test("a request that names Markdown and weighs the page no higher gets Markdown", () => {
+test("a request that names Markdown and prefers it to the page gets Markdown", () => {
   assert.deepEqual(
     which([
       "text/markdown",
       "TEXT/Markdown",
-      "text/html, text/markdown",
       "text/markdown;q=1",
       "text/markdown; q=1.000",
-      // below 1, and still no lower than the page
+      // below 1, and still above the page
       "text/markdown;q=0.9, text/html;q=0.5",
-      "text/markdown;q=0.7, text/html;q=0.7",
+      "text/html;q=0.5, text/markdown;q=0.9",
       "text/markdown;q=0.001",
       // the page comes under a wider range, which weighs less
       "text/markdown;q=0.5, text/*;q=0.4",
@@ -58,6 +57,31 @@ test("a request that names Markdown and weighs the page no higher gets Markdown"
     ]),
     [],
   );
+});
+
+// The RFC calls two types of the same weight “equally preferred” and leaves
+// the choice to the server. The custom is the one named more specifically,
+// and then the one the request lists first.
+test("between equal weights, the form named more specifically wins, and then the one listed first", () => {
+  assert.deepEqual(
+    which([
+      "text/markdown, text/html",
+      "text/markdown;q=0.7, text/html;q=0.7",
+      // the page comes under a wider range, wherever that range is listed
+      "*/*, text/markdown",
+      "text/*, text/markdown",
+      "text/*;q=0.5, text/markdown;q=0.5",
+      "text/html, text/markdown;charset=utf-8",
+    ]),
+    [],
+  );
+  const page = [
+    "text/html, text/markdown",
+    "text/html;q=0.7, text/markdown;q=0.7",
+    "application/xhtml+xml, text/html, text/markdown",
+    "text/html;charset=utf-8, text/markdown",
+  ];
+  assert.deepEqual(page.filter(prefersMarkdown), []);
 });
 
 test("a request that refuses Markdown, or prefers the page, gets the page", () => {
@@ -112,8 +136,9 @@ test("a range that is not written as the grammar has it is left out", () => {
     "markdown",
   ];
   assert.deepEqual(page.filter(prefersMarkdown), []);
-  // and the ranges beside it still count
+  // and the ranges beside it still count, in the order they were sent
   assert.ok(prefersMarkdown("nonsense, text/markdown"));
+  assert.ok(prefersMarkdown("text/html;q=2, text/markdown, text/html"));
   assert.ok(!prefersMarkdown("text/markdown;q=2, text/html"));
 });
 
