@@ -115,14 +115,14 @@ describe("every flow on paper", { concurrency: true }, () => {
   }
 });
 
-// A pair of flows set side by side, on paper. Nothing scrolls on a sheet, so
-// every fact of both flows has to be inside it: a table wider than the sheet
-// would print its first flow and cut off the second.
-describe("a pair set side by side on paper", { concurrency: 1 }, () => {
+// A comparison of two flows, on paper. Nothing scrolls on a sheet, so every
+// point has to be inside it with both flows' sides: a table wider than the
+// sheet would print its first flow and cut off the second.
+describe("a comparison on paper", { concurrency: 1 }, () => {
   const PAIR = "/compare/dpop-vs-oauth-mtls/";
   const facts = () => {
     const shown = (e) => e.checkVisibility({ visibilityProperty: true });
-    const section = document.querySelector("#facts").closest("section");
+    const section = document.querySelector("#points").closest("section");
     const edge = document.documentElement.clientWidth;
     return {
       // the table is in the page whether or not it is the layout drawn
@@ -143,7 +143,7 @@ describe("a pair set side by side on paper", { concurrency: 1 }, () => {
     };
   };
   for (const vp of VIEWPORTS) {
-    test(`printed from ${vp.name}: every fact of both flows, none cut off at the sheet's edge, no controls`, async () => {
+    test(`printed from ${vp.name}: every point with both flows' sides, none cut off at the sheet's edge, no controls`, async () => {
       const ctx = await site.context(
         device(vp, { colorScheme: "dark", reducedMotion: "reduce" }),
       );
@@ -157,9 +157,9 @@ describe("a pair set side by side on paper", { concurrency: 1 }, () => {
         const seen = await page.evaluate(facts);
         problems.push(
           ...[
-            seen.labels === 0 && "no facts in the page",
+            seen.labels === 0 && "no points in the page",
             seen.values !== seen.labels * 2 &&
-              `${seen.values} facts printed, for ${seen.labels} of each of two flows`,
+              `${seen.values} sides printed, for ${seen.labels} points of two flows`,
             seen.cut.length && `cut off: ${seen.cut.join(", ")}`,
             seen.buttons.length &&
               `buttons printed: ${seen.buttons.join(", ")}`,

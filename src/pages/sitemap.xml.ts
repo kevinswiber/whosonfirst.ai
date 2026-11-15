@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { comparisons } from "../data/comparisons";
+import { comparisonSlug, comparisons } from "../data/comparisons";
 import { flows } from "../data/flows";
 import { cases } from "../data/guide";
 import { implementationProfiles } from "../data/implementations";
@@ -32,7 +32,7 @@ export const GET: APIRoute = ({ site }) => {
   const urls = [
     ...pages,
     ...flows.map((f) => `/flows/${f.slug}/`),
-    ...comparisons.map((c) => `/compare/${c.slug}/`),
+    ...comparisons.map((c) => `/compare/${comparisonSlug(c)}/`),
     ...cases.map((s) => `/guide/${s.slug}/`),
     ...reviewed.keys(),
   ].sort();

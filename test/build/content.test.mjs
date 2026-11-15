@@ -175,53 +175,39 @@ test("implementation records mark each specification in every entry, and a gener
   assert.deepEqual(some(summaries), []);
 });
 
-// A comparison is made from the two flows' own pages, so that it cannot say
-// what they do not. That is checked here, on the pages as built: every passage
-// a comparison quotes is on the flow page it is credited to, word for word.
+// A comparison is written, and its figure shows each flow's own messages.
+// Those are not written twice: the page takes them from the flows' data, and
+// this checks that they arrived, so a figure cannot show a message that the
+// flow's own page does not.
 const copy = (path) =>
   readFileSync(
     new URL(`../../dist/client${path}index.md`, import.meta.url),
     "utf8",
   );
-const flat = (text) => text.replace(/\s+/g, " ").trim();
-test("every passage a comparison quotes is on the flow page it says it is from, and both flows link to the comparison", () => {
+const listings = (markdown) =>
+  [...markdown.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)].map((m) =>
+    m[1].trim(),
+  );
+test("every listing in a comparison's figure is one of its two flows' own, and both flows link to the comparison", () => {
   const pairs = built.filter((p) => /^\/compare\/[^/]+\/$/.test(p.path));
   assert.ok(pairs.length > 0, "no comparison was built");
   const wrong = [];
   for (const p of pairs) {
-    const [a, b] = p.path.split("/")[2].split("-vs-");
-    for (const slug of [a, b])
-      if (!pageAt(`/flows/${slug}/`)?.html.includes(`href="${p.path}"`))
-        wrong.push(`/flows/${slug}/ does not link to ${p.path}`);
-    const said = copy(p.path).split(
-      "## What each page says about the other",
-    )[1];
-    const quoted = said
-      .split(/\n## /)[0]
-      .split(/\n### From the page on /)
-      .slice(1);
-    let found = 0;
-    for (const part of quoted) {
-      const from = /\]\(https:\/\/whosonfirst\.ai(\/flows\/[^/]+\/)\)/.exec(
-        part,
-      )[1];
-      const source = flat(copy(from));
-      // a passage is the paragraph after the line that says where it is from
-      const blocks = part.split(/\n\n+/).slice(1).map(flat).filter(Boolean);
-      for (let i = 0; i + 1 < blocks.length; i += 2) {
-        found++;
-        // "A is the same as B, except that …" is the flow page's "This is the
-        // same, except that …" with the two names put in: the rest is its words
-        const words = blocks[i].startsWith("Where it says what it resembles")
-          ? blocks[i + 1].split("except that ")[1]
-          : blocks[i + 1];
-        if (!words || !source.includes(words))
-          wrong.push(
-            `${p.path} quotes ${from}: “${blocks[i + 1].slice(0, 70)}…”`,
-          );
-      }
-    }
-    if (found === 0) wrong.push(`${p.path} quotes nothing`);
+    const flows = p.path
+      .split("/")[2]
+      .split("-vs-")
+      .map((slug) => `/flows/${slug}/`);
+    for (const flow of flows)
+      if (!pageAt(flow)?.html.includes(`href="${p.path}"`))
+        wrong.push(`${flow} does not link to ${p.path}`);
+    const own = new Set(flows.flatMap((flow) => listings(copy(flow))));
+    const shown = listings(copy(p.path));
+    if (shown.length < 2) wrong.push(`${p.path} shows no listing for a flow`);
+    for (const listing of shown)
+      if (!own.has(listing))
+        wrong.push(
+          `${p.path} shows a listing neither flow has: ${listing.slice(0, 50)}…`,
+        );
   }
   assert.deepEqual(some(wrong), []);
 });

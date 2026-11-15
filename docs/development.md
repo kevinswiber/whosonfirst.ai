@@ -96,8 +96,8 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/data/learn/api-sees.ts`          | Lesson 1's figure                                                                                  |
 | `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
 | `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
-| `src/data/comparisons.ts`             | The pairs of flows set side by side under `/compare/`                                              |
-| `src/lib/compare.ts`                  | Finds what one flow's page says about another, to quote it                                         |
+| `src/data/comparisons/*.ts`           | One file per comparison of two flows: the answer, what decides it, a figure and the points         |
+| `src/pages/compare/[pair].astro`      | The shape every comparison shares                                                                  |
 | `src/lib/gloss.ts`                    | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |
 | `src/data/standards.ts`               | The standards tracker                                                                              |
 | `src/data/tokens.ts`                  | Annotated example tokens for the token inspector                                                   |
@@ -159,9 +159,18 @@ If such a flow's diagram draws one arrangement among several, say so in `illustr
 
 A flow can also supply `credentials`: a short introduction and a list of tokens with their type, issuer, recipient, meaning and key binding. `FlowCredentials.astro` renders these before the overview, as a two-column reference on wide screens and one column on narrow screens. Keep the same facts in the steps; this is a reading aid, not a second source of protocol rules.
 
-**Set two flows side by side.** Some flows are asked about in pairs: “DPoP or mTLS?”. A pair is two slugs in `pairs` in `src/data/comparisons.ts`, and its page at `/compare/<a>-vs-<b>/` is made from the two flows' data and nothing else. Its table sets each fact of one flow against the same fact of the other. Its answer is whatever the flows' own pages say about each other: `src/lib/compare.ts` finds every passage in one flow's text that links to the other and the page quotes it whole, headed by where it is from. So a comparison cannot say what a flow page does not, and it changes when they do. `npm run check:rendered` reads each quoted passage back from the flow page it is credited to.
+**Compare two flows.** Some flows are asked about in pairs, because either could do the job: “DPoP or mTLS?”. A comparison answers that at `/compare/<a>-vs-<b>/`. It is written, as a lesson is, in a file of its own in `src/data/comparisons/`, registered in `index.ts` there. `types.ts` says what one holds, and every comparison has the same shape, which `src/pages/compare/[pair].astro` supplies:
 
-The build refuses a pair in which neither flow links to the other in its text, because that page would be a table with no answer. To compare two such flows, write the comparison where it belongs first: on one flow's page, as a note or in its summary, with a link to the other. Then add the pair. Each flow's page lists the pairs it is in, and `/compare/` lists them all. Keep the list short. Every pair of flows could have a page, and most would answer a question nobody asks: a site that publishes those is making pages for a search engine, which Google's [spam policies](https://developers.google.com/search/docs/essentials/spam-policies) call scaled content abuse. Add a pair when people ask the question.
+- `answer`: the answer, in two or three sentences. The page opens with it.
+- `shared`: what the two have in common, before what sets them apart.
+- `choose`: for each flow, the conditions that make it the one to choose. Each has to decide between the two. A condition that is true of both belongs in `shared`.
+- `figure`: the same situation met both ways, with the same questions asked of each. It is the lessons' figure, `Scenario.astro`, with the two flows as its two choices, so it works with no script and is also a table. Ask each question so that “yes” is the answer a reader would want. What each side shows is the flow's own listings, named by step: a comparison does not write a message a second time.
+- `points`: the same aspect of each flow, one row to an aspect, with the steps of each flow that show it. The page adds what each flow follows and how settled that is, from the flows' own data.
+- `mixup`: a mistaken belief the question is often tangled up with, and the correction.
+
+A comparison is in the site's own voice. It states what the two flows' pages establish and links to them; it does not quote them or say what a page says. It simplifies and does not contradict: **every statement in a comparison has to be one its two flows' pages already support, or carry its own source.** When a comparison needs a fact that neither page has, add it to the flow's page first, with its source, and then say it here. Write it with both flows' data open, and check each sentence against them before it goes in. `npm test` holds a comparison to its shape, to steps its flows have, and to fairness: either each flow comes out ahead on some question of the figure, or the two are level on every one. A figure in which one flow is never the better answer is an argument, not a comparison. `npm run check:rendered` checks that the figure's listings are the flows' own.
+
+Compare two flows only where a reader really has to choose between them. Two flows that do different jobs are not a pair, however often their names appear together. Keep the list short: a page for every pair of flows, or for every combination of the decision guide's answers, would be pages made for a search engine, which Google's [spam policies](https://developers.google.com/search/docs/essentials/spam-policies) call scaled content abuse. A comparison is a new page, so it starts as an issue.
 
 **Every flow has an overview.** Four fields say what a reader needs before the diagram, and the build refuses a flow without the first three:
 

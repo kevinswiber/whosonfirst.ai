@@ -78,17 +78,19 @@ const MADE_FROM: [
     ],
   ],
   [/^\/flows\/([^/]+)\/$/, flowSources],
+  // The list of comparisons gives each one's question and its answer.
   [
     /^\/compare\/$/,
-    () => ["src/pages/compare/index.astro", "src/data/comparisons.ts"],
+    () => ["src/pages/compare/index.astro", "src/data/comparisons/"],
   ],
-  // A pair's page was published when the pair was listed. It is the two
-  // flows' own words and facts, with the status of what each follows, so it
-  // changes when either flow does or a standard either lists.
+  // A comparison is written in a file of its own, and is as old as that file.
+  // Its figure shows the two flows' own listings and its table their
+  // standards' status, so it also changes when either flow does, or a standard
+  // either lists.
   [
     /^\/compare\/([^/]+)\/$/,
     (pair, site) => [
-      "src/data/comparisons.ts",
+      `src/data/comparisons/${pair}.ts`,
       ...pair
         .split("-vs-")
         .flatMap((slug) =>
@@ -162,12 +164,10 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/flows/[slug].astro": {
     "src/data/learn/lessons.ts": "the name of the lesson it links to",
-    "src/data/comparisons.ts": "the pairs it is set side by side in, as links",
+    "src/data/comparisons/index.ts":
+      "the questions of the comparisons it links to",
   },
   "src/pages/compare/[pair].astro": {
-    "src/data/guide.ts": "a count of the decision guide's questions",
-    "src/data/implementations/index.ts":
-      "whether each flow has a record to link to",
     "src/data/learn/lessons.ts": "the names of the lessons it links to",
   },
   "src/pages/guide/[case].astro": {
