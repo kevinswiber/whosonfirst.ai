@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 /**
- * A flow as a short film: the problem it answers, its steps one at a time,
+ * A flow as a short film: the question it answers, its steps one at a time,
  * and what it does not protect. A pilot, for one flow, of something to post
  * where a video is watched and not read.
  *
  *   npm run build && node scripts/flow-film.mjs --flow dpop
- *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30     pictures at those seconds, and no video
+ *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
+ *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
+ *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
  *
  * Writes to social/, which is not committed:
  *
- *   film-<slug>.mp4            1920 × 1080, 30 frames a second
+ *   film-<slug>.mp4            1920 × 1080, 30 frames a second; film-<slug>-voiced.mp4 with a voice
  *   film-<slug>.vtt, .srt      what is said, while it is said
+ *   film-<slug>.txt            a description to paste under it, with its chapters
+ *   voice/                     each line as it was said, kept so it is not said again
  *
  * What is said is in scripts/films/<slug>.mjs, written for the ear and held
  * to what the flow's page says. What is drawn is the flow's own data: its
@@ -19,13 +23,21 @@
  *
  * A film is made a frame at a time. The stage is a page that can be put at
  * any second, and each frame is a photograph of it at its own: nothing waits
- * on a clock, so the same film comes out every time. A beat lasts as long as
- * its words take to say, at SPEAK words a second. When there is a voice, each
- * beat will last as long as its recording, and nothing else here changes.
+ * on a clock, so the same film comes out every time.
  *
- * Needs Chromium for Playwright and ffmpeg on the path.
+ * A beat lasts as long as its words take to say. Without a voice that is
+ * reckoned at SPEAK words a second, and the words are written under the
+ * scene. With one, a beat lasts as long as its recording, what happens on the
+ * stage happens at the word that names it, and the words are left off the
+ * picture: said and written at once, they get in each other's way. They are
+ * in the caption files either way. `--captions on` writes them on the
+ * picture as well.
+ *
+ * Needs Chromium for Playwright and ffmpeg on the path. A voice needs a
+ * Python that has Kokoro: see scripts/film-voice.py. Name it in FILM_PYTHON.
  */
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -49,6 +61,12 @@ const option = (name) => {
 };
 const SLUG = option("--flow") ?? "dpop";
 const STILLS = option("--stills")?.split(",").map(Number);
+/** Who says it: nobody, or Kokoro. */
+const VOICE = option("--voice");
+/** Which of Kokoro's voices, and how fast it speaks. */
+const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
+/** Whether what is said is written under the scene: by default, only where nobody says it. */
+const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -58,19 +76,22 @@ const out = join(here, "social");
 const FPS = 30;
 /** Words said in a second, at the pace of someone explaining. */
 const SPEAK = 2.5;
-/** The breath after a sentence. */
+/** The breath after a sentence, and the moment before a voice starts on one. */
 const BREATH = 0.7;
+const LEAD = 0.2;
 /** The least a beat lasts, by what has to happen on the stage while it is told. */
 const LEAST = {
-  spend: 4.4,
+  ask: 4.6,
+  spend: 4,
   copy: 4.6,
-  steal: 4.6,
+  steal: 3.6,
   title: 5,
+  cast: 6,
   refuse: 6.6,
-  caveat: 5.6,
+  caveat: 5,
   end: 4,
-  step: 3,
-  listing: 6,
+  step: 2.6,
+  listing: 3.4,
 };
 
 requireCurrentBuild("The film would be of the flow as it was then.");
@@ -84,9 +105,80 @@ if (!flow)
     `src/data/flows/${script.flow}.ts has no flow named ${script.flow}`,
   );
 
+mkdirSync(join(out, "voice"), { recursive: true });
+
+// ---------- how each line is said ----------
+/** A line as a voice is given it: a word it would say wrong is written as it sounds. */
+const spoken = (text) =>
+  Object.entries(script.speak ?? {}).reduce(
+    (line, [word, sound]) => line.replaceAll(word, sound),
+    text,
+  );
+/**
+ * Each line's recording: how long it is, and when each word starts. A line
+ * is said once and kept, under a name made from its words and its voice, so
+ * a film made again says only what has changed.
+ */
+function recordings(lines) {
+  const kept = (text) => {
+    const name = createHash("sha1")
+      .update(JSON.stringify([VOICE, KOKORO, spoken(text)]))
+      .digest("hex")
+      .slice(0, 16);
+    return {
+      wav: join(out, "voice", `${name}.wav`),
+      json: join(out, "voice", `${name}.json`),
+    };
+  };
+  const missing = lines.filter((text) => !existsSync(kept(text).json));
+  if (missing.length) {
+    const job = join(out, "voice", "job.json");
+    writeFileSync(
+      job,
+      JSON.stringify({
+        ...KOKORO,
+        lines: missing.map((text) => ({ text: spoken(text), ...kept(text) })),
+      }),
+    );
+    const said = spawnSync(
+      process.env.FILM_PYTHON ?? "python3",
+      [join(here, "scripts", "film-voice.py"), job],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    if (said.status !== 0) {
+      console.error(
+        "The voice did not finish. See scripts/film-voice.py for what it needs.",
+      );
+      process.exit(1);
+    }
+  }
+  return new Map(
+    lines.map((text) => [
+      text,
+      { ...kept(text), ...JSON.parse(readFileSync(kept(text).json, "utf8")) },
+    ]),
+  );
+}
+if (VOICE && VOICE !== "kokoro")
+  throw new Error(`No voice is named ${VOICE}: the one there is, is kokoro`);
+const voiced = VOICE
+  ? recordings(script.beats.filter((b) => b.say).map((b) => b.say))
+  : undefined;
+
+/** Where each word of a line starts when nobody says it: by how far into the line it is. */
+function reckoned(say, length) {
+  const words = [];
+  for (const found of say.matchAll(/\S+/g))
+    words.push({
+      text: found[0],
+      start: LEAD + (found.index / say.length) * length,
+    });
+  return words;
+}
+
 let clock = 0;
 const beats = script.beats.map((beat) => {
-  const words = beat.say ? beat.say.trim().split(/\s+/).length : 0;
+  const count = beat.say ? beat.say.trim().split(/\s+/).length : 0;
   const least = beat.step
     ? beat.show
       ? LEAST.listing
@@ -96,8 +188,15 @@ const beats = script.beats.map((beat) => {
     throw new Error(`The stage has no scene named ${beat.scene}`);
   if (beat.step && !flow.steps[beat.step - 1])
     throw new Error(`${script.flow} has no step ${beat.step}`);
-  const dur = Math.max(least, words / SPEAK + BREATH);
-  const timed = { ...beat, start: clock, dur };
+  const clip = beat.say ? voiced?.get(beat.say) : undefined;
+  const length = clip ? clip.duration : count / SPEAK;
+  const dur = Math.max(least, LEAD + length + (clip ? 0.35 : BREATH));
+  const words = clip
+    ? clip.words.map((w) => ({ text: w.text, start: LEAD + w.start }))
+    : beat.say
+      ? reckoned(beat.say, length)
+      : [];
+  const timed = { ...beat, start: clock, dur, words, clip: clip?.wav };
   clock += dur;
   return timed;
 });
@@ -129,6 +228,11 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   * { --move: translate(0px, 0px); }
   html, body { margin: 0; background: var(--bg); }
   #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; color: var(--fg); font-family: var(--font-body); }
+  /* Where the words are not written under it, the scene has the whole height, and sits in the middle of it. */
+  #scene { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  .said-aloud #scene { transform: translateY(118px); }
+  .said-aloud .said { display: none; }
+  .said-aloud .curtain { top: -200px; height: 1400px; }
   .lines { position: absolute; left: 0; top: 0; }
   .life { stroke: var(--role); stroke-width: 4; }
   .party, .held, .verdict, .place, .keystore { position: absolute; transform: translate(-50%, -50%) var(--move); }
@@ -142,6 +246,9 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict { font: 600 28px var(--font-mono); padding: 8px 20px; border-radius: 8px; border: 3px solid; white-space: nowrap; }
   .verdict.ok { background: var(--green-soft); color: var(--green); }
   .verdict.no { background: var(--red-soft); color: var(--red); }
+  .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
+  .held.large { height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
+  .held.large .glyph { width: 46px; height: 46px; }
   .place { font: 500 24px var(--font-mono); padding: 6px 16px; border: 2px dashed var(--border-strong); border-radius: 6px; color: var(--fg-muted); background: var(--bg); }
   .keystore { width: 280px; height: 124px; box-sizing: border-box; border: 3px dashed var(--amber); border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 500 20px var(--font-mono); color: var(--amber); }
   /* A row that has been told is muted: each of its colors goes most of the way
@@ -176,7 +283,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
-<div id="stage"></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
@@ -232,6 +339,7 @@ film = {
   flow,
   beats,
   duration,
+  band: BAND,
   address: `whosonfirst.ai/flows/${flow.slug}`,
   basis,
 };
@@ -243,8 +351,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-mkdirSync(out, { recursive: true });
-const name = `film-${flow.slug}`;
+const name = `film-${flow.slug}${VOICE ? "-voiced" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
@@ -254,6 +361,33 @@ if (STILLS) {
     console.log(file);
   }
 } else {
+  // The voice, as one track: each line starts where its beat does. It is
+  // brought to one loudness and to the rate a video site asks for.
+  const track = join(out, "voice", `${name}.wav`);
+  if (VOICE) {
+    const clips = beats.filter((b) => b.clip);
+    const mixed = spawnSync(
+      "ffmpeg",
+      [
+        "-y",
+        "-loglevel",
+        "error",
+        ...clips.flatMap((b) => ["-i", b.clip]),
+        "-filter_complex",
+        `${clips.map((b, i) => `[${i}:a]adelay=${Math.round((b.start + LEAD) * 1000)}:all=1[a${i}]`).join(";")};${clips.map((_, i) => `[a${i}]`).join("")}amix=inputs=${clips.length}:normalize=0,apad=whole_dur=${duration.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[out]`,
+        "-map",
+        "[out]",
+        "-t",
+        duration.toFixed(3),
+        track,
+      ],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    if (mixed.status !== 0) {
+      console.error("ffmpeg did not put the voice together.");
+      process.exit(1);
+    }
+  }
   const made = spawn(
     "ffmpeg",
     [
@@ -266,6 +400,7 @@ if (STILLS) {
       String(FPS),
       "-i",
       "-",
+      ...(VOICE ? ["-i", track, "-c:a", "aac", "-b:a", "192k"] : []),
       "-c:v",
       "libx264",
       "-pix_fmt",
@@ -309,28 +444,51 @@ if (STILLS) {
     const part = (n, width = 2) => String(n).padStart(width, "0");
     return `${part(Math.floor(ms / 3600000))}:${part(Math.floor(ms / 60000) % 60)}:${part(Math.floor(ms / 1000) % 60)}${mark}${part(ms % 1000, 3)}`;
   };
-  const spoken = beats.filter((b) => b.say);
+  const lines = beats.filter((b) => b.say);
+  const cue = (b, i, mark) =>
+    `${i + 1}\n${stamp(b.start + LEAD, mark)} --> ${stamp(b.start + b.dur - 0.1, mark)}\n${b.say}\n`;
   writeFileSync(
     join(out, `${name}.vtt`),
-    `WEBVTT\n\n${spoken.map((b, i) => `${i + 1}\n${stamp(b.start, ".")} --> ${stamp(b.start + b.dur - 0.2, ".")}\n${b.say}\n`).join("\n")}`,
+    `WEBVTT\n\n${lines.map((b, i) => cue(b, i, ".")).join("\n")}`,
   );
   writeFileSync(
     join(out, `${name}.srt`),
-    spoken
-      .map(
-        (b, i) =>
-          `${i + 1}\n${stamp(b.start, ",")} --> ${stamp(b.start + b.dur - 0.2, ",")}\n${b.say}\n`,
-      )
-      .join("\n"),
+    lines.map((b, i) => cue(b, i, ",")).join("\n"),
   );
-  const words = spoken.reduce(
-    (n, b) => n + b.say.trim().split(/\s+/).length,
-    0,
+
+  // What goes under it: what it is, where the page is, and its chapters. A
+  // video site takes a list of chapters only if the first is at 00:00, there
+  // are three or more, and each lasts ten seconds, so one that would be
+  // shorter is told with the one before it.
+  // https://support.google.com/youtube/answer/9884579
+  const startOf = (test) => beats.find(test)?.start;
+  const chapters = [];
+  for (const [at, title] of [
+    [0, "Can a copied token be used?"],
+    [startOf((b) => b.scene === "title"), `What ${flow.short} does`],
+    ...flow.phases.map((phase) => [
+      startOf((b) => b.step >= phase.from),
+      phase.title,
+    ]),
+    [startOf((b) => b.scene === "refuse"), "A copied token, tried again"],
+  ]) {
+    if (at === undefined) continue;
+    const before = chapters[chapters.length - 1];
+    if (!before || at - before[0] >= 10) chapters.push([at, title]);
+  }
+  // the last one runs to the end of the film, and has to last as long too
+  if (duration - chapters[chapters.length - 1][0] < 10) chapters.pop();
+  const clock = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  writeFileSync(
+    join(out, `${name}.txt`),
+    `${flow.title}\n${flow.tagline}\n\nhttps://${film.address}/\n\n${chapters.map(([at, title]) => `${clock(at)} ${title}`).join("\n")}\n\n${basis}\n${VOICE ? "The voice is synthetic: Kokoro, an open text-to-speech model.\n" : ""}`,
   );
+
+  const count = lines.reduce((n, b) => n + b.say.trim().split(/\s+/).length, 0);
   console.log(
-    `${name}.mp4: ${duration.toFixed(1)} seconds, ${words} words said, ${drawn} of ${frames} frames drawn`,
+    `${name}.mp4: ${duration.toFixed(1)} seconds, ${count} words said, ${drawn} of ${frames} frames drawn`,
   );
 }
-if (spawnSync("true").error) process.exitCode = 1;
 await browser.close();
 server.close();

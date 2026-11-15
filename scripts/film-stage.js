@@ -20,7 +20,9 @@
 (() => {
   const film = window.FILM;
   const { flow, beats } = film;
-  const stage = document.getElementById("stage");
+  // Everything that is drawn is in the scene. What is said, when it is written
+  // out, is under the scene and not in it.
+  const stage = document.getElementById("scene");
 
   // ---------- where things are, in a stage of 1920 by 1080 ----------
   const PARTY_W = 400;
@@ -83,6 +85,10 @@
       { t, v: before },
       { t: t + Math.max(dur, 0.001), v: value, ease },
     );
+  };
+  /** How a thing is before the film starts. */
+  const from = (node, prop, value) => {
+    trackOf(node, prop).keys.push({ t: -1, v: value });
   };
   const show = (node, t, dur = 0.35, value = 1) =>
     to(node, "opacity", t, dur, value);
@@ -165,7 +171,16 @@
   };
   /** What an API says of a request, beside the request. */
   const verdict = (text, ok, x, y) =>
-    at(make("div", `verdict ${ok ? "ok" : "no"}`, stage, text), x, y);
+    at(
+      make(
+        "div",
+        `verdict ${ok === null ? "open" : ok ? "ok" : "no"}`,
+        stage,
+        text,
+      ),
+      x,
+      y,
+    );
 
   // ---------- a message between two parties, or what one party does by itself ----------
   const rows = [];
@@ -235,8 +250,11 @@
     return node;
   };
 
-  /** Lines out of a step's listing, in a card under the row, each marked when its turn comes. */
-  const card = (step, picks, x, t, dur) => {
+  /**
+   * Lines out of a step's listing, in a card under the row. A line with a time
+   * is marked at that second, and until the next one is: one at a time.
+   */
+  const card = (step, picks, x, t, until) => {
     const source = step.code.text.split("\n");
     const node = make("div", "card");
     node.style.left = `${Math.min(1920 - 470, Math.max(470, x))}px`;
@@ -250,27 +268,41 @@
       const line = make("div", "code", node);
       const mark = make("i", "", line);
       make("span", "", line, text.length > 46 ? `${text.slice(0, 45)}…` : text);
-      if (pick.mark) marks.push(mark);
+      if (pick.at !== undefined) marks.push({ mark, at: pick.at });
     }
-    to(node, "y", t + 0.9, 0.001, 14);
-    to(node, "y", t + 0.9, 0.4, 0, "out");
-    show(node, t + 0.9, 0.4);
-    // the marked lines take turns across what is left of the telling: one at a time
-    const left = dur - 1.8;
-    marks.forEach((mark, i) => {
-      show(mark, t + 1.5 + (left * i) / marks.length, 0.3);
-      if (i < marks.length - 1)
-        hide(mark, t + 1.5 + (left * (i + 1)) / marks.length, 0.3);
-    });
-    hide(node, t + dur - 0.25, 0.25);
+    to(node, "y", t + 0.5, 0.001, 14);
+    to(node, "y", t + 0.5, 0.4, 0, "out");
+    show(node, t + 0.5, 0.4);
+    marks.sort((a, b) => a.at - b.at);
+    for (const [i, { mark, at: when }] of marks.entries()) {
+      show(mark, Math.max(when, t + 0.9), 0.25);
+      if (marks[i + 1]) hide(mark, marks[i + 1].at, 0.25);
+    }
+    hide(node, until - 0.25, 0.25);
   };
 
   // ---------- what is said ----------
-  const said = make("div", "said");
+  // Written under the scene where there is no voice to say it. Where there
+  // is one, the same words on the stage would only be in its way.
+  const said = make("div", "said", document.getElementById("stage"));
   const say = (text, t, dur) => {
     const line = make("p", "", said, text);
     show(line, t + 0.05, 0.3);
     hide(line, t + dur - 0.2, 0.2);
+  };
+  /**
+   * The second a word of a beat is said. Each beat comes with its words and
+   * when each starts: from the voice where there is one, and reckoned from
+   * the length of the sentence where there is not.
+   */
+  const when = (beat, word) => {
+    const plain = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const found = (beat.words ?? []).find((w) =>
+      plain(w.text).startsWith(plain(word)),
+    );
+    if (!found)
+      throw new Error(`“${beat.say}” has no word that starts ${word}`);
+    return beat.start + found.start;
   };
 
   // ---------- the film, beat by beat ----------
@@ -297,8 +329,23 @@
   );
   const copy = chip("token", 960, FOCUS_Y);
   const copyBound = chip("bound", OTHER.x, OTHER.y - 92);
-  const theft = make("div", "row");
-  const again = make("div", "row");
+  /** Someone else sends the API what they hold: a row at their height. */
+  const attempt = () => {
+    const node = make("div", "row");
+    from(node, "y", OTHER.y);
+    const drawn = arrow(
+      node,
+      OTHER.x + PARTY_W / 2,
+      api.x,
+      "Request + copied token",
+    );
+    return { node, drawn };
+  };
+  // the two things to watch, shown large before the flow is told
+  const watchKey = chip("key", 960 - 190, FOCUS_Y);
+  const watchToken = chip("token", 960 + 190, FOCUS_Y);
+  watchKey.classList.add("large");
+  watchToken.classList.add("large");
   const curtain = make("div", "curtain");
   const titleCard = make("div", "title-card");
   // its short name, and the rest of its title: what is said is under it already
@@ -311,124 +358,147 @@
   make("p", "address", endCard, film.address);
   make("p", "basis", endCard, film.basis);
 
-  let stepRow;
-  for (const beat of beats) {
-    const { start: t, dur } = beat;
-    if (beat.say) say(beat.say, t, dur);
+  /** What a scene put on the stage that the next one takes off. */
+  let passing = [];
+  const clear = (t, dur = 0.35) => {
+    for (const node of passing) hide(node, t, dur);
+    passing = [];
+  };
 
-    if (beat.scene === "spend") {
-      light(t, [agent.id, api.id], others);
-      pop(plain, t + 0.2);
-      const sent = arrow(
-        make("div", "row spend"),
-        agent.x,
-        api.x,
-        "Request + token",
-      );
-      sent.parentNode.style.top = `${FOCUS_Y}px`;
-      show(sent.parentNode, t + 0.6, 0.2);
-      to(sent, "draw", t + 0.7, 0.9, 1);
+  // The film does not open on an empty stage: the agent, the API and the
+  // token the agent holds are there from its first frame.
+  for (const p of parties) {
+    const level = others.includes(p.id) ? 0 : 1;
+    from(p.box, "opacity", level);
+    from(p.life, "opacity", level);
+  }
+  from(plain, "opacity", 1);
+
+  let told; // the step being told: its row, and the beats that tell it
+  for (const [index, beat] of beats.entries()) {
+    const { start: t, dur } = beat;
+    if (beat.say && film.band) say(beat.say, t, dur);
+
+    if (beat.scene === "ask") {
+      // someone else, a copy of the token, and whether the API will take it
+      show(other, t + 0.2, 0.4);
+      const askCopy = chip("token", OTHER.x, OTHER.y - 92);
+      pop(askCopy, when(beat, "copies"));
+      const asked = attempt();
+      show(asked.node, when(beat, "Can") - 0.1, 0.2);
+      to(asked.drawn, "draw", when(beat, "Can"), 0.8, 1);
+      const mark = verdict("?", null, api.x, OTHER.y + 62);
+      pop(mark, when(beat, "use"));
+      passing = [other, askCopy, asked.node, mark];
+    } else if (beat.scene === "spend") {
+      clear(t);
+      const sent = arrow(make("div", "row"), agent.x, api.x, "Request + token");
+      from(sent.parentNode, "y", FOCUS_Y);
+      show(sent.parentNode, t + 0.3, 0.2);
+      to(sent, "draw", t + 0.4, 0.9, 1);
       const ok = verdict("200 OK", true, api.x, FOCUS_Y + 62);
-      pop(ok, t + 1.7);
-      beat.made = { sent: sent.parentNode, ok };
+      pop(ok, when(beat, "spend"));
+      passing = [sent.parentNode, ok];
     } else if (beat.scene === "copy") {
+      const named = ["tool", "logs", "traces"];
       for (const [i, place] of places.entries())
-        show(place, t + 0.3 + i * 0.35, 0.3);
+        show(place, when(beat, named[i]) - 0.1, 0.3);
       // the token is in the log too: a copy of it settles there
-      show(copy, t + 1.5, 0.3);
-      to(copy, "y", t + 1.6, 0.7, 128, "out");
+      show(copy, when(beat, "logs") + 0.3, 0.3);
+      to(copy, "y", when(beat, "logs") + 0.4, 0.7, 128, "out");
+      passing.push(copy, ...places);
     } else if (beat.scene === "steal") {
-      show(other, t + 0.1, 0.4);
-      to(copy, "y", t + 0.5, 0.7, OTHER.y - 92 - FOCUS_Y);
-      const taken = arrow(
-        theft,
-        OTHER.x + PARTY_W / 2,
-        api.x,
-        "Request + copied token",
-      );
-      to(theft, "y", t, 0.001, OTHER.y);
-      show(theft, t + 1.3, 0.2);
-      to(taken, "draw", t + 1.4, 0.8, 1);
+      show(other, t, 0.4);
+      to(copy, "y", t + 0.3, 0.6, OTHER.y - 92 - FOCUS_Y);
+      const taken = attempt();
+      show(taken.node, t + 0.8, 0.2);
+      to(taken.drawn, "draw", t + 0.9, 0.8, 1);
       const ok = verdict("200 OK", true, api.x, OTHER.y + 62);
-      pop(ok, t + 2.3);
-      beat.made = { ok };
+      pop(ok, Math.max(t + 1.8, when(beat, "works")));
+      passing.push(other, taken.node, ok);
     } else if (beat.scene === "title") {
       show(curtain, t, 0.5);
       show(titleCard, t + 0.3, 0.5);
       // behind the curtain, the stage is set for the flow itself
       const reset = t + 1;
-      for (const earlier of beats) {
-        if (earlier === beat) break;
-        for (const node of Object.values(earlier.made ?? {}))
-          hide(node, reset, 0.01);
-      }
-      for (const node of [plain, copy, other, theft, ...places])
-        hide(node, reset, 0.01);
-      light(
-        reset,
-        parties.map((p) => p.id),
-      );
+      passing.push(plain);
+      clear(reset, 0.01);
+      light(reset, []);
       hide(titleCard, t + dur - 0.5, 0.4);
       hide(curtain, t + dur - 0.4, 0.4);
+    } else if (beat.scene === "cast") {
+      // each party as it is named, and then the two things to watch
+      const names = { agent: "agent", authz: "authorization", resource: "API" };
+      const lit = [];
+      for (const p of parties) {
+        lit.push(p.id);
+        light(when(beat, names[p.role] ?? p.label.split(" ")[0]) - 0.1, [
+          ...lit,
+        ]);
+      }
+      pop(watchKey, when(beat, "key"));
+      pop(watchToken, when(beat, "token"));
+      passing = [watchKey, watchToken];
     } else if (beat.step) {
       const step = flow.steps[beat.step - 1];
-      const from = party(step.from);
-      const toParty = step.to ? party(step.to) : null;
-      light(t, [from.id, ...(toParty ? [toParty.id] : [])]);
-      stepRow = row(step, beat.step, t);
+      const sender = party(step.from);
+      const receiver = step.to ? party(step.to) : null;
+      // the beats that tell this step: this one, and those after it for the same step
+      const first = beats[index - 1]?.step !== beat.step;
+      if (first) {
+        clear(t);
+        const telling = [];
+        for (let i = index; beats[i]?.step === beat.step; i++)
+          telling.push(beats[i]);
+        const last = telling[telling.length - 1];
+        light(t, [sender.id, ...(receiver ? [receiver.id] : [])]);
+        told = { row: row(step, beat.step, t), until: last.start + last.dur };
+      }
       if (beat.show)
         card(
           step,
-          beat.show,
-          toParty ? (from.x + toParty.x) / 2 : from.x,
+          beat.show.map((pick) => ({
+            ...pick,
+            at: pick.on ? when(beat, pick.on) : undefined,
+          })),
+          receiver ? (sender.x + receiver.x) / 2 : sender.x,
           t,
-          dur,
+          told.until,
         );
-      // what a party comes to hold, once the words have said so
-      for (const [, what] of step.gain ?? []) {
-        if (what.startsWith("private key")) pop(key, t + dur * 0.45);
-        else if (what.startsWith("access token")) pop(bound, t + dur * 0.6);
-      }
+      // what a party comes to hold, at the word that says so
+      if (beat.gain)
+        for (const [, what] of step.gain ?? []) {
+          if (what.startsWith("private key")) pop(key, when(beat, beat.gain));
+          else if (what.startsWith("access token"))
+            pop(bound, when(beat, beat.gain));
+        }
       if (beat.check) {
-        const tick = make("em", "tick", stepRow.pill, "✓");
-        pop(tick, t + dur * 0.7);
+        const tick = make("em", "tick", told.row.pill, "✓");
+        pop(tick, when(beat, beat.check));
       }
     } else if (beat.scene === "refuse") {
       light(t, [api.id]);
       // the flow has been told: its rows leave the stage to what happens next
       for (const earlier of rows) to(earlier, "opacity", t, 0.4, 0);
       show(other, t + 0.2, 0.4);
-      pop(copyBound, t + 0.8);
-      const tried = arrow(
-        again,
-        OTHER.x + PARTY_W / 2,
-        api.x,
-        "Request + copied token",
-      );
-      to(again, "y", t, 0.001, OTHER.y);
-      show(again, t + 2.2, 0.2);
-      to(tried, "draw", t + 2.3, 0.8, 1);
+      pop(copyBound, when(beat, "copy"));
+      const tried = attempt();
+      show(tried.node, when(beat, "Without") - 0.1, 0.2);
+      to(tried.drawn, "draw", when(beat, "Without"), 0.8, 1);
       const no = verdict("Refused: no proof", false, api.x, OTHER.y + 62);
-      pop(no, t + dur * 0.72);
-      beat.made = { no };
+      pop(no, when(beat, "refuses"));
+      passing = [other, copyBound, tried.node, no];
     } else if (beat.scene === "caveat") {
+      clear(t, 0.4);
       light(t, [agent.id]);
-      for (const node of [
-        other,
-        copyBound,
-        again,
-        ...Object.values(beats.find((b) => b.scene === "refuse")?.made ?? {}),
-      ])
-        hide(node, t, 0.4);
       // the key leaves the token's side, for a place of its own
-      show(keystore, t + dur * 0.45, 0.4);
-      to(key, "y", t + dur * 0.5, 0.8, 590 - TRAY_Y);
+      show(keystore, when(beat, "keep") - 0.2, 0.4);
+      to(key, "y", when(beat, "keep"), 0.8, 590 - TRAY_Y);
     } else if (beat.scene === "end") {
       show(close, t, 0.5);
       show(endCard, t + 0.3, 0.5);
     }
   }
-
   // ---------- one frame ----------
   for (const track of tracks) track.keys.sort((a, b) => a.t - b.t);
   const nodes = [...new Set(tracks.map((t) => t.node))];
