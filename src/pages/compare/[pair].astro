@@ -1,0 +1,498 @@
+---
+/**
+ * Two flows that are asked about together, at /compare/<a>-vs-<b>/.
+ *
+ * The page is written: see src/data/comparisons/types.ts. It answers the
+ * question, says what the two share and what decides between them, asks the
+ * same questions of each in a figure, and sets them out point by point. The
+ * figure is the lessons' own, so a comparison reads as the rest of the site
+ * does. Its listings are the flows' steps, taken from the flows' data.
+ */
+import Base from "../../layouts/Base.astro";
+import DocMeta from "../../components/DocMeta.astro";
+import FlowCard from "../../components/FlowCard.astro";
+import Mixup from "../../components/Mixup.astro";
+import Scenario from "../../components/Scenario.astro";
+import {
+  comparisons,
+  comparisonSlug,
+  comparisonsOf,
+  flowsOf,
+} from "../../data/comparisons";
+import type { Comparison } from "../../data/comparisons";
+import { basisOf, maturityLabel } from "../../data/flows";
+import { lesson as lessonBySlug, lessons } from "../../data/learn/lessons";
+import type { Scenario as Figure } from "../../data/learn/types";
+import { REVIEWED } from "../../data/site";
+import { std } from "../../data/standards";
+import { STATUS_LABEL, STATUS_TONE } from "../../data/types";
+import type { Flow } from "../../data/types";
+import { gloss } from "../../lib/gloss";
+import { block, esc, inline } from "../../lib/md";
+import { must } from "../../lib/must";
+
+export function getStaticPaths() {
+  return comparisons.map((comparison) => ({
+    params: { pair: comparisonSlug(comparison) },
+    props: { comparison },
+  }));
+}
+
+interface Props {
+  comparison: Comparison;
+}
+const { comparison: c } = Astro.props;
+const slug = comparisonSlug(c);
+const both = flowsOf(c);
+const [a, b] = both;
+// One reading of the page's own text: a glossary term is marked the first time it appears in it.
+const g = gloss(Astro.url.pathname);
+
+/** A step of a flow, by its number, as the flow's page counts them. */
+const step = (f: Flow, n: number) =>
+  must(f.steps[n - 1], `step ${n} of "${f.slug}" (named by compare/${slug})`);
+
+// The figure is a lesson's figure: the two flows are its two choices, and what
+// each shows is its own flow's listings, so the two cannot come to disagree.
+const figure: Figure = {
+  id: "both-ways",
+  legend: c.figure.legend,
+  cast: c.figure.cast,
+  asks: c.figure.asks,
+  questions: c.figure.questions,
+  options: both.map((f, i) => {
+    const side = c.figure.sides[i];
+    return {
+      id: f.slug,
+      name: f.short,
+      hops: side.hops,
+      exhibits: side.shows.map(({ step: n, caption }) => {
+        const code = must(
+          step(f, n).code,
+          `a listing in step ${n} of "${f.slug}" (shown by compare/${slug})`,
+        );
+        return { caption, lang: code.lang, text: code.text };
+      }),
+      findings: side.findings,
+      so: side.so,
+      link: {
+        href: `/flows/${f.slug}/#walkthrough`,
+        text: `${f.short}, step by step`,
+      },
+    };
+  }),
+};
+
+// Under a point, the steps of the flow that show it, as a flow's page links its own.
+const steps = (f: Flow, numbers: number[] = []) =>
+  numbers.length === 0
+    ? ""
+    : `<span class="shown">${numbers.length === 1 ? "Step" : "Steps"} ${numbers
+        .map((n) => {
+          step(f, n);
+          return `<a href="/flows/${f.slug}/#step-${n}">${n}</a>`;
+        })
+        .join(", ")}</span>`;
+const follows = (f: Flow) => {
+  const basis = basisOf(f).map(std);
+  return basis.length === 0
+    ? esc(`${f.noBasis}.`)
+    : basis
+        .map(
+          (s) =>
+            `<span class="followed"><a href="/standards/#${s.id}">${esc(s.ref)}</a> <span class="chip" data-tone="${STATUS_TONE[s.status]}">${esc(STATUS_LABEL[s.status])}</span></span>`,
+        )
+        .join(" ");
+};
+// The points as written, then two that are the flows' own facts and are not
+// written twice: what each follows, and how settled that is.
+const rows: { on: string; cells: [string, string] }[] = [
+  ...c.points.map((p) => ({
+    on: p.on,
+    cells: both.map(
+      (f, i) => `${inline(p.values[i])}${steps(f, p.steps?.[i])}`,
+    ) as [string, string],
+  })),
+  { on: "What it follows", cells: [follows(a), follows(b)] },
+  {
+    on: "How settled it is",
+    cells: both.map(
+      (f) =>
+        `${esc(maturityLabel(f))} (<a href="/about/#how-flows-are-rated">what the rating means</a>)`,
+    ) as [string, string],
+  },
+];
+
+const compared = both.flatMap((f) => basisOf(f).slice(0, 1)).map(std);
+const taught = both
+  .map((f) => (f.lesson ? lessonBySlug(f.lesson) : undefined))
+  .filter((l, i, all) => l && all.indexOf(l) === i);
+// Other comparisons that share a flow with this one.
+const more = [...new Set(both.flatMap((f) => comparisonsOf(f)))].filter(
+  (x) => x !== c,
+);
+const details = [
+  {
+    label: "This page",
+    value: "Comparison",
+    note: "An explanation, not a specification",
+  },
+  ...both.map((f) => ({
+    label: f.short,
+    value: f.title,
+    href: `/flows/${f.slug}/`,
+    note: "The flow in full, step by step",
+  })),
+  {
+    label: "Review",
+    value: `Checked against sources in ${REVIEWED}`,
+    note: "How it was checked",
+    noteHref: "/about/#how-facts-were-checked",
+  },
+];
+---
+
+<Base
+  title={`${a.short} vs ${b.short}: how they differ and which to choose`}
+  description={c.description}
+  article
+  here={{
+    trail: [
+      { label: 'Flows', href: '/flows/' },
+      { label: 'Which of the two?', short: 'Which?', href: '/compare/' },
+    ],
+    current: c.question,
+  }}
+>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>{c.question}</h1>
+        <p class="lede" set:html={inline(c.answer)} />
+      </div>
+    </div>
+
+    <div class="wrap body">
+      <div class="intro">
+        <div class="prose">
+          <Fragment set:html={block(c.shared, g)} />
+          <DocMeta
+            based={compared.length > 0
+              ? { key: 'Compares', refs: compared.map((s) => ({ ref: s.ref, href: `/standards/#${s.id}` })) }
+              : undefined}
+            reviewed={REVIEWED}
+            subject="Comparison"
+            details={details}
+          />
+        </div>
+        <div class="choices">
+          {
+            both.map((f, i) => (
+              <section class="fit">
+                <h2>
+                  Choose {f.short} when
+                </h2>
+                <ul>
+                  {c.choose[i].map((x) => (
+                    <li set:html={inline(x, g)} />
+                  ))}
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+      </div>
+
+      <section aria-labelledby="both-ways-title">
+        <div class="section-head stacked">
+          <h2 id="both-ways-title">The same questions, asked of both</h2>
+          <p set:html={inline(c.figure.intro, g)} />
+        </div>
+        <Scenario scenario={figure} glance="Both at a glance" roomy />
+      </section>
+
+      <section aria-labelledby="points">
+        <div class="section-head stacked">
+          <h2 id="points">Point by point</h2>
+          <p>
+            For whoever has to build one of them. Each flow’s own page shows these as they happen: {a.short} in{' '}
+            <a href={`/flows/${a.slug}/#walkthrough`}>{a.steps.length} steps</a>, {b.short} in{' '}
+            <a href={`/flows/${b.slug}/#walkthrough`}>{b.steps.length}</a>.
+          </p>
+        </div>
+        {/* Two presentations of the same points, as on a flow page. CSS shows one and removes the
+            other with display: none, which also takes it out of the accessibility tree. */}
+        <div class="table-scroll compare-wide" tabindex="0" role="region" aria-label={`Table: ${a.short} and ${b.short}, point by point`}>
+          <table class="compare">
+            <thead>
+              <tr>
+                <td></td>
+                {both.map((f) => <th scope="col">{f.short}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {
+                rows.map((row) => (
+                  <tr>
+                    <th scope="row">{row.on}</th>
+                    {row.cells.map((cell) => (
+                      <td set:html={cell} />
+                    ))}
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="compare-narrow">
+          {
+            rows.map((row) => (
+              <div class="env">
+                <h3>{row.on}</h3>
+                <dl>
+                  {both.map((f, i) => (
+                    <div>
+                      <dt>{f.short}</dt>
+                      <dd set:html={row.cells[i]} />
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      {
+        c.mixup && (
+          <Mixup belief={c.mixup.belief}>
+            <Fragment set:html={block(c.mixup.body, g)} />
+          </Mixup>
+        )
+      }
+
+      <section aria-labelledby="full">
+        <div class="section-head stacked">
+          <h2 id="full">Each one in full</h2>
+          <p>
+            Every step drawn, with the message it sends and what each party has to do.
+            {
+              taught.length > 0 && (
+                <>
+                  {' '}
+                  New to this?{' '}
+                  {taught.map((l, i) => (
+                    <>
+                      {i > 0 && ' and '}
+                      <a href={`/learn/${l!.slug}/`}>
+                        Lesson {lessons.indexOf(l!) + 1}: {l!.title}
+                      </a>
+                    </>
+                  ))}{' '}
+                  {taught.length === 1 ? 'covers' : 'cover'} the ground both build on, in plain words.
+                </>
+              )
+            }
+          </p>
+        </div>
+        <div class="grid two">
+          {both.map((f) => <FlowCard flow={f} />)}
+        </div>
+        {
+          more.length > 0 && (
+            <ul class="ways-on">
+              {more.map((x) => (
+                <li>
+                  <strong>Also asked:</strong> <a href={`/compare/${comparisonSlug(x)}/`}>{x.question}</a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* The page is laid out as a flow's page is: the same opening, the same ruled notes beside it,
+     the same sections under it. */
+  .body {
+    padding-bottom: clamp(2.5rem, 5vw, 3.75rem);
+  }
+  .body > section,
+  .body > :global(.mixup) {
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
+  }
+  .body h2 {
+    margin-top: 0;
+    font-size: 1.55rem;
+  }
+  .intro {
+    display: grid;
+    gap: 1.5rem 3rem;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: clamp(1.8rem, 4vw, 2.6rem);
+    align-items: start;
+  }
+  @media (min-width: 60rem) {
+    .intro {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+  }
+  .intro .prose {
+    font-size: 1.08rem;
+  }
+  /* "choose it when" is a ruled note, as "use it when" is on a flow's page */
+  .choices {
+    display: grid;
+    gap: 1.6rem;
+  }
+  .fit {
+    border-top: 1px solid var(--fg);
+    padding: 0.9rem 0 0;
+  }
+  .fit h2 {
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.7rem;
+  }
+  .fit ul {
+    margin: 0;
+    font-size: 0.96rem;
+    padding-left: 1.1em;
+  }
+  .section-head.stacked {
+    display: block;
+  }
+  .section-head.stacked p {
+    margin-top: 0.5rem;
+    max-width: var(--prose);
+  }
+
+  /* Point by point, where there is room: a table, a column for each flow. As on a flow's page. */
+  .compare {
+    min-width: 46rem;
+    table-layout: fixed;
+  }
+  .compare thead th {
+    white-space: normal;
+    vertical-align: bottom;
+  }
+  .compare thead td {
+    width: 11rem;
+  }
+  .compare th[scope='row'] {
+    white-space: normal;
+    font-family: var(--font-body);
+    font-size: inherit;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare tr:last-child th[scope='row'] {
+    border-bottom: 0;
+  }
+  /* a specification and its status, kept together, as the glossary sets them */
+  .compare :global(.followed),
+  .env :global(.followed) {
+    display: inline-block;
+    margin-right: 1rem;
+    white-space: nowrap;
+  }
+  /* the steps that show a point, set as a flow's page sets the steps of a part */
+  .compare :global(.shown),
+  .env :global(.shown) {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+  }
+
+  /* Where there is not: one block for each point, each flow's side under its name, so that
+     nothing has to be scrolled sideways to be read. */
+  .compare-narrow {
+    display: none;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+  }
+  .env {
+    padding: 0.9rem 0.8rem 0.3rem;
+  }
+  .env + .env {
+    border-top: 1px solid var(--border);
+  }
+  .env h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+  }
+  .env dl {
+    margin: 0;
+  }
+  .env dl > div {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 0.1rem 0.8rem;
+    padding: 0.5rem 0;
+    border-top: 1px dashed var(--border-strong);
+  }
+  .env dt {
+    padding-top: 0.28rem;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .env dd {
+    margin: 0;
+  }
+  @media (max-width: 59.99rem) {
+    .compare-wide {
+      display: none;
+    }
+    .compare-narrow {
+      display: block;
+    }
+  }
+  @media (max-width: 34rem) {
+    .env dl > div {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* On paper nothing scrolls, and the table is wider than a sheet. So a sheet
+     gets the blocks, whatever the width of the window it was printed from. */
+  @media print {
+    .compare-wide {
+      display: none;
+    }
+    .compare-narrow {
+      display: block;
+    }
+  }
+
+  /* ways on to another comparison, ruled as a flow's "ways in" are */
+  .ways-on {
+    list-style: none;
+    margin: 1.4rem 0 0;
+    padding: 0;
+    max-width: var(--prose);
+    border-top: 1px solid var(--border);
+    font-size: 0.98rem;
+  }
+  .ways-on li {
+    margin: 0;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

@@ -136,6 +136,39 @@ test("an index that lists every entry is made from the whole file", () => {
   assert.ok(madeFrom("/learn/", site).includes("src/data/learn/lessons.ts"));
 });
 
+test("a comparison is made from its own file, both flows and the standards they list, and is as old as its file", () => {
+  assert.deepEqual(madeFrom("/compare/dpop-vs-gnap/", site), [
+    "src/data/comparisons/dpop-vs-gnap.ts",
+    "src/data/flows/dpop.ts",
+    "src/data/standards.ts#rfc9449",
+    "src/data/standards.ts#rfc7519",
+    "src/data/flows/gnap.ts",
+    "src/data/standards.ts#rfc9635",
+  ]);
+  const dates = changed("/compare/dpop-vs-gnap/", {
+    "src/data/comparisons/dpop-vs-gnap.ts": 15,
+    "src/data/flows/dpop.ts": 12,
+    "src/data/flows/gnap.ts": 16,
+    "src/data/standards.ts#rfc9449": 17,
+  });
+  assert.equal(dates.modified, day(17));
+  // a record's growth does not change what a comparison says
+  assert.equal(
+    changed("/compare/dpop-vs-gnap/", {
+      "src/data/comparisons/dpop-vs-gnap.ts": 15,
+      "src/data/implementations/records.ts#dpop": 18,
+    }).modified,
+    day(15),
+  );
+  assert.equal(
+    datesFor(madeFrom("/compare/dpop-vs-gnap/", site), {
+      "src/data/comparisons/dpop-vs-gnap.ts": { first: day(15), last: day(15) },
+      "src/data/flows/dpop.ts": { first: day(9), last: day(12) },
+    }).published,
+    day(15),
+  );
+});
+
 test("the first lesson's date moves when the data its figure is drawn from does", () => {
   assert.ok(
     madeFrom("/learn/what-the-api-sees/", site).includes(

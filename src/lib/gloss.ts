@@ -23,6 +23,15 @@ import { termSlug } from "./term";
 const UNMARKED = new Set(["agent", "workload", "oauth", "mcp"]);
 /** These also have ordinary meanings. Authors link their technical uses explicitly. */
 const EXPLICIT = new Set(["claim", "state"]);
+/**
+ * What follows a term and makes it something else, by term. A “client
+ * certificate” belongs to a TLS client, the end of a connection that opens it.
+ * That is not the OAuth client the glossary defines, and marking the word
+ * there would say that it is.
+ */
+const NOT_BEFORE: Record<string, RegExp> = {
+  client: /^[\s-]+certificates?\b/i,
+};
 
 interface Entry {
   /** A glossary term, or a document in the standards tracker. */
@@ -263,21 +272,29 @@ export function markExplicitLink(tag: string): string {
  * a tag, a code span or another link.
  */
 export function mark(text: string, g: Gloss): string {
-  return text.replace(PATTERN, (whole, name: string, plural: string) => {
-    const e = entries.get(name.toLowerCase());
-    if (!e) return whole;
-    if (e.written && name !== e.written) return whole;
-    // a general term may be counted across the page, not in this reading alone
-    const seen = g.terms && e.kind === "term" && !e.spec ? g.terms : g.seen;
-    if (seen.has(href(e))) return whole;
-    // there, a term that names a specification already marked says nothing new
-    if (g.terms && e.spec && g.seen.has(`/standards/#${e.spec}`)) return whole;
-    if (e.home && g.path && e.home.split("#")[0] === g.path) return whole;
-    seen.add(href(e));
-    // a term's preview already says which document defines it
-    if (e.spec) g.seen.add(`/standards/#${e.spec}`);
-    return `${opening(e)}${name}${plural}</a>`;
-  });
+  return text.replace(
+    PATTERN,
+    (whole, name: string, plural: string, at: number) => {
+      const e = entries.get(name.toLowerCase());
+      if (!e) return whole;
+      if (e.written && name !== e.written) return whole;
+      // part of a longer name that means something else: left alone, and not
+      // counted, so the term's next use on its own is still its first
+      if (NOT_BEFORE[name.toLowerCase()]?.test(text.slice(at + whole.length)))
+        return whole;
+      // a general term may be counted across the page, not in this reading alone
+      const seen = g.terms && e.kind === "term" && !e.spec ? g.terms : g.seen;
+      if (seen.has(href(e))) return whole;
+      // there, a term that names a specification already marked says nothing new
+      if (g.terms && e.spec && g.seen.has(`/standards/#${e.spec}`))
+        return whole;
+      if (e.home && g.path && e.home.split("#")[0] === g.path) return whole;
+      seen.add(href(e));
+      // a term's preview already says which document defines it
+      if (e.spec) g.seen.add(`/standards/#${e.spec}`);
+      return `${opening(e)}${name}${plural}</a>`;
+    },
+  );
 }
 
 /** Inside these, text is left alone: it is already a link, is literal, is a heading, or belongs to a control. */

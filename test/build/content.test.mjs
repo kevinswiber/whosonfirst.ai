@@ -174,3 +174,60 @@ test("implementation records mark each specification in every entry, and a gener
   );
   assert.deepEqual(some(summaries), []);
 });
+
+// A comparison is written, and its figure shows each flow's own messages.
+// Those are not written twice: the page takes them from the flows' data, and
+// this checks that they arrived, so a figure cannot show a message that the
+// flow's own page does not.
+const copy = (path) =>
+  readFileSync(
+    new URL(`../../dist/client${path}index.md`, import.meta.url),
+    "utf8",
+  );
+const listings = (markdown) =>
+  [...markdown.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)].map((m) =>
+    m[1].trim(),
+  );
+test("every listing in a comparison's figure is one of its two flows' own, and both flows link to the comparison", () => {
+  const pairs = built.filter((p) => /^\/compare\/[^/]+\/$/.test(p.path));
+  assert.ok(pairs.length > 0, "no comparison was built");
+  const wrong = [];
+  for (const p of pairs) {
+    const flows = p.path
+      .split("/")[2]
+      .split("-vs-")
+      .map((slug) => `/flows/${slug}/`);
+    for (const flow of flows)
+      if (!pageAt(flow)?.html.includes(`href="${p.path}"`))
+        wrong.push(`${flow} does not link to ${p.path}`);
+    const own = new Set(flows.flatMap((flow) => listings(copy(flow))));
+    const shown = listings(copy(p.path));
+    if (shown.length < 2) wrong.push(`${p.path} shows no listing for a flow`);
+    for (const listing of shown)
+      if (!own.has(listing))
+        wrong.push(
+          `${p.path} shows a listing neither flow has: ${listing.slice(0, 50)}…`,
+        );
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+// A word the glossary defines can be part of a longer name that means
+// something else. A "client certificate" is a TLS client's, not the OAuth
+// client's, so "client" is not marked as the glossary's term there.
+test("no page marks the OAuth client inside “client certificate”", () => {
+  const marked = [];
+  for (const p of built)
+    for (const m of p.html.matchAll(
+      /<a class="term" href="\/glossary\/#client"[^>]*>clients?<\/a>[\s-]+certificate/gi,
+    ))
+      marked.push(`${p.path} “${m[0].replace(/<[^>]+>/g, "")}”`);
+  assert.deepEqual(some(marked), []);
+  // and the term is still marked where it stands for itself
+  assert.ok(
+    built.some((p) =>
+      /<a class="term" href="\/glossary\/#client"/.test(p.html),
+    ),
+    "the client is no longer marked anywhere",
+  );
+});

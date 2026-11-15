@@ -645,6 +645,7 @@ const SECTIONS = [
   { title: "Named cases", match: /^\/guide\/[^/]+\/$/, order: "/guide/" },
   { title: "Lessons", match: /^\/learn\/[^/]+\/$/, order: "/learn/" },
   { title: "Flows", match: /^\/flows\//, order: "/flows/" },
+  { title: "Which of the two?", match: /^\/compare\//, order: "/compare/" },
   {
     title: "Implementations",
     match: /^\/implementations\//,

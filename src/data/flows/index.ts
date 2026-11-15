@@ -177,6 +177,15 @@ export function stepsOf(f: Flow, participant: string): number[] {
 }
 
 /** Unknown slugs fail the build, so links between flows never rot. */
+/**
+ * The specifications a flow's page says the flow implements: `basis` if given,
+ * otherwise the first standard listed, and none for a pattern that no
+ * specification defines.
+ */
+export function basisOf(f: Flow): string[] {
+  return f.noBasis ? [] : (f.basis ?? [f.standards[0]]);
+}
+
 export function related(f: Flow): Flow[] {
   return f.related.map(flow);
 }

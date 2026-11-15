@@ -28,6 +28,8 @@ export const PAGES = [
   { path: "/learn/", name: "lessons index" },
   { path: LESSON, name: "lesson" },
   { path: FLOW, name: "flow" },
+  { path: "/compare/dpop-vs-oauth-mtls/", name: "comparison" },
+  { path: "/compare/", name: "comparisons index" },
   { path: "/standards/", name: "standards" },
   { path: "/concepts/", name: "concepts" },
   { path: "/flows/", name: "flows index" },

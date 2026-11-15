@@ -78,6 +78,26 @@ const MADE_FROM: [
     ],
   ],
   [/^\/flows\/([^/]+)\/$/, flowSources],
+  // The list of comparisons gives each one's question and its answer.
+  [
+    /^\/compare\/$/,
+    () => ["src/pages/compare/index.astro", "src/data/comparisons/"],
+  ],
+  // A comparison is written in a file of its own, and is as old as that file.
+  // Its figure shows the two flows' own listings and its table their
+  // standards' status, so it also changes when either flow does, or a standard
+  // either lists.
+  [
+    /^\/compare\/([^/]+)\/$/,
+    (pair, site) => [
+      `src/data/comparisons/${pair}.ts`,
+      ...pair
+        .split("-vs-")
+        .flatMap((slug) =>
+          flowSources(slug, site).filter((s) => !s.startsWith(RECORDS)),
+        ),
+    ],
+  ],
   [/^\/learn\/$/, () => ["src/pages/learn/index.astro", LESSONS]],
   // A lesson: its page, its entry in the list of lessons, which holds its
   // title and what it promises, and the glossary's words for what it teaches.
@@ -144,6 +164,11 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/flows/[slug].astro": {
     "src/data/learn/lessons.ts": "the name of the lesson it links to",
+    "src/data/comparisons/index.ts":
+      "the questions of the comparisons it links to",
+  },
+  "src/pages/compare/[pair].astro": {
+    "src/data/learn/lessons.ts": "the names of the lessons it links to",
   },
   "src/pages/guide/[case].astro": {
     "src/data/flows/index.ts": "the names and ratings of the flows it links to",

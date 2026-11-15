@@ -29,8 +29,15 @@ interface Props {
    * that depends on the comparison should set it.
    */
   glance?: string;
+  /**
+   * For a figure whose answers run to a sentence or two, as a comparison's do.
+   * A lesson's answers are a line each and sit beside its listings. Longer ones
+   * need the figure's whole width, so the listings go side by side above them
+   * and everything is set further apart.
+   */
+  roomy?: boolean;
 }
-const { scenario: s, title, glance } = Astro.props;
+const { scenario: s, title, glance, roomy = false } = Astro.props;
 if (s.options.length > 6)
   throw new Error(`scenario "${s.id}" has more than six options`);
 for (const o of s.options) {
@@ -51,7 +58,7 @@ const single = s.options.length === 1;
 const judged = s.options.some((o) => o.findings.some((f) => f.verdict));
 ---
 
-<figure class="sc" id={s.id}>
+<figure class:list={['sc', { 'sc-roomy': roomy }]} id={s.id}>
   {title && <p class="sc-title">{title}</p>}
   <fieldset hidden={single}>
     <legend>{s.legend}</legend>
@@ -649,6 +656,84 @@ const judged = s.options.some((o) => o.findings.some((f) => f.verdict));
     .sc-note {
       grid-column: 1 / -1;
       padding-top: 0.15rem;
+    }
+  }
+
+  /* A roomy figure: the same parts, further apart, with the answers under the
+     listings at the figure's full width, so a two-sentence answer is two lines
+     and not six. */
+  .sc-roomy {
+    padding: 1.6rem 1.7rem 1.7rem;
+  }
+  .sc-roomy fieldset {
+    margin-bottom: 1.5rem;
+  }
+  .sc-roomy .sc-chain {
+    padding-bottom: 1.6rem;
+  }
+  .sc-roomy .sc-chain:not([data-long]),
+  .sc-roomy .sc-chain[data-long] {
+    row-gap: 0.75rem;
+  }
+  .sc-roomy .sc-body {
+    gap: 1.8rem;
+    padding-top: 1.6rem;
+  }
+  .sc-roomy .sc-exhibits {
+    gap: 1.4rem 1.8rem;
+  }
+  .sc-roomy .sc-label,
+  .sc-roomy legend {
+    margin-bottom: 0.7rem;
+  }
+  @media (min-width: 52rem) {
+    .sc-roomy .sc-body.has-exhibits {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sc-roomy .sc-exhibits {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 34.01rem) {
+    .sc-roomy .sc-findings tbody th {
+      width: 30%;
+      padding: 0.85rem 1.6rem 0.85rem 0;
+    }
+    .sc-roomy .sc-findings td {
+      padding-block: 0.85rem;
+    }
+    .sc-roomy .sc-verdict {
+      width: 7.5rem;
+      padding-right: 1.4rem;
+    }
+  }
+  .sc-roomy .sc-note {
+    font-size: 0.96rem;
+    line-height: 1.5;
+  }
+  .sc-roomy .sc-so {
+    margin-top: 1.9rem;
+  }
+  .sc-roomy .sc-glance {
+    margin-top: 1.9rem;
+    padding-top: 1.5rem;
+  }
+  .sc-roomy .sc-glance thead th {
+    padding: 0.5rem 1.4rem 0.6rem 0;
+  }
+  .sc-roomy .sc-glance tbody th,
+  .sc-roomy .sc-glance td {
+    padding: 0.7rem 1.4rem 0.7rem 0;
+  }
+  @media (max-width: 34rem) {
+    .sc-roomy {
+      padding: 1.2rem 1rem 1.3rem;
+    }
+    .sc-roomy .sc-findings tr {
+      padding: 0.8rem 0;
+    }
+    .sc-roomy .sc-note {
+      padding-top: 0.3rem;
     }
   }
 

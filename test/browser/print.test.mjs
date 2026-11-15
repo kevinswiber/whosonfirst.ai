@@ -114,3 +114,60 @@ describe("every flow on paper", { concurrency: true }, () => {
     });
   }
 });
+
+// A comparison of two flows, on paper. Nothing scrolls on a sheet, so every
+// point has to be inside it with both flows' sides: a table wider than the
+// sheet would print its first flow and cut off the second.
+describe("a comparison on paper", { concurrency: 1 }, () => {
+  const PAIR = "/compare/dpop-vs-oauth-mtls/";
+  const facts = () => {
+    const shown = (e) => e.checkVisibility({ visibilityProperty: true });
+    const section = document.querySelector("#points").closest("section");
+    const edge = document.documentElement.clientWidth;
+    return {
+      // the table is in the page whether or not it is the layout drawn
+      labels: section.querySelectorAll("table.compare tbody th").length,
+      values: [...section.querySelectorAll("tbody td, dd")].filter(shown)
+        .length,
+      cut: [...section.querySelectorAll("*")]
+        .filter(shown)
+        .filter(
+          (e) =>
+            e.scrollWidth > e.clientWidth + 1 ||
+            e.getBoundingClientRect().right > edge + 1,
+        )
+        .map((e) => `${e.tagName.toLowerCase()}.${e.className}`),
+      buttons: [...document.querySelectorAll("button")]
+        .filter(shown)
+        .map((b) => b.textContent.trim() || b.className),
+    };
+  };
+  for (const vp of VIEWPORTS) {
+    test(`printed from ${vp.name}: every point with both flows' sides, none cut off at the sheet's edge, no controls`, async () => {
+      const ctx = await site.context(
+        device(vp, { colorScheme: "dark", reducedMotion: "reduce" }),
+      );
+      const page = await ctx.newPage();
+      await open(page, site.url(PAIR));
+      await page.emulateMedia({ media: "print", colorScheme: "dark" });
+      const problems = [];
+      // as the page stands when the reader prints it, then at the width of a sheet
+      for (const size of [null, SHEET]) {
+        if (size) await page.setViewportSize(size);
+        const seen = await page.evaluate(facts);
+        problems.push(
+          ...[
+            seen.labels === 0 && "no points in the page",
+            seen.values !== seen.labels * 2 &&
+              `${seen.values} sides printed, for ${seen.labels} points of two flows`,
+            seen.cut.length && `cut off: ${seen.cut.join(", ")}`,
+            seen.buttons.length &&
+              `buttons printed: ${seen.buttons.join(", ")}`,
+          ].filter(Boolean),
+        );
+      }
+      await ctx.close();
+      assert.deepEqual([...new Set(problems)], []);
+    });
+  }
+});

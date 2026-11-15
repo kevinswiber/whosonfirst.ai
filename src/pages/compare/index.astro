@@ -1,0 +1,57 @@
+---
+/**
+ * The comparisons, at /compare/: each one's question and what the choice is
+ * between. The list is src/data/comparisons/index.ts. It is laid out as the
+ * list of deployment guides is: a card for each, two across.
+ */
+import Base from "../../layouts/Base.astro";
+import { comparisons, comparisonSlug, flowsOf } from "../../data/comparisons";
+---
+
+<Base
+  title="Which of the two? Agent authentication flows compared"
+  description="Flows that are asked about in pairs, such as DPoP or OAuth mTLS, set against each other: the answer first, then the same questions asked of both, point by point."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Comparisons</p>
+      <h1>Which of the two?</h1>
+      <p class="lede">
+        Some flows are asked about in pairs, because either could do the job. Each page here answers the question
+        first, then sets the two against each other.
+      </p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="grid two">
+        {
+          comparisons.map((c) => (
+            <a class="card" href={`/compare/${comparisonSlug(c)}/`}>
+              <h2>{c.question}</h2>
+              <p>{c.gist}</p>
+              <div class="chips">
+                {flowsOf(c).map((f) => (
+                  <span class="chip">{f.short}</span>
+                ))}
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Not sure either is the one?</h2>
+        <p>
+          The <a href="/guide/">decision guide</a> starts from your agent, not from a name, and{' '}
+          <a href="/flows/">every flow</a> is listed with what it is for.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
