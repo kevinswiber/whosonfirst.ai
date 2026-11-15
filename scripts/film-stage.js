@@ -279,6 +279,18 @@
       if (marks[i + 1]) hide(mark, marks[i + 1].at, 0.25);
     }
     hide(node, until - 0.25, 0.25);
+    return { x: Number.parseFloat(node.style.left), lines: picks.length };
+  };
+  /**
+   * A word that is said and may not be known by its sound: how it is written,
+   * and a note on it, under the listing while the step is told.
+   */
+  const gloss = ({ term, note }, x, y, t, until) => {
+    const node = at(make("div", "gloss"), x, y);
+    make("b", "", node, term);
+    make("span", "", node, note);
+    pop(node, t);
+    hide(node, until - 0.25, 0.25);
   };
 
   // ---------- what is said ----------
@@ -455,7 +467,7 @@
         told = { row: row(step, beat.step, t), until: last.start + last.dur };
       }
       if (beat.show)
-        card(
+        told.card = card(
           step,
           beat.show.map((pick) => ({
             ...pick,
@@ -472,12 +484,24 @@
           else if (what.startsWith("access token"))
             pop(bound, when(beat, beat.gain));
         }
+      if (beat.gloss)
+        gloss(
+          beat.gloss,
+          told.card?.x ?? sender.x,
+          // under the listing, where there is one
+          told.card ? CARD_TOP + 32 + told.card.lines * 51 + 46 : FOCUS_Y + 90,
+          when(beat, beat.gloss.on),
+          told.until,
+        );
       if (beat.check) {
         const tick = make("em", "tick", told.row.pill, "✓");
         pop(tick, when(beat, beat.check));
       }
     } else if (beat.scene === "refuse") {
-      light(t, [api.id]);
+      // As it was when the question was asked: the agent, the API and someone
+      // else. The authorization server takes no part, and is not there, or
+      // the request would seem to come from under it.
+      light(t, [api.id], others);
       // the flow has been told: its rows leave the stage to what happens next
       for (const earlier of rows) to(earlier, "opacity", t, 0.4, 0);
       show(other, t + 0.2, 0.4);
@@ -490,7 +514,7 @@
       passing = [other, copyBound, tried.node, no];
     } else if (beat.scene === "caveat") {
       clear(t, 0.4);
-      light(t, [agent.id]);
+      light(t, [agent.id], others);
       // the key leaves the token's side, for a place of its own
       show(keystore, when(beat, "keep") - 0.2, 0.4);
       to(key, "y", when(beat, "keep"), 0.8, 590 - TRAY_Y);

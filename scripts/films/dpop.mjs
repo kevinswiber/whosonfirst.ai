@@ -12,8 +12,10 @@
  * lines out of that step's listing by a piece of each, and `on` is the word
  * of what is said at which a line is marked. `gain` and `check` are words
  * too: when the party comes to hold what the step gives it, and when the
- * check is seen to pass. The other beats are scenes the stage knows by name:
- * see scripts/film-stage.js.
+ * check is seen to pass. `gloss` writes a word under the listing at the
+ * moment it is said, with a note: for a word that is not said as it is
+ * spelled. The other beats are scenes the stage knows by name: see
+ * scripts/film-stage.js.
  *
  * `speak` is how a word is written for a voice that would say it wrong.
  */
@@ -58,9 +60,12 @@ export default {
       say: "When it asks for a token, it adds a proof.",
       show: [{ line: "POST /token" }, { line: "DPoP: ", on: "proof" }],
     },
+    // How it is said: "The suggested pronunciation of JWT is the same as the
+    // English word 'jot'." https://www.rfc-editor.org/rfc/rfc7519#section-1
     {
       step: 2,
       say: "The proof is a small JWT. It carries the public key, and it is signed with the private one.",
+      gloss: { term: "JWT", note: "said “jot”", on: "JWT" },
     },
     {
       step: 3,

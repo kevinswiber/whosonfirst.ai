@@ -114,6 +114,14 @@ const spoken = (text) =>
     (line, [word, sound]) => line.replaceAll(word, sound),
     text,
   );
+/** A word as the voice was given it, back as it is written: "jot" is JWT. */
+const written = (said) => {
+  const plain = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const found = Object.entries(script.speak ?? {}).find(
+    ([, sound]) => plain(sound) === plain(said),
+  );
+  return found ? found[0] : said;
+};
 /**
  * Each line's recording: how long it is, and when each word starts. A line
  * is said once and kept, under a name made from its words and its voice, so
@@ -192,7 +200,7 @@ const beats = script.beats.map((beat) => {
   const length = clip ? clip.duration : count / SPEAK;
   const dur = Math.max(least, LEAD + length + (clip ? 0.35 : BREATH));
   const words = clip
-    ? clip.words.map((w) => ({ text: w.text, start: LEAD + w.start }))
+    ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))
     : beat.say
       ? reckoned(beat.say, length)
       : [];
@@ -249,6 +257,9 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
   .held.large { height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
   .held.large .glyph { width: 46px; height: 46px; }
+  .gloss { position: absolute; transform: translate(-50%, -50%) var(--move); display: flex; align-items: baseline; gap: 16px; padding: 8px 22px; border: 2px dashed var(--border-strong); border-radius: 8px; background: var(--bg); white-space: nowrap; }
+  .gloss b { font: 600 34px var(--font-mono); }
+  .gloss span { font: 400 30px var(--font-body); color: var(--fg-muted); }
   .place { font: 500 24px var(--font-mono); padding: 6px 16px; border: 2px dashed var(--border-strong); border-radius: 6px; color: var(--fg-muted); background: var(--bg); }
   .keystore { width: 280px; height: 124px; box-sizing: border-box; border: 3px dashed var(--amber); border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 500 20px var(--font-mono); color: var(--amber); }
   /* A row that has been told is muted: each of its colors goes most of the way
