@@ -513,8 +513,17 @@ const news = [
     padding: 0.8rem 0.4rem 0.8rem 0;
     text-decoration: none;
   }
-  .path a:hover {
-    background: var(--accent-soft);
+  /* a row has rules above and below and no box, so hover marks the rule, the
+     title's underline and the lesson's number, not a band of color */
+  .path li:has(> a:is(:hover, :focus-visible)) {
+    border-bottom-color: var(--accent);
+  }
+  .path a:is(:hover, :focus-visible) strong {
+    text-decoration-thickness: 2px;
+  }
+  .path a:is(:hover, :focus-visible) .path-n {
+    background: var(--fg);
+    color: var(--bg);
   }
   .path-n {
     display: grid;
@@ -575,8 +584,11 @@ const news = [
     padding: 0.75rem 0.3rem 0.8rem 0;
     text-decoration: none;
   }
-  .building a:hover {
-    background: var(--accent-soft);
+  .building li:has(> a:is(:hover, :focus-visible)) {
+    border-bottom-color: var(--accent);
+  }
+  .building a:is(:hover, :focus-visible) .where {
+    text-decoration-thickness: 2px;
   }
   .building .what {
     font-size: 1.04rem;
