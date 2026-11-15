@@ -57,7 +57,7 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 **Motion**
 
-- One thing moves at a time. An arrow draws itself from sender to receiver, and then what it carries travels along it. A thing that arrives is a little larger for a moment.
+- One thing moves at a time. An arrow draws itself from sender to receiver, and then what it carries travels along it. What travels leaves slowly, is quickest half way and slows to a stop, so the eye can pick it up and see where it lands. A thing that arrives is a little larger for a moment.
 - Nothing flashes, and nothing moves on a loop.
 - The picture does not zoom or pan.
 - Nothing runs on a clock: a frame is a function of its second, so a film comes out the same every time.

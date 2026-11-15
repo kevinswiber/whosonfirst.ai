@@ -263,7 +263,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict.ok { background: var(--green-soft); color: var(--green); }
   .verdict.no { background: var(--red-soft); color: var(--red); }
   .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
-  .held.large { width: auto; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
+  .held.large { width: 410px; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
   .held.large .glyph { width: 46px; height: 46px; }
   .cargo { position: absolute; z-index: 3; top: 0; transform: translate(-50%, -50%) var(--move); display: flex; gap: 10px; }
   .sent { display: flex; align-items: center; gap: 8px; height: 46px; box-sizing: border-box; padding: 0 16px; border-radius: 24px; border: 3px solid var(--fg); background: var(--bg); font: 500 21px var(--font-mono); white-space: nowrap; }

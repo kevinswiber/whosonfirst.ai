@@ -110,6 +110,8 @@
 
   const EASE = {
     inOut: (p) => (p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2),
+    // for a thing sent: it leaves slowly, is quickest half way, and slows to a stop
+    travel: (p) => (p < 0.5 ? 8 * p ** 4 : 1 - (-2 * p + 2) ** 4 / 2),
     out: (p) => 1 - (1 - p) ** 3,
     linear: (p) => p,
   };
@@ -255,9 +257,9 @@
     node.style.left = `${start}px`;
     node.left = start;
     /** It leaves the sender at second `t`, and is at the receiver `dur` seconds later. */
-    node.travel = (t, dur = 1.1) => {
+    node.travel = (t, dur = 1.3) => {
       show(node, t - 0.25, 0.2);
-      to(node, "x", t, dur, end - start);
+      to(node, "x", t, dur, end - start, "travel");
       return t + dur;
     };
     return node;
@@ -409,8 +411,9 @@
     return { node, send };
   };
   // the two things to watch, shown large before the flow is told
-  const watchKey = chip("key", 960 - 190, FOCUS_Y);
-  const watchToken = chip("token", 960 + 190, FOCUS_Y);
+  // the two things to watch: as wide as each other, with the middle line between them
+  const watchKey = chip("key", 960 - 225, FOCUS_Y);
+  const watchToken = chip("token", 960 + 225, FOCUS_Y);
   watchKey.classList.add("large");
   watchToken.classList.add("large");
   const curtain = make("div", "curtain");
