@@ -8,6 +8,7 @@
  *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
+ *   node scripts/flow-film.mjs --flow dpop --layout fixed      a prototype: parties that stay put, drawn by scripts/film-stage-fixed.js
  *
  * Writes to social/, which is not committed:
  *
@@ -67,6 +68,14 @@ const VOICE = option("--voice");
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
 /** Whether what is said is written under the scene: by default, only where nobody says it. */
 const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
+/**
+ * How the stage is laid out. "rows": the page's drawing, a step to a row.
+ * "fixed": a prototype, in which the parties stay put with a line between
+ * them and only what is sent moves.
+ */
+const LAYOUT = option("--layout") ?? "rows";
+if (!["rows", "fixed"].includes(LAYOUT))
+  throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -235,7 +244,14 @@ const home = readFileSync(join(site, "index.html"), "utf8");
 const sheets = [...home.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(
   ([, href]) => href,
 );
-const stageJs = readFileSync(join(here, "scripts", "film-stage.js"), "utf8");
+const stageJs = readFileSync(
+  join(
+    here,
+    "scripts",
+    LAYOUT === "fixed" ? "film-stage-fixed.js" : "film-stage.js",
+  ),
+  "utf8",
+);
 const stageHtml = (film) => `<!doctype html>
 <html lang="en" data-theme="light">
 <meta charset="utf-8">
@@ -310,6 +326,19 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card .basis { font-size: 30px; margin-top: 30px; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
+  /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
+  .party.tall { justify-content: flex-start; padding-top: 26px; }
+  .channel { fill: none; stroke: var(--border-strong); stroke-width: 5; }
+  .tall ~ .keystore { width: 284px; }
+  .badge.inline { position: static; transform: none; flex: none; --dim: 0; }
+  .cargo { align-items: center; }
+  .cargo .badge.inline { width: 46px; height: 46px; font-size: 23px; }
+  .act { position: absolute; z-index: 4; transform: translateY(-50%) var(--move); display: flex; align-items: center; gap: 18px; padding: 9px 34px 9px 10px; border: 3px solid var(--role); border-radius: 60px; background: var(--bg); font: 500 32px/1.2 var(--font-body); white-space: nowrap; }
+  .strip { position: absolute; left: 130px; top: 104px; display: flex; gap: 14px; }
+  .pip { position: relative; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--border-strong); color: var(--fg-subtle); font: 600 21px var(--font-mono); }
+  .pip i { opacity: 0; position: absolute; inset: -2px; border-radius: 50%; display: grid; place-items: center; font-style: normal; color: var(--bg); }
+  .pip .now { background: var(--role); }
+  .pip .told { background: color-mix(in srgb, var(--bg) 45%, var(--fg)); }
   .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}"><div id="scene"></div></div>
@@ -380,7 +409,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-const name = `film-${flow.slug}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "fixed" ? "-fixed" : ""}${VOICE ? "-voiced" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
