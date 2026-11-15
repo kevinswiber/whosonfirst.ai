@@ -1,0 +1,428 @@
+---
+/**
+ * Two flows side by side, at /compare/<a>-vs-<b>/.
+ *
+ * The page is made from the two flows' own data and nothing else: see
+ * src/data/comparisons.ts. The table sets each fact of one against the same
+ * fact of the other. What answers "which one?" is what the flows' own pages say
+ * about each other, quoted whole from src/lib/compare.ts.
+ */
+import Base from "../../layouts/Base.astro";
+import FlowCard from "../../components/FlowCard.astro";
+import { comparisons, comparisonsOf, otherOf } from "../../data/comparisons";
+import type { Comparison } from "../../data/comparisons";
+import { basisOf, maturityLabel } from "../../data/flows";
+import { questions } from "../../data/guide";
+import { implementationProfile } from "../../data/implementations";
+import { lesson as lessonBySlug, lessons } from "../../data/learn/lessons";
+import { std } from "../../data/standards";
+import { HUMAN_LABEL, STATUS_LABEL } from "../../data/types";
+import type { Flow } from "../../data/types";
+import { passages } from "../../lib/compare";
+import { gloss } from "../../lib/gloss";
+import { block, esc, inline } from "../../lib/md";
+
+export function getStaticPaths() {
+  return comparisons.map((comparison) => ({
+    params: { pair: comparison.slug },
+    props: { comparison },
+  }));
+}
+
+interface Props {
+  comparison: Comparison;
+}
+const { comparison } = Astro.props;
+const { a, b } = comparison;
+const both = [a, b];
+// One reading of the page's own text: a glossary term is marked the first time it appears in it.
+const g = gloss(Astro.url.pathname);
+
+// What each flow's page says about the other. A pair is listed only where one
+// of them says something: without that the page would be a table and no answer.
+const said = [
+  { from: a, about: b, items: passages(a, b) },
+  { from: b, about: a, items: passages(b, a) },
+];
+if (said.every((s) => s.items.length === 0))
+  throw new Error(
+    `[compare/${comparison.slug}] neither flow's page says anything about the other. Write the comparison on one of them first, with a link to the other, or take the pair out of src/data/comparisons.ts.`,
+  );
+
+const follows = (f: Flow) => {
+  const basis = basisOf(f).map(std);
+  if (basis.length === 0) return esc(`${f.noBasis}.`);
+  const refs = basis
+    .map(
+      (s) =>
+        `<a href="/standards/#${s.id}">${esc(s.ref)}</a> (${esc(STATUS_LABEL[s.status])})`,
+    )
+    .join(" and ");
+  return f.illustrated ? `Its diagram follows ${refs}.` : refs;
+};
+// Each fact of one flow against the same fact of the other. The values are the
+// flows' own: nothing is written here but the labels.
+const rows: { label: string; cell: (f: Flow) => string }[] = [
+  { label: "What it does", cell: (f) => inline(f.tagline) },
+  { label: "A person", cell: (f) => esc(HUMAN_LABEL[f.human]) },
+  { label: "Follows", cell: follows },
+  {
+    label: "Rating",
+    cell: (f) =>
+      `${esc(maturityLabel(f))} (<a href="/about/#how-flows-are-rated">what the rating means</a>)`,
+  },
+  {
+    label: "Who takes part",
+    cell: (f) => esc(f.participants.map((p) => p.label).join(", ")),
+  },
+  {
+    label: "Steps",
+    cell: (f) =>
+      `<a href="/flows/${f.slug}/#walkthrough">${f.steps.length} steps</a>, each drawn and explained`,
+  },
+  {
+    label: "Implementations",
+    cell: (f) =>
+      implementationProfile(f.slug)
+        ? `<a href="/implementations/${f.slug}/">Reviewed implementations and deployment reports</a>`
+        : "Not reviewed",
+  },
+];
+
+const taught = both
+  .map((f) => (f.lesson ? lessonBySlug(f.lesson) : undefined))
+  .filter((l, i, all) => l && all.indexOf(l) === i);
+// Other pairs that share a flow with this one.
+const more = [...new Set(both.flatMap((f) => comparisonsOf(f)))].filter(
+  (c) => c !== comparison,
+);
+const name = (c: Comparison) => `${c.a.short} or ${c.b.short}?`;
+const title = `${a.short} vs ${b.short}: the two flows side by side`;
+---
+
+<Base
+  title={title}
+  description={`${a.short} and ${b.short} side by side: what each is for, when to use it, who takes part, which specification it follows and how settled that is, with what each flow’s page says about the other.`}
+  article
+  here={{
+    trail: [
+      { label: 'Flows', href: '/flows/' },
+      { label: 'Side by side', href: '/compare/' },
+    ],
+    current: `${a.short} or ${b.short}`,
+  }}
+>
+  <article>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>{a.short} or {b.short}?</h1>
+        <p class="lede">
+          Two flows, side by side. Everything here is taken from their own pages: what each one says about the other,
+          and the facts of each set against the other’s.
+        </p>
+      </div>
+    </div>
+
+    <div class="wrap body">
+      <section aria-labelledby="flows">
+        <h2 id="flows">The two flows</h2>
+        <div class="grid two">
+          {both.map((f) => <FlowCard flow={f} />)}
+        </div>
+      </section>
+
+      <section aria-labelledby="said">
+        <h2 id="said">What each page says about the other</h2>
+        {
+          said.map(({ from, about, items }) => (
+            <div class="from">
+              <h3>
+                From the page on <a href={`/flows/${from.slug}/`}>{from.short}</a>
+              </h3>
+              {items.length === 0 ? (
+                <p class="none">
+                  No passage on that page points to {about.short}.
+                </p>
+              ) : (
+                items.map((item) => (
+                  <div class="passage">
+                    <p class="where">{item.where}</p>
+                    <div class="prose" set:html={block(item.text, g)} />
+                  </div>
+                ))
+              )}
+            </div>
+          ))
+        }
+      </section>
+
+      {
+        [
+          {
+            id: 'when',
+            title: 'When to use each',
+            head: (f: Flow) => `Use ${f.short} when`,
+            items: (f: Flow) => f.fits,
+          },
+          {
+            id: 'watch',
+            title: 'What to watch out for in each',
+            head: (f: Flow) => `With ${f.short}, watch out for`,
+            items: (f: Flow) => f.watchOut,
+          },
+        ].map((part) => (
+          <section aria-labelledby={part.id}>
+            <h2 id={part.id}>{part.title}</h2>
+            <div class="each">
+              {both.map((f) => (
+                <div>
+                  <h3>{part.head(f)}</h3>
+                  <ul>
+                    {part.items(f).map((x) => (
+                      <li set:html={inline(x)} />
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+
+      <section aria-labelledby="facts">
+        <h2 id="facts">Side by side</h2>
+        {/* Two presentations of the same facts, as on a flow page. CSS shows one and removes the
+            other with display: none, which also takes it out of the accessibility tree. */}
+        <div class="table-scroll compare-wide" tabindex="0" role="region" aria-label={`Table: ${a.short} and ${b.short} side by side`}>
+          <table class="compare">
+            <thead>
+              <tr>
+                <td></td>
+                {both.map((f) => <th scope="col">{f.short}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {
+                rows.map((row) => (
+                  <tr>
+                    <th scope="row">{row.label}</th>
+                    {both.map((f) => <td set:html={row.cell(f)} />)}
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="compare-narrow">
+          {
+            both.map((f) => (
+              <div class="env">
+                <h3>{f.short}</h3>
+                <dl>
+                  {rows.map((row) => (
+                    <div>
+                      <dt>{row.label}</dt>
+                      <dd set:html={row.cell(f)} />
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section aria-labelledby="next" class="prose">
+        <h2 id="next">Choosing between them</h2>
+        <p>
+          The <a href="/guide/">decision guide</a> asks {questions.length} questions about your agent and names the
+          flows that fit, with the reason for each. Each flow’s own page has its steps, drawn and explained:{' '}
+          <a href={`/flows/${a.slug}/`}>{a.title}</a> and <a href={`/flows/${b.slug}/`}>{b.title}</a>.
+        </p>
+        {
+          taught.length > 0 && (
+            <p>
+              New to this?{' '}
+              {taught.map((l, i) => (
+                <>
+                  {i > 0 && ' and '}
+                  <a href={`/learn/${l!.slug}/`}>
+                    Lesson {lessons.indexOf(l!) + 1}: {l!.title}
+                  </a>
+                </>
+              ))}{' '}
+              {taught.length === 1 ? 'covers' : 'cover'} the ground these build on, in plain words.
+            </p>
+          )
+        }
+        {
+          more.length > 0 && (
+            <>
+              <h3>More side by side</h3>
+              <ul>
+                {more.map((c) => (
+                  <li>
+                    <a href={`/compare/${c.slug}/`}>{name(c)}</a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+        <p>
+          <a href="/compare/">Every pair set side by side</a>
+        </p>
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .body {
+    padding-bottom: 3rem;
+  }
+  section {
+    margin-top: 2.6rem;
+  }
+  h2 {
+    margin-bottom: 0.9rem;
+  }
+  .from + .from {
+    margin-top: 2rem;
+  }
+  .from h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+  }
+  /* A passage is another page's words, set off by a rule at its side and headed by where on
+     that page it is from. */
+  .passage {
+    max-width: var(--prose);
+    margin: 0 0 1.1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--border-strong);
+  }
+  .where {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .passage .prose :global(p) {
+    margin: 0 0 0.6em;
+  }
+  .none {
+    max-width: var(--prose);
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  /* Each flow's own list, the two beside each other where there is room. */
+  .each {
+    display: grid;
+    gap: 1.2rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  }
+  .each h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+  .each ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .each li + li {
+    margin-top: 0.5em;
+  }
+
+  /* Where there is room: a table, a column for each flow. As on a flow page. */
+  .compare {
+    min-width: 46rem;
+    table-layout: fixed;
+  }
+  .compare thead th {
+    white-space: normal;
+    vertical-align: bottom;
+  }
+  .compare thead td {
+    width: 9.5rem;
+  }
+  .compare th[scope='row'] {
+    white-space: normal;
+    font-family: var(--font-body);
+    font-size: inherit;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare tr:last-child th[scope='row'] {
+    border-bottom: 0;
+  }
+
+  /* Where there is not: one block for each flow, each fact under its own label, so that
+     nothing has to be scrolled sideways to be read. */
+  .compare-narrow {
+    display: none;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+  }
+  .env {
+    padding: 0.9rem 0.8rem 0.3rem;
+  }
+  .env + .env {
+    border-top: 1px solid var(--border);
+  }
+  .env h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+  }
+  .env dl {
+    margin: 0;
+  }
+  .env dl > div {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 0.1rem 0.8rem;
+    padding: 0.5rem 0;
+    border-top: 1px dashed var(--border-strong);
+  }
+  .env dt {
+    padding-top: 0.28rem;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .env dd {
+    margin: 0;
+  }
+  @media (max-width: 59.99rem) {
+    .compare-wide {
+      display: none;
+    }
+    .compare-narrow {
+      display: block;
+    }
+  }
+  @media (max-width: 34rem) {
+    .env dl > div {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media print {
+    .compare-wide {
+      display: block;
+    }
+    .compare-narrow {
+      display: none;
+    }
+  }
+</style>

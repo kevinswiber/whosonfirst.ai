@@ -18,6 +18,18 @@ const MADE_FROM: [page: RegExp, files: (slug: string) => string[]][] = [
   [/^\/flows\/$/, () => ["src/pages/flows/index.astro", "src/data/flows/"]],
   [/^\/flows\/([^/]+)\/$/, (slug) => [`src/data/flows/${slug}.ts`]],
   [
+    /^\/compare\/$/,
+    () => ["src/pages/compare/index.astro", "src/data/comparisons.ts"],
+  ],
+  // A pair's page is the two flows' own words, so it changes when either does.
+  [
+    /^\/compare\/([^/]+)\/$/,
+    (pair) => [
+      ...pair.split("-vs-").map((slug) => `src/data/flows/${slug}.ts`),
+      "src/data/comparisons.ts",
+    ],
+  ],
+  [
     /^\/learn\/$/,
     () => ["src/pages/learn/index.astro", "src/data/learn/lessons.ts"],
   ],

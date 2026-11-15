@@ -96,6 +96,8 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/data/learn/api-sees.ts`          | Lesson 1's figure                                                                                  |
 | `src/data/flows/*.ts`                 | One file per flow: participants, steps, example messages, cautions, and its overview               |
 | `src/components/FlowOverview.astro`   | “In short” and “Who does what”, before a flow's diagram                                            |
+| `src/data/comparisons.ts`             | The pairs of flows set side by side under `/compare/`                                              |
+| `src/lib/compare.ts`                  | Finds what one flow's page says about another, to quote it                                         |
 | `src/lib/gloss.ts`                    | Marks the first use of each glossary term and named standard, so what it is can be shown in place  |
 | `src/data/standards.ts`               | The standards tracker                                                                              |
 | `src/data/tokens.ts`                  | Annotated example tokens for the token inspector                                                   |
@@ -156,6 +158,10 @@ Further sections of the same form go in `sections`, after the example: for insta
 If such a flow's diagram draws one arrangement among several, say so in `illustrated`: `steps` is shown above the diagram, and `references` beside the required references. The page then labels its basis, its required references and its rating as those of the flow the diagram draws. Optional `preconditions` render as a list before step 1, and `examples` explains how to read the listings.
 
 A flow can also supply `credentials`: a short introduction and a list of tokens with their type, issuer, recipient, meaning and key binding. `FlowCredentials.astro` renders these before the overview, as a two-column reference on wide screens and one column on narrow screens. Keep the same facts in the steps; this is a reading aid, not a second source of protocol rules.
+
+**Set two flows side by side.** Some flows are asked about in pairs: “DPoP or mTLS?”. A pair is two slugs in `pairs` in `src/data/comparisons.ts`, and its page at `/compare/<a>-vs-<b>/` is made from the two flows' data and nothing else. Its table sets each fact of one flow against the same fact of the other. Its answer is whatever the flows' own pages say about each other: `src/lib/compare.ts` finds every passage in one flow's text that links to the other and the page quotes it whole, headed by where it is from. So a comparison cannot say what a flow page does not, and it changes when they do. `npm run check:rendered` reads each quoted passage back from the flow page it is credited to.
+
+The build refuses a pair in which neither flow links to the other in its text, because that page would be a table with no answer. To compare two such flows, write the comparison where it belongs first: on one flow's page, as a note or in its summary, with a link to the other. Then add the pair. Each flow's page lists the pairs it is in, and `/compare/` lists them all. Keep the list short. Every pair of flows could have a page, and most would answer a question nobody asks: a site that publishes those is making pages for a search engine, which Google's [spam policies](https://developers.google.com/search/docs/essentials/spam-policies) call scaled content abuse. Add a pair when people ask the question.
 
 **Every flow has an overview.** Four fields say what a reader needs before the diagram, and the build refuses a flow without the first three:
 

@@ -66,6 +66,7 @@ const MARK_URI = `data:image/svg+xml;base64,${Buffer.from(MARK).toString("base64
 const KINDS = [
   [/^\/learn\/[^/]+\/$/, "Lesson"],
   [/^\/flows\/[^/]+\/$/, "Flow"],
+  [/^\/compare\/[^/]+\/$/, "Side by side"],
   [/^\/deployments\/[^/]+\/$/, "Deployment guide"],
   [/^\/guide\/[^/]+\/$/, "Case"],
 ];

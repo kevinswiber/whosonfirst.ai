@@ -1,0 +1,91 @@
+---
+/**
+ * The pairs of flows set side by side, at /compare/. The list is
+ * src/data/comparisons.ts; each pair's page is made from the two flows' data.
+ */
+import Base from "../../layouts/Base.astro";
+import { comparisons } from "../../data/comparisons";
+---
+
+<Base
+  title="Agent authentication and authorization flows, side by side"
+  description={`${comparisons.length} pairs of flows that are asked about together, such as DPoP or mTLS, each set side by side: what each is for, when to use it, and what each flow’s page says about the other.`}
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow"><a href="/flows/">Flows</a></p>
+      <h1>Which of the two?</h1>
+      <p class="lede">
+        Some flows are asked about in pairs. Each page here sets two of them side by side, in the words of their own
+        pages.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap body">
+    <ul class="pairs">
+      {
+        comparisons.map((c) => (
+          <li>
+            <a href={`/compare/${c.slug}/`}>
+              {c.a.short} or {c.b.short}?
+            </a>
+            <dl>
+              {[c.a, c.b].map((f) => (
+                <div>
+                  <dt>{f.short}</dt>
+                  <dd>{f.tagline}</dd>
+                </div>
+              ))}
+            </dl>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="prose">
+      Not sure either is the one? The <a href="/guide/">decision guide</a> starts from your agent, not from a name, and{' '}
+      <a href="/flows/">every flow</a> is listed with what it is for.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .body {
+    padding: 2rem 0 3rem;
+  }
+  .pairs {
+    max-width: var(--prose);
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--fg);
+  }
+  .pairs li {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pairs a {
+    font-family: var(--font-label);
+    font-weight: 600;
+  }
+  .pairs dl {
+    margin: 0.5rem 0 0;
+  }
+  .pairs dl > div {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 0.1rem 0.8rem;
+    padding: 0.2rem 0;
+  }
+  .pairs dt {
+    color: var(--fg-muted);
+  }
+  .pairs dd {
+    margin: 0;
+  }
+  @media (max-width: 34rem) {
+    .pairs dl > div {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

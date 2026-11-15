@@ -8,6 +8,7 @@ import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
 import ImplementationSummary from "../../components/ImplementationSummary.astro";
+import { comparisonsOf, otherOf } from "../../data/comparisons";
 import { implementationProfile } from "../../data/implementations";
 import {
   flow as flowBySlug,
@@ -57,6 +58,8 @@ const sections = [
   ...(flow.sections ?? []),
 ];
 const rel = related(flow);
+// The pairs this flow is set side by side with another in, under /compare/.
+const compared = comparisonsOf(flow);
 // Two ways in for a reader who is not ready for the steps: the lesson that
 // teaches the idea in plain words, and the flow this one is a variation of.
 const taught = flow.lesson ? lessonBySlug(flow.lesson) : undefined;
@@ -534,6 +537,24 @@ const detailGroups = [
               <FlowCard flow={f} />
             ))}
           </div>
+        </section>
+      )
+    }
+
+    {
+      compared.length > 0 && (
+        <section aria-labelledby="compared" class="prose compared">
+          <h2 id="compared">Side by side with another flow</h2>
+          <ul>
+            {compared.map((c) => (
+              <li>
+                <a href={`/compare/${c.slug}/`}>
+                  {c.a.short} or {c.b.short}?
+                </a>{' '}
+                This flow and {otherOf(c, flow).short}, fact against fact, with what each page says about the other.
+              </li>
+            ))}
+          </ul>
         </section>
       )
     }

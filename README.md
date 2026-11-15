@@ -93,6 +93,10 @@ Grouped by what the flows help you do. Each flow is rated by how settled the sta
 - [Access revocation](https://whosonfirst.ai/flows/access-revocation/): the API learns which session ended and refuses requests that still use it.
 - [Credential broker](https://whosonfirst.ai/flows/credential-broker/): the agent never holds the secret. A proxy outside the sandbox adds it to outgoing requests.
 
+### Flows side by side
+
+Some flows are asked about in pairs. [Which of the two?](https://whosonfirst.ai/compare/) sets each pair side by side, in the words of the two flows’ own pages: what each is for, when to use it, and what each page says about the other. It starts with [DPoP or OAuth mTLS?](https://whosonfirst.ai/compare/dpop-vs-oauth-mtls/) and [CIBA or device authorization?](https://whosonfirst.ai/compare/ciba-vs-device-authorization/).
+
 ### Deployment guides
 
 The flows are the same everywhere. What changes with the runtime is the starting credential.

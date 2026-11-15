@@ -20,6 +20,7 @@ import { PAGES } from "../support/site.mjs";
 const LINED = [
   "lesson",
   "flow",
+  "comparison",
   "concepts",
   "deployment guide",
   "implementation record",
