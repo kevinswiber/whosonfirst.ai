@@ -172,11 +172,15 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/guide/[case].astro": {
     "src/data/flows/index.ts": "the names and ratings of the flows it links to",
+    "src/data/comparisons/index.ts":
+      "the questions of the comparisons it links to",
   },
   "src/pages/guide/index.astro": {
     "src/data/flows/index.ts": "the names and ratings of the flows it links to",
     "src/data/implementations/index.ts":
       "whether a flow it links to has a record",
+    "src/data/comparisons/index.ts":
+      "the questions of the comparisons it links to",
   },
   "src/pages/implementations/index.astro": {
     "src/data/flows/index.ts": "the names and groups of the flows it links to",

@@ -208,7 +208,7 @@ grant_type=urn:ietf:params:oauth:grant-type:device_code
   notes: [
     {
       title: "Device flow or CIBA?",
-      body: `Both decouple the device that needs a token from the device where the person approves. In the device grant the **user** carries a code from the agent to the server. In [CIBA](/flows/ciba/) the **server** reaches out to a user it already knows. Use the device grant to sign in someone who is sitting there; use CIBA to ask a known user for approval when they are somewhere else.`,
+      body: `Both decouple the device that needs a token from the device where the person approves. In the device grant the **user** carries a code from the agent to the server. In [CIBA](/flows/ciba/) the **server** reaches out to a user it already knows. Use the device grant to sign in someone who is sitting there; use CIBA to ask a known user for approval when they are somewhere else. [CIBA or device authorization?](/compare/ciba-vs-device-authorization/) sets the two against each other.`,
     },
   ],
 };

@@ -197,9 +197,20 @@ test("every listing in a comparison's figure is one of its two flows' own, and b
       .split("/")[2]
       .split("-vs-")
       .map((slug) => `/flows/${slug}/`);
-    for (const flow of flows)
-      if (!pageAt(flow)?.html.includes(`href="${p.path}"`))
-        wrong.push(`${flow} does not link to ${p.path}`);
+    // a flow sends its reader to the comparison twice: in its opening, for
+    // the reader who arrives with the question, and beside its related flows,
+    // for the one who has read to the end
+    for (const flow of flows) {
+      const html = pageAt(flow)?.html ?? "";
+      const opening = /<ul class="ways-in"[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
+      const related = html.slice(html.indexOf('id="related"'));
+      if (!opening.includes(`href="${p.path}"`))
+        wrong.push(`${flow} does not link to ${p.path} in its opening`);
+      if (!new RegExp(`<a class="card"[^>]*href="${p.path}"`).test(related))
+        wrong.push(
+          `${flow} has no card for ${p.path} beside its related flows`,
+        );
+    }
     const own = new Set(flows.flatMap((flow) => listings(copy(flow))));
     const shown = listings(copy(p.path));
     if (shown.length < 2) wrong.push(`${p.path} shows no listing for a flow`);
@@ -230,4 +241,32 @@ test("no page marks the OAuth client inside “client certificate”", () => {
     ),
     "the client is no longer marked anywhere",
   );
+});
+
+// The comparisons are a section of the site, and a reader on any page can
+// reach it: from the footer, and from the lessons that teach what a pair of
+// flows share.
+test("every page's footer links to the comparisons, and a lesson that leads to both flows of a comparison leads to it too", () => {
+  const wrong = [];
+  for (const p of built) {
+    const footer = p.html.slice(p.html.indexOf('<footer class="site-footer"'));
+    if (!footer.includes('href="/compare/"'))
+      wrong.push(`${p.path} has no link to /compare/ in its footer`);
+  }
+  const pairs = built
+    .map((p) => /^\/compare\/([^/]+)\/$/.exec(p.path)?.[1])
+    .filter(Boolean);
+  for (const path of LESSONS) {
+    const html = pageAt(path).html;
+    const deeper = html.slice(html.indexOf('id="deeper"'));
+    for (const pair of pairs)
+      if (
+        pair
+          .split("-vs-")
+          .every((slug) => deeper.includes(`href="/flows/${slug}/"`)) &&
+        !deeper.includes(`href="/compare/${pair}/"`)
+      )
+        wrong.push(`${path} leads to both flows of ${pair} and not to it`);
+  }
+  assert.deepEqual(some(wrong), []);
 });

@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import { comparisons, comparisonSlug } from "../../data/comparisons";
 import { implementationProfile } from "../../data/implementations";
 import {
   questions,
@@ -58,6 +59,12 @@ const data = {
     short,
   })),
   roles: ROLE_TITLE,
+  // the pairs of flows a reader is sent to weigh, where the guide names both
+  comparisons: comparisons.map((c) => ({
+    slug: comparisonSlug(c),
+    question: c.question,
+    flows: c.flows,
+  })),
   flows: Object.fromEntries(
     flows.map((f) => [
       f.slug,
@@ -184,6 +191,7 @@ const data = {
     deployLinks: Record<string, { href: string; label: string }>;
     roles: Record<string, string>;
     flows: Record<string, { short: string; maturity: string; implementations: boolean }>;
+    comparisons: { slug: string; question: string; flows: string[] }[];
   }
 
   const esc = (s: string) =>
@@ -269,6 +277,17 @@ const data = {
               : '';
             html += `<li><a class="dg-flow" href="/flows/${r.flow}/"><strong>${esc(f.short)}</strong><span class="dg-meta">${esc(f.maturity)}</span></a><p>${esc(r.why)}</p>${evidence}</li>`;
           }
+          html += `</ul></section>`;
+        }
+
+        // Where two of the flows named are ones people weigh against each
+        // other, say so: this is the moment a reader is choosing.
+        const offered = new Set(Object.values(groups).flatMap((list) => list.map((r) => r.flow)));
+        const weigh = data.comparisons.filter((c) => c.flows.every((f) => offered.has(f)));
+        if (weigh.length) {
+          html += `<section class="dg-group dg-weigh"><h2>Which of the two?</h2><ul>`;
+          for (const c of weigh)
+            html += `<li><a class="dg-flow" href="/compare/${c.slug}/"><strong>${esc(c.question)}</strong><span class="dg-meta">Comparison</span></a></li>`;
           html += `</ul></section>`;
         }
 

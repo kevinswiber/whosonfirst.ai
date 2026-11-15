@@ -227,7 +227,7 @@ The agent must use the \`token_endpoint\` URL from \`mtls_endpoint_aliases\` if 
       },
     ],
     after:
-      "For a call on a user’s behalf, the agent still needs a grant for that user, such as [authorization code with PKCE](/flows/authorization-code-pkce/). The API still decides what the call may do. SPIFFE can supply a certificate in a deployment configured to accept it. OAuth token binding still needs explicit support from the authorization server and API.",
+      "For a call on a user’s behalf, the agent still needs a grant for that user, such as [authorization code with PKCE](/flows/authorization-code-pkce/). The API still decides what the call may do. SPIFFE can supply a certificate in a deployment configured to accept it. OAuth token binding still needs explicit support from the authorization server and API. [DPoP or OAuth mTLS?](/compare/dpop-vs-oauth-mtls/) sets those two against each other, point by point.",
   },
   standards: [
     "rfc8705",
