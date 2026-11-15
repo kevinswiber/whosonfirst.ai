@@ -106,12 +106,12 @@ The flows are the same everywhere. What changes with the runtime is the starting
 
 ## Read it with an agent
 
-Every page of the guide is also published as Markdown, made from the page as built, so an assistant or a coding agent can read the guide without picking it out of HTML. A copy keeps what the page says in words: a flow’s steps, every variation of a figure, the decision guide’s rules.
+Every page of the guide is also published as Markdown, made from the page as built, so an assistant or a coding agent can read the guide without picking it out of HTML. A copy keeps what the page says in words: a flow’s steps, every variation of a figure, the decision guide’s rules. A flow’s sequence diagram is there too, as Mermaid.
 
 | What                                 | Address                                                                                                                       |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | An index of every page, in order     | [`https://whosonfirst.ai/llms.txt`](https://whosonfirst.ai/llms.txt)                                                          |
-| Every page in one file, about 650 kB | [`https://whosonfirst.ai/llms-full.txt`](https://whosonfirst.ai/llms-full.txt)                                                |
+| Every page in one file, about 1.2 MB | [`https://whosonfirst.ai/llms-full.txt`](https://whosonfirst.ai/llms-full.txt)                                                |
 | One page                             | The page’s address and `index.md`: [`https://whosonfirst.ai/flows/dpop/index.md`](https://whosonfirst.ai/flows/dpop/index.md) |
 
 Each page also names its copy in a `<link rel="alternate" type="text/markdown">`, and `robots.txt` says, in the terms of [contentsignals.org](https://contentsignals.org/), that the site may be indexed, used to answer questions, and used for training.

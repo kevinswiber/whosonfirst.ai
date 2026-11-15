@@ -13,7 +13,8 @@
  * The Markdown is made from the page as built, never from the data behind it, so
  * it cannot say anything the page does not. What a page shows only in a drawing
  * it also says in words (a diagram's steps, a figure's table), and the words are
- * what is kept.
+ * what is kept. One drawing has a form in text of its own: a sequence diagram
+ * is given again as Mermaid, read from the drawing, above the steps in words.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -75,7 +76,7 @@ const CHROME = [
   "article-toc", // a guide's list of its own sections
   "toc", // the same on Concepts
   "also", // "also on this page"
-  "flow-stage", // the sequence diagram; its steps follow as text
+  "aside.keys", // which keys step through the drawing
   "flow-controls",
   "flow-progress",
   "gl-tools", // the glossary's filter and its row of letters
@@ -138,6 +139,114 @@ const BLOCKS = [
 ];
 
 const say = (value) => ({ type: "text", value });
+
+/* ---------- the sequence diagram ---------- */
+
+const findAll = (node, test) => {
+  const found = [];
+  visit(node, "element", (n) => {
+    if (test(n)) found.push(n);
+  });
+  return found;
+};
+
+/**
+ * How each kind of message is written in Mermaid, and how that is drawn. The
+ * page tells the kinds apart by the style of the line, and so does this.
+ */
+const ARROWS = {
+  back: ["->>", "a solid arrow"],
+  resp: ["-->>", "a dashed arrow"],
+  front: ["-)", "a solid arrow with an open head"],
+  oob: ["--)", "a dashed arrow with an open head"],
+};
+const LOCAL = "a note on the line of the party that acts";
+
+/** Words for a Mermaid line. A number sign or a semicolon would end them, so each is given by its code. */
+const words = (s) =>
+  s
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[#;]/g, (c) => `#${c.charCodeAt(0)};`);
+const actorId = (s) => String(s).replace(/\W/g, "_");
+const kindOf = (node) =>
+  classes(node)
+    .find((c) => c.startsWith("kind-"))
+    ?.slice(5);
+
+/**
+ * The sequence diagram again as Mermaid, and a line on how to read it.
+ *
+ * It is read from the drawing, not from the data the drawing was made from:
+ * the parties in the boxes across the top, each numbered arrow and note, and
+ * the band that opens each part. What the drawing does not show, this does not.
+ */
+function sequence(stage, page) {
+  const lines = ["sequenceDiagram"];
+  const actors = findAll(
+    stage,
+    (n) => has(n, "actor") && find(n, (c) => has(c, "actor-label")),
+  );
+  for (const actor of actors) {
+    const label = find(actor, (c) => has(c, "actor-label"));
+    const sub = find(actor, (c) => has(c, "actor-sub"));
+    lines.push(
+      `    participant ${actorId(actor.properties.dataActor)} as ${words(text(label))}${sub ? ` (${words(text(sub))})` : ""}`,
+    );
+  }
+  const ids = actors.map((a) => actorId(a.properties.dataActor));
+  const across = ids.length > 1 ? `${ids[0]},${ids.at(-1)}` : ids[0];
+  const phases = findAll(stage, (n) => has(n, "phase"));
+  for (const step of findAll(stage, (n) => has(n, "step"))) {
+    const at = Number(step.properties.dataStep);
+    const phase = phases.find((p) => Number(p.properties.dataFirst) === at);
+    if (phase) {
+      const part = (cls) => words(text(find(phase, (c) => has(c, cls))));
+      lines.push(
+        `    Note over ${across}: Part ${part("phase-num")}: ${part("phase-title")}`,
+      );
+    }
+    const [from, to] = String(step.properties.dataActors)
+      .split(" ")
+      .map(actorId);
+    const kind = kindOf(step);
+    const label = `${at + 1}. ${words(
+      findAll(step, (n) => has(n, "note-label", "arrow-label"))
+        .map(text)
+        .join(" "),
+    )}`;
+    if (!to) lines.push(`    Note over ${from}: ${label}`);
+    else if (ARROWS[kind])
+      lines.push(`    ${from}${ARROWS[kind][0]}${to}: ${label}`);
+    else
+      throw new Error(
+        `markdown-pages: ${page.path} draws a step of kind "${kind}", and ARROWS has no Mermaid arrow for it.`,
+      );
+  }
+
+  // The legend names the kinds this diagram uses, in the page's own words.
+  const legend = findAll(
+    stage,
+    (n) => is(n, "li") && kindOf(n) && !has(n, "step"),
+  ).flatMap((li) => {
+    const kind = kindOf(li);
+    const name = say(`${text(li).trim()}: `);
+    return kind === "self"
+      ? [name, say(`${LOCAL}. `)]
+      : [
+          name,
+          say(`${ARROWS[kind][1]} (`),
+          element("code", {}, [say(ARROWS[kind][0])]),
+          say("). "),
+        ];
+  });
+  if (phases.length)
+    legend.push(say("A note across every party opens each part."));
+  return [
+    element("pre", { dataLanguage: "mermaid" }, [say(lines.join("\n"))]),
+    element("p", {}, legend),
+  ];
+}
 
 /** A flow's steps are a list on the page. As text each is a section: its number and title, then who calls whom. */
 function steps(list) {
@@ -303,6 +412,13 @@ function prepare(main, page, site) {
       node.children = [element("em", {}, [say(name)])];
       return SKIP;
     }
+  });
+
+  // The sequence diagram is a drawing with a form in text: Mermaid.
+  visit(main, "element", (node, index, parent) => {
+    if (!has(node, "flow-stage")) return;
+    parent.children.splice(index, 1, ...sequence(node, page));
+    return [SKIP, index + 2];
   });
 
   // 1. What is not content goes.
