@@ -28,14 +28,22 @@
   const PARTY_W = 400;
   const PARTY_H = 104;
   const PARTY_TOP = 60;
-  const TRAY_Y = PARTY_TOP + PARTY_H + 38;
+  // What a party holds sits clear of its box, on its line: one thing in the
+  // middle of the line, and two to either side of it, as far apart as HELD.
+  const TRAY_Y = PARTY_TOP + PARTY_H + 60;
+  const HELD = 148;
   const LIFE_BOTTOM = 790;
   /** The row being told, and the one before it. */
-  const FOCUS_Y = 448;
-  const PREV_Y = 332;
-  const CARD_TOP = FOCUS_Y + 54;
+  const FOCUS_Y = 500;
+  const PREV_Y = 372;
+  const CARD_TOP = FOCUS_Y + 70;
+  /** The request the film opens with, before there are steps to tell. */
+  const SPEND_Y = 400;
   /** Where someone else stands, when someone else has a copy of the token. */
-  const OTHER = { x: 960, y: 700 };
+  const OTHER = { x: 960, y: 690 };
+  /** How far above someone else's box what they hold sits, and how far under an arrow the API's answer. */
+  const ABOVE = 108;
+  const UNDER = 78;
   const DIM = 0.3;
 
   const parties = flow.participants.map((p, i, all) => ({
@@ -257,7 +265,7 @@
   const card = (step, picks, x, t, until) => {
     const source = step.code.text.split("\n");
     const node = make("div", "card");
-    node.style.left = `${Math.min(1920 - 470, Math.max(470, x))}px`;
+    node.style.left = `${x}px`;
     node.style.top = `${CARD_TOP}px`;
     const marks = [];
     for (const pick of picks) {
@@ -326,21 +334,17 @@
 
   // what the agent holds, under it
   const plain = chip("token", agent.x, TRAY_Y, agent.role);
-  const key = chip("key", agent.x - 150, TRAY_Y, agent.role);
-  const bound = chip("bound", agent.x + 125, TRAY_Y, agent.role);
-  const keystore = at(
-    make("div", "keystore", stage, "keystore"),
-    agent.x - 150,
-    602,
-  );
+  const key = chip("key", agent.x, TRAY_Y, agent.role);
+  const bound = chip("bound", agent.x + HELD, TRAY_Y, agent.role);
+  const keystore = at(make("div", "keystore", stage, "keystore"), agent.x, 610);
   // someone else, and the copy they come to hold
   const other = at(make("div", "party other"), OTHER.x, OTHER.y);
   make("strong", "", other, "Someone else");
   const places = ["tool call", "log", "trace"].map((name, i) =>
-    at(make("div", "place", stage, name), 700 + i * 260, FOCUS_Y + 70),
+    at(make("div", "place", stage, name), 700 + i * 260, SPEND_Y + 70),
   );
-  const copy = chip("token", 960, FOCUS_Y);
-  const copyBound = chip("bound", OTHER.x, OTHER.y - 92);
+  const copy = chip("token", 960, SPEND_Y);
+  const copyBound = chip("bound", OTHER.x, OTHER.y - ABOVE);
   /** Someone else sends the API what they hold: a row at their height. */
   const attempt = () => {
     const node = make("div", "row");
@@ -394,21 +398,21 @@
     if (beat.scene === "ask") {
       // someone else, a copy of the token, and whether the API will take it
       show(other, t + 0.2, 0.4);
-      const askCopy = chip("token", OTHER.x, OTHER.y - 92);
+      const askCopy = chip("token", OTHER.x, OTHER.y - ABOVE);
       pop(askCopy, when(beat, "copies"));
       const asked = attempt();
       show(asked.node, when(beat, "Can") - 0.1, 0.2);
       to(asked.drawn, "draw", when(beat, "Can"), 0.8, 1);
-      const mark = verdict("?", null, api.x, OTHER.y + 62);
+      const mark = verdict("?", null, api.x, OTHER.y + UNDER);
       pop(mark, when(beat, "use"));
       passing = [other, askCopy, asked.node, mark];
     } else if (beat.scene === "spend") {
       clear(t);
       const sent = arrow(make("div", "row"), agent.x, api.x, "Request + token");
-      from(sent.parentNode, "y", FOCUS_Y);
+      from(sent.parentNode, "y", SPEND_Y);
       show(sent.parentNode, t + 0.3, 0.2);
       to(sent, "draw", t + 0.4, 0.9, 1);
-      const ok = verdict("200 OK", true, api.x, FOCUS_Y + 62);
+      const ok = verdict("200 OK", true, api.x, SPEND_Y + UNDER);
       pop(ok, when(beat, "spend"));
       passing = [sent.parentNode, ok];
     } else if (beat.scene === "copy") {
@@ -417,15 +421,15 @@
         show(place, when(beat, named[i]) - 0.1, 0.3);
       // the token is in the log too: a copy of it settles there
       show(copy, when(beat, "logs") + 0.3, 0.3);
-      to(copy, "y", when(beat, "logs") + 0.4, 0.7, 128, "out");
+      to(copy, "y", when(beat, "logs") + 0.4, 0.7, 142, "out");
       passing.push(copy, ...places);
     } else if (beat.scene === "steal") {
       show(other, t, 0.4);
-      to(copy, "y", t + 0.3, 0.6, OTHER.y - 92 - FOCUS_Y);
+      to(copy, "y", t + 0.3, 0.6, OTHER.y - ABOVE - SPEND_Y);
       const taken = attempt();
       show(taken.node, t + 0.8, 0.2);
       to(taken.drawn, "draw", t + 0.9, 0.8, 1);
-      const ok = verdict("200 OK", true, api.x, OTHER.y + 62);
+      const ok = verdict("200 OK", true, api.x, OTHER.y + UNDER);
       pop(ok, Math.max(t + 1.8, when(beat, "works")));
       passing.push(other, taken.node, ok);
     } else if (beat.scene === "title") {
@@ -473,7 +477,11 @@
             ...pick,
             at: pick.on ? when(beat, pick.on) : undefined,
           })),
-          receiver ? (sender.x + receiver.x) / 2 : sender.x,
+          // Between the two parties of a message. For what one party does by
+          // itself, hung from that party: its edge in line with the party's box.
+          receiver
+            ? (sender.x + receiver.x) / 2
+            : sender.x + (sender.x < 960 ? 1 : -1) * (450 - PARTY_W / 2),
           t,
           told.until,
         );
@@ -481,8 +489,11 @@
       if (beat.gain)
         for (const [, what] of step.gain ?? []) {
           if (what.startsWith("private key")) pop(key, when(beat, beat.gain));
-          else if (what.startsWith("access token"))
+          else if (what.startsWith("access token")) {
+            // the key makes room, so that the two sit either side of the line
+            to(key, "x", when(beat, beat.gain) - 0.35, 0.4, -HELD);
             pop(bound, when(beat, beat.gain));
+          }
         }
       if (beat.gloss)
         gloss(
@@ -509,15 +520,18 @@
       const tried = attempt();
       show(tried.node, when(beat, "Without") - 0.1, 0.2);
       to(tried.drawn, "draw", when(beat, "Without"), 0.8, 1);
-      const no = verdict("Refused: no proof", false, api.x, OTHER.y + 62);
+      const no = verdict("Refused: no proof", false, api.x, OTHER.y + UNDER);
       pop(no, when(beat, "refuses"));
       passing = [other, copyBound, tried.node, no];
     } else if (beat.scene === "caveat") {
       clear(t, 0.4);
       light(t, [agent.id], others);
-      // the key leaves the token's side, for a place of its own
+      // The key leaves the token's side for a place of its own, further down
+      // the agent's line, and the token is left in the middle of the line.
       show(keystore, when(beat, "keep") - 0.2, 0.4);
-      to(key, "y", when(beat, "keep"), 0.8, 590 - TRAY_Y);
+      to(key, "x", when(beat, "keep"), 0.8, 0);
+      to(key, "y", when(beat, "keep"), 0.8, 598 - TRAY_Y);
+      to(bound, "x", when(beat, "keep"), 0.8, -HELD);
     } else if (beat.scene === "end") {
       show(close, t, 0.5);
       show(endCard, t + 0.3, 0.5);

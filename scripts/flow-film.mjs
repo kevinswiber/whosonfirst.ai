@@ -247,7 +247,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .party { width: 400px; height: 104px; box-sizing: border-box; border: 4px solid var(--role); background: var(--role-soft); border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   .party strong { font: 600 32px/1.2 var(--font-body); }
   .party.other { border: 4px dashed var(--border-strong); background: var(--bg-sunken); height: 96px; }
-  .held { display: flex; align-items: center; gap: 10px; height: 54px; box-sizing: border-box; padding: 0 20px; border-radius: 30px; border: 3px solid var(--fg); background: var(--bg); font: 500 24px var(--font-mono); white-space: nowrap; }
+  .held { z-index: 2; display: flex; align-items: center; justify-content: center; gap: 10px; width: 280px; height: 54px; box-sizing: border-box; padding: 0 20px; border-radius: 30px; border: 3px solid var(--fg); background: var(--bg); font: 500 24px var(--font-mono); white-space: nowrap; }
   .held-key { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
   .glyph { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
   .held-bound i { display: grid; place-items: center; width: 38px; height: 38px; margin-right: -10px; border-radius: 50%; background: var(--amber-soft); color: var(--amber); border: 2px solid var(--amber); }
@@ -255,13 +255,13 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict.ok { background: var(--green-soft); color: var(--green); }
   .verdict.no { background: var(--red-soft); color: var(--red); }
   .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
-  .held.large { height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
+  .held.large { width: auto; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
   .held.large .glyph { width: 46px; height: 46px; }
   .gloss { position: absolute; transform: translate(-50%, -50%) var(--move); display: flex; align-items: baseline; gap: 16px; padding: 8px 22px; border: 2px dashed var(--border-strong); border-radius: 8px; background: var(--bg); white-space: nowrap; }
   .gloss b { font: 600 34px var(--font-mono); }
   .gloss span { font: 400 30px var(--font-body); color: var(--fg-muted); }
   .place { font: 500 24px var(--font-mono); padding: 6px 16px; border: 2px dashed var(--border-strong); border-radius: 6px; color: var(--fg-muted); background: var(--bg); }
-  .keystore { width: 280px; height: 124px; box-sizing: border-box; border: 3px dashed var(--amber); border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 500 20px var(--font-mono); color: var(--amber); }
+  .keystore { background: var(--bg); width: 320px; height: 124px; box-sizing: border-box; border: 3px dashed var(--amber); border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 500 20px var(--font-mono); color: var(--amber); }
   /* A row that has been told is muted: each of its colors goes most of the way
      to the page's, by --dim. It is not made see-through, or the lines behind
      it would show through it. */
