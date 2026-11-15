@@ -56,7 +56,7 @@ The grant is trivial. The hard part is the credential the agent uses to authenti
       kind: "self",
       label: "Sign a client assertion",
       title: "The agent creates a signed proof of its identity",
-      body: `Instead of sending a shared secret, the agent signs a short-lived JWT with its private key. Issuer and subject are both the client ID; the audience is the authorization server; \`jti\` lets the server refuse a second use, if it keeps track, and the short expiry limits a copy either way. The \`typ\` header marks it as a client authentication JWT, as RFC 10070 recommends. Keep the private key where the runtime can ask for a signature and cannot read the key: a key management service, a hardware module or a platform keystore. A key in a file or an environment variable leaks the same way a client secret does.`,
+      body: `RFC 6749 itself defines one way for a client to authenticate, a client ID and secret, and leaves room for others. This page draws the one RFC 7523 adds: instead of sending a shared secret, the agent signs a short-lived JWT with its private key. Issuer and subject are both the client ID; the audience is the authorization server; \`jti\` lets the server refuse a second use, if it keeps track, and the short expiry limits a copy either way. The \`typ\` header marks it as a client authentication JWT, as RFC 10070 recommends. Keep the private key where the runtime can ask for a signature and cannot read the key: a key management service, a hardware module or a platform keystore. A key in a file or an environment variable leaks the same way a client secret does.`,
       code: {
         lang: "json",
         text: `// header: { "alg": "ES256", "typ": "client-authentication+jwt" }
