@@ -480,8 +480,8 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
     padding: 0.7rem 0.3rem 0.75rem 0;
     text-decoration: none;
   }
-  .fl-start ol a:hover {
-    background: var(--accent-soft);
+  .fl-start li:has(> a:is(:hover, :focus-visible)) {
+    border-bottom-color: var(--accent);
   }
   .fl-start .when {
     font-size: 0.98rem;

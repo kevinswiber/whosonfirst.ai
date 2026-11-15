@@ -124,8 +124,12 @@ const parts = flow.participants
     padding: 0.7rem 0.3rem 0.7rem 0;
     text-decoration: none;
   }
-  .ov-phases a:hover {
-    background: var(--accent-soft);
+  .ov-phases li:has(> a:is(:hover, :focus-visible)) {
+    border-bottom-color: var(--accent);
+  }
+  .ov-phases a:is(:hover, :focus-visible) .ov-n {
+    border-color: var(--accent);
+    color: var(--accent);
   }
   .ov-n {
     grid-row: 1 / span 2;

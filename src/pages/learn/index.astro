@@ -144,8 +144,16 @@ const next = [
     text-decoration: none;
     color: inherit;
   }
-  .lessons a:hover {
-    background: var(--accent-soft);
+  /* hover marks the row's rule, the title's underline and the number */
+  .lessons li:has(> a:is(:hover, :focus-visible)) {
+    border-bottom-color: var(--accent);
+  }
+  .lessons a:is(:hover, :focus-visible) strong {
+    text-decoration-thickness: 2px;
+  }
+  .lessons a:is(:hover, :focus-visible) .n {
+    border-color: var(--accent);
+    color: var(--accent);
   }
   .n {
     display: grid;
