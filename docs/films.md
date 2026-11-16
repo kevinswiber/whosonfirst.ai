@@ -144,7 +144,7 @@ Read on 15 November 2026, for this guide. Most of the papers were read from thei
 5. **List the words a voice will get wrong.** Each goes under `speak`, as it sounds. One that is not said as it is spelled also goes on the stage with `gloss`, with the source for how it is said. PKCE is “pixy” ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)), and JWT is “jot”.
 6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice. The [film design guide](film-design.md#checking-a-cut) says what to look at.
 7. **Listen to it.** Nothing checks how it sounds. Listen for each name, for a line that is rushed, and for anything on the stage that the words do not say.
-8. **Keep each cut where it will last.** `social/` is not committed. The cuts of the DPoP film are kept on a page of their own, outside the repository.
+8. **Keep each cut where it will last.** `social/` is not committed. A cut, and any reading by a voice it was made from, goes into `film-assets/` and from there to the R2 bucket, and `film-assets/index.json` is changed to say it is the latest: [film-assets/README.md](../film-assets/README.md) has the steps. The cuts of the DPoP film are also on a page of their own, outside the repository, to be played side by side.
 
 ### What would make the next one easier
 

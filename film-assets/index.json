@@ -1,0 +1,470 @@
+{
+  "about": "What the films of whosonfirst.ai are made from, and every cut made of them. This file says what each thing is and which is the latest. The files are in the R2 bucket named here; film-assets/README.md says how they are kept.",
+  "bucket": "whosonfirst-ai-films",
+  "updated": "2026-11-16",
+  "shared": [
+    {
+      "key": "shared/room/small-treated-studio.mp3",
+      "what": "The sound of a quiet room, to lay under a film's voice with --room",
+      "made": "2026-11-16",
+      "by": "ElevenLabs sound effects, asked for by the site's owner",
+      "asked_for": "Very quiet neutral room tone of a small treated studio room. Soft steady low air presence, no hum, no voices, no music, no footsteps, no distinct noises. Even and unobtrusive.",
+      "facts": "30 seconds, stereo, made to be repeated. -63.2 LUFS as it came",
+      "use": "Under the voice in DPoP's cut 10, at -56 LUFS. Tried, and not decided",
+      "bytes": 498240,
+      "sha256": "8f1519c1dbde955e0fc53687f6c21a2991b2eb65c6fdbf81f6b3c94e592e5044"
+    }
+  ],
+  "flows": {
+    "dpop": {
+      "page": "https://whosonfirst.ai/flows/dpop/",
+      "script": "scripts/films/dpop.mjs",
+      "latest": "10",
+      "state": "Not posted anywhere yet. Cut 10 is the latest. Still to decide: whose voice (Kokoro in cut 9, an ElevenLabs voice in cut 10), and whether the room stays under it.",
+      "readings": [
+        {
+          "key": "flows/dpop/readings/2026-11-16-matilda.mp3",
+          "what": "The whole film read once by Matilda",
+          "service": "ElevenLabs",
+          "voice": "Matilda - Knowledgable, Professional",
+          "voice_id": "XrExE9yKIg1WjnnlVkGX",
+          "model": "eleven_v4",
+          "stability": 0.7,
+          "made": "2026-11-16",
+          "seconds": 101.76,
+          "characters": 1434,
+          "credits": 1434,
+          "text": "The film's twenty lines as scripts/films/dpop.mjs gave them at commit 386e62e, one to a paragraph, with the words under `speak` written as they sound",
+          "use": "Cut 10 and 09-matilda. Give it once with --reading, and the film can be made again with --voice matilda",
+          "bytes": 1646373,
+          "sha256": "fa9a969e610fd36ebda49d6ae46925918b32a32c925ab9951c38f16ffe466df9"
+        },
+        {
+          "key": "flows/dpop/readings/2026-11-16-hope.mp3",
+          "what": "The whole film read once by Hope",
+          "service": "ElevenLabs",
+          "voice": "Hope - upbeat and clear",
+          "voice_id": "tnSpp4vdxKPjI9w0GnoV",
+          "model": "eleven_v4",
+          "stability": 0.7,
+          "made": "2026-11-16",
+          "seconds": 96.56,
+          "characters": 1434,
+          "credits": 1434,
+          "text": "The film's twenty lines as scripts/films/dpop.mjs gave them at commit 386e62e, one to a paragraph, with the words under `speak` written as they sound",
+          "use": "09-hope. The owner found the voice a little brassy",
+          "bytes": 1563200,
+          "sha256": "88b1e078d81fa13e7db3482bcd422a00437e1083137ca899a6203072a93fb597"
+        },
+        {
+          "key": "flows/dpop/readings/tests/2026-11-16-matilda-four-lines-take-1.mp3",
+          "what": "Four of the film's lines read by Matilda, to hear the voice before a whole reading",
+          "service": "ElevenLabs",
+          "voice": "Matilda - Knowledgable, Professional",
+          "voice_id": "XrExE9yKIg1WjnnlVkGX",
+          "model": "eleven_v4",
+          "made": "2026-11-16",
+          "seconds": 22.96,
+          "credits": 317,
+          "use": "A test. Not in any cut",
+          "bytes": 385391,
+          "sha256": "e00922bd037253eb6f9895570dffbe893393040bef72408a4e75eea7ca360d3e"
+        },
+        {
+          "key": "flows/dpop/readings/tests/2026-11-16-matilda-four-lines-take-2.mp3",
+          "what": "The same four lines, a second take",
+          "service": "ElevenLabs",
+          "voice": "Matilda - Knowledgable, Professional",
+          "voice_id": "XrExE9yKIg1WjnnlVkGX",
+          "model": "eleven_v4",
+          "made": "2026-11-16",
+          "seconds": 22.88,
+          "credits": 317,
+          "use": "A test. Not in any cut",
+          "bytes": 384137,
+          "sha256": "10341dca64210ea1e0a0a2771edfd65fb2cc648debdfe1eb33e53f399c0d58bf"
+        }
+      ],
+      "cuts": [
+        {
+          "id": "00-slideshow",
+          "made": "2026-11-15",
+          "status": "before the film",
+          "what": "What `npm run social:assets` made before there was a film: the flow's page, a step to a frame. 1080 × 1350, 60 seconds.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/00-slideshow/film-silent.mp4",
+              "what": "Silent",
+              "bytes": 871095,
+              "sha256": "f0eb0cf3682fc921aeaea32d55d0296d1da45e3a28b00eaf15bb3d44b45d08ae"
+            }
+          ]
+        },
+        {
+          "id": "01",
+          "made": "2026-11-15",
+          "status": "superseded",
+          "layout": "rows",
+          "look": "flat",
+          "what": "The first pilot: the problem first, one step at a time, parties that take no part dimmed, and the caveat at the end.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/01/film-silent.mp4",
+              "what": "Silent, 95 seconds",
+              "bytes": 2516012,
+              "sha256": "bebbea1aa058da5c91d5a34b6141452da9e9b0e55ce1a5b56712c0cdfb301c49"
+            }
+          ]
+        },
+        {
+          "id": "02",
+          "made": "2026-11-15",
+          "status": "superseded",
+          "layout": "rows",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "Opens with the question, names the parties and the two things to watch, one idea to a beat, and what happens on the stage happens at the word that names it.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/02/film.mp4",
+              "what": "Narrated, 98 seconds",
+              "bytes": 3716561,
+              "sha256": "d95d7d09f83eb2e8c5c2ff6cc68c55cb638f4ea5eb2bd93a3e94270b278a2e3c"
+            }
+          ]
+        },
+        {
+          "id": "03",
+          "made": "2026-11-15",
+          "status": "superseded",
+          "layout": "rows",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "“JWT” is written as it is said, and the authorization server is off the stage when the copied token is tried again.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/03/film.mp4",
+              "what": "Narrated, 98 seconds",
+              "bytes": 3726773,
+              "sha256": "7347bf8b1e7ecd631ef835b64d44c171a1ff4719d6c227d37664ad6279776bf8"
+            },
+            {
+              "key": "flows/dpop/cuts/03/film-silent.mp4",
+              "what": "Silent, 115 seconds",
+              "bytes": 2927631,
+              "sha256": "c4b18ae76d6c8c1249f0ea6be897843c5811c32be828f5f99a11c27c15682414"
+            }
+          ]
+        },
+        {
+          "id": "04",
+          "made": "2026-11-15",
+          "status": "superseded",
+          "layout": "rows",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "What a party holds sits clear of its box and on its line.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/04/film.mp4",
+              "what": "Narrated, 98 seconds",
+              "bytes": 3737736,
+              "sha256": "229621829885b792024053b8ca0f4e914b351d133fa285894b196b9ad897f0b6"
+            },
+            {
+              "key": "flows/dpop/cuts/04/film-silent.mp4",
+              "what": "Silent, 115 seconds",
+              "bytes": 2978190,
+              "sha256": "c8f42fef17af8260e5b48455bff804b37fa12edb7cf52f2f4361e3eac03db6f9"
+            }
+          ]
+        },
+        {
+          "id": "05",
+          "made": "2026-11-15",
+          "commit": "74d3596",
+          "status": "superseded",
+          "layout": "rows",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "What a message carries travels along its line, a heading says what each part is, and a line at the end says the whole of it.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/05/film.mp4",
+              "what": "Narrated, 110 seconds",
+              "bytes": 4478825,
+              "sha256": "67675d057b8f4c885085b5bfb3630c5abc0782cab01ba7aada563fbeb2ef3286"
+            },
+            {
+              "key": "flows/dpop/cuts/05/film-silent.mp4",
+              "what": "Silent, 123 seconds",
+              "bytes": 3272427,
+              "sha256": "e07a39e7be8c5b9b025e78cfb11ed5653ee94b26ffacf5fddaab979f5a4f4b44"
+            }
+          ]
+        },
+        {
+          "id": "06",
+          "made": "2026-11-15",
+          "commit": "6fa70a0",
+          "status": "kept to compare",
+          "layout": "rows",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "The last cut drawn as rows: what is sent eases, and the two things to watch are set evenly.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/06/film.mp4",
+              "what": "Narrated, 110 seconds",
+              "bytes": 4497257,
+              "sha256": "3bbb74dac587c2b9920f89fbe355f541beea8ef64713793abf7e40c41577b17b"
+            },
+            {
+              "key": "flows/dpop/cuts/06/film-silent.mp4",
+              "what": "Silent, 123 seconds",
+              "bytes": 3302284,
+              "sha256": "b796bb4f6d70e2d9cc250a1bb6d7e00e76e7cd810c7c5ab86d7e2e3e05c970da"
+            }
+          ]
+        },
+        {
+          "id": "06-fixed-prototype",
+          "made": "2026-11-15",
+          "commit": "c19ac76",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "flat",
+          "voice": "Kokoro af_heart",
+          "what": "The first try at parties that stay put, with only what is sent moving.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/06-fixed-prototype/film.mp4",
+              "what": "Narrated, 110 seconds",
+              "bytes": 4275783,
+              "sha256": "c20ae5991d4dda66aed2eb1b41479dbee61382bc4ed01ebff1a0fb8964b37159"
+            },
+            {
+              "key": "flows/dpop/cuts/06-fixed-prototype/film-silent.mp4",
+              "what": "Silent, 123 seconds",
+              "bytes": 3076314,
+              "sha256": "315a4b4954adda8f0989f0a1aa01fb10c4e774f319c4e1b909f83266dabe2cc5"
+            }
+          ]
+        },
+        {
+          "id": "07",
+          "made": "2026-11-16",
+          "commit": "3d166bd",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "Kokoro af_heart",
+          "what": "A line is drawn toward the receiver before anything moves, the API stands level with the agent when only the two take part, and the look with depth.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/07/film.mp4",
+              "what": "Narrated, with depth",
+              "bytes": 5477556,
+              "sha256": "6131970234631580b7ef182e519c8262ee97be76637f50aa4f9b9be3d1bcbc3c"
+            },
+            {
+              "key": "flows/dpop/cuts/07/film-flat.mp4",
+              "what": "Narrated, flat",
+              "bytes": 4343183,
+              "sha256": "c67565033478c965e0fb23a7ee6eda2c6d90aa7aba9f94c13aa68eccdf7a47a5"
+            },
+            {
+              "key": "flows/dpop/cuts/07/film-silent.mp4",
+              "what": "Silent, with depth",
+              "bytes": 4231092,
+              "sha256": "a0a3f6c8c17dcf12bf1787382ff90a8a597360aed314d1b906ce79d679fa35af"
+            }
+          ]
+        },
+        {
+          "id": "08",
+          "made": "2026-11-16",
+          "commit": "c663b71",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "Kokoro af_heart",
+          "what": "The title says what DPoP stands for, “no proof” is no longer crossed by its line, and the keystore has room.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/08/film.mp4",
+              "what": "Narrated, with depth",
+              "bytes": 5504680,
+              "sha256": "c77298e1e5f0a6d3d4982c18b6efd98c203d03c5dcb9c98970db695b0b03f43d"
+            },
+            {
+              "key": "flows/dpop/cuts/08/film-flat.mp4",
+              "what": "Narrated, flat",
+              "bytes": 4346121,
+              "sha256": "a9736356d07dab34971f34d2aff296c7995dbe5e5a4b82b29c517a42f9fcee8e"
+            },
+            {
+              "key": "flows/dpop/cuts/08/film-silent.mp4",
+              "what": "Silent, with depth",
+              "bytes": 4207111,
+              "sha256": "546db67e6645f8254eea71b4ed559ac36c524cfc65142a84d808990fc0857da2"
+            },
+            {
+              "key": "flows/dpop/cuts/08/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1984,
+              "sha256": "00f28004b8a14342ee797fc975c0e283f00cf4c9459eb1c4c5d418e7afb5be03"
+            },
+            {
+              "key": "flows/dpop/cuts/08/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1976,
+              "sha256": "f39f380691b739934aa0662d6e84400ce348235bf5e4e83ce4dafcea8a65b9ce"
+            }
+          ]
+        },
+        {
+          "id": "09",
+          "made": "2026-11-16",
+          "commit": "386e62e",
+          "status": "kept to compare",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "Kokoro af_heart",
+          "what": "A closing line that says where the rest is, the request the flow is for held a moment longer, more room between things. The narrated files are the ones in which the address is said “dot AI”. The latest cut with the Kokoro voice.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/09/film.mp4",
+              "what": "Narrated, with depth, 113 seconds",
+              "bytes": 5624674,
+              "sha256": "4be7957ef45fe284abdb918cd05fd298ef5357c37d874b6ff365dda0a04cd932"
+            },
+            {
+              "key": "flows/dpop/cuts/09/film-flat.mp4",
+              "what": "Narrated, flat, 113 seconds",
+              "bytes": 4482475,
+              "sha256": "a3bd642fe5390067c10de06fffdebb92c3d6d04c62499b176db3c45b4c66c06b"
+            },
+            {
+              "key": "flows/dpop/cuts/09/film-silent.mp4",
+              "what": "Silent, with depth, 126 seconds. Made at commit cbb2bc1",
+              "bytes": 4335995,
+              "sha256": "5010b2679dac698d0d827093032fc3563a13e33962b1c5c58599c258a98f2108"
+            },
+            {
+              "key": "flows/dpop/cuts/09/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 2084,
+              "sha256": "7157a4c8519e9502db50bcad4f643d7ab96a8ba3cf3f07e847e827223574e0bb"
+            },
+            {
+              "key": "flows/dpop/cuts/09/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 2076,
+              "sha256": "de841d9e95395adfd7914305a356e5412352aa05f18f7e878f69a164c67ab7d9"
+            }
+          ]
+        },
+        {
+          "id": "09-hope",
+          "made": "2026-11-16",
+          "commit": "83b77fd",
+          "status": "kept to compare",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "ElevenLabs, Hope - upbeat and clear",
+          "reading": "flows/dpop/readings/2026-11-16-hope.mp3",
+          "what": "Cut 9 said by an ElevenLabs voice, from one reading cut into the film's lines. The owner found the voice a little brassy.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/09-hope/film.mp4",
+              "what": "Narrated, 110 seconds",
+              "bytes": 5659326,
+              "sha256": "c1c22ddc93dc6ff6c1bc1893184a9d0551f33485055a0e73c82799beeb231fc0"
+            },
+            {
+              "key": "flows/dpop/cuts/09-hope/description.txt",
+              "what": "The description to paste under it",
+              "bytes": 488,
+              "sha256": "ab390a3c2c2fb4ff1dfaaeae9b4eacb9a8e1ca382d77018bd2d7dbac855e8da2"
+            }
+          ]
+        },
+        {
+          "id": "09-matilda",
+          "made": "2026-11-16",
+          "commit": "83b77fd",
+          "status": "kept to compare",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda.mp3",
+          "what": "Cut 9 said by Matilda, with no room under the voice. Set beside cut 10 to hear what the room does.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/09-matilda/film.mp4",
+              "what": "Narrated, 117 seconds",
+              "bytes": 5895900,
+              "sha256": "5f5e0e22293238b6d4749b1ee19c666632fef8e8964883df9f2ab36244bd2f30"
+            },
+            {
+              "key": "flows/dpop/cuts/09-matilda/description.txt",
+              "what": "The description to paste under it",
+              "bytes": 488,
+              "sha256": "c7e228d992c966ae5372f57c2bcdcdbaec27c097a3d9489c1fa4f76c8f4de18c"
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "made": "2026-11-16",
+          "commit": "9960ced",
+          "status": "current",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Matilda, with the sound of a quiet room under the voice, and everything inside the safe areas of the frame.",
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --reading film-assets/flows/dpop/readings/2026-11-16-matilda.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop"
+          ],
+          "files": [
+            {
+              "key": "flows/dpop/cuts/10/film.mp4",
+              "what": "Narrated, 117 seconds",
+              "bytes": 6180434,
+              "sha256": "ec999400080e8df340240c5f375a1787c4a33561581ffbb5c043c54feca843ae"
+            },
+            {
+              "key": "flows/dpop/cuts/10/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 126 seconds",
+              "bytes": 4336376,
+              "sha256": "16cc869f0d185818637b5c9cc4007225209f6930ec9cab75abfa1e828cc1e8ea"
+            },
+            {
+              "key": "flows/dpop/cuts/10/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 2084,
+              "sha256": "4f60b2275eb99c7e5e97f84c60f43a63a63e719a113b47e2f4b7b3ed7597276a"
+            },
+            {
+              "key": "flows/dpop/cuts/10/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 2076,
+              "sha256": "9d7b9c3e0d2387686a0611ad4397979b9ba7ae8cf0536dda3deeb4a97889acde"
+            },
+            {
+              "key": "flows/dpop/cuts/10/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "c7e228d992c966ae5372f57c2bcdcdbaec27c097a3d9489c1fa4f76c8f4de18c"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
