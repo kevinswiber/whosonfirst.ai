@@ -20,8 +20,24 @@
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
       "latest": "14",
-      "state": "Not posted anywhere yet. Cut 14 is the latest: cut 13 on warm paper with dots, the look chosen on 16 November 2026. Still to decide: whose voice (Kokoro in cut 9, an ElevenLabs voice from cut 10, or the owner's own), whether the room stays under it, and the cover.",
+      "state": "Not posted anywhere yet. Cut 14 is the latest, on paper, said by Matilda. 14-kevin is the same cut said by a clone of the owner's own voice, to decide between. Still to decide: whose voice, whether the room stays under it, and the cover.",
       "readings": [
+        {
+          "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "what": "Cut 14's nineteen lines read once by a clone of the site owner's own voice",
+          "service": "ElevenLabs",
+          "voice": "Kevin, an instant voice clone the owner made of his own voice",
+          "model": "eleven_v4",
+          "stability": 0.7,
+          "similarity": 0.75,
+          "made": "2026-11-16",
+          "seconds": 78.24,
+          "by": "The site's owner, who made the reading and gave it. Its settings are read from its file's name",
+          "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 14, one to a paragraph, with the words under `speak` written as they sound. A recogniser heard 239 of its 244 words as written, and “jot” as “job”: to be checked by ear",
+          "use": "14-kevin. Give it once with --reading, and the film can be made again with --voice kevin",
+          "bytes": 3130557,
+          "sha256": "030722cf15b53be99a571d4dd065a11f6fb6965439c43f1aac3e12e48ec97ea5"
+        },
         {
           "key": "flows/dpop/readings/2026-11-16-matilda.mp3",
           "what": "The whole film read once by Matilda",
@@ -734,6 +750,48 @@
             "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
             "node scripts/flow-film.mjs --flow dpop",
             "node scripts/flow-film.mjs --flow dpop --voice matilda --stills 86.2"
+          ]
+        },
+        {
+          "id": "14-kevin",
+          "made": "2026-11-16",
+          "commit": "ae293bd",
+          "status": "kept to compare",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 14 said by a clone of the owner's own voice. The reading is quicker than Matilda's, so the film is 90 seconds where cut 14 is 99.",
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\""
+          ],
+          "files": [
+            {
+              "key": "flows/dpop/cuts/14-kevin/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5805396,
+              "sha256": "4adf3d84b90aa7e6eb0860bf1c7a8238ba7ea7346172c31ee3c5a6ed2ebeadb1"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/captions.vtt",
+              "what": "Captions, timed to this voice",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            }
           ]
         }
       ]
