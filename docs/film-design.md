@@ -179,7 +179,7 @@ One thing moves at a time, and nothing moves without the eye knowing where it is
 
 A change to a part is made for both. The styles are in the `<style>` block in `scripts/flow-film.mjs`; the depth look is the rules that start `.lit`, and paper is depth with the rules that start `.paper` over it.
 
-Paper differs from depth in the page alone: a warm grey (`#ecebe6`) in place of the cooler tint, shadows tinted to match, and a dot every 36 pixels at 16 parts in a hundred of the shadow's colour. The dots never move. A curtain has the same dots in the same places, so nothing jumps when a title or end card comes down. A dimmed party is partly clear, and a few dots show inside it.
+Paper differs from depth in the page alone: a warm grey (`#ecebe6`) in place of the cooler tint, shadows tinted to match, and a dot every 36 pixels at 16 parts in a hundred of the shadow's colour. The dots never move. They are at full strength behind the stage and fade to nothing above and below it, and to less at the sides, so a heading and the address are on clear paper: a grid as strong at the edge as in the middle leads the eye out of the picture. A curtain has the same dots in the same places, so nothing jumps when a title or end card comes down. A dimmed party is partly clear, and a few dots show inside it.
 
 | Property                 | Flat                   | Depth                                                                         |
 | ------------------------ | ---------------------- | ----------------------------------------------------------------------------- |
