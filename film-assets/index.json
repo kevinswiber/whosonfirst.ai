@@ -19,8 +19,8 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "11",
-      "state": "Not posted anywhere yet. Cut 11 is the latest: a shorter script and less added between lines, 99 seconds. Still to decide: whose voice (Kokoro in cut 9, an ElevenLabs voice in cuts 10 and 11, or a person's), whether the room stays under it, and the cover.",
+      "latest": "12",
+      "state": "Not posted anywhere yet. Cut 12 is the latest: cut 11 with an end card that has no dates. 12-paper is the same on warm paper with dots, to decide between. Still to decide: the look, whose voice (Kokoro in cut 9, an ElevenLabs voice from cut 10, or a person's), whether the room stays under it, and the cover.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-matilda.mp3",
@@ -49,7 +49,7 @@
           "made": "2026-11-16",
           "credits": 2606,
           "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 11, one to a paragraph, with the words under `speak` written as they sound. Two takes were made, and the second was kept: a recogniser heard the first say “cache” for “cash”. Its line “Now try the copy again…” said the copy was the one from the opening, which it is not, so it was replaced by “Now copy the token alone…” from 2026-11-16-matilda.mp3, cut at a quiet on each side",
-          "use": "Cut 11. Give it once with --reading, and the film can be made again with --voice matilda",
+          "use": "Cuts 11, 12 and 12-paper. Give it once with --reading, and the film can be made again with --voice matilda",
           "bytes": 1419433,
           "sha256": "50e8f68c95e76e020c535f6b02bcbf3c910b3d5c83aa8c0a5ded715c4cc5ca20"
         },
@@ -482,19 +482,13 @@
           "id": "11",
           "made": "2026-11-16",
           "commit": "4a954ec",
-          "status": "current",
+          "status": "superseded",
           "layout": "fixed",
           "look": "depth",
           "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
           "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
           "what": "Shorter: the lines that only turned the film (“So yes.”, “DPoP changes the answer.”, “That is DPoP.”) and the line that said it all again are gone, a person's contractions are said, and less is added after each line. 239 words in 99 seconds, where cut 10 had 271 in 117. A cover is kept with it.",
-          "made_with": [
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --reading film-assets/flows/dpop/readings/2026-11-16-matilda-shorter.mp3 --beats",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
-            "node scripts/flow-film.mjs --flow dpop",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --stills 86.2"
-          ],
           "files": [
             {
               "key": "flows/dpop/cuts/11/film.mp4",
@@ -531,6 +525,90 @@
               "what": "A still of the copied token refused, for a thumbnail",
               "bytes": 407727,
               "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ]
+        },
+        {
+          "id": "12",
+          "made": "2026-11-16",
+          "commit": "0967ab5",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "current",
+          "look": "depth",
+          "what": "Cut 11 with a new end card: the site's name, what the site is in its own words, the flow's address and “Based on RFC 9449”, with no dates. The address leaves the corner while the end card is up. The description keeps the dates.",
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --reading film-assets/flows/dpop/readings/2026-11-16-matilda-shorter.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --stills 86.2",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --stills 86.2"
+          ],
+          "files": [
+            {
+              "key": "flows/dpop/cuts/12/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 5430393,
+              "sha256": "2f16cf21d012a2781f2c33f8b65d13c2f6c51cb761bf5d6ea90da4a85384611f"
+            },
+            {
+              "key": "flows/dpop/cuts/12/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4003541,
+              "sha256": "b239e6e4d53ad99e560e6e49daa093fc1c37b78e9ac0a4d228dbaa3f53926b3f"
+            },
+            {
+              "key": "flows/dpop/cuts/12/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/12/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/12/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/12/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 407727,
+              "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ]
+        },
+        {
+          "id": "12-paper",
+          "made": "2026-11-16",
+          "commit": "0967ab5",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "kept to compare",
+          "look": "paper",
+          "what": "Cut 12 on warm paper with a faint grid of dots (--look paper). Its captions and description are cut 12's.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/12-paper/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 6177012,
+              "sha256": "bf4cc04a34ce821c9f3eb95aa637e010f0c2a005f0b91b2f0375adabe3634065"
+            },
+            {
+              "key": "flows/dpop/cuts/12-paper/cover.png",
+              "what": "The cover, on paper",
+              "bytes": 412298,
+              "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
             }
           ]
         }
