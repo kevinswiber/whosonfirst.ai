@@ -29,15 +29,15 @@ node scripts/flow-film.mjs --flow dpop --layout fixed --look depth --stills 26,4
 node scripts/flow-film.mjs --flow dpop --layout fixed --look depth
 ```
 
-| Option                   | What it does                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| `--flow <slug>`          | Which film: `scripts/films/<slug>.mjs`                                               |
-| `--layout rows\|fixed`   | The stage. Rows if left out                                                          |
-| `--look flat\|depth`     | The look. Flat if left out                                                           |
-| `--voice kokoro`         | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes       |
-| `--captions on\|off`     | Whether each sentence is written under the scene. On when there is no voice          |
-| `--beats`                | Prints when each beat starts and how long it lasts, and makes nothing                |
-| `--stills 26,44.5`       | Pictures at those seconds, and no video. The fastest way to look at a change         |
+| Option                 | What it does                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `--flow <slug>`        | Which film: `scripts/films/<slug>.mjs`                                         |
+| `--layout rows\|fixed` | The stage. Rows if left out                                                    |
+| `--look flat\|depth`   | The look. Flat if left out                                                     |
+| `--voice kokoro`       | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes |
+| `--captions on\|off`   | Whether each sentence is written under the scene. On when there is no voice    |
+| `--beats`              | Prints when each beat starts and how long it lasts, and makes nothing          |
+| `--stills 26,44.5`     | Pictures at those seconds, and no video. The fastest way to look at a change   |
 
 Everything is written to `social/`, which is not committed. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
 
@@ -65,17 +65,17 @@ Stop and ask when a flow does not fit, when a film needs a kind of scene or part
 
 ### Fixed layout
 
-| Part                         | Where                                                                                   |
-| ---------------------------- | --------------------------------------------------------------------------------------- |
-| Agent                        | A box 360 wide and 480 tall: x 130 to 490, y 190 to 670. Its name is at the top          |
-| What the agent holds         | Inside it, centred: the first thing at y 330, the second at y 400                        |
-| Keystore                     | Inside the agent at the bottom, 328 by 136, around the key at y 572                      |
-| The other two parties        | Boxes 380 by 104, centred on x 1580, at y 250 and y 620                                  |
-| Lines                        | Level, from the agent's edge (x 490) to each party's edge (x 1390), at the party's y     |
-| A listing                    | 860 wide, centred between the edges (x 940). Under the upper line, or over the lower one |
-| What a party does by itself  | A pill beside the party: right of the agent, or left of the API above its line           |
-| Strip of step numbers        | Left edge at x 130, y 104                                                                |
-| Someone else                 | A dashed box 400 wide, centred on (720, 760), with its own line along and up to the API  |
+| Part                        | Where                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Agent                       | A box 360 wide and 480 tall: x 130 to 490, y 190 to 670. Its name is at the top          |
+| What the agent holds        | Inside it, centred: the first thing at y 330, the second at y 400                        |
+| Keystore                    | Inside the agent at the bottom, 328 by 136, around the key at y 572                      |
+| The other two parties       | Boxes 380 by 104, centred on x 1580, at y 250 and y 620                                  |
+| Lines                       | Level, from the agent's edge (x 490) to each party's edge (x 1390), at the party's y     |
+| A listing                   | 860 wide, centred between the edges (x 940). Under the upper line, or over the lower one |
+| What a party does by itself | A pill beside the party: right of the agent, or left of the API above its line           |
+| Strip of step numbers       | Left edge at x 130, y 104                                                                |
+| Someone else                | A dashed box 400 wide, centred on (720, 760), with its own line along and up to the API  |
 
 While only the agent and the API take part, before the flow and after it, the API and its line stand at y 430, level with the middle of the agent. The API goes to y 620 while the title card covers the stage, and glides back in 0.7 seconds when the authorization server leaves.
 
@@ -89,24 +89,24 @@ Parties are boxes 400 by 104 across the top, with a line down from each. A step 
 
 Each part means one thing. Do not use a part for anything else, and do not invent a part without asking.
 
-| Part              | Means                                                   | Looks like                                                                                   |
-| ----------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Party             | Someone who takes part in the flow                      | A box in its role's colour and soft fill, name in 32px semibold                              |
-| Someone else      | Whoever has a copy and is not part of the flow          | A dashed grey box. Never a role's colour                                                     |
-| Thing held        | What a party has: a key or a token                      | A pill 280 by 54, 24px mono. A key is amber. A token is white. A bound token has a key badge |
-| Thing sent        | What a message carries                                  | Pills 46 high, 21px mono, in a row behind the step's number                                  |
-| Line              | That two parties can speak to each other                | A grey line, 5 wide. Dimmed with the party at its far end                                    |
-| Direction cue     | Which way the next thing will go                        | The line drawn over in the sender's colour, 6 wide, to an arrowhead at the receiver          |
-| Listing           | Lines from the step's own listing on the page           | A card, 30px mono, with the line being spoken about marked in blue                           |
-| Act               | What one party does by itself                           | A pill in the party's colour with the step's number and label, 32px                          |
-| Tick              | That a check passed                                     | A green tick at the end of an act                                                            |
-| Verdict           | The answer to a request                                 | A small box, 28px mono: green for allowed, red for refused, a question mark for not yet known |
-| Gloss             | How a word is said, or what it is short for             | A dashed note under the listing: the term in mono, the note beside it                        |
-| Place             | Somewhere a token passes through                        | A small dashed label above the line                                                          |
-| Strip             | How far the flow has got (fixed layout only)            | Numbered circles: outlined to come, in the sender's colour now, grey when told               |
-| Heading           | What this part of the film is (narrated only)           | 42px semibold, with “Part 2 of 3” above it in 20px mono for a part of the flow               |
-| Title card        | The flow's name                                         | The short name at 170px, what it stands for at 34px mono, the flow's title at 46px           |
-| End card          | Where to read more                                      | The site's name at 110px, the page's address at 44px mono in blue                            |
+| Part          | Means                                          | Looks like                                                                                    |
+| ------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Party         | Someone who takes part in the flow             | A box in its role's colour and soft fill, name in 32px semibold                               |
+| Someone else  | Whoever has a copy and is not part of the flow | A dashed grey box. Never a role's colour                                                      |
+| Thing held    | What a party has: a key or a token             | A pill 280 by 54, 24px mono. A key is amber. A token is white. A bound token has a key badge  |
+| Thing sent    | What a message carries                         | Pills 46 high, 21px mono, in a row behind the step's number                                   |
+| Line          | That two parties can speak to each other       | A grey line, 5 wide. Dimmed with the party at its far end                                     |
+| Direction cue | Which way the next thing will go               | The line drawn over in the sender's colour, 6 wide, to an arrowhead at the receiver           |
+| Listing       | Lines from the step's own listing on the page  | A card, 30px mono, with the line being spoken about marked in blue                            |
+| Act           | What one party does by itself                  | A pill in the party's colour with the step's number and label, 32px                           |
+| Tick          | That a check passed                            | A green tick at the end of an act                                                             |
+| Verdict       | The answer to a request                        | A small box, 28px mono: green for allowed, red for refused, a question mark for not yet known |
+| Gloss         | How a word is said, or what it is short for    | A dashed note under the listing: the term in mono, the note beside it                         |
+| Place         | Somewhere a token passes through               | A small dashed label above the line                                                           |
+| Strip         | How far the flow has got (fixed layout only)   | Numbered circles: outlined to come, in the sender's colour now, grey when told                |
+| Heading       | What this part of the film is (narrated only)  | 42px semibold, with “Part 2 of 3” above it in 20px mono for a part of the flow                |
+| Title card    | The flow's name                                | The short name at 170px, what it stands for at 34px mono, the flow's title at 46px            |
+| End card      | Where to read more                             | The site's name at 110px, the page's address at 44px mono in blue                             |
 
 Kinds of thing sent, as a film's script names them in `carries`:
 
@@ -134,15 +134,15 @@ Every colour is one of the site's own, read from the built stylesheet by name. N
 
 One thing moves at a time, and nothing moves without the eye knowing where it is going. A step that sends something goes in this order, in seconds from the start of its first beat:
 
-| When        | What happens                                                                                  |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| 0           | The sender and receiver are lit, and the others dim, over 0.4                                 |
-| 0.3         | The direction cue draws from the sender to the receiver over 0.55, slowing as it arrives      |
-| 0.35        | What will be sent appears at the sender and waits                                             |
-| 0.5         | The listing rises 14 pixels into place over 0.4                                               |
-| 0.95        | What is sent leaves. It takes 1.4 seconds: slow away, quickest half way, slow to a stop       |
-| at a word   | A line of the listing is marked, or a party comes to hold something, at the word that says so |
-| the end     | What was sent and the cue fade over 0.25, unless the receiver keeps it or is about to check it |
+| When      | What happens                                                                                   |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| 0         | The sender and receiver are lit, and the others dim, over 0.4                                  |
+| 0.3       | The direction cue draws from the sender to the receiver over 0.55, slowing as it arrives       |
+| 0.35      | What will be sent appears at the sender and waits                                              |
+| 0.5       | The listing rises 14 pixels into place over 0.4                                                |
+| 0.95      | What is sent leaves. It takes 1.4 seconds: slow away, quickest half way, slow to a stop        |
+| at a word | A line of the listing is marked, or a party comes to hold something, at the word that says so  |
+| the end   | What was sent and the cue fade over 0.25, unless the receiver keeps it or is about to check it |
 
 - Three easings, all in the stage files: `inOut` for most changes, `out` for things arriving, `travel` for things sent.
 - A thing appears with a small pop: from 0.8 of its size to full, over 0.3.
@@ -153,16 +153,16 @@ One thing moves at a time, and nothing moves without the eye knowing where it is
 
 A change to a part is made for both. The styles are in the `<style>` block in `scripts/flow-film.mjs`; the depth look is the rules that start `.lit`.
 
-| Property                   | Flat                    | Depth                                                                |
-| -------------------------- | ----------------------- | -------------------------------------------------------------------- |
-| Page                       | White (`--bg`)          | A grey tint (`--stage`), a little darker toward the corners          |
-| Party                      | Border and soft fill    | The same, with a band of its colour 16 thick along the top, and a soft shadow |
-| Thing held, verdict, act   | No shadow               | A small shadow                                                       |
-| Thing sent                 | No shadow               | A small shadow at rest. On its way it rises 5 pixels over a longer one |
-| Listing                    | Grey fill, grey border  | White, no border, the deepest shadow on the stage                    |
-| Someone else               | Dashed, grey fill       | Dashed, nearly clear, no shadow                                      |
-| Missing proof              | Dashed, white fill      | Dashed, filled with the page's tint, no shadow                       |
-| Line at rest               | Light grey              | A little darker, to show on the tint                                 |
+| Property                 | Flat                   | Depth                                                                         |
+| ------------------------ | ---------------------- | ----------------------------------------------------------------------------- |
+| Page                     | White (`--bg`)         | A grey tint (`--stage`), a little darker toward the corners                   |
+| Party                    | Border and soft fill   | The same, with a band of its colour 16 thick along the top, and a soft shadow |
+| Thing held, verdict, act | No shadow              | A small shadow                                                                |
+| Thing sent               | No shadow              | A small shadow at rest. On its way it rises 5 pixels over a longer one        |
+| Listing                  | Grey fill, grey border | White, no border, the deepest shadow on the stage                             |
+| Someone else             | Dashed, grey fill      | Dashed, nearly clear, no shadow                                               |
+| Missing proof            | Dashed, white fill     | Dashed, filled with the page's tint, no shadow                                |
+| Line at rest             | Light grey             | A little darker, to show on the tint                                          |
 
 What depth means, so that a new part gets the right treatment:
 
@@ -203,20 +203,20 @@ In the stage files, an order matters that is easy to get wrong: a thing's `trave
 
 [Films](films.md#making-the-next-one) has the steps. What a script can say, in `scripts/films/<slug>.mjs`:
 
-| Field     | On                | What it is                                                                                             |
-| --------- | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `flow`    | the script        | The flow's slug                                                                                        |
-| `speak`   | the script        | Words written as they sound, for the voice: `{ DPoP: "dee-pop" }`. The picture keeps the real spelling |
-| `say`     | every beat        | The sentence. One idea, short enough to say in a breath, with its source on the page in a comment      |
-| `scene`   | a beat            | A scene the stage knows by name. DPoP's are `ask`, `spend`, `copy`, `steal`, `title`, `cast`, `refuse`, `caveat`, `recap`, `end` |
-| `step`    | a beat            | A step of the flow, counted from 1. A second beat with the same number goes on telling it              |
-| `head`    | a beat            | The heading for this part. A step takes its heading from the flow's own phases                         |
-| `expands` | the `title` beat  | What the flow's short name stands for, as the flow's page words it                                     |
-| `carries` | a step's first beat | What the message carries, as the kinds in the table above. The step's label if left out              |
-| `show`    | a step's beat     | Lines of the step's listing, each found by a piece of it, and `on`: the word at which it is marked     |
-| `gain`    | a step's beat     | The word at which the party comes to hold what the step gives it                                       |
-| `check`   | a step's beat     | The word at which a check is seen to pass                                                              |
-| `gloss`   | a step's beat     | `{ term, note, on }`: a word written under the listing at the moment it is said                        |
+| Field     | On                  | What it is                                                                                                                       |
+| --------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `flow`    | the script          | The flow's slug                                                                                                                  |
+| `speak`   | the script          | Words written as they sound, for the voice: `{ DPoP: "dee-pop" }`. The picture keeps the real spelling                           |
+| `say`     | every beat          | The sentence. One idea, short enough to say in a breath, with its source on the page in a comment                                |
+| `scene`   | a beat              | A scene the stage knows by name. DPoP's are `ask`, `spend`, `copy`, `steal`, `title`, `cast`, `refuse`, `caveat`, `recap`, `end` |
+| `step`    | a beat              | A step of the flow, counted from 1. A second beat with the same number goes on telling it                                        |
+| `head`    | a beat              | The heading for this part. A step takes its heading from the flow's own phases                                                   |
+| `expands` | the `title` beat    | What the flow's short name stands for, as the flow's page words it                                                               |
+| `carries` | a step's first beat | What the message carries, as the kinds in the table above. The step's label if left out                                          |
+| `show`    | a step's beat       | Lines of the step's listing, each found by a piece of it, and `on`: the word at which it is marked                               |
+| `gain`    | a step's beat       | The word at which the party comes to hold what the step gives it                                                                 |
+| `check`   | a step's beat       | The word at which a check is seen to pass                                                                                        |
+| `gloss`   | a step's beat       | `{ term, note, on }`: a word written under the listing at the moment it is said                                                  |
 
 A word named in `on`, `gain`, `check` or `gloss` has to be in that beat's sentence, or the script stops and says so.
 
