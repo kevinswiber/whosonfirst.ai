@@ -453,7 +453,6 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
   .cover-card { position: absolute; z-index: 95; left: 0; top: 0; width: 1920px; height: 1080px; background: var(--bg); }
   .lit .cover-card { background: var(--stage); }
-  .paper .cover-card { background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; }
   .cover-card h1 { position: absolute; left: 130px; top: 70px; margin: 0; font: 600 210px/1 var(--font-display); letter-spacing: -0.03em; }
   .cover-card .asks { position: absolute; left: 136px; top: 310px; margin: 0; font: 600 76px/1.15 var(--font-body); }
   .cover-row { position: absolute; left: 130px; top: 520px; display: flex; align-items: center; height: 150px; }
@@ -498,12 +497,15 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
   /* "paper": depth on a warmer page, with a faint grid of dots that never
-     moves. A curtain has the same dots, in the same places, so nothing
+     moves. The dots are at their full strength in the middle of the frame
+     and fade, gently, to two fifths of it at the corners: a grid as strong
+     at the edge as in the middle leads the eye out of the picture. A curtain has the same dots, in the same places, so nothing
      jumps when one comes down: a curtain covers the frame exactly, from its
      top corner (the scene is 96px down in a said-aloud film),
      as the stage does. */
-  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); }
-  .paper, .paper .curtain { background-color: var(--stage); background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; }
+  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); --fade: radial-gradient(ellipse 1150px 700px at 960px 520px, #000 55%, rgb(0 0 0 / 0.4) 100%); }
+  .paper, .paper .curtain { background-color: var(--stage); }
+  .paper::before, .paper .curtain::before, .paper .cover-card::before { content: ""; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; -webkit-mask-image: var(--fade); mask-image: var(--fade); }
   .said-aloud.paper .curtain { top: -96px; height: 1080px; }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 96px; top: 996px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
