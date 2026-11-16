@@ -598,7 +598,8 @@ film = {
   duration,
   band: BAND,
   address: `whosonfirst.ai/flows/${flow.slug}`,
-  standards,
+  // a trial, of 16 November 2026: the end card without its "Based on" line
+  standards: args.includes("--no-basis") ? "" : standards,
   descriptor,
 };
 
