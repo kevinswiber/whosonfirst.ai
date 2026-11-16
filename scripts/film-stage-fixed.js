@@ -690,11 +690,10 @@
   make("h1", "", endCard, "Who’s on First");
   if (film.descriptor) make("p", "descriptor", endCard, film.descriptor);
   make("p", "address", endCard, film.address);
-  if (film.standards) make("p", "standards", endCard, film.standards);
-  // a trial: the question of a comparison this flow is half of
+  // what a comparison this flow is half of compares, and its question
   if (film.also) {
     endCard.classList.add("has-also");
-    const also = make("p", `also ${film.alsoKind}`, endCard);
+    const also = make("p", "also", endCard);
     make("small", "", also, "Also in the guide");
     for (const line of film.also) make("span", "", also, line);
   }

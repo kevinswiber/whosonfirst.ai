@@ -112,20 +112,6 @@ const LOOK = option("--look") ?? USUAL_LOOK;
 if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
 
-/**
- * With --also, a line at the foot of the end card says what a comparison the
- * flow is half of compares, under "Also in the guide". A trial, of 16
- * November 2026. "gist" is the comparison's own one-line gist, broken at its
- * colon. "lead" is its description as far as the colon, and "both" is that
- * with the comparison's question under it, smaller. It is not the
- * comparison's question, which for DPoP is three names in mixed case in a
- * row. It has no address: a second one on the frame was too much. And it
- * does not say "Next", which promised a film that there is not.
- */
-const ALSO = option("--also");
-if (ALSO && !["gist", "lead", "both"].includes(ALSO))
-  throw new Error(`--also is gist, lead or both, not ${ALSO}`);
-
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
 const out = join(here, "social");
@@ -445,15 +431,15 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .curtain.close { z-index: 70; height: 1080px; }
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
-  .said-aloud .end-card { top: 234px; }
-  .said-aloud .end-card.has-also { top: 180px; }
+  .said-aloud .end-card { top: 262px; }
+  .end-card.has-also { top: 262px; }
+  .said-aloud .end-card.has-also { top: 166px; }
   .end-card .also { margin: 72px auto 0; padding-top: 34px; width: 1000px; line-height: 1.4; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
   .end-card .also span { display: block; }
-  .end-card .also.both span + span { margin-top: 6px; font-size: 28px; color: var(--fg-muted); }
+  .end-card .also span + span { margin-top: 6px; font-size: 28px; color: var(--fg-muted); }
   .end-card .also small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
   .end-card .descriptor { font-size: 40px; margin-top: 22px; }
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
-  .end-card .standards { font-size: 30px; margin: 28px auto 0; max-width: 1500px; text-wrap: balance; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
@@ -543,35 +529,30 @@ page.on("pageerror", (error) => problems.push(error.message));
 
 // what the film says of itself at its end is read from the page, as its other facts are
 await page.goto(`${origin}/flows/${flow.slug}/`, { waitUntil: "networkidle" });
-const { basis, standards, descriptor } = await page.evaluate(() => {
+const { basis, descriptor } = await page.evaluate(() => {
   const line = document.querySelector(".page-facts .doc-line");
   const said = (node) => node?.textContent.replace(/\s+/g, " ").trim() ?? "";
-  // The end card names the standards and leaves out their dates and the
-  // guide's: a film is watched long after it is made, and a date on its last
-  // frame reads as the film's own. The description, which a video site shows
-  // beside the date it was posted, keeps them.
-  const fact = line?.querySelector(".doc-fact");
-  const names = [...(fact?.querySelectorAll("a.spec") ?? [])].map(said);
-  const listed =
-    names.length < 3
-      ? names.join(" and ")
-      : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
   const site = [
     ...document.querySelectorAll('script[type="application/ld+json"]'),
   ]
     .flatMap((s) => JSON.parse(s.textContent)["@graph"] ?? [])
     .find((node) => node["@type"] === "WebSite");
   return {
+    // For the description under the film, and not for its end card: a film is
+    // watched long after it is made, and a standard's date on its last frame
+    // reads as the film's own.
     basis: said(line),
-    standards: names.length
-      ? `${said(fact.querySelector(".doc-key")).replace(/:$/, "")} ${listed}`
-      : "",
     descriptor: site?.description.replace(/\.$/, "") ?? "",
   };
 });
-// The first comparison the flow is half of, in the order the site lists them.
+// Under "Also in the guide", the end card says what the first comparison the
+// flow is half of compares, in the order the site lists them: its
+// description as far as the colon, and its question under that, smaller. The
+// question alone is, for DPoP, three names in mixed case in a row. There is
+// no address: a second one on the frame was too much. And it does not say
+// "Next", which promised a film that there is not.
 let also;
-if (ALSO) {
+{
   const dir = join(here, "src", "data", "comparisons");
   const listed = readFileSync(join(dir, "index.ts"), "utf8");
   const found = [];
@@ -581,25 +562,15 @@ if (ALSO) {
     const made = Object.values(await import(join(dir, `${file}.ts`)));
     found.push(...made.filter((c) => c?.flows?.includes(flow.slug)));
   }
-  if (found[0])
-    also =
-      ALSO === "gist"
-        ? found[0].gist.split(/(?<=:) /)
-        : [
-            found[0].description.split(":")[0],
-            ...(ALSO === "both" ? [found[0].question] : []),
-          ];
+  if (found[0]) also = [found[0].description.split(":")[0], found[0].question];
 }
 film = {
   flow,
   also,
-  alsoKind: ALSO,
   beats,
   duration,
   band: BAND,
   address: `whosonfirst.ai/flows/${flow.slug}`,
-  // a trial, of 16 November 2026: the end card without its "Based on" line
-  standards: args.includes("--no-basis") ? "" : standards,
   descriptor,
 };
 

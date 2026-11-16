@@ -42,7 +42,13 @@ These are the film's manner so far. Change one for a reason, and change it here.
 - The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, where to read more. A line that said the whole of it again came after what is not protected until cut 11. It repeated the answer the film had just shown, and was cut on 16 November 2026.
 - About a minute and a half. Cut 11 of the DPoP film says 239 words in 99 seconds, about 145 a minute. Cut 10 said 271 in 117.
 - The title card is the flow's short name and the rest of its title. It does not repeat the sentence being said.
-- The end card is the site's name, what the site is in its own words, the flow's address, and the names of the standards the page is based on, as the page names them: “Based on RFC 9449”. It has no dates. A film is watched long after it is made, and “published September 2023” on its last frame reads as the film's own date. The video site shows when it was posted, and the description keeps the page's dates and when the guide was reviewed. The address leaves the corner while the end card, which has it, is up. Changed in cut 12.
+- The end card is the site's name, what the site is in its own words, and the flow's address. Under a rule and the words “Also in the guide” it says what a comparison the flow is half of compares, in the comparison's own words: its description as far as the colon, and its question under that, smaller. A flow in no comparison has nothing under the rule. Decided on 16 November 2026, in cuts 12 and 13:
+  - No dates. A film is watched long after it is made, and “published September 2023” on its last frame reads as the film's own date.
+  - No “Based on” line. Whoever wants the standard follows the address, where the page says it first, and some standards' names are longer than the frame is wide. The description keeps the line, with its dates.
+  - Not “Next”, which promises another film.
+  - One address. The comparison's own was tried under its question and was too much.
+  - Not the question alone. “DPoP or OAuth mTLS?” is three names in mixed case in a row, so a plain sentence comes first.
+  - The address leaves the corner while the end card, which has it, is up.
 
 **The stage**
 
