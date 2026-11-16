@@ -441,7 +441,7 @@
   // a trial: the question of a comparison this flow is half of
   if (film.also) {
     endCard.classList.add("has-also");
-    const also = make("p", "also", endCard);
+    const also = make("p", `also ${film.alsoKind}`, endCard);
     make("small", "", also, "Also in the guide");
     for (const line of film.also) make("span", "", also, line);
   }

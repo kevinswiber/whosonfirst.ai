@@ -116,14 +116,15 @@ if (!["flat", "depth", "paper"].includes(LOOK))
  * With --also, a line at the foot of the end card says what a comparison the
  * flow is half of compares, under "Also in the guide". A trial, of 16
  * November 2026. "gist" is the comparison's own one-line gist, broken at its
- * colon. "lead" is its description as far as the colon. It is not the
+ * colon. "lead" is its description as far as the colon, and "both" is that
+ * with the comparison's question under it, smaller. It is not the
  * comparison's question, which for DPoP is three names in mixed case in a
  * row. It has no address: a second one on the frame was too much. And it
  * does not say "Next", which promised a film that there is not.
  */
 const ALSO = option("--also");
-if (ALSO && !["gist", "lead"].includes(ALSO))
-  throw new Error(`--also is gist or lead, not ${ALSO}`);
+if (ALSO && !["gist", "lead", "both"].includes(ALSO))
+  throw new Error(`--also is gist, lead or both, not ${ALSO}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -448,6 +449,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .said-aloud .end-card.has-also { top: 180px; }
   .end-card .also { margin: 72px auto 0; padding-top: 34px; width: 1000px; line-height: 1.4; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
   .end-card .also span { display: block; }
+  .end-card .also.both span + span { margin-top: 6px; font-size: 28px; color: var(--fg-muted); }
   .end-card .also small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
   .end-card .descriptor { font-size: 40px; margin-top: 22px; }
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
@@ -583,11 +585,15 @@ if (ALSO) {
     also =
       ALSO === "gist"
         ? found[0].gist.split(/(?<=:) /)
-        : [found[0].description.split(":")[0]];
+        : [
+            found[0].description.split(":")[0],
+            ...(ALSO === "both" ? [found[0].question] : []),
+          ];
 }
 film = {
   flow,
   also,
+  alsoKind: ALSO,
   beats,
   duration,
   band: BAND,
