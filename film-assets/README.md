@@ -67,7 +67,7 @@ Writes each file's size and hash into the index.
 node scripts/film-assets.mjs push
 ```
 
-Sends what is new or changed, and then the index.
+Sends what is new or changed, and then the index. The index is sent only when the bucket has every file it lists: a push of part of the store, or with a listed file missing here, sends the files and says which ones the bucket still lacks.
 
 The bucket is reached in one of two ways.
 

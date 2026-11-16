@@ -7,6 +7,7 @@
  *   node scripts/film-assets.mjs            what is here, against the index
  *   node scripts/film-assets.mjs record     write each file's size and hash into the index
  *   node scripts/film-assets.mjs push       send what is new or changed to the bucket
+ *   node scripts/film-assets.mjs push shared/    only what is under that
  *   node scripts/film-assets.mjs pull       fetch what the index lists and is not here
  *   node scripts/film-assets.mjs pull flows/dpop/cuts/10    only what is under that
  *
@@ -42,7 +43,9 @@ import { fileURLToPath } from "node:url";
 import { signed } from "./s3-sign.mjs";
 
 const here = fileURLToPath(new URL("../", import.meta.url));
-const store = join(here, "film-assets");
+// FILM_ASSETS_DIR names another directory to take for the copy: the test of
+// this script has one of its own
+const store = process.env.FILM_ASSETS_DIR ?? join(here, "film-assets");
 const indexFile = join(store, "index.json");
 const index = JSON.parse(readFileSync(indexFile, "utf8"));
 const [command = "check", under = ""] = process.argv.slice(2);
@@ -218,18 +221,37 @@ if (command === "check") {
       : [],
   );
   let sent = 0;
+  const owed = [];
   for (const file of files) {
     const path = join(store, file.key);
-    if (!existsSync(path) || !file.key.startsWith(under)) continue;
-    if (hashOf(path) !== file.sha256)
+    const mine = existsSync(path) && file.key.startsWith(under);
+    if (mine && hashOf(path) !== file.sha256)
       throw new Error(
         `${file.key} is not the file the index describes. Run "record" first.`,
       );
     if (there.get(file.key) === file.sha256) continue;
+    if (!mine) {
+      owed.push(file.key);
+      continue;
+    }
     process.stdout.write(`sending ${file.key} … `);
     if (!(await put(file.key, path))) process.exit(1);
     console.log("sent");
     sent++;
+  }
+  // The bucket's index is what the next push takes for what the bucket has,
+  // so it is sent only when the bucket has every file it lists.
+  if (owed.length) {
+    console.log(
+      `${sent} files sent to ${index.bucket}. Its index is not sent, because it would list ${owed.length} files the bucket does not have:`,
+    );
+    for (const key of owed) console.log(`  ${key}`);
+    console.log(
+      under
+        ? `They are not under ${under}, or not here. Push everything to send the index.`
+        : "They are not here. Fetch or make them, and push again.",
+    );
+    process.exit(1);
   }
   // the index goes last, so it never lists what is not there yet
   for (const key of ["README.md", "index.json"])
