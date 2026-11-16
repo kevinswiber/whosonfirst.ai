@@ -19,8 +19,8 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "12",
-      "state": "Not posted anywhere yet. Cut 12 is the latest: cut 11 with an end card that has no dates. 12-paper is the same on warm paper with dots, to decide between. Still to decide: the look, whose voice (Kokoro in cut 9, an ElevenLabs voice from cut 10, or a person's), whether the room stays under it, and the cover.",
+      "latest": "13",
+      "state": "Not posted anywhere yet. Cut 13 is the latest: cut 12 with an end card that says what else is in the guide. 13-paper is the same on warm paper with dots, to decide between. Still to decide: the look, whose voice (Kokoro in cut 9, an ElevenLabs voice from cut 10, or a person's), whether the room stays under it, and the cover.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-matilda.mp3",
@@ -49,7 +49,7 @@
           "made": "2026-11-16",
           "credits": 2606,
           "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 11, one to a paragraph, with the words under `speak` written as they sound. Two takes were made, and the second was kept: a recogniser heard the first say “cache” for “cash”. Its line “Now try the copy again…” said the copy was the one from the opening, which it is not, so it was replaced by “Now copy the token alone…” from 2026-11-16-matilda.mp3, cut at a quiet on each side",
-          "use": "Cuts 11, 12 and 12-paper. Give it once with --reading, and the film can be made again with --voice matilda",
+          "use": "Cuts 11, 12 and 13, and their paper versions. Give it once with --reading, and the film can be made again with --voice matilda",
           "bytes": 1419433,
           "sha256": "50e8f68c95e76e020c535f6b02bcbf3c910b3d5c83aa8c0a5ded715c4cc5ca20"
         },
@@ -536,17 +536,9 @@
           "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
           "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
-          "status": "current",
+          "status": "superseded",
           "look": "depth",
           "what": "Cut 11 with a new end card: the site's name, what the site is in its own words, the flow's address and “Based on RFC 9449”, with no dates. The address leaves the corner while the end card is up. The description keeps the dates.",
-          "made_with": [
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --reading film-assets/flows/dpop/readings/2026-11-16-matilda-shorter.mp3 --beats",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
-            "node scripts/flow-film.mjs --flow dpop",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --stills 86.2",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
-            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --stills 86.2"
-          ],
           "files": [
             {
               "key": "flows/dpop/cuts/12/film.mp4",
@@ -594,7 +586,7 @@
           "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
           "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
-          "status": "kept to compare",
+          "status": "superseded",
           "look": "paper",
           "what": "Cut 12 on warm paper with a faint grid of dots (--look paper). Its captions and description are cut 12's.",
           "files": [
@@ -606,6 +598,90 @@
             },
             {
               "key": "flows/dpop/cuts/12-paper/cover.png",
+              "what": "The cover, on paper",
+              "bytes": 412298,
+              "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
+            }
+          ]
+        },
+        {
+          "id": "13",
+          "made": "2026-11-16",
+          "commit": "aff1881",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "current",
+          "look": "depth",
+          "what": "Cut 12 with a new end card: the site's name, what the site is and the flow's address, and under a rule and “Also in the guide”, “Two ways to bind an access token to a key, compared” with “DPoP or OAuth mTLS?” under it. “Based on RFC 9449” is in the description alone.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/13/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 5452566,
+              "sha256": "4efe33998344ead00f0c29c710e3c9e028bd964cf5f61fe4c717f8750ff1cec0"
+            },
+            {
+              "key": "flows/dpop/cuts/13/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4020893,
+              "sha256": "9879dc65f11f7f395e1ed6a81bd04d2fe27f6638a2d3d5e811e4764f759e0631"
+            },
+            {
+              "key": "flows/dpop/cuts/13/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/13/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/13/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/13/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 407727,
+              "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ],
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --reading film-assets/flows/dpop/readings/2026-11-16-matilda-shorter.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --stills 86.2",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop --voice matilda --look paper --stills 86.2"
+          ]
+        },
+        {
+          "id": "13-paper",
+          "made": "2026-11-16",
+          "commit": "aff1881",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "kept to compare",
+          "look": "paper",
+          "what": "Cut 13 on warm paper with a faint grid of dots (--look paper). Its captions and description are cut 13's.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/13-paper/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 6192852,
+              "sha256": "7d5a3f74c820c81027eba697f56ddf034c788e48d7620fc3117b9368f31895a4"
+            },
+            {
+              "key": "flows/dpop/cuts/13-paper/cover.png",
               "what": "The cover, on paper",
               "bytes": 412298,
               "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
