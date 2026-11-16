@@ -627,7 +627,7 @@
    * Someone else's own way to the API: along under the agent's line and up
    * to the API from below. What they send travels along the level part.
    */
-  const BEND = NEAR + 100;
+  const BEND = NEAR + 60;
   const attempt = (carries) => {
     const length =
       BEND - (OTHER.x + OTHER.w / 2) + (OTHER.y - (TWO + RIGHT.h / 2) - 16);
@@ -667,7 +667,8 @@
     return { path, tip, send };
   };
   const ANSWER = {
-    x: RIGHT.x + 115,
+    // its widest, “Refused: no proof”, ends at the safe edge
+    x: RIGHT.x + 75,
     under: TWO + RIGHT.h / 2 + 66,
     over: TWO - RIGHT.h / 2 - 66,
   };

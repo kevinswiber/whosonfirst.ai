@@ -6,6 +6,8 @@
  *
  *   npm run build && node scripts/flow-film.mjs --flow dpop
  *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
+ *   node scripts/flow-film.mjs --flow dpop --voice hope --reading hope.mp3   said by a recording of the whole film, cut into its lines
+ *   node scripts/flow-film.mjs --flow dpop --voice hope --room room.mp3   with the sound of a quiet room under the voice
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
  *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
@@ -68,8 +70,24 @@ const option = (name) => {
 };
 const SLUG = option("--flow") ?? "dpop";
 const STILLS = option("--stills")?.split(",").map(Number);
-/** Who says it: nobody, or Kokoro. */
+/**
+ * Who says it: nobody, Kokoro, or a voice by any other name whose lines were
+ * recorded. A recorded voice's lines are cut from one reading of the whole
+ * film, given once with --reading, and kept.
+ */
 const VOICE = option("--voice");
+const READING = option("--reading");
+/** A line for the description under a film with a recorded voice, such as who or what the voice is. */
+const VOICE_NOTE = option("--voice-note");
+/**
+ * The sound of a quiet room, laid under the voice for the whole film, so the
+ * gaps between its lines are not the dead silence no recording has. A steady
+ * recording with nothing happening in it, of any length: it is repeated, each
+ * copy faded into the next. --room-level is how loud it is, in LUFS: far
+ * under the voice, which is at -16.
+ */
+const ROOM = option("--room");
+const ROOM_LEVEL = Number(option("--room-level") ?? -56);
 /** Which of Kokoro's voices, and how fast it speaks. */
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
 /** Whether what is said is written under the scene: by default, only where nobody says it. */
@@ -192,7 +210,13 @@ const written = (said) => {
 function recordings(lines) {
   const kept = (text) => {
     const name = createHash("sha1")
-      .update(JSON.stringify([VOICE, KOKORO, spoken(text)]))
+      .update(
+        JSON.stringify(
+          VOICE === "kokoro"
+            ? [VOICE, KOKORO, spoken(text)]
+            : ["recorded", VOICE, spoken(text)],
+        ),
+      )
       .digest("hex")
       .slice(0, 16);
     return {
@@ -201,23 +225,46 @@ function recordings(lines) {
     };
   };
   const missing = lines.filter((text) => !existsSync(kept(text).json));
-  if (missing.length) {
+  const recorded = VOICE !== "kokoro";
+  if (recorded && READING && !existsSync(READING))
+    throw new Error(`There is no recording at ${READING}`);
+  if (recorded && missing.length && !READING)
+    throw new Error(
+      `The voice ${VOICE} has not said ${missing.length} of the film's ${lines.length} lines, the first of them “${missing[0]}”. Give one recording of the whole film with --reading, or use --voice kokoro.`,
+    );
+  if (missing.length || (recorded && READING)) {
     const job = join(out, "voice", "job.json");
+    // Kokoro says the lines that are new. A recording is of the whole film,
+    // so every line is cut from it again.
     writeFileSync(
       job,
-      JSON.stringify({
-        ...KOKORO,
-        lines: missing.map((text) => ({ text: spoken(text), ...kept(text) })),
-      }),
+      JSON.stringify(
+        recorded
+          ? {
+              reading: READING,
+              lines: lines.map((text) => ({
+                text: spoken(text),
+                ...kept(text),
+              })),
+            }
+          : {
+              ...KOKORO,
+              lines: missing.map((text) => ({
+                text: spoken(text),
+                ...kept(text),
+              })),
+            },
+      ),
     );
+    const script = recorded ? "film-voice-import.py" : "film-voice.py";
     const said = spawnSync(
       process.env.FILM_PYTHON ?? "python3",
-      [join(here, "scripts", "film-voice.py"), job],
+      [join(here, "scripts", script), job],
       { stdio: ["ignore", "inherit", "inherit"] },
     );
     if (said.status !== 0) {
       console.error(
-        "The voice did not finish. See scripts/film-voice.py for what it needs.",
+        `The voice did not finish. See scripts/${script} for what it needs.`,
       );
       process.exit(1);
     }
@@ -229,8 +276,14 @@ function recordings(lines) {
     ]),
   );
 }
-if (VOICE && VOICE !== "kokoro")
-  throw new Error(`No voice is named ${VOICE}: the one there is, is kokoro`);
+if (ROOM && !VOICE)
+  throw new Error("--room goes under a voice: name one with --voice");
+if (ROOM && !existsSync(ROOM))
+  throw new Error(`There is no recording at ${ROOM}`);
+if (READING && (!VOICE || VOICE === "kokoro"))
+  throw new Error(
+    "--reading is a recording of a voice: name the voice with --voice",
+  );
 const voiced = VOICE
   ? recordings(script.beats.filter((b) => b.say).map((b) => b.say))
   : undefined;
@@ -314,7 +367,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; color: var(--fg); font-family: var(--font-body); }
   /* Where the words are not written under it, the scene has the whole height, and sits in the middle of it. */
   #scene { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
-  .said-aloud #scene { transform: translateY(118px); }
+  .said-aloud #scene { transform: translateY(96px); }
   .said-aloud .said { display: none; }
   .said-aloud .curtain { top: -200px; height: 1400px; }
   .lines { position: absolute; left: 0; top: 0; }
@@ -340,7 +393,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .sent-proof { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
   .sent-missing { border: 3px dashed var(--border-strong); color: var(--fg-subtle); }
   .sent-ok { border-color: var(--green); background: var(--green-soft); color: var(--green); }
-  .heading { position: absolute; z-index: 40; left: 130px; top: 46px; display: grid; gap: 6px; }
+  .heading { position: absolute; z-index: 40; left: 130px; top: 58px; display: grid; gap: 6px; }
   .heading small { font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); }
   .heading strong { font: 600 42px/1.15 var(--font-body); }
   .gloss { position: absolute; transform: translate(-50%, -50%) var(--move); display: flex; align-items: baseline; gap: 16px; padding: 8px 22px; border: 2px dashed var(--border-strong); border-radius: 8px; background: var(--bg); white-space: nowrap; }
@@ -411,7 +464,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
-  .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
+  .where { position: absolute; z-index: 61; left: 96px; top: 996px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
@@ -484,7 +537,7 @@ if (problems.length) {
 // opened, so a flow or a script it cannot draw has already been refused.
 if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
@@ -496,7 +549,7 @@ if (STILLS) {
 } else {
   // The voice, as one track: each line starts where its beat does. It is
   // brought to one loudness and to the rate a video site asks for.
-  const track = join(out, "voice", `${name}.wav`);
+  let track = join(out, "voice", `${name}.wav`);
   if (VOICE) {
     const clips = beats.filter((b) => b.clip);
     const mixed = spawnSync(
@@ -520,6 +573,82 @@ if (STILLS) {
       console.error("ffmpeg did not put the voice together.");
       process.exit(1);
     }
+  }
+  // The room goes under the voice after the voice has been brought to its
+  // loudness, and at a level of its own: brought to one loudness together,
+  // the room would be turned up in every pause.
+  if (ROOM) {
+    const heard = spawnSync(
+      "ffmpeg",
+      [
+        "-hide_banner",
+        "-nostats",
+        "-i",
+        ROOM,
+        "-af",
+        "ebur128",
+        "-f",
+        "null",
+        "-",
+      ],
+      { encoding: "utf8" },
+    ).stderr;
+    const loud = Number(
+      /I:\s+(-?[\d.]+) LUFS/.exec(heard.split("Summary:").pop())?.[1],
+    );
+    const lasts = Number(
+      spawnSync(
+        "ffprobe",
+        [
+          "-v",
+          "error",
+          "-show_entries",
+          "format=duration",
+          "-of",
+          "csv=p=0",
+          ROOM,
+        ],
+        { encoding: "utf8" },
+      ).stdout,
+    );
+    if (!Number.isFinite(loud) || !(lasts > 4))
+      throw new Error(
+        `${ROOM} could not be measured, or is shorter than four seconds`,
+      );
+    // each copy is faded into the next over a second, so no join is heard
+    const JOIN = 1;
+    const copies = Math.ceil((duration - JOIN) / (lasts - JOIN));
+    let bed = "[1:a]";
+    let joins = "";
+    for (let i = 2; i <= copies; i++) {
+      joins += `${bed}[${i}:a]acrossfade=d=${JOIN}[bed${i}];`;
+      bed = `[bed${i}]`;
+    }
+    const under = join(out, "voice", `${name}-room.wav`);
+    const laid = spawnSync(
+      "ffmpeg",
+      [
+        "-y",
+        "-loglevel",
+        "error",
+        "-i",
+        track,
+        ...Array.from({ length: copies }, () => ["-i", ROOM]).flat(),
+        "-filter_complex",
+        `${joins}${bed}atrim=0:${duration.toFixed(3)},volume=${(ROOM_LEVEL - loud).toFixed(2)}dB,afade=t=in:d=0.4,afade=t=out:st=${(duration - 1).toFixed(3)}:d=1,aformat=sample_rates=48000:channel_layouts=stereo[room];[0:a]aformat=sample_rates=48000:channel_layouts=stereo[voice];[voice][room]amix=inputs=2:normalize=0[out]`,
+        "-map",
+        "[out]",
+        "-t",
+        duration.toFixed(3),
+        under,
+      ],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    if (laid.status !== 0) {
+      console.error("ffmpeg did not lay the room under the voice.");
+      process.exit(1);
+    }
+    track = under;
   }
   const made = spawn(
     "ffmpeg",
@@ -615,7 +744,7 @@ if (STILLS) {
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   writeFileSync(
     join(out, `${name}.txt`),
-    `${flow.title}\n${flow.tagline}\n\nhttps://${film.address}/\n\n${chapters.map(([at, title]) => `${clock(at)} ${title}`).join("\n")}\n\n${basis}\n${VOICE ? "The voice is synthetic: Kokoro, an open text-to-speech model.\n" : ""}`,
+    `${flow.title}\n${flow.tagline}\n\nhttps://${film.address}/\n\n${chapters.map(([at, title]) => `${clock(at)} ${title}`).join("\n")}\n\n${basis}\n${VOICE === "kokoro" ? "The voice is synthetic: Kokoro, an open text-to-speech model.\n" : VOICE_NOTE ? `${VOICE_NOTE}\n` : ""}`,
   );
 
   const count = lines.reduce((n, b) => n + b.say.trim().split(/\s+/).length, 0);
