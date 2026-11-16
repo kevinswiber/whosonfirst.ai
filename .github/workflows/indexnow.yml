@@ -6,11 +6,11 @@
 # The site is not deployed from here: Cloudflare's Workers Builds builds and
 # deploys every push to main, a minute or two after it. So this workflow
 # builds the same commit for itself, from the whole history, since the dates
-# in the sitemap are read from it. Then scripts/indexnow.mjs does three things:
+# in the sitemap and what each commit changed are read from it. Then scripts/indexnow.mjs does three things:
 #
-#   chooses  the pages whose date is the date of a commit that main has now
-#            and did not have when this workflow last succeeded on a push.
-#            No page, and it says so and sends nothing
+#   chooses  the pages made from a file or an entry changed by a commit that
+#            main has now and did not have when this workflow last succeeded
+#            on a push. No page, and it says so and sends nothing
 #   waits    until the deployed sitemap lists each of those pages with a date
 #            no older than this build's, looking every fifteen seconds. An
 #            engine that is told about a page goes and reads it, and should

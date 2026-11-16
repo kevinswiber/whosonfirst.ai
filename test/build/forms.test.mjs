@@ -429,6 +429,25 @@ test("the sitemap includes every indexable page, including implementation record
   );
 });
 
+// scripts/indexnow.mjs chooses the pages a push changed by what each is made
+// from, so a page left out here, or named only by files that are not there,
+// would never be sent.
+test("what each page in the sitemap is made from is beside it, and names a file that is there", () => {
+  const urls = [...file("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+    (match) => match[1],
+  );
+  const sources = JSON.parse(file("sitemap-sources.json"));
+  assert.deepEqual(Object.keys(sources), urls);
+  const repo = join(root, "..", "..");
+  const nowhere = Object.entries(sources)
+    .filter(
+      ([, names]) =>
+        !names.some((name) => existsSync(join(repo, name.split("#")[0]))),
+    )
+    .map(([url, names]) => `${url} (${names.join(", ")})`);
+  assert.deepEqual(some(nowhere), []);
+});
+
 // A date is given only where it is known, and then the same one everywhere it
 // is given: a search engine trusts a sitemap's dates only while they hold up.
 test("a page's date in the sitemap is the one in its structured data and in its footer, and none is in the future", () => {
