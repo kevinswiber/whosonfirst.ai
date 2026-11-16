@@ -128,6 +128,20 @@ for (const width of [768, 900, 1087]) {
           JSON.stringify({ initialY, ...seen }),
         );
       });
+      // The panel fills the window. Scrolling on past its last step reaches
+      // the rest of the page, or a reader takes the end of the steps for its end.
+      test("scrolling past the last step carries on down the page", async () => {
+        await page.evaluate(() => {
+          const panel = document.querySelector(".flow-panel");
+          window.scrollBy(0, panel.getBoundingClientRect().top - 120);
+          panel.scrollTop = panel.scrollHeight;
+        });
+        const box = await page.locator(".flow-panel").boundingBox();
+        const before = await page.evaluate(() => scrollY);
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.wheel(0, 400);
+        await page.waitForFunction((y) => scrollY > y, before);
+      });
       // A diagram selection uses the same bounded narrative panel.
       test("diagram selection aligns its explanation inside the scrolling panel", async () => {
         await page.locator('svg .step[data-step="1"]').first().click();
