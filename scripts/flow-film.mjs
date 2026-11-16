@@ -112,6 +112,16 @@ const LOOK = option("--look") ?? USUAL_LOOK;
 if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
 
+/**
+ * A line at the foot of the end card that asks the question of a comparison
+ * the flow is half of: "question" for the question alone, "address" for the
+ * question and where its page is. A trial, of 16 November 2026: without it
+ * the end card has no such line.
+ */
+const NEXT = option("--next");
+if (NEXT && !["question", "address"].includes(NEXT))
+  throw new Error(`--next is question or address, not ${NEXT}`);
+
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
 const out = join(here, "social");
@@ -432,6 +442,10 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
   .said-aloud .end-card { top: 234px; }
+  .said-aloud .end-card.has-next { top: 180px; }
+  .end-card .next { margin: 84px auto 0; padding-top: 34px; width: 900px; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
+  .end-card .next small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
+  .end-card .next code { display: block; margin-top: 10px; padding: 0; background: none; font: 500 28px var(--font-mono); color: var(--accent); }
   .end-card .descriptor { font-size: 40px; margin-top: 22px; }
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
   .end-card .standards { font-size: 30px; margin: 28px auto 0; max-width: 1500px; text-wrap: balance; }
@@ -550,8 +564,31 @@ const { basis, standards, descriptor } = await page.evaluate(() => {
     descriptor: site?.description.replace(/\.$/, "") ?? "",
   };
 });
+// The first comparison the flow is half of, in the order the site lists
+// them: its question is the page's own heading.
+let next;
+if (NEXT) {
+  const dir = join(here, "src", "data", "comparisons");
+  const listed = readFileSync(join(dir, "index.ts"), "utf8");
+  const found = [];
+  for (const [, file] of listed.matchAll(
+    /from "\.\/([a-z0-9-]+-vs-[a-z0-9-]+)"/g,
+  )) {
+    const made = Object.values(await import(join(dir, `${file}.ts`)));
+    found.push(...made.filter((c) => c?.flows?.includes(flow.slug)));
+  }
+  if (found[0])
+    next = {
+      question: found[0].question,
+      address:
+        NEXT === "address"
+          ? `whosonfirst.ai/compare/${found[0].flows.join("-vs-")}`
+          : "",
+    };
+}
 film = {
   flow,
+  next,
   beats,
   duration,
   band: BAND,

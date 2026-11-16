@@ -691,6 +691,14 @@
   if (film.descriptor) make("p", "descriptor", endCard, film.descriptor);
   make("p", "address", endCard, film.address);
   if (film.standards) make("p", "standards", endCard, film.standards);
+  // a trial: the question of a comparison this flow is half of
+  if (film.next) {
+    endCard.classList.add("has-next");
+    const next = make("p", "next", endCard);
+    make("small", "", next, "Next");
+    next.append(film.next.question);
+    if (film.next.address) make("code", "", next, film.next.address);
+  }
 
   let passing = [];
   const clear = (t, dur = 0.35) => {
