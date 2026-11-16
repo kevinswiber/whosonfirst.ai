@@ -1,68 +1,130 @@
 /**
- * Another stage for a flow's film, to set beside scripts/film-stage.js: a
- * prototype. This file runs in the page that scripts/flow-film.mjs opens with
- * `--layout fixed`, not in Node.
+ * The stage for a flow's film on which the parties stay where they are. This
+ * file runs in the page that scripts/flow-film.mjs opens with
+ * `--layout fixed`, not in Node. docs/film-design.md has its measurements.
  *
- * On the first stage a step is a row, and rows come and go. On this one the
- * parties stay where they are for the whole film, with a line between each
- * pair that speaks to each other, and the only thing that moves is what is
- * sent. The agent stands at the left, as tall as the stage, with what it
- * holds inside it. The other parties stand at the right, one above another,
- * and a line runs from the agent to each.
+ * One party stands at the left, as tall as the stage, with what it holds
+ * inside it: the one that speaks to the most others, and the agent where
+ * that is a tie. The others stand at the right, one above another. A line
+ * runs between each two parties that speak to each other: level, from the
+ * tall party to each of the others, and upright between two at the right.
+ * The only thing that moves is what is sent, and before it moves its line
+ * is drawn over toward whoever will receive it.
  *
- * What it gives up is the page's drawing: there are no rows, so the order of
- * the steps is not on the stage as a place. Each thing sent carries its
- * step's number, and a strip of numbers says how far the flow has got.
+ * There are no rows, so the order of the steps is not on the stage as a
+ * place. Each thing sent carries its step's number, and a strip of numbers
+ * says how far the flow has got.
  *
- * It takes the same `window.FILM` and gives the same `window.seek(t)`. The
- * part that places things in time is the same as the first stage's, copied:
- * if this stage is kept, the two should share it.
+ * It takes the same `window.FILM` as scripts/film-stage.js and gives the
+ * same `window.seek(t)`. The part that places things in time is the same as
+ * that stage's, copied: a fix to it goes in both.
  */
 (() => {
   const film = window.FILM;
   const { flow, beats } = film;
   const stage = document.getElementById("scene");
-
-  // ---------- where things are, in a stage of 1920 by 1080 ----------
-  /** The agent: a tall box at the left, with what it holds inside it. */
-  const AGENT = { x: 310, top: 190, w: 360, h: 480 };
-  const LEFT = AGENT.x + AGENT.w / 2; // where its lines leave it
-  /** The other parties: boxes at the right, between these two heights. */
-  const RIGHT = { x: 1580, w: 380, h: 104, first: 250, last: 620 };
-  const NEAR = RIGHT.x - RIGHT.w / 2; // where a line reaches one
-  /** Where the agent holds things, inside its box: the first, and the second under it. */
-  const SLOT = [330, 400];
-  const KEYSTORE_Y = 572;
-  /** How wide a listing is, and how many letters of a line it has room for. */
-  const CARD = { w: 860, letters: 44 };
-  /** Between the agent and the others: where a listing is shown. */
-  const MIDDLE = (LEFT + NEAR) / 2;
-  /** Where someone else stands, when someone else has a copy of the token. */
-  const OTHER = { x: 720, y: 760, w: 400 };
   const DIM = 0.3;
 
-  const agent = flow.participants.find((p) => p.role === "agent");
-  const rest = flow.participants.filter((p) => p !== agent);
+  // ---------- who stands where, in a stage of 1920 by 1080 ----------
+  /** Who each party speaks to. */
+  const speaks = new Map(flow.participants.map((p) => [p.id, new Set()]));
+  for (const step of flow.steps)
+    if (step.to) {
+      speaks.get(step.from).add(step.to);
+      speaks.get(step.to).add(step.from);
+    }
+  const linked = (a, b) => speaks.get(a.id).has(b.id);
+  const placeOf = (p) => flow.participants.findIndex((q) => q.id === p.id);
+  /** The tall party: whoever speaks to the most others. An agent before another, and a person last. */
+  const [tall, ...others] = [...flow.participants].sort(
+    (a, b) =>
+      speaks.get(b.id).size - speaks.get(a.id).size ||
+      (b.role === "agent") - (a.role === "agent") ||
+      (a.role === "human") - (b.role === "human") ||
+      placeOf(a) - placeOf(b),
+  );
+  if (others.length > 3)
+    throw new Error(
+      `The fixed layout has places for four parties, and ${flow.slug} has ${flow.participants.length}`,
+    );
+  /**
+   * The others, top to bottom: in the page's order, unless two of them speak
+   * to each other. Those two are put next to each other, since their line is
+   * the gap between them.
+   */
+  const orders = (list) =>
+    list.length < 2
+      ? [list]
+      : list.flatMap((first) =>
+          orders(list.filter((p) => p !== first)).map((rest) => [
+            first,
+            ...rest,
+          ]),
+        );
+  const cost = (order) => {
+    let apart = 0;
+    let moved = 0;
+    for (let i = 0; i < order.length; i++)
+      for (let j = i + 1; j < order.length; j++) {
+        if (j - i > 1 && linked(order[i], order[j])) apart++;
+        if (placeOf(order[i]) > placeOf(order[j])) moved++;
+      }
+    return apart * 100 + moved;
+  };
+  const stacked = orders(others).sort((a, b) => cost(a) - cost(b))[0];
+  if (cost(stacked) >= 100)
+    throw new Error(
+      `The fixed layout cannot draw ${flow.slug}: three of its parties at the right all speak to each other, and only neighbours have a line between them`,
+    );
+
+  /**
+   * The tall party's box. It starts the same way under the strip of numbers
+   * whatever the flow, and is taller where three parties stand beside it:
+   * down to where, in a silent cut, the sentence is written.
+   */
+  const BOX =
+    stacked.length > 2
+      ? { x: 310, w: 360, top: 190, h: 590 }
+      : { x: 310, w: 360, top: 190, h: 480 };
+  const LEFT = BOX.x + BOX.w / 2; // where its lines leave it
+  const MID = BOX.top + BOX.h / 2;
+  /** The other parties: boxes at the right. */
+  const RIGHT = { x: 1580, w: 380, h: 104 };
+  const NEAR = RIGHT.x - RIGHT.w / 2; // where a level line reaches one
+  /** Between the tall party and the others: where a listing is shown. */
+  const MIDDLE = (LEFT + NEAR) / 2;
+  /** How wide a listing is, and how many letters of a line it has room for. */
+  const CARD = { w: 820, letters: 42 };
+  /** What the tall party holds: the first thing here, and each next one this far under it. */
+  const SLOT = { first: BOX.top + 140, step: 70 };
+  const SLOTS = Math.floor((BOX.h - 140 - 40) / SLOT.step) + 1;
+  const KEYSTORE_Y = BOX.top + 374;
+  /** Where someone else stands, when someone else has a copy of the token. */
+  const OTHER = { x: 720, y: 742, w: 400 };
+
+  // Down the right: the gaps share what room there is, and a gap that has a
+  // line in it has three times the room of one that has none.
+  const span = [BOX.top + 8, BOX.top + BOX.h + 2];
+  const free = span[1] - span[0] - stacked.length * RIGHT.h;
+  const weights = stacked
+    .slice(1)
+    .map((p, i) => (linked(stacked[i], p) ? 3 : 1));
+  const whole = weights.reduce((sum, w) => sum + w, 0);
+  let down = span[0];
   const parties = [
-    { ...agent, x: AGENT.x, y: AGENT.top + AGENT.h / 2 },
-    ...rest.map((p, i) => ({
-      ...p,
-      x: RIGHT.x,
-      y:
-        RIGHT.first +
-        (i * (RIGHT.last - RIGHT.first)) / Math.max(1, rest.length - 1),
-    })),
+    { ...tall, x: BOX.x, y: MID },
+    ...stacked.map((p, i) => {
+      const y = stacked.length === 1 ? MID : down + RIGHT.h / 2;
+      down += RIGHT.h + (free * (weights[i] ?? 0)) / (whole || 1);
+      return { ...p, x: RIGHT.x, y };
+    }),
   ];
   const party = (id) => parties.find((p) => p.id === id);
-  const me = parties[0];
-  const api = parties.find((p) => p.role === "resource");
-  const others = parties.filter((p) => p !== me && p !== api).map((p) => p.id);
-  /**
-   * While only the agent and the API take part, before the flow and after
-   * it, the API stands level with the middle of the agent, and the line
-   * between them is at that height. For the flow it is in its place below.
-   */
-  const TWO = me.y;
+  const hub = parties[0];
+  /** Who holds something at some point in the flow: a thing held hangs from a party at the right. */
+  const holders = new Set(
+    flow.steps.flatMap((s) => (s.gain ?? []).map(([id]) => id)),
+  );
 
   // ---------- making things ----------
   const make = (tag, cls, parent = stage, text) => {
@@ -86,7 +148,15 @@
   };
 
   // ---------- where each thing is at which second ----------
-  const START = { opacity: 0, x: 0, y: 0, scale: 1, draw: 0, dim: 0, lift: 0 };
+  const START = {
+    opacity: 0,
+    x: 0,
+    y: 0,
+    scale: 1,
+    draw: 0,
+    dim: 0,
+    lift: 0,
+  };
   const tracks = [];
   const trackOf = (node, prop) => {
     let found = tracks.find((t) => t.node === node && t.prop === prop);
@@ -132,48 +202,105 @@
     return a.v + (b.v - a.v) * p;
   };
 
-  // ---------- the parties, and the line from the agent to each ----------
+  // ---------- the parties, and a line between each two that speak ----------
   const lines = svg(
     "svg",
     { class: "lines", width: 1920, height: 1080 },
     stage,
   );
-  me.box = at(make("div", `party tall role-${me.role}`), me.x, me.y);
-  me.box.style.width = `${AGENT.w}px`;
-  me.box.style.height = `${AGENT.h}px`;
-  make("strong", "", me.box, me.label);
+  hub.box = at(make("div", `party tall role-${hub.role}`), hub.x, hub.y);
+  hub.box.style.width = `${BOX.w}px`;
+  hub.box.style.height = `${BOX.h}px`;
+  make("strong", "", hub.box, hub.label);
   for (const p of parties.slice(1)) {
     p.box = at(make("div", `party role-${p.role}`), p.x, p.y);
     p.box.style.width = `${RIGHT.w}px`;
     make("strong", "", p.box, p.label);
-    p.line = svg(
-      "line",
-      { class: "channel", x1: LEFT, x2: NEAR, y1: p.y, y2: p.y },
-      lines,
-    );
   }
   /**
-   * Who is taking part: the others are dimmed, and one named in `gone` is not
-   * there at all. A line is lit when the party at its far end is.
+   * Where a line between two parties leaves the first and reaches the
+   * second. Level between the tall party and another, at the other's height.
+   * Upright between two at the right, from under the upper one, and from
+   * under what hangs from it if anything does.
    */
-  const light = (t, ids, gone = []) => {
-    for (const p of parties) {
-      const level = gone.includes(p.id) ? 0 : ids.includes(p.id) ? 1 : DIM;
-      to(p.box, "opacity", t, 0.4, level);
-      if (p.line) to(p.line, "opacity", t, 0.4, level);
+  const ends = (a, b) => {
+    if (a === hub)
+      return [
+        { x: LEFT, y: b.y },
+        { x: NEAR, y: b.y },
+      ];
+    if (b === hub) return ends(b, a).reverse();
+    const [upper, lower] = a.y < b.y ? [a, b] : [b, a];
+    const top = upper.y + RIGHT.h / 2 + (holders.has(upper.id) ? 30 : 0);
+    const run = [
+      { x: RIGHT.x, y: top },
+      { x: RIGHT.x, y: lower.y - RIGHT.h / 2 },
+    ];
+    return a === upper ? run : run.reverse();
+  };
+  const links = [];
+  for (const [i, a] of parties.entries())
+    for (const b of parties.slice(i + 1))
+      if (linked(a, b)) {
+        const [p, q] = ends(a, b);
+        links.push({
+          a,
+          b,
+          line: svg(
+            "line",
+            { class: "channel", x1: p.x, y1: p.y, x2: q.x, y2: q.y },
+            lines,
+          ),
+        });
+      }
+  const linkOf = (a, b) =>
+    links.find((l) => (l.a === a && l.b === b) || (l.a === b && l.b === a));
+  /**
+   * Who is taking part: the others are dimmed, and one named in `gone` is not
+   * there at all. A line is lit when the parties at both its ends are. With
+   * `first`, this is how the film opens, and nothing fades to it.
+   */
+  const light = (t, ids, gone = [], first = false) => {
+    const level = (p) =>
+      gone.includes(p.id) ? 0 : ids.includes(p.id) ? 1 : DIM;
+    const set = (node, value) =>
+      first ? from(node, "opacity", value) : to(node, "opacity", t, 0.4, value);
+    for (const p of parties) set(p.box, level(p));
+    for (const { a, b, line } of links) {
+      const both = Math.min(level(a), level(b));
+      set(line, both === 0 ? 0 : both === 1 ? 1 : DIM);
     }
   };
 
   const KEY =
     '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4.5"/><path d="M12.5 12H22M18 12v4M21.5 12v3"/></svg>';
-  const chip = (kind, x, y) => {
+  /**
+   * A thing held: a key, a token, or a token bound to a key. It is given
+   * its own words where it has them, in smaller letters if they are long,
+   * and cut short if they are longer than its party has room for.
+   */
+  const chip = (kind, x, y, words) => {
     const node = at(make("div", `held held-${kind}`), x, y);
     node.innerHTML =
       kind === "key"
-        ? `${KEY}<span>private key</span>`
+        ? `${KEY}<span></span>`
         : kind === "bound"
-          ? `<span>access token</span><i>${KEY}</i>`
-          : "<span>access token</span>";
+          ? `<span></span><i>${KEY}</i>`
+          : "<span></span>";
+    const label = node.querySelector("span");
+    if (!words) {
+      label.textContent = kind === "key" ? "private key" : "access token";
+      return node;
+    }
+    const extra = kind === "token" ? 0 : 40;
+    const room = 324 - 44 - extra;
+    const small = words.length * 14.4 > room;
+    const each = small ? 12 : 14.4;
+    const most = Math.floor(room / each);
+    const text = words.length > most ? `${words.slice(0, most - 1)}…` : words;
+    label.textContent = text;
+    if (small) node.style.fontSize = "20px";
+    node.style.width = `${Math.max(280, Math.ceil(text.length * each) + 44 + extra)}px`;
     return node;
   };
   const verdict = (text, ok, x, y) =>
@@ -188,23 +315,63 @@
       y,
     );
 
+  // ---------- what a party holds ----------
+  const held = new Map(parties.map((p) => [p, []]));
+  /**
+   * A party comes to hold something at second `t`. In the tall party it
+   * takes the next place down, and when there is no place left the oldest
+   * goes and the rest move up. From a party at the right it hangs under the
+   * box, and takes the place of what hung there. `arrived` is what was sent,
+   * if this is it: it goes to where the thing is held, or is gone when it is.
+   */
+  const hold = (p, what, t, arrived) => {
+    const words = what.replace(/\s*\(.*\)\s*$/, "");
+    const kind = /\bkey\b/i.test(words)
+      ? "key"
+      : /\bbound\b/i.test(what)
+        ? "bound"
+        : "token";
+    const mine = held.get(p);
+    let y = p.y + RIGHT.h / 2;
+    if (p === hub) {
+      if (mine.length === SLOTS) {
+        hide(mine.shift().node, t - 0.4, 0.3);
+        for (const thing of mine) {
+          thing.dy -= SLOT.step;
+          to(thing.node, "y", t - 0.4, 0.3, thing.dy);
+        }
+      }
+      y = SLOT.first + mine.length * SLOT.step;
+    } else for (const thing of mine.splice(0)) hide(thing.node, t - 0.1, 0.2);
+    const thing = { node: chip(kind, p.x, y, words), kind, y, dy: 0 };
+    mine.push(thing);
+    if (arrived && p === hub) {
+      to(arrived, "x", t - 0.5, 0.5, p.x - arrived.left);
+      to(arrived, "y", t - 0.5, 0.5, y - arrived.top);
+      hide(arrived, t - 0.05, 0.1);
+    } else if (arrived) hide(arrived, t - 0.1, 0.2);
+    pop(thing.node, t);
+    return thing;
+  };
+
   // ---------- which way, and then what is sent ----------
   /**
-   * Which way the next thing goes, said before it moves: the line between
-   * two parties is drawn over in the sender's color, from the sender to an
-   * arrowhead at the receiver. It stays until `until`.
+   * Which way the next thing goes, said before it moves: the line from `a`
+   * to `b` is drawn over in the sender's color, to an arrowhead at `b`. It
+   * stays until `until`.
    */
-  const aim = (x1, x2, y, role, t, until) => {
-    const dir = Math.sign(x2 - x1);
-    const length = Math.abs(x2 - x1) - 16;
+  const aim = (a, b, role, t, until) => {
+    const far = Math.hypot(b.x - a.x, b.y - a.y);
+    const [ux, uy] = [(b.x - a.x) / far, (b.y - a.y) / far];
+    const length = far - 16;
     const way = svg(
       "line",
       {
         class: `aim role-${role}`,
-        x1,
-        x2: x2 - dir * 16,
-        y1: y,
-        y2: y,
+        x1: a.x,
+        y1: a.y,
+        x2: b.x - ux * 16,
+        y2: b.y - uy * 16,
         "stroke-dasharray": length,
         "stroke-dashoffset": length,
       },
@@ -212,11 +379,12 @@
     );
     way.drawTo = (p) => way.setAttribute("stroke-dashoffset", length * (1 - p));
     from(way, "opacity", 1);
+    const back = { x: b.x - ux * 20, y: b.y - uy * 20 };
     const tip = svg(
       "polygon",
       {
         class: `aim-head role-${role}`,
-        points: `${x2},${y} ${x2 - dir * 20},${y - 11} ${x2 - dir * 20},${y + 11}`,
+        points: `${b.x},${b.y} ${back.x - uy * 11},${back.y + ux * 11} ${back.x + uy * 11},${back.y - ux * 11}`,
       },
       lines,
     );
@@ -228,12 +396,14 @@
   };
 
   /**
-   * What a message carries, at height `y`, from `x1` to `x2`: a token, a
+   * What a message carries, from the point `a` to the point `b`: a token, a
    * proof, an answer, each a small labelled thing, behind the number of the
-   * step that sends it. It is the only thing on this stage that moves.
+   * step that sends it. It is the only thing on this stage that moves. Along
+   * a level line it stops short of each end by its own half width, and along
+   * an upright one by its half height.
    */
-  const cargo = (kinds, x1, x2, y, number, role) => {
-    const node = at(make("div", "cargo"), 0, y);
+  const cargo = (kinds, a, b, number, role) => {
+    const node = make("div", "cargo");
     let width = 10 * (kinds.length - 1);
     if (number) {
       make("b", `badge inline role-${role}`, node, String(number));
@@ -250,16 +420,22 @@
       );
       pill.innerHTML = `<span></span>${kind === "bound" ? `<i>${KEY}</i>` : ""}`;
       pill.firstChild.textContent = words;
+      // its width is reckoned, since the page's type may not be loaded yet
       width += words.length * 12.7 + 38 + (kind === "bound" ? 44 : 0);
     }
-    const dir = Math.sign(x2 - x1);
-    // a thing going back to the agent leads with what it is, not with its number
-    if (dir < 0) node.style.flexDirection = "row-reverse";
-    const start = x1 + dir * (width / 2 + 30);
-    const end = x2 - dir * (width / 2 + 30);
-    node.style.left = `${start}px`;
-    node.left = start;
-    node.top = y;
+    const level = a.y === b.y;
+    const dir = Math.sign(level ? b.x - a.x : b.y - a.y);
+    // a thing going back to the left leads with what it is, not with its number
+    if (level && dir < 0) node.style.flexDirection = "row-reverse";
+    const start = level
+      ? { x: a.x + dir * (width / 2 + 30), y: a.y }
+      : { x: a.x, y: a.y + dir * (23 + 14) };
+    const end = level
+      ? { x: b.x - dir * (width / 2 + 30), y: b.y }
+      : { x: b.x, y: b.y - dir * (23 + 30) };
+    at(node, start.x, start.y);
+    node.left = start.x;
+    node.top = start.y;
     /**
      * It is at the sender from `wait` seconds before second `t`, leaves then,
      * and is at the receiver `dur` seconds later. On the way it is lifted
@@ -268,7 +444,8 @@
     node.travel = (t, dur = 1.4, wait = 0.25) => {
       pop(node, t - wait);
       to(node, "lift", t - 0.15, 0.3, 1);
-      to(node, "x", t, dur, end - start, "travel");
+      if (level) to(node, "x", t, dur, end.x - start.x, "travel");
+      else to(node, "y", t, dur, end.y - start.y, "travel");
       to(node, "lift", t + dur - 0.3, 0.4, 0);
       return t + dur;
     };
@@ -277,10 +454,9 @@
 
   /** What one party does by itself: its words beside the party, behind the step's number. */
   const act = (step, n, p, y, t) => {
-    const mine = p === me;
-    const node = make("div", `act role-${p.role}${mine ? "" : " from-right"}`);
+    const node = make("div", `act role-${p.role}`);
     node.style.top = `${y}px`;
-    if (mine) node.style.left = `${LEFT + 40}px`;
+    if (p === hub) node.style.left = `${LEFT + 40}px`;
     else node.style.right = `${1920 - NEAR + 20}px`;
     make("b", `badge inline role-${p.role}`, node, String(n));
     make("span", "", node, step.label);
@@ -323,7 +499,7 @@
     hide(node, until - 0.25, 0.25);
     return { x, top, lines: picks.length };
   };
-  const cardHeight = (lines) => 32 + lines * 51;
+  const cardHeight = (count) => 32 + count * 51;
   const gloss = ({ term, note }, x, y, t, until) => {
     const node = at(make("div", "gloss"), x, y);
     make("b", "", node, term);
@@ -348,6 +524,9 @@
       throw new Error(`“${beat.say}” has no word that starts ${word}`);
     return beat.start + found.start;
   };
+  /** The second a cue is due: at its word, or at `otherwise` where a draft names no word. */
+  const due = (beat, word, otherwise) =>
+    typeof word === "string" ? when(beat, word) : otherwise;
   let heading;
   const head = (t, title, eyebrow = "") => {
     if (heading) hide(heading, t, 0.3);
@@ -364,6 +543,7 @@
   // strip over it: the one being told in its party's color, those told
   // filled in, those to come as outlines.
   const strip = make("div", "strip");
+  let stripShown = false;
   const dots = flow.steps.map((step, i) => {
     const pip = make("b", "pip", strip, String(i + 1));
     const dot = make(
@@ -376,18 +556,38 @@
     return { dot, told };
   });
 
-  // ---------- what there is on the stage ----------
-  const plain = chip("token", me.x, SLOT[0]);
-  const key = chip("key", me.x, SLOT[0]);
-  const bound = chip("bound", me.x, SLOT[1]);
+  // ---------- what the film of DPoP has before its flow and after it ----------
+  // A film's opening and ending are its own, and these are DPoP's: a token
+  // spent, a copy of it left in a log, someone else trying the copy, the copy
+  // refused, the key put away. They want an agent that is the tall party and
+  // an API, and a film that opens with the scene `ask`.
+  const api = parties.find((p) => p.role === "resource");
+  const story = beats[0]?.scene === "ask";
+  if (story && (hub.role !== "agent" || !api))
+    throw new Error(
+      `The scenes before ${flow.slug}'s steps are written for an agent that speaks to every party, and an API`,
+    );
+  const fromStory = (scene) => {
+    if (!story)
+      throw new Error(
+        `The scene ${scene} belongs to a film that opens with the scene ask`,
+      );
+  };
+  /**
+   * While only the agent and the API take part, before the flow and after
+   * it, the API stands level with the middle of the agent, and the line
+   * between them is at that height. For the flow it is in its place below.
+   */
+  const TWO = MID;
+  const plain = chip("token", hub.x, SLOT.first);
   const keystore = at(
     make("div", "keystore", stage, "keystore"),
-    me.x,
+    hub.x,
     KEYSTORE_Y + 14,
   );
   const other = at(make("div", "party other"), OTHER.x, OTHER.y);
   make("strong", "", other, "Someone else");
-  const ABOVE = OTHER.y - 92;
+  const ABOVE = OTHER.y - 108;
   const places = ["tool call", "log", "trace"].map((name, i) =>
     at(make("div", "place", stage, name), 680 + i * 245, TWO - 54),
   );
@@ -427,20 +627,26 @@
     const send = (t) => {
       to(path, "draw", t, 0.8, 1);
       show(tip, t + 0.7, 0.15);
-      const sent = cargo(carries, OTHER.x + OTHER.w / 2, BEND, OTHER.y);
+      const sent = cargo(
+        carries,
+        { x: OTHER.x + OTHER.w / 2, y: OTHER.y },
+        { x: BEND, y: OTHER.y },
+      );
       return { arrived: sent.travel(t + 0.9, 1.1, 0.7), sent };
     };
     return { path, tip, send };
   };
   const ANSWER = {
-    x: RIGHT.x + 100,
-    under: TWO + RIGHT.h / 2 + 48,
-    over: TWO - RIGHT.h / 2 - 44,
+    x: RIGHT.x + 115,
+    under: TWO + RIGHT.h / 2 + 66,
+    over: TWO - RIGHT.h / 2 - 66,
   };
-  const watchKey = chip("key", MIDDLE - 225, me.y);
-  const watchToken = chip("token", MIDDLE + 225, me.y);
+  const watchKey = chip("key", MIDDLE - 225, MID);
+  const watchToken = chip("token", MIDDLE + 225, MID);
   watchKey.classList.add("large");
   watchToken.classList.add("large");
+
+  // ---------- the cards ----------
   const curtain = make("div", "curtain");
   const titleCard = make("div", "title-card");
   make("h1", "", titleCard, flow.short);
@@ -460,19 +666,19 @@
     passing = [];
   };
 
-  // the film opens with the agent, the API and the token the agent holds
-  for (const p of parties) {
-    const level = others.includes(p.id) ? 0 : 1;
-    from(p.box, "opacity", level);
-    if (p.line) from(p.line, "opacity", level);
-  }
-  from(plain, "opacity", 1);
+  // DPoP's film opens with the agent, the API and the token the agent holds.
+  // Any other opens with every party there, and none of them taking part yet.
+  const absent = parties.filter((p) => p !== hub && p !== api).map((p) => p.id);
   const level = (t, dur, dy) => {
     to(api.box, "y", t, dur, dy);
-    to(api.line, "y", t, dur, dy);
+    to(linkOf(hub, api).line, "y", t, dur, dy);
   };
-  from(api.box, "y", TWO - api.y);
-  from(api.line, "y", TWO - api.y);
+  if (story) {
+    light(0, [hub.id, api.id], absent, true);
+    from(plain, "opacity", 1);
+    from(api.box, "y", TWO - api.y);
+    from(linkOf(hub, api).line, "y", TWO - api.y);
+  } else light(0, [], [], true);
   const opening = beats.find((b) => b.head);
   if (opening && beats.indexOf(opening) === 0) {
     head(0, opening.head);
@@ -502,14 +708,20 @@
       pop(mark, Math.max(arrived, when(beat, "use")));
       passing = [other, askCopy, asked.path, asked.tip, sent, mark];
     } else if (beat.scene === "spend") {
+      fromStory(beat.scene);
       clear(t);
-      const sent = cargo(["token"], LEFT, NEAR, TWO);
-      const aimed = aim(LEFT, NEAR, TWO, me.role, t + 0.3, t + dur - 0.3);
+      const [a, b] = [
+        { x: LEFT, y: TWO },
+        { x: NEAR, y: TWO },
+      ];
+      const sent = cargo(["token"], a, b);
+      const aimed = aim(a, b, hub.role, t + 0.3, t + dur - 0.3);
       const arrived = sent.travel(aimed + 0.1, 1.4, 0.6);
       const ok = verdict("200 OK", true, ANSWER.x, ANSWER.over);
       pop(ok, Math.max(arrived, when(beat, "spend")));
       passing = [sent, ok];
     } else if (beat.scene === "copy") {
+      fromStory(beat.scene);
       // the places a token passes through are along the line it travels
       const named = ["tool", "logs", "traces"];
       for (const [i, place] of places.entries())
@@ -519,6 +731,7 @@
       to(copy, "y", when(beat, "logs") + 0.4, 0.6, ABOVE - TWO, "out");
       passing.push(copy, ...places);
     } else if (beat.scene === "steal") {
+      fromStory(beat.scene);
       show(other, t, 0.4);
       to(copy, "x", t + 0.2, 0.7, OTHER.x - 925);
       const taken = attempt(["token"]);
@@ -530,11 +743,11 @@
       show(curtain, t, 0.5);
       show(titleCard, t + 0.3, 0.5);
       const reset = t + 1;
-      passing.push(plain);
+      if (story) passing.push(plain);
       clear(reset, 0.01);
       light(reset, []);
       // behind the title, the API goes to its place for the flow
-      level(reset, 0.001, 0);
+      if (story) level(reset, 0.001, 0);
       hide(titleCard, t + dur - 0.5, 0.4);
       hide(curtain, t + dur - 0.4, 0.4);
     } else if (beat.scene === "cast") {
@@ -555,7 +768,7 @@
       const sender = party(step.from);
       const receiver = step.to ? party(step.to) : null;
       const first = beats[index - 1]?.step !== n;
-      const phase = flow.phases.findLastIndex((p) => p.from <= n);
+      const phase = (flow.phases ?? []).findLastIndex((p) => p.from <= n);
       if (first && phase !== part) {
         part = phase;
         if (phase >= 0)
@@ -570,104 +783,105 @@
         const until = toldUntil(n);
         light(t, [sender.id, ...(receiver ? [receiver.id] : [])]);
         // the strip: this step is the one being told, and the one before it has been
-        if (n === 1) show(strip, t, 0.4);
+        if (!stripShown) show(strip, t, 0.4);
+        stripShown = true;
         show(dots[n - 1].dot, t, 0.3);
         if (n > 1) show(dots[n - 2].told, t, 0.3);
-        told = { until, far: receiver && receiver !== me ? receiver : sender };
+        told = { until, sender, receiver };
         if (receiver) {
-          const out = sender === me;
-          const y = told.far.y;
+          const [a, b] = ends(sender, receiver);
           const sent = cargo(
             beat.carries ?? [step.label],
-            out ? LEFT : NEAR,
-            out ? NEAR : LEFT,
-            y,
+            a,
+            b,
             n,
             sender.role,
           );
           told.sent = sent;
           // What was sent is gone once the step has been told. Unless the
-          // receiver keeps it, or the next step is the receiver checking it:
-          // then it waits where it stopped until it has been checked.
-          const kept = beats.some(
-            (b) =>
-              b.step === n &&
-              b.gain &&
-              (step.gain ?? []).some(([, what]) =>
-                what.startsWith("access token"),
-              ),
-          );
+          // receiver keeps it, or the next step is the receiver checking it,
+          // which that step's beat says with `check`: then it waits where it
+          // stopped, with its line still lit, until it has been checked.
+          const kept =
+            beats.some((b) => b.step === n && b.gain) &&
+            (step.gain ?? []).some(([id]) => id === receiver.id);
           const next = flow.steps[n];
-          const checked = next && !next.to && next.from === receiver.id;
+          const checked =
+            next &&
+            !next.to &&
+            next.from === receiver.id &&
+            beats.some((b) => b.step === n + 1 && b.check);
           const gone = (checked ? toldUntil(n + 1) : until) - 0.3;
           // first which way, and then what is sent
-          const aimed = aim(
-            out ? LEFT : NEAR,
-            out ? NEAR : LEFT,
-            y,
-            sender.role,
-            t + 0.3,
-            gone,
-          );
-          sent.travel(aimed + 0.1, 1.4, 0.6);
+          const aimed = aim(a, b, sender.role, t + 0.3, gone);
+          told.arrives = sent.travel(aimed + 0.1, 1.4, 0.6);
           if (!kept) hide(sent, gone, 0.25);
         } else {
-          // what one party does by itself: beside the agent, or beside what the other party was sent
-          told.act = act(
-            step,
-            n,
-            sender,
-            sender === me
-              ? beats.some((b) => b.step === n && b.show)
-                ? 300
-                : me.y
-              : sender.y - 76,
-            t,
-          );
+          // What one party does by itself is said beside it: right of the
+          // tall party, and left of another, on the side of its line that
+          // has more room.
+          // The tall party's words and their listing are, together, level
+          // with the middle of it.
+          const listed = beats.find((b) => b.step === n && b.show);
+          const under = listed ? cardHeight(listed.show.length) + 26 : 0;
+          told.actY =
+            sender === hub
+              ? MID - under / 2
+              : sender.y + (sender.y > MID ? -90 : 90);
+          told.act = act(step, n, sender, told.actY, t);
           hide(told.act, until - 0.3, 0.25);
         }
       }
       if (beat.show) {
         const height = cardHeight(beat.show.length);
-        // under the upper line, over the lower one, and under what the agent does by itself
+        const far = receiver === hub ? sender : receiver;
+        // Beside a level line: under an upper one, over a lower one. Beside
+        // an upright one: level with the middle of it. And for what a party
+        // does by itself: on the far side of its words from its line.
         const top = !receiver
-          ? 352
-          : told.far.y < me.y
-            ? told.far.y + 62
-            : told.far.y - 62 - height;
+          ? sender === hub
+            ? told.actY + 61
+            : sender.y > MID
+              ? told.actY - 61 - height
+              : told.actY + 61
+          : sender === hub || receiver === hub
+            ? far.y <= MID
+              ? far.y + 62
+              : far.y - 62 - height
+            : Math.min(
+                Math.max((sender.y + receiver.y) / 2 - height / 2, BOX.top),
+                BOX.top + BOX.h - height,
+              );
         told.card = card(
           step,
           beat.show.map((pick) => ({
             ...pick,
             at: pick.on ? when(beat, pick.on) : undefined,
           })),
-          receiver ? MIDDLE : LEFT + 40 + CARD.w / 2,
+          !receiver && sender === hub ? LEFT + 40 + CARD.w / 2 : MIDDLE,
           top,
           t,
           told.until,
         );
       }
       if (beat.gain)
-        for (const [, what] of step.gain ?? []) {
-          if (what.startsWith("private key")) pop(key, when(beat, beat.gain));
-          else if (what.startsWith("access token")) {
-            const held = when(beat, beat.gain);
-            const arrived = told.sent;
-            if (arrived) {
-              to(arrived, "x", held - 0.5, 0.5, me.x - arrived.left);
-              to(arrived, "y", held - 0.5, 0.5, SLOT[1] - arrived.top);
-              hide(arrived, held - 0.05, 0.1);
-            }
-            pop(bound, held);
-          }
+        for (const [id, what] of step.gain ?? []) {
+          const sent = receiver?.id === id ? told.sent : undefined;
+          hold(
+            party(id),
+            what,
+            due(beat, beat.gain, (told.arrives ?? t + 0.9) + 0.6),
+            sent,
+          );
+          if (sent) told.sent = undefined;
         }
       if (beat.gloss)
         gloss(
           beat.gloss,
           told.card?.x ?? MIDDLE,
           told.card
-            ? told.card.top + cardHeight(told.card.lines) + 46
-            : me.y + 90,
+            ? told.card.top + cardHeight(told.card.lines) + 56
+            : MID + 90,
           when(beat, beat.gloss.on),
           told.until,
         );
@@ -676,7 +890,8 @@
         pop(tick, when(beat, beat.check));
       }
     } else if (beat.scene === "refuse") {
-      light(t, [api.id], others);
+      fromStory(beat.scene);
+      light(t, [api.id], absent);
       hide(strip, t, 0.4);
       // the authorization server has gone, and the API comes level with the agent again
       level(t, 0.7, TWO - api.y);
@@ -688,19 +903,30 @@
       pop(no, Math.max(arrived, when(beat, "refuses")));
       passing = [other, copyBound, tried.path, tried.tip, sent, no];
     } else if (beat.scene === "caveat") {
+      fromStory(beat.scene);
       clear(t, 0.4);
-      light(t, [me.id], others);
+      light(t, [hub.id], absent);
       // the key leaves the token's side for a place of its own, lower in the agent
+      const key = held.get(hub).find((thing) => thing.kind === "key");
+      const token = held.get(hub).find((thing) => thing.kind !== "key");
       show(keystore, when(beat, "keep") - 0.2, 0.4);
-      to(key, "y", when(beat, "keep"), 0.8, KEYSTORE_Y - SLOT[0]);
-      to(bound, "y", when(beat, "keep"), 0.8, SLOT[0] - SLOT[1]);
+      to(key.node, "y", when(beat, "keep"), 0.8, KEYSTORE_Y - key.y);
+      to(token.node, "y", when(beat, "keep"), 0.8, SLOT.first - token.y);
     } else if (beat.scene === "end") {
+      if (!story) hide(strip, t, 0.4);
       show(close, t, 0.5);
       show(endCard, t + 0.3, 0.5);
     }
   }
 
   // ---------- one frame ----------
+  // What this film never shows is not there: a thing made for a scene the
+  // film does not have would otherwise sit on the stage for the whole of it.
+  const shown = new Set(
+    tracks.filter((t) => t.prop === "opacity").map((t) => t.node),
+  );
+  for (const node of [...stage.children, ...lines.children])
+    if (node !== lines && !shown.has(node)) node.style.opacity = 0;
   for (const track of tracks) track.keys.sort((a, b) => a.t - b.t);
   const nodes = [...new Set(tracks.map((t) => t.node))];
   window.seek = (t) => {

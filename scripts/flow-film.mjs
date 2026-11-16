@@ -8,8 +8,9 @@
  *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
- *   node scripts/flow-film.mjs --flow dpop --layout fixed      a prototype: parties that stay put, drawn by scripts/film-stage-fixed.js
- *   node scripts/flow-film.mjs --flow dpop --layout fixed --look depth   and a try at a page with depth
+ *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
+ *   node scripts/flow-film.mjs --flow dpop --layout rows       the page's own drawing, a step to a row
+ *   node scripts/flow-film.mjs --flow ciba --draft             a flow with no film yet, told in its steps' own titles
  *
  * Writes to social/, which is not committed:
  *
@@ -18,10 +19,14 @@
  *   film-<slug>.txt            a description to paste under it, with its chapters
  *   voice/                     each line as it was said, kept so it is not said again
  *
+ * A name also says what is not the usual: -rows, -flat or -depth, -draft.
+ *
  * What is said is in scripts/films/<slug>.mjs, written for the ear and held
  * to what the flow's page says. What is drawn is the flow's own data: its
- * parties, each step's arrow and label, the lines of its listings, and what a
- * party comes to hold. scripts/film-stage.js draws it.
+ * parties, what each step sends, the lines of its listings, and what a party
+ * comes to hold. scripts/film-stage-fixed.js draws it with the parties
+ * staying where they are, and scripts/film-stage.js as the page's rows.
+ * docs/film-design.md has the measurements of both.
  *
  * A film is made a frame at a time. The stage is a page that can be put at
  * any second, and each frame is a photograph of it at its own: nothing waits
@@ -70,21 +75,23 @@ const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
 /** Whether what is said is written under the scene: by default, only where nobody says it. */
 const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
 /**
- * How the stage is laid out. "rows": the page's drawing, a step to a row.
- * "fixed": a prototype, in which the parties stay put with a line between
- * them and only what is sent moves.
+ * How the stage is laid out. "fixed": the parties stay put with a line
+ * between each two that speak, and only what is sent moves. "rows": the
+ * page's drawing, a step to a row.
  */
-/**
- * How the stage looks. "flat": the page's white, and nothing casts a shadow.
- * "depth": a try at a tinted page that the parties and listings sit above,
- * with a shadow under what is on its way. Made for the fixed layout.
- */
-const LOOK = option("--look") ?? "flat";
-if (!["flat", "depth"].includes(LOOK))
-  throw new Error(`--look is flat or depth, not ${LOOK}`);
-const LAYOUT = option("--layout") ?? "rows";
+const LAYOUT = option("--layout") ?? "fixed";
 if (!["rows", "fixed"].includes(LAYOUT))
   throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
+/**
+ * How the stage looks. "depth": a tinted page that the parties and listings
+ * sit above, with a shadow under what is on its way. "flat": the page's
+ * white, and nothing casts a shadow. Depth is made for the fixed layout and
+ * is the usual look there; the rows have only been looked at flat.
+ */
+const USUAL_LOOK = LAYOUT === "fixed" ? "depth" : "flat";
+const LOOK = option("--look") ?? USUAL_LOOK;
+if (!["flat", "depth"].includes(LOOK))
+  throw new Error(`--look is flat or depth, not ${LOOK}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -116,32 +123,48 @@ const LEAST = {
 requireCurrentBuild("The film would be of the flow as it was then.");
 
 // ---------- what is told ----------
-const { default: script } = await import(`./films/${SLUG}.mjs`);
+// A flow with no film of its own can still be looked at: as a draft, told
+// in the titles the page gives its steps. A draft is for seeing how a flow
+// sits on the stage before its film is written, and is not for posting.
+const DRAFT =
+  args.includes("--draft") ||
+  !existsSync(join(here, "scripts", "films", `${SLUG}.mjs`));
+const script = DRAFT
+  ? { flow: SLUG, beats: [] }
+  : (await import(`./films/${SLUG}.mjs`)).default;
+if (DRAFT && VOICE) throw new Error("A draft is not said aloud");
 const data = await import(`../src/data/flows/${script.flow}.ts`);
 const flow = Object.values(data).find((v) => v?.slug === script.flow);
 if (!flow)
   throw new Error(
     `src/data/flows/${script.flow}.ts has no flow named ${script.flow}`,
   );
-// The fixed layout has an agent at the left and a line from it to each of
-// two other parties. A flow it cannot draw is refused here, and not drawn wrong.
-if (LAYOUT === "fixed") {
-  const agents = flow.participants.filter((p) => p.role === "agent");
-  const stray = flow.steps.find(
-    (s) => s.to && s.from !== agents[0]?.id && s.to !== agents[0]?.id,
+if (LAYOUT === "fixed" && flow.participants.length > 4)
+  throw new Error(
+    `The fixed layout has places for four parties, and ${flow.slug} has ${flow.participants.length}. Use --layout rows, or see docs/film-design.md.`,
   );
-  const why =
-    agents.length !== 1
-      ? `it has ${agents.length} parties with the role "agent", and the layout wants one`
-      : flow.participants.length !== 3
-        ? `it has ${flow.participants.length} parties, and the layout has places for three`
-        : stray
-          ? `“${stray.label}” goes from ${stray.from} to ${stray.to}, and the layout has no line between them`
-          : undefined;
-  if (why)
-    throw new Error(
-      `The fixed layout cannot draw ${flow.slug}: ${why}. Use --layout rows, or see docs/film-design.md.`,
-    );
+if (DRAFT) {
+  console.log(
+    `A draft of ${flow.slug}, told in the titles of its steps: scripts/films/${SLUG}.mjs is not written, or --draft was asked for.`,
+  );
+  script.beats = [
+    { scene: "title", say: flow.tagline },
+    ...flow.steps.map((step, i) => {
+      const listed = (step.code?.text ?? "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 2)
+        .slice(0, 2)
+        .map((line) => ({ line }));
+      return {
+        step: i + 1,
+        say: step.title ?? step.label,
+        ...(step.gain ? { gain: true } : {}),
+        ...(listed.length ? { show: listed } : {}),
+      };
+    }),
+    { scene: "end" },
+  ];
 }
 
 mkdirSync(join(out, "voice"), { recursive: true });
@@ -241,10 +264,10 @@ const beats = script.beats.map((beat, index) => {
   // little longer than the breath between two lines of the same step.
   const next = script.beats[index + 1];
   const boundary = !beat.step || next?.step !== beat.step;
-  const dur = Math.max(
-    least,
-    LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH),
-  );
+  // `hold` is a beat's own extra time: for a moment worth looking at longer.
+  const dur =
+    Math.max(least, LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH)) +
+    (beat.hold ?? 0);
   const words = clip
     ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))
     : beat.say
@@ -364,7 +387,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .aim-head.other { fill: var(--border-strong); }
   .cargo { --lift: 0; }
   .tall ~ .keystore { width: 328px; height: 136px; }
-  .tall ~ .card { width: 860px; }
+  .tall ~ .card { width: 820px; }
   .tall ~ .card .code { padding: 0 26px; }
   .badge.inline { position: static; transform: none; flex: none; --dim: 0; }
   .cargo { align-items: center; }
@@ -457,8 +480,11 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
+// With --beats the times are all that was asked for. The stage has been
+// opened, so a flow or a script it cannot draw has already been refused.
+if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${LAYOUT === "fixed" ? "-fixed" : ""}${LOOK === "depth" ? "-depth" : ""}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE ? "-voiced" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
@@ -553,7 +579,7 @@ if (STILLS) {
   };
   const lines = beats.filter((b) => b.say);
   const cue = (b, i, mark) =>
-    `${i + 1}\n${stamp(b.start + LEAD, mark)} --> ${stamp(b.start + b.dur - 0.1, mark)}\n${b.say}\n`;
+    `${i + 1}\n${stamp(b.start + LEAD, mark)} --> ${stamp(b.start + b.dur - (b.hold ?? 0) - 0.1, mark)}\n${b.say}\n`;
   writeFileSync(
     join(out, `${name}.vtt`),
     `WEBVTT\n\n${lines.map((b, i) => cue(b, i, ".")).join("\n")}`,

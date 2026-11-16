@@ -45,6 +45,8 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 **The stage**
 
+The first four of these are how the rows are drawn (`--layout rows`). The stage the script makes when nothing else is asked for is under “Layout and look”, and its measurements are in the [film design guide](film-design.md).
+
 - It keeps the page's diagram: the parties in boxes across the top in their own colors, a line down from each, a numbered row for each step, a solid arrow for a request and a dashed one for a response.
 - Only what has happened is drawn. The row being told is in focus, the one before it is muted above it, and older rows are gone.
 - What a message carries travels along its row, from the sender to the receiver: a token, a proof, an answer, each a small labelled thing. It moves once. What the receiver keeps goes up to where the receiver holds things. Where something that should be sent is not, its place travels empty: the copied token goes beside “no proof”.
@@ -54,6 +56,14 @@ These are the film's manner so far. Change one for a reason, and change it here.
 - Whoever is not a party to the flow is “Someone else”, in a grey box with a dashed edge, standing on no line. The film does not say “attacker”.
 - What the API says of a request is a small box under the request, on the API's line: green for accepted, red for refused.
 - The light theme, the site's own type and colors, read from the built stylesheet.
+
+**Layout and look**
+
+- The parties stay where they are, with a line between each two that speak, and only what is sent moves. The page's own drawing, a step to a row, was the first stage and is kept (`--layout rows`). Parties that stay put are easier to follow: nothing is drawn and taken away, and what each party holds is in one place for the whole film. What is given up is the order of the steps as a place on the stage. Each thing sent carries its step's number, and a strip of numbers says how far the flow has got.
+- Before anything is sent, the line it will go along is drawn over in the sender's color, from the sender to an arrowhead at the receiver, and what will be sent waits at the sender while that happens. Without it, a thing that moved came as a surprise.
+- Whoever speaks to the most parties is the tall one at the left, with what it holds inside it. In most flows that is the agent.
+- The page is tinted and what is on it casts a shadow (`--look depth`), and the plain white is kept (`--look flat`). The site's owner found the white flat to watch and chose depth on 16 November 2026, keeping both in case that changes. A shadow says a thing is part of the system and there, and a longer one that it is on its way. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
+- The film's last line says where the rest is and what is there. Nothing asks the person watching to follow or subscribe.
 
 **Motion**
 
@@ -88,9 +98,8 @@ These are the film's manner so far. Change one for a reason, and change it here.
 ## What has not been decided
 
 - **Whose voice.** The voice principle asks for a person's. Kokoro was chosen to hear the film with a voice at all, with no account and no cost. A recording by a person fits the same script: a beat lasts as long as its clip. A hosted voice is the third choice, and needs an account. Studies with newer machine voices mostly find no difference in what is learned: see below.
-- **How much of what has happened stays on the stage.** One earlier row stays, muted. The research on animation says what has gone is its main cost, which argues for keeping more.
-- **Flat, or with depth.** The site's owner likes depth better (16 November 2026) and wants both kept for now. The film is the page’s white, and nothing casts a shadow. `--look depth` is a try at the other: a tinted page that the parties and listings sit above, a shadow under each, and a longer one under what is sent while it is on its way. Someone else, and a proof that is not there, cast none. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
-- **Rows, or parties that stay where they are.** The film draws the page's sequence diagram, a row to a step. The other way is to fix the parties in place with a line between each pair, and let only what is sent move. It keeps everything where it was, and has to show the order of the steps some other way. There is a prototype of it: `node scripts/flow-film.mjs --flow dpop --layout fixed`, drawn by `scripts/film-stage-fixed.js`. The agent stands at the left with what it holds inside it, the other parties at the right, and what is sent carries its step’s number, with a strip of numbers saying how far the flow has got. Before anything is sent, the line it will go along is drawn over in the sender’s color, from the sender to an arrowhead at the receiver, so nothing moves without the eye knowing where it is going. While only the agent and the API take part, before the flow and after it, the API stands level with the middle of the agent. It is there to be set beside the rows and has not been chosen. If it is, the two stages should share the part that places things in time, which the prototype copies.
+- **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
+- **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
 - **A cover.** The first frame is the agent, the API and a token. Nothing chooses a frame for a thumbnail.
 - **A dark version.**

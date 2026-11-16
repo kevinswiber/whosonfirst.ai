@@ -18,14 +18,18 @@
  * its row from sender to receiver. `head` is a line over a scene that says
  * what this part of the film is; a step has the name of its part of the flow.
  * `expands`, on the title, is what the flow's short name stands for, written
- * under it. The other beats are scenes the stage knows by name: see
+ * under it. `hold` is seconds a beat is left up after its words are said. The other beats are scenes the stage knows by name: see
  * scripts/film-stage.js.
  *
  * `speak` is how a word is written for a voice that would say it wrong.
  */
 export default {
   flow: "dpop",
-  speak: { DPoP: "dee-pop", JWT: "jot" },
+  speak: {
+    DPoP: "dee-pop",
+    JWT: "jot",
+    "whosonfirst.ai": "who’s on first dot A I",
+  },
   beats: [
     // The question the film answers at its end. Asked first, so that whoever
     // is watching has an answer of their own to check.
@@ -95,6 +99,8 @@ export default {
     {
       step: 5,
       say: "It sends the token and the proof together.",
+      // the request the whole flow is for: it is left up a moment longer
+      hold: 1.2,
       carries: ["bound", "proof"],
       show: [
         { line: "GET /api/events" },
@@ -132,6 +138,10 @@ export default {
       say: "That is DPoP. The token is bound to a key, and a stolen token without the key is refused.",
       head: "DPoP, in one line",
     },
-    { scene: "end" },
+    // The API's part on the page: "If the API is yours, so is this check."
+    {
+      scene: "end",
+      say: "Every step, and what your API has to check, is at whosonfirst.ai.",
+    },
   ],
 };
