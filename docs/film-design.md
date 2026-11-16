@@ -254,7 +254,7 @@ Take a still about 2.5 seconds into every step. Look hardest at any step between
 
 ### The last line
 
-The film ends by saying where the rest is, and what is there that the film did not show. DPoP’s is “Every step, and what your API has to check, is at whosonfirst.ai.” Name something on the page that the person watching would want next. Do not ask them to like, follow or subscribe. The address is written for the voice under `speak`.
+The film ends by saying where the rest is, and what is there that the film did not show. DPoP’s is “Every step, and what your API has to check, is at whosonfirst.ai.” Name something on the page that the person watching would want next. Do not ask them to like, follow or subscribe. The address is written for the voice under `speak`, as “who’s on first dot AI”. Letters that are said as letters are written together: “A I”, with a space, is said as the word “a” and then “I”. A model cannot hear a line, but it can have the voice’s line written back by a speech recogniser and read what comes out, which is how this one was found.
 
 ## Changing the design
 
