@@ -8,6 +8,9 @@
  *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
+ *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
+ *   node scripts/flow-film.mjs --flow dpop --layout rows       the page's own drawing, a step to a row
+ *   node scripts/flow-film.mjs --flow ciba --draft             a flow with no film yet, told in its steps' own titles
  *
  * Writes to social/, which is not committed:
  *
@@ -16,10 +19,14 @@
  *   film-<slug>.txt            a description to paste under it, with its chapters
  *   voice/                     each line as it was said, kept so it is not said again
  *
+ * A name also says what is not the usual: -rows, -flat or -depth, -draft.
+ *
  * What is said is in scripts/films/<slug>.mjs, written for the ear and held
  * to what the flow's page says. What is drawn is the flow's own data: its
- * parties, each step's arrow and label, the lines of its listings, and what a
- * party comes to hold. scripts/film-stage.js draws it.
+ * parties, what each step sends, the lines of its listings, and what a party
+ * comes to hold. scripts/film-stage-fixed.js draws it with the parties
+ * staying where they are, and scripts/film-stage.js as the page's rows.
+ * docs/film-design.md has the measurements of both.
  *
  * A film is made a frame at a time. The stage is a page that can be put at
  * any second, and each frame is a photograph of it at its own: nothing waits
@@ -67,6 +74,24 @@ const VOICE = option("--voice");
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
 /** Whether what is said is written under the scene: by default, only where nobody says it. */
 const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
+/**
+ * How the stage is laid out. "fixed": the parties stay put with a line
+ * between each two that speak, and only what is sent moves. "rows": the
+ * page's drawing, a step to a row.
+ */
+const LAYOUT = option("--layout") ?? "fixed";
+if (!["rows", "fixed"].includes(LAYOUT))
+  throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
+/**
+ * How the stage looks. "depth": a tinted page that the parties and listings
+ * sit above, with a shadow under what is on its way. "flat": the page's
+ * white, and nothing casts a shadow. Depth is made for the fixed layout and
+ * is the usual look there; the rows have only been looked at flat.
+ */
+const USUAL_LOOK = LAYOUT === "fixed" ? "depth" : "flat";
+const LOOK = option("--look") ?? USUAL_LOOK;
+if (!["flat", "depth"].includes(LOOK))
+  throw new Error(`--look is flat or depth, not ${LOOK}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -89,6 +114,7 @@ const LEAST = {
   cast: 6,
   refuse: 6.6,
   caveat: 5,
+  recap: 4,
   end: 4,
   step: 2.6,
   listing: 3.4,
@@ -97,13 +123,49 @@ const LEAST = {
 requireCurrentBuild("The film would be of the flow as it was then.");
 
 // ---------- what is told ----------
-const { default: script } = await import(`./films/${SLUG}.mjs`);
+// A flow with no film of its own can still be looked at: as a draft, told
+// in the titles the page gives its steps. A draft is for seeing how a flow
+// sits on the stage before its film is written, and is not for posting.
+const DRAFT =
+  args.includes("--draft") ||
+  !existsSync(join(here, "scripts", "films", `${SLUG}.mjs`));
+const script = DRAFT
+  ? { flow: SLUG, beats: [] }
+  : (await import(`./films/${SLUG}.mjs`)).default;
+if (DRAFT && VOICE) throw new Error("A draft is not said aloud");
 const data = await import(`../src/data/flows/${script.flow}.ts`);
 const flow = Object.values(data).find((v) => v?.slug === script.flow);
 if (!flow)
   throw new Error(
     `src/data/flows/${script.flow}.ts has no flow named ${script.flow}`,
   );
+if (LAYOUT === "fixed" && flow.participants.length > 4)
+  throw new Error(
+    `The fixed layout has places for four parties, and ${flow.slug} has ${flow.participants.length}. Use --layout rows, or see docs/film-design.md.`,
+  );
+if (DRAFT) {
+  console.log(
+    `A draft of ${flow.slug}, told in the titles of its steps: scripts/films/${SLUG}.mjs is not written, or --draft was asked for.`,
+  );
+  script.beats = [
+    { scene: "title", say: flow.tagline },
+    ...flow.steps.map((step, i) => {
+      const listed = (step.code?.text ?? "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 2)
+        .slice(0, 2)
+        .map((line) => ({ line }));
+      return {
+        step: i + 1,
+        say: step.title ?? step.label,
+        ...(step.gain ? { gain: true } : {}),
+        ...(listed.length ? { show: listed } : {}),
+      };
+    }),
+    { scene: "end" },
+  ];
+}
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -185,7 +247,7 @@ function reckoned(say, length) {
 }
 
 let clock = 0;
-const beats = script.beats.map((beat) => {
+const beats = script.beats.map((beat, index) => {
   const count = beat.say ? beat.say.trim().split(/\s+/).length : 0;
   const least = beat.step
     ? beat.show
@@ -198,7 +260,14 @@ const beats = script.beats.map((beat) => {
     throw new Error(`${script.flow} has no step ${beat.step}`);
   const clip = beat.say ? voiced?.get(beat.say) : undefined;
   const length = clip ? clip.duration : count / SPEAK;
-  const dur = Math.max(least, LEAD + length + (clip ? 0.35 : BREATH));
+  // A step that has been told is given a moment before the next begins: a
+  // little longer than the breath between two lines of the same step.
+  const next = script.beats[index + 1];
+  const boundary = !beat.step || next?.step !== beat.step;
+  // `hold` is a beat's own extra time: for a moment worth looking at longer.
+  const dur =
+    Math.max(least, LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH)) +
+    (beat.hold ?? 0);
   const words = clip
     ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))
     : beat.say
@@ -227,7 +296,14 @@ const home = readFileSync(join(site, "index.html"), "utf8");
 const sheets = [...home.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(
   ([, href]) => href,
 );
-const stageJs = readFileSync(join(here, "scripts", "film-stage.js"), "utf8");
+const stageJs = readFileSync(
+  join(
+    here,
+    "scripts",
+    LAYOUT === "fixed" ? "film-stage-fixed.js" : "film-stage.js",
+  ),
+  "utf8",
+);
 const stageHtml = (film) => `<!doctype html>
 <html lang="en" data-theme="light">
 <meta charset="utf-8">
@@ -255,8 +331,18 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .verdict.ok { background: var(--green-soft); color: var(--green); }
   .verdict.no { background: var(--red-soft); color: var(--red); }
   .verdict.open { background: var(--bg); color: var(--fg); font-size: 40px; padding: 2px 22px; }
-  .held.large { width: auto; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
+  .held.large { width: 410px; height: 84px; padding: 0 34px; font-size: 38px; border-width: 4px; border-radius: 50px; }
   .held.large .glyph { width: 46px; height: 46px; }
+  .cargo { position: absolute; z-index: 3; top: 0; transform: translate(-50%, -50%) var(--move); display: flex; gap: 10px; }
+  .sent { display: flex; align-items: center; gap: 8px; height: 46px; box-sizing: border-box; padding: 0 16px; border-radius: 24px; border: 3px solid var(--fg); background: var(--bg); font: 500 21px var(--font-mono); white-space: nowrap; }
+  .sent i { display: grid; place-items: center; width: 32px; height: 32px; margin-right: -8px; border-radius: 50%; background: var(--amber-soft); color: var(--amber); border: 2px solid var(--amber); }
+  .sent .glyph { width: 24px; height: 24px; }
+  .sent-proof { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .sent-missing { border: 3px dashed var(--border-strong); color: var(--fg-subtle); }
+  .sent-ok { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  .heading { position: absolute; z-index: 40; left: 130px; top: 46px; display: grid; gap: 6px; }
+  .heading small { font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); }
+  .heading strong { font: 600 42px/1.15 var(--font-body); }
   .gloss { position: absolute; transform: translate(-50%, -50%) var(--move); display: flex; align-items: baseline; gap: 16px; padding: 8px 22px; border: 2px dashed var(--border-strong); border-radius: 8px; background: var(--bg); white-space: nowrap; }
   .gloss b { font: 600 34px var(--font-mono); }
   .gloss span { font: 400 30px var(--font-body); color: var(--fg-muted); }
@@ -285,6 +371,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .title-card { position: absolute; z-index: 51; left: 0; width: 1920px; top: 230px; text-align: center; }
   .title-card h1 { margin: 0; font: 600 170px/1.1 var(--font-display); letter-spacing: -0.03em; }
   .title-card p { margin: 18px 0 0; font: 400 46px/1.3 var(--font-body); color: var(--fg-muted); }
+  .title-card .expands { margin: 4px 0 26px; font: 500 34px/1.3 var(--font-mono); color: var(--fg); }
   .curtain.close { z-index: 70; height: 1080px; }
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
@@ -292,9 +379,41 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card .basis { font-size: 30px; margin-top: 30px; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
+  /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
+  .party.tall { justify-content: flex-start; padding-top: 26px; }
+  .channel { fill: none; stroke: var(--border-strong); stroke-width: 5; transform: var(--move); }
+  .aim { fill: none; stroke: var(--role); stroke-width: 6; }
+  .aim-head { fill: var(--role); }
+  .aim-head.other { fill: var(--border-strong); }
+  .cargo { --lift: 0; }
+  .tall ~ .keystore { width: 328px; height: 136px; }
+  .tall ~ .card { width: 820px; }
+  .tall ~ .card .code { padding: 0 26px; }
+  .badge.inline { position: static; transform: none; flex: none; --dim: 0; }
+  .cargo { align-items: center; }
+  .cargo .badge.inline { width: 46px; height: 46px; font-size: 23px; }
+  .act { position: absolute; z-index: 4; transform: translateY(-50%) var(--move); display: flex; align-items: center; gap: 18px; padding: 9px 34px 9px 10px; border: 3px solid var(--role); border-radius: 60px; background: var(--bg); font: 500 32px/1.2 var(--font-body); white-space: nowrap; }
+  .strip { position: absolute; left: 130px; top: 104px; display: flex; gap: 14px; }
+  .pip { position: relative; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--border-strong); color: var(--fg-subtle); font: 600 21px var(--font-mono); }
+  .pip i { opacity: 0; position: absolute; inset: -2px; border-radius: 50%; display: grid; place-items: center; font-style: normal; color: var(--bg); }
+  .pip .now { background: var(--role); }
+  .pip .told { background: color-mix(in srgb, var(--bg) 45%, var(--fg)); }
+  /* The look with depth. The page is tinted, so what is white sits above it;
+     a party and a listing cast a shadow, and what is sent casts a longer one
+     while it is on its way. Someone else, and a proof that is not there, cast none. */
+  .lit { --stage: color-mix(in srgb, var(--bg-sunken) 72%, var(--border)); --shade: 24 34 56; background: var(--stage); }
+  .lit::after { content: ""; position: absolute; inset: 0; z-index: 90; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 42%, transparent 55%, rgb(var(--shade) / 0.08) 100%); }
+  .lit .curtain { background: var(--stage); }
+  .lit .party { border-top-width: 16px; box-shadow: 0 1px 2px rgb(var(--shade) / 0.12), 0 8px 22px rgb(var(--shade) / 0.12); }
+  .lit .party.other { border-top-width: 4px; box-shadow: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
+  .lit .held, .lit .verdict, .lit .act { box-shadow: 0 1px 2px rgb(var(--shade) / 0.16), 0 3px 8px rgb(var(--shade) / 0.1); }
+  .lit .sent, .lit .cargo .badge { translate: 0 calc(var(--lift) * -5px); box-shadow: 0 calc(1px + var(--lift) * 11px) calc(3px + var(--lift) * 20px) rgb(var(--shade) / calc(0.16 + var(--lift) * 0.14)); }
+  .lit .sent-missing { box-shadow: none; background: var(--stage); }
+  .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
+  .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
@@ -361,8 +480,11 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
+// With --beats the times are all that was asked for. The stage has been
+// opened, so a flow or a script it cannot draw has already been refused.
+if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE ? "-voiced" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
@@ -457,7 +579,7 @@ if (STILLS) {
   };
   const lines = beats.filter((b) => b.say);
   const cue = (b, i, mark) =>
-    `${i + 1}\n${stamp(b.start + LEAD, mark)} --> ${stamp(b.start + b.dur - 0.1, mark)}\n${b.say}\n`;
+    `${i + 1}\n${stamp(b.start + LEAD, mark)} --> ${stamp(b.start + b.dur - (b.hold ?? 0) - 0.1, mark)}\n${b.say}\n`;
   writeFileSync(
     join(out, `${name}.vtt`),
     `WEBVTT\n\n${lines.map((b, i) => cue(b, i, ".")).join("\n")}`,

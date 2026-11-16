@@ -35,27 +35,40 @@ Three more, which are not Mayer's:
 
 ## What has been decided
 
-These are the film's manner so far. Change one for a reason, and change it here.
+These are the film's manner so far. Change one for a reason, and change it here. Where things go, how big they are, how they move and how a cut is checked are in the [film design guide](film-design.md).
 
 **The telling**
 
-- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, where to read more.
+- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, the whole of it in one line, where to read more.
 - About a minute and a half. The DPoP film says 236 words in 98 seconds.
 - The title card is the flow's short name and the rest of its title. It does not repeat the sentence being said.
 
 **The stage**
 
+The first four of these are how the rows are drawn (`--layout rows`). The stage the script makes when nothing else is asked for is under “Layout and look”, and its measurements are in the [film design guide](film-design.md).
+
 - It keeps the page's diagram: the parties in boxes across the top in their own colors, a line down from each, a numbered row for each step, a solid arrow for a request and a dashed one for a response.
 - Only what has happened is drawn. The row being told is in focus, the one before it is muted above it, and older rows are gone.
+- What a message carries travels along its row, from the sender to the receiver: a token, a proof, an answer, each a small labelled thing. It moves once. What the receiver keeps goes up to where the receiver holds things. Where something that should be sent is not, its place travels empty: the copied token goes beside “no proof”.
+- Said aloud, a heading over the scene says what this part is: the question, then each part of the flow by the page's own name for it. Written under the scene, the words leave no room for one.
 - What a party holds is under it, clear of its box and on its line: one thing in the middle of the line, two to either side of it. A token bound to a key carries the key's mark.
 - A listing is three lines at most, cut at 46 characters, with one line marked at a time. Between two parties it hangs between their lines. For what one party does by itself, its edge is in line with that party's box.
 - Whoever is not a party to the flow is “Someone else”, in a grey box with a dashed edge, standing on no line. The film does not say “attacker”.
 - What the API says of a request is a small box under the request, on the API's line: green for accepted, red for refused.
 - The light theme, the site's own type and colors, read from the built stylesheet.
 
+**Layout and look**
+
+- The parties stay where they are, with a line between each two that speak, and only what is sent moves. The page's own drawing, a step to a row, was the first stage and is kept (`--layout rows`). Parties that stay put are easier to follow: nothing is drawn and taken away, and what each party holds is in one place for the whole film. What is given up is the order of the steps as a place on the stage. Each thing sent carries its step's number, and a strip of numbers says how far the flow has got.
+- Before anything is sent, the line it will go along is drawn over in the sender's color, from the sender to an arrowhead at the receiver, and what will be sent waits at the sender while that happens. Without it, a thing that moved came as a surprise.
+- Whoever speaks to the most parties is the tall one at the left, with what it holds inside it. In most flows that is the agent.
+- The page is tinted and what is on it casts a shadow (`--look depth`), and the plain white is kept (`--look flat`). The site's owner found the white flat to watch and chose depth on 16 November 2026, keeping both in case that changes. A shadow says a thing is part of the system and there, and a longer one that it is on its way. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
+- The film's last line says where the rest is and what is there. Nothing asks the person watching to follow or subscribe.
+
 **Motion**
 
-- One thing moves at a time. An arrow draws itself from sender to receiver. A thing that arrives is a little larger for a moment.
+- One thing moves at a time. An arrow draws itself from sender to receiver, and then what it carries travels along it. What travels leaves slowly, is quickest half way and slows to a stop, so the eye can pick it up and see where it lands. A thing that arrives is a little larger for a moment.
+- Nothing flashes, and nothing moves on a loop.
 - The picture does not zoom or pan.
 - Nothing runs on a clock: a frame is a function of its second, so a film comes out the same every time.
 
@@ -67,9 +80,10 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 **Voice**
 
-- Kokoro, voice `af_heart`, at its own pace: a little under three words a second, with a third of a second between lines.
+- Kokoro, voice `af_heart`, at its own pace: a little under three words a second, with a third of a second between two lines of one step and about twice that between steps.
 - A word the voice would say wrong is written for it as it sounds (`speak`), and what it says is checked by ear.
 - The track is brought to −16 LUFS.
+- No music under the voice. See [what else is known](#what-else-is-known).
 - The description says the voice is synthetic.
 
 **Captions and description**
@@ -83,21 +97,50 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 ## What has not been decided
 
-- **Whose voice.** The voice principle asks for a person's. Kokoro was chosen to hear the film with a voice at all, with no account and no cost. A recording by a person fits the same script: a beat lasts as long as its clip. A hosted voice is the third choice, and needs an account. The studies behind the principle used older machine voices, and whether it holds for today's was not checked.
+- **Whose voice.** The voice principle asks for a person's. Kokoro was chosen to hear the film with a voice at all, with no account and no cost. A recording by a person fits the same script: a beat lasts as long as its clip. A hosted voice is the third choice, and needs an account. Studies with newer machine voices mostly find no difference in what is learned: see below.
+- **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
+- **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
 - **A cover.** The first frame is the agent, the API and a token. Nothing chooses a frame for a thumbnail.
 - **A dark version.**
 - **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.
 
+## What else is known
+
+Read on 15 November 2026, for this guide. Most of the papers were read from their abstracts and not in full, and each finding is marked with how strong it is. None of it was measured on a film of ours.
+
+**From research**
+
+- **Music under a voice tends to cost learning.** A bland instrumental loop under narrated animation lowered retention and transfer in two experiments ([Moreno and Mayer, 2000](https://tecfa.unige.ch/tecfa/teaching/methodo/Moreno_Mayer00.pdf), read in full). A field experiment found music hurt on the easier of two videos and made no difference on the harder ([Meyerhoff and others, 2022](https://eric.ed.gov/?id=EJ1354848)). One meta-analysis finds music helps learning, but it is of learning in general and not of narrated video ([de la Mora Velasco and others, 2023](https://doi.org/10.1177/03057356231153070)). Where there is music under a voice, one study of broadcast sound recommends the voice at least 10 loudness units above it ([Torcoli and others, 2019](https://cris.fau.de/publications/234640600)).
+- **A sound that marks one event, once, did no harm** in the same 2000 paper, and repeated arbitrary sounds did. The authors call that suggestive.
+- **Animation helps where the change is the lesson.** Its advantage over still pictures is small overall ([Höffler and Leutner, 2007](https://eric.ed.gov/?id=EJ780451); [Berney and Bétrancourt, 2016](https://archive-ouverte.unige.ch/unige:92234)), larger with spoken commentary, and best for motion as against arrangement ([Ploetzner and others, 2020](https://eric.ed.gov/?id=EJ1274566)). What has gone from the screen is its cost ([Wong and others, 2012](https://eric.ed.gov/?id=EJ978021)).
+- **Cueing helps, modestly**, and flashing hurt where colour helped ([Alpizar and others, 2020](https://eric.ed.gov/?id=EJ1269127); Schneider and others, 2018, read from a summary).
+- **A question before the answer helps what it asks about**, and in a short video helped the rest too ([Carpenter and Toftness, 2017](https://doi.org/10.1016/j.jarmac.2016.07.014)). Saying a common misreading and then refuting it beat a clear explanation in one study of 364 students ([Muller and others, 2008](https://eric.ed.gov/?id=EJ788046)).
+- **A newer machine voice mostly matches a person's for learning** ([Craig and Schroeder, 2019](https://eric.ed.gov/?id=EJ1225297), and two later studies), though one small study of 2026 found a person's voice better for transfer. They are single studies.
+- **The case against words said and written at once is weaker for video than the principle says.** A review of 113 papers on video found coherence, segmenting and learner control held, and redundancy and modality did not ([Fyfield and others, 2022](https://eric.ed.gov/?id=EJ1363010)). Captions help most those watching in a second language ([Noetel and others, 2022](https://eric.ed.gov/?id=EJ1338120)).
+- **Views and likes do not follow how good an explanation is** ([Kulgemeyer and Peters, 2016](https://iopscience.iop.org/article/10.1088/0143-0807/37/6/065705), read in full).
+
+**From people who make them**
+
+- The script is where the work goes: many drafts, cut for clarity and for length ([Kurzgesagt](https://kurzgesagt.org/youtube/); [CGP Grey](https://cgpgrey.substack.com/p/iteration)).
+- The voice comes first, and the picture is timed to it.
+- Write to what is on the screen ([Estelle Caswell of Vox](https://www.schoolofmotion.com/blog/estelle-caswell-vox-podcast)): the word and the picture make the same point.
+- Open with something concrete or a question, and not with a definition ([3Blue1Brown](https://www.3blue1brown.com/faq/)).
+- Every movement has a purpose, and a transition between scenes carries no information.
+- Have someone who does not know the subject say where they were lost ([Joss Fong of Vox](https://www.theopennotebook.com/2020/01/07/videogram-how-a-vox-video-explains-the-science-behind-the-first-photo-of-a-black-hole/)).
+- For animated transitions: slow in and slow out, keep landmarks on the screen, and stage simply, but staging everything one thing at a time tested worse than a little at once ([Heer and Robertson, 2007](https://homes.cs.washington.edu/~jheer/files/2007-AnimatedTrans-InfoVis.pdf)).
+
+**Films to watch.** None of these was watched for this guide, and their view counts were not all read: [Session vs Token Authentication in 100 Seconds](https://www.youtube.com/watch?v=UBUNrFtufWo) (Fireship), [OAuth 2 Explained In Simple Terms](https://www.youtube.com/watch?v=ZV5yTm4pT8g) (ByteByteGo), [An Illustrated Guide to OAuth and OpenID Connect](https://www.youtube.com/watch?v=t18YB3xDfXI) (OktaDev), [Diffie-Hellman Key Exchange](https://www.youtube.com/watch?v=YEBfamv-_do) (Art of the Problem), and [But how does bitcoin actually work?](https://www.youtube.com/watch?v=bBC-nXj3Ng4) (3Blue1Brown). A single protocol is usually told in four to nine minutes, at 163 to 187 words a minute where a transcript could be counted. This film is at the short end and the slow end.
+
 ## Making the next one
 
 1. **Find the flow's question.** One the page answers, that someone could guess at before watching. It is usually in the flow's summary or tagline.
 2. **Write what is said**, in `scripts/films/<slug>.mjs`. A line to a beat, with its source on the page in a comment. Read it aloud before anything is drawn.
 3. **Choose what each step shows**: which lines of its listing, the word at which each is marked, the word at which a party comes to hold what the step gives it.
-4. **Write its opening and its ending.** The scenes before and after the steps are DPoP's, and are in `scripts/film-stage.js`: a request with a token, a copy in a log, someone else trying the copy, the copy refused, the key put away. The steps themselves need nothing written.
+4. **Write its opening and its ending.** The scenes before and after the steps are DPoP's, and are in `scripts/film-stage.js` and `scripts/film-stage-fixed.js`: a request with a token, a copy in a log, someone else trying the copy, the copy refused, the key put away. The steps themselves need nothing written.
 5. **List the words a voice will get wrong.** Each goes under `speak`, as it sounds. One that is not said as it is spelled also goes on the stage with `gloss`, with the source for how it is said. PKCE is “pixy” ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)), and JWT is “jot”.
-6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice.
+6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice. The [film design guide](film-design.md#checking-a-cut) says what to look at.
 7. **Listen to it.** Nothing checks how it sounds. Listen for each name, for a line that is rushed, and for anything on the stage that the words do not say.
 8. **Keep each cut where it will last.** `social/` is not committed. The cuts of the DPoP film are kept on a page of their own, outside the repository.
 
