@@ -17,11 +17,11 @@
  * The bucket is reached in one of two ways:
  *
  * - With keys for this bucket alone, through R2's S3 interface, where
- *   FILM_ASSETS_ACCOUNT_ID, FILM_ASSETS_ACCESS_KEY_ID and
- *   FILM_ASSETS_SECRET_ACCESS_KEY are set. This is the way for a session
- *   with nobody to log in. The keys are made on the R2 page of the
- *   dashboard, under Manage API tokens, as Object Read & Write for the
- *   bucket.
+ *   CLOUDFLARE_AWS_ACCESS_KEY and CLOUDFLARE_AWS_ACCESS_SECRET are set, with
+ *   either CLOUDFLARE_S3_ENDPOINT or CLOUDFLARE_ACCOUNT_ID to say where. This
+ *   is the way for a session with nobody to log in. The keys are made on the
+ *   R2 page of the dashboard, under Manage API tokens, as Object Read & Write
+ *   for the bucket.
  * - Otherwise with Wrangler, as the site's deploys are made, after
  *   `npx wrangler login`.
  */
@@ -82,19 +82,37 @@ function present(dir = store, found = []) {
 }
 
 const KEYS = {
-  account: process.env.FILM_ASSETS_ACCOUNT_ID,
-  key: process.env.FILM_ASSETS_ACCESS_KEY_ID,
-  secret: process.env.FILM_ASSETS_SECRET_ACCESS_KEY,
+  key: process.env.CLOUDFLARE_AWS_ACCESS_KEY,
+  secret: process.env.CLOUDFLARE_AWS_ACCESS_SECRET,
 };
 const some = Object.values(KEYS).filter(Boolean).length;
-if (some && some < 3)
+if (some === 1)
   throw new Error(
-    "FILM_ASSETS_ACCOUNT_ID, FILM_ASSETS_ACCESS_KEY_ID and FILM_ASSETS_SECRET_ACCESS_KEY go together: one of them is not set",
+    "CLOUDFLARE_AWS_ACCESS_KEY and CLOUDFLARE_AWS_ACCESS_SECRET go together: one of them is not set",
   );
+/**
+ * Where the bucket is: the endpoint as it is given, or the account's. The
+ * dashboard gives an endpoint with the bucket's name on the end or without
+ * it, so either is taken.
+ */
+function bucketAddress() {
+  const given = process.env.CLOUDFLARE_S3_ENDPOINT?.trim().replace(/\/+$/, "");
+  const account = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  if (!given && !account)
+    throw new Error(
+      "The keys say who is asking, and not where: set CLOUDFLARE_S3_ENDPOINT or CLOUDFLARE_ACCOUNT_ID",
+    );
+  const base = given
+    ? /^https?:\/\//.test(given)
+      ? given
+      : `https://${given}`
+    : `https://${account}.r2.cloudflarestorage.com`;
+  return base.endsWith(`/${index.bucket}`) ? base : `${base}/${index.bucket}`;
+}
 
 /** A request to the bucket through R2's S3 interface, signed with the keys. */
 async function s3(method, key, { body, type } = {}) {
-  const url = `https://${KEYS.account}.r2.cloudflarestorage.com/${index.bucket}/${key.split("/").map(encodeURIComponent).join("/")}`;
+  const url = `${bucketAddress()}/${key.split("/").map(encodeURIComponent).join("/")}`;
   const answer = await fetch(url, {
     method,
     body,

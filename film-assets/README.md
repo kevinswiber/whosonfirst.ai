@@ -71,7 +71,7 @@ Sends what is new or changed, and then the index.
 
 The bucket is reached in one of two ways.
 
-- **With keys for this bucket alone,** where `FILM_ASSETS_ACCOUNT_ID`, `FILM_ASSETS_ACCESS_KEY_ID` and `FILM_ASSETS_SECRET_ACCESS_KEY` are set in the environment. This is the way for a cloud session, where nobody can log in. The keys are made on the R2 page of the Cloudflare dashboard, under **Manage API tokens**, with **Object Read & Write** for this bucket and no other. They go through R2's S3 interface.
+- **With keys for this bucket alone,** where `CLOUDFLARE_AWS_ACCESS_KEY` and `CLOUDFLARE_AWS_ACCESS_SECRET` are set in the environment, with `CLOUDFLARE_S3_ENDPOINT` or `CLOUDFLARE_ACCOUNT_ID` to say where the bucket is. This is the way for a cloud session, where nobody can log in. The keys are made on the R2 page of the Cloudflare dashboard, under **Manage API tokens**, with **Object Read & Write** for this bucket and no other. They go through R2's S3 interface.
 - **With Wrangler,** after `npx wrangler login`, on a person's own machine.
 
 A key is never written in the repository, in a commit or in a message.
