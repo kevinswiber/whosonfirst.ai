@@ -136,6 +136,7 @@ const LEAST = {
   caveat: 5,
   recap: 4,
   end: 4,
+  cover: 3,
   step: 2.6,
   listing: 3.4,
 };
@@ -185,6 +186,25 @@ if (DRAFT) {
     }),
     { scene: "end" },
   ];
+}
+
+/**
+ * With --cover, a still for the film's cover and no film: the copy refused,
+ * and with it the agent's own request, with its proof, accepted. It is a
+ * scene of its own that the film does not have, set after the copy is
+ * refused, under the question the film opens with.
+ */
+const COVER = args.includes("--cover");
+if (COVER) {
+  const refused = script.beats.findIndex((b) => b.scene === "refuse");
+  if (refused < 0 || LAYOUT !== "fixed")
+    throw new Error(
+      "--cover is for a film that has the scene refuse, in the fixed layout",
+    );
+  script.beats.splice(refused + 1, 0, {
+    scene: "cover",
+    head: script.beats[0].head,
+  });
 }
 
 mkdirSync(join(out, "voice"), { recursive: true });
@@ -587,7 +607,13 @@ if (args.includes("--beats")) process.exit(0);
 
 const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
-if (STILLS) {
+if (COVER) {
+  const beat = beats.find((b) => b.scene === "cover");
+  await page.evaluate((s) => window.seek(s), beat.start + beat.dur - 0.5);
+  const file = join(out, `${name}-cover.png`);
+  await page.screenshot({ path: file });
+  console.log(file);
+} else if (STILLS) {
   for (const t of STILLS) {
     await page.evaluate((s) => window.seek(s), t);
     const file = join(out, `${name}-at-${String(t).padStart(3, "0")}.png`);

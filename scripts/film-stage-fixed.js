@@ -949,6 +949,23 @@
       const no = verdict("Refused: no proof", false, ANSWER.x, ANSWER.under);
       pop(no, Math.max(arrived, when(beat, "refuses")));
       passing = [other, copyBound, tried.path, tried.tip, sent, no];
+    } else if (beat.scene === "cover") {
+      // Not in the film: a still for its cover, made with --cover. The
+      // copy refused is left where it is, and the agent's own request,
+      // with its proof, is set over it and accepted. The two answers are
+      // the film's, in one picture.
+      fromStory(beat.scene);
+      light(t, [hub.id, api.id], absent);
+      const [a, b] = [
+        { x: LEFT, y: TWO },
+        { x: NEAR, y: TWO },
+      ];
+      const sent = cargo(["bound", "proof"], a, b);
+      const aimed = aim(a, b, hub.role, t, t + dur);
+      sent.travel(aimed, 0.2, 0.1);
+      const ok = verdict("200 OK", true, ANSWER.x, ANSWER.over);
+      show(ok, t, 0.1);
+      passing.push(sent, ok);
     } else if (beat.scene === "caveat") {
       fromStory(beat.scene);
       clear(t, 0.4);

@@ -96,10 +96,16 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - A reading can be mended from another by the same voice, with the same model and settings: cut 11’s “Now copy the token alone” is the line from the reading of cut 10, put in place of a line that said something the picture did not. The reading in the index is the mended one, so the cut can be made again from it.
 - The track is brought to −16 LUFS.
 - No music under the voice. See [what else is known](#what-else-is-known).
-- The sound of a quiet room can be laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026, and not decided.
+- The sound of a quiet room is laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026 in cut 10, and kept that day.
 - The description says the voice is synthetic.
 - A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines.
 - The films are said in the voice of the site’s owner: a clone of his own voice, made with ElevenLabs, reading the whole film once. Chosen on 16 November 2026, from cut 15, over Matilda, one of ElevenLabs’ own voices: his own is more personal. It is still a machine’s voice, and the description says so. A reading he records himself fits the same way.
+
+**Cover**
+
+- A film’s cover is a still made for it, with `--cover`, and is not a frame of the film. It is the film’s answer in one picture, under the question the film opens with: the agent’s request, with its proof, accepted, and someone else’s copy, with no proof, refused. Decided on 16 November 2026, from cut 15.
+- The film does not show the two at once. It tells one thing at a time, and the copy is tried after the flow has been told.
+- It is drawn from the scenes that follow DPoP’s steps, so another flow’s film needs its own.
 
 **Captions and description**
 
@@ -116,7 +122,6 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
 - **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
-- **A cover.** From cut 11 a still of the copied token refused is kept with the cut, as `cover.png`, made with `--stills`. Whether it is the one to post has not been decided.
 - **A dark version.**
 - **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.
