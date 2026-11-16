@@ -806,12 +806,13 @@ const usedKinds = [...new Set(steps.map((s) => s.kind))];
     align-items: start;
   }
   /* Both stacked tablets and side-by-side desktops keep navigation reachable
-     while the complete narrative scrolls inside the panel. */
+     while the complete narrative scrolls inside the panel. Stacked, the panel
+     fills the window, so a swipe past its last step carries on to the page:
+     held there, the end of the steps would look like the end of the page. */
   @media screen and (min-width: 48rem) {
     .flow[data-js]:not([data-all]) .flow-panel {
       max-height: calc(100dvh - 5.4rem - var(--here, 0rem));
       overflow-y: auto;
-      overscroll-behavior: contain;
       scrollbar-width: thin;
     }
   }
