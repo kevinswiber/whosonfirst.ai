@@ -601,7 +601,10 @@
           told.until,
         );
       // what a party comes to hold, at the word that says so
-      if (beat.gain)
+      // What the agent comes to hold is drawn for DPoP's film alone: a key,
+      // and a token bound to it. Another flow's token is not bound to a key,
+      // and this stage has no other way to draw one, so it draws none.
+      if (beat.gain && beats[0]?.scene === "ask")
         for (const [, what] of step.gain ?? []) {
           if (what.startsWith("private key"))
             pop(key, due(beat, beat.gain, t + 2.5));
