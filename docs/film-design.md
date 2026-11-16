@@ -43,7 +43,7 @@ node scripts/flow-film.mjs --flow dpop
 | `--stills 26,44.5`                | Pictures at those seconds, and no video. The fastest way to look at a change                                                                                                                                                   |
 | `--draft`                         | The flow told in its steps' own titles, with no script. What a flow with no film yet gets                                                                                                                                      |
 
-Everything is written to `social/`, which is not committed. A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
+Everything is written to `social/`, which is not committed. A cut that is to be kept is copied from there to `film-assets/`, which is sent to an R2 bucket: see [Changing the design](#changing-the-design). A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
 
 A beat's times differ between the silent cut and the narrated one, so run `--beats` with the same options as the stills.
 
@@ -297,4 +297,4 @@ The first try cut each line where the recogniser said its last word ended. That 
 - **A measurement** is a constant at the top of a stage file. **A style** is in the `<style>` block in `scripts/flow-film.mjs`. **A time** is in `LEAST` there, or beside the motion in a stage file.
 - Change it for both looks, look at both, and change this guide in the same commit.
 - A decision about manner, as against a measurement, is recorded in [Films](films.md), with its reason.
-- Keep each cut on the page where the others are kept, with a line on what changed, so the owner can set one beside another.
+- Keep each cut, and what it was made from, as [film-assets/README.md](../film-assets/README.md) says: in the bucket, and in `film-assets/index.json` with a line on what changed, so that one cut can be set beside another and none has to be made twice.
