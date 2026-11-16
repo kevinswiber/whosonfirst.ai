@@ -14,11 +14,16 @@
  * README.md are committed, and say what every file is and which cut is the
  * latest. The files themselves are not committed: they are in the bucket.
  *
- * It uses Wrangler, as the site's deploys do, so it needs what Wrangler
- * needs: `npx wrangler login` on a person's machine, or CLOUDFLARE_API_TOKEN
- * and CLOUDFLARE_ACCOUNT_ID where there is nobody to log in. The token needs
- * Workers R2 Storage: Edit. A token for one bucket alone does not work here:
- * those are for R2's S3 interface, which Wrangler does not use.
+ * The bucket is reached in one of two ways:
+ *
+ * - With keys for this bucket alone, through R2's S3 interface, where
+ *   FILM_ASSETS_ACCOUNT_ID, FILM_ASSETS_ACCESS_KEY_ID and
+ *   FILM_ASSETS_SECRET_ACCESS_KEY are set. This is the way for a session
+ *   with nobody to log in. The keys are made on the R2 page of the
+ *   dashboard, under Manage API tokens, as Object Read & Write for the
+ *   bucket.
+ * - Otherwise with Wrangler, as the site's deploys are made, after
+ *   `npx wrangler login`.
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -34,6 +39,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { signed } from "./s3-sign.mjs";
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const store = join(here, "film-assets");
@@ -75,6 +81,41 @@ function present(dir = store, found = []) {
   return found;
 }
 
+const KEYS = {
+  account: process.env.FILM_ASSETS_ACCOUNT_ID,
+  key: process.env.FILM_ASSETS_ACCESS_KEY_ID,
+  secret: process.env.FILM_ASSETS_SECRET_ACCESS_KEY,
+};
+const some = Object.values(KEYS).filter(Boolean).length;
+if (some && some < 3)
+  throw new Error(
+    "FILM_ASSETS_ACCOUNT_ID, FILM_ASSETS_ACCESS_KEY_ID and FILM_ASSETS_SECRET_ACCESS_KEY go together: one of them is not set",
+  );
+
+/** A request to the bucket through R2's S3 interface, signed with the keys. */
+async function s3(method, key, { body, type } = {}) {
+  const url = `https://${KEYS.account}.r2.cloudflarestorage.com/${index.bucket}/${key.split("/").map(encodeURIComponent).join("/")}`;
+  const answer = await fetch(url, {
+    method,
+    body,
+    headers: signed({
+      method,
+      url,
+      headers: type ? { "Content-Type": type } : {},
+      body: body ?? "",
+      key: KEYS.key,
+      secret: KEYS.secret,
+      region: "auto",
+      service: "s3",
+    }),
+  });
+  if (!answer.ok && !(method === "GET" && answer.status === 404))
+    console.error(
+      `${method} ${key}: ${answer.status} ${(await answer.text()).replace(/\s+/g, " ").slice(0, 300)}`,
+    );
+  return answer;
+}
+
 function wrangler(args, quiet = true) {
   const ran = spawnSync(
     "npx",
@@ -89,22 +130,25 @@ function wrangler(args, quiet = true) {
     console.error(ran.stderr.trim() || ran.stdout.trim());
   return ran.status === 0;
 }
-const put = (key, path) =>
-  wrangler(
-    [
-      "put",
-      `${index.bucket}/${key}`,
-      "--file",
-      path,
-      "--content-type",
-      TYPES[extname(key)] ?? "application/octet-stream",
-    ],
+async function put(key, path) {
+  const type = TYPES[extname(key)] ?? "application/octet-stream";
+  if (some)
+    return (await s3("PUT", key, { body: readFileSync(path), type })).ok;
+  return wrangler(
+    ["put", `${index.bucket}/${key}`, "--file", path, "--content-type", type],
     false,
   );
-const get = (key, path, quiet = false) => {
+}
+async function get(key, path, quiet = false) {
   mkdirSync(dirname(path), { recursive: true });
+  if (some) {
+    const answer = await s3("GET", key);
+    if (!answer.ok) return false;
+    writeFileSync(path, Buffer.from(await answer.arrayBuffer()));
+    return true;
+  }
   return wrangler(["get", `${index.bucket}/${key}`, "--file", path], quiet);
-};
+}
 
 if (command === "check") {
   const names = new Set(files.map((f) => f.key));
@@ -148,7 +192,7 @@ if (command === "check") {
   const scratch = mkdtempSync(join(tmpdir(), "film-assets-"));
   const theirs = join(scratch, "index.json");
   const there = new Map(
-    get("index.json", theirs, true)
+    (await get("index.json", theirs, true))
       ? listed(JSON.parse(readFileSync(theirs, "utf8"))).map((f) => [
           f.key,
           f.sha256,
@@ -165,13 +209,13 @@ if (command === "check") {
       );
     if (there.get(file.key) === file.sha256) continue;
     process.stdout.write(`sending ${file.key} … `);
-    if (!put(file.key, path)) process.exit(1);
+    if (!(await put(file.key, path))) process.exit(1);
     console.log("sent");
     sent++;
   }
   // the index goes last, so it never lists what is not there yet
   for (const key of ["README.md", "index.json"])
-    if (!put(key, join(store, key))) process.exit(1);
+    if (!(await put(key, join(store, key)))) process.exit(1);
   console.log(`${sent} files sent to ${index.bucket}, and its index.`);
 } else if (command === "pull") {
   let fetched = 0;
@@ -180,7 +224,7 @@ if (command === "check") {
     if (!file.key.startsWith(under)) continue;
     if (existsSync(path) && hashOf(path) === file.sha256) continue;
     process.stdout.write(`fetching ${file.key} … `);
-    if (!get(file.key, path)) process.exit(1);
+    if (!(await get(file.key, path))) process.exit(1);
     if (file.sha256 && hashOf(path) !== file.sha256)
       throw new Error(
         `${file.key} came back different from what the index describes`,

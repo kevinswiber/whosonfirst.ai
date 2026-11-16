@@ -69,7 +69,12 @@ node scripts/film-assets.mjs push
 
 Sends what is new or changed, and then the index.
 
-It runs Wrangler, so it needs `npx wrangler login`, or `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the environment. The token needs **Workers R2 Storage: Edit**. A token for this bucket alone does not work: those are for R2's S3 interface, which Wrangler does not use.
+The bucket is reached in one of two ways.
+
+- **With keys for this bucket alone,** where `FILM_ASSETS_ACCOUNT_ID`, `FILM_ASSETS_ACCESS_KEY_ID` and `FILM_ASSETS_SECRET_ACCESS_KEY` are set in the environment. This is the way for a cloud session, where nobody can log in. The keys are made on the R2 page of the Cloudflare dashboard, under **Manage API tokens**, with **Object Read & Write** for this bucket and no other. They go through R2's S3 interface.
+- **With Wrangler,** after `npx wrangler login`, on a person's own machine.
+
+A key is never written in the repository, in a commit or in a message.
 
 ## When a cut is made
 
