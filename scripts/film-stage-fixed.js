@@ -216,6 +216,8 @@
     p.box = at(make("div", `party role-${p.role}`), p.x, p.y);
     p.box.style.width = `${RIGHT.w}px`;
     make("strong", "", p.box, p.label);
+    // a party that will hold something has its name a little higher, clear of what hangs from it
+    if (holders.has(p.id)) p.box.style.paddingBottom = "26px";
   }
   /**
    * Where a line between two parties leaves the first and reaches the
@@ -343,7 +345,14 @@
       }
       y = SLOT.first + mine.length * SLOT.step;
     } else for (const thing of mine.splice(0)) hide(thing.node, t - 0.1, 0.2);
-    const thing = { node: chip(kind, p.x, y, words), kind, y, dy: 0 };
+    const thing = {
+      node: chip(kind, p.x, y, words),
+      kind,
+      what,
+      words,
+      y,
+      dy: 0,
+    };
     mine.push(thing);
     if (arrived && p === hub) {
       to(arrived, "x", t - 0.5, 0.5, p.x - arrived.left);
@@ -352,6 +361,27 @@
     } else if (arrived) hide(arrived, t - 0.1, 0.2);
     pop(thing.node, t);
     return thing;
+  };
+
+  /**
+   * A party stops holding something at second `t`, as the page says it does:
+   * a code that has been redeemed, a key that was only held for one request.
+   * It goes, and in the tall party what is under it moves up.
+   */
+  const drop = (p, what, t) => {
+    const mine = held.get(p);
+    const words = what.replace(/\s*\(.*\)\s*$/, "");
+    const exact = mine.findIndex((thing) => thing.what === what);
+    const found =
+      exact >= 0 ? exact : mine.findIndex((thing) => thing.words === words);
+    if (found < 0) return;
+    const [gone] = mine.splice(found, 1);
+    hide(gone.node, t, 0.3);
+    if (p === hub)
+      for (const thing of mine.slice(found)) {
+        thing.dy -= SLOT.step;
+        to(thing.node, "y", t + 0.2, 0.3, thing.dy);
+      }
   };
 
   // ---------- which way, and then what is sent ----------
@@ -864,6 +894,15 @@
           told.until,
         );
       }
+      // What the step takes from a party goes as the step begins, or at the
+      // word a beat of the step names with `lose`.
+      if (first)
+        for (const [id, what] of step.lose ?? []) {
+          const cue = beats.find(
+            (b) => b.step === n && typeof b.lose === "string",
+          );
+          drop(party(id), what, cue ? when(cue, cue.lose) : t + 1);
+        }
       if (beat.gain)
         for (const [id, what] of step.gain ?? []) {
           const sent = receiver?.id === id ? told.sent : undefined;
