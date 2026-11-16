@@ -1,15 +1,16 @@
 // scripts/indexnow.mjs tells search engines which pages changed. This checks
-// how it chooses them: by a day, or by the commits after one, and how it
-// waits for the deployed site to have them. Nothing here builds the site,
+// how it chooses them: by a day, or by what the commits after one changed,
+// and how it waits for the deployed site to have them. Nothing here builds the site,
 // asks the network or sends a list.
 import { strict as assert } from "node:assert";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { after, before, describe, test } from "node:test";
 import {
   changedBy,
+  changedEntries,
   changedSince,
   commitsAfter,
   notYetLive,
@@ -93,25 +94,71 @@ describe("which pages changed", () => {
     assert.deepEqual(locs(changedSince(pages, "2026-11-15")), []);
   });
 
-  test("by some commits: the pages whose date is the date of one of them, however old", () => {
-    // a commit made on the 12th and merged after one made on the 14th
-    assert.deepEqual(locs(changedBy(pages, ["2026-11-12T09:00:00+00:00"])), [
-      "/",
+  // what each page is made from, as src/pages/sitemap-sources.json.ts writes it
+  const sources = {
+    "https://example.test/": ["src/pages/index.astro"],
+    "https://example.test/about/": [
+      "src/pages/about.astro",
+      "src/pages/about.mdx",
+    ],
+    "https://example.test/flows/dpop/": [
+      "src/data/flows/dpop.ts",
+      "src/data/standards.ts#rfc9449",
+    ],
+    "https://example.test/styleguide/": [
+      "src/pages/styleguide/index.astro",
+      "src/data/flows/",
+    ],
+  };
+
+  test("by some commits: the pages made from a file they changed, whatever its date says", () => {
+    // a commit made on the 12th, merged after one made on the 14th that also
+    // changed the page: its date stays the 14th
+    assert.deepEqual(
+      locs(changedBy(pages, sources, ["src/data/flows/dpop.ts"])),
+      ["/flows/dpop/", "/styleguide/"],
+    );
+    assert.deepEqual(locs(changedBy(pages, sources, ["src/pages/about.mdx"])), [
+      "/about/",
     ]);
-    assert.deepEqual(locs(changedBy(pages, [])), []);
-    assert.deepEqual(locs(changedBy(pages, ["2026-11-14T10:00:01+00:00"])), []);
+    assert.deepEqual(locs(changedBy(pages, sources, [])), []);
+    assert.deepEqual(locs(changedBy(pages, sources, ["README.md"])), []);
   });
 
-  test("a commit's date and a page's are the same instant in whatever zone each is written", () => {
+  test("by some commits: a page made from an entry, only when that entry changed", () => {
     assert.deepEqual(
       locs(
-        changedBy(pages, [
-          "2026-11-14T07:30:00+00:00",
-          "2026-11-14T02:00:00-08:00",
+        changedBy(pages, sources, [
+          "src/data/standards.ts",
+          "src/data/standards.ts#rfc9449",
         ]),
       ),
-      ["/about/", "/flows/dpop/"],
+      ["/flows/dpop/"],
     );
+    assert.deepEqual(
+      locs(
+        changedBy(pages, sources, [
+          "src/data/standards.ts",
+          "src/data/standards.ts#rfc7519",
+        ]),
+      ),
+      [],
+    );
+  });
+
+  test("by some commits: a directory is made of every file under it, and of no entry", () => {
+    assert.deepEqual(
+      locs(changedBy(pages, sources, ["src/data/flows/gnap.ts"])),
+      ["/styleguide/"],
+    );
+    assert.deepEqual(
+      locs(changedBy(pages, sources, ["src/data/flowsheet.ts"])),
+      [],
+    );
+  });
+
+  test("by some commits: a page the build named no sources for is not sent", () => {
+    assert.deepEqual(locs(changedBy(pages, {}, ["src/pages/index.astro"])), []);
   });
 
   test("a page with no date is never taken for changed", () => {
@@ -121,7 +168,53 @@ describe("which pages changed", () => {
   });
 });
 
-describe("the commits after one", () => {
+// a list of entries, laid out as Biome lays it out, or laid out otherwise
+const list = (entries, loose = false) =>
+  `export const standards = [\n${entries
+    .map(([id, name]) =>
+      loose
+        ? `  {\n    id:   "${id}",\n    name:  "${name}"\n  },`
+        : `  {\n    id: "${id}",\n    name: "${name}",\n  },`,
+    )
+    .join("\n")}\n];\n`;
+
+describe("which entries changed", () => {
+  test("those added, taken away, or whose text is not the same", () => {
+    assert.deepEqual(
+      changedEntries(
+        list([
+          ["a", "A"],
+          ["b", "B"],
+          ["c", "C"],
+        ]),
+        list([
+          ["a", "A"],
+          ["b", "B, again"],
+          ["d", "D"],
+        ]),
+        "id",
+      ).sort(),
+      ["b", "c", "d"],
+    );
+  });
+
+  test("none, where only the layout changed", () => {
+    const entries = [
+      ["a", "A"],
+      ["b", "B"],
+    ];
+    assert.deepEqual(
+      changedEntries(list(entries), list(entries, true), "id"),
+      [],
+    );
+  });
+
+  test("every one, in a file that was not there before", () => {
+    assert.deepEqual(changedEntries("", list([["a", "A"]]), "id"), ["a"]);
+  });
+});
+
+describe("what the commits after one changed", () => {
   let root;
   let shallow;
   const hashes = {};
@@ -146,9 +239,13 @@ describe("the commits after one", () => {
       },
     ).trim();
   const git = (cwd, ...args) => run(cwd, {}, ...args);
-  const commit = (name, date) => {
-    writeFileSync(join(root, "page.txt"), name);
-    git(root, "add", "page.txt");
+  const STANDARDS = "src/data/standards.ts";
+  const commit = (name, date, files) => {
+    for (const [file, text] of Object.entries(files)) {
+      mkdirSync(dirname(join(root, file)), { recursive: true });
+      writeFileSync(join(root, file), text);
+      git(root, "add", file);
+    }
     run(
       root,
       { GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date },
@@ -160,21 +257,37 @@ describe("the commits after one", () => {
     hashes[name] = git(root, "rev-parse", "HEAD");
   };
 
-  // A commit's date as an instant: git writes one in UTC as +00:00 or as Z,
-  // by its version, and the script compares instants.
-  const instants = (cwd, from) =>
-    commitsAfter(cwd, from).dates.map((date) => Date.parse(date));
+  const changed = (cwd, from) => commitsAfter(cwd, from).changed.sort();
 
-  // one, two, three on main; "rewritten" is a second commit on one, as main
-  // would be after a forced push that replaced two and three
+  // one, two, three and four on main; "rewritten" is a second commit on one,
+  // as main would be after a forced push that replaced the rest. Two changes
+  // an entry of the list, three another file, and four only the list's layout.
   before(() => {
     root = mkdtempSync(join(tmpdir(), "indexnow-"));
     git(root, "init", "--quiet", "--initial-branch=main");
-    commit("one", "2026-11-10T08:00:00+00:00");
-    commit("two", "2026-11-11T08:00:00+00:00");
-    commit("three", "2026-11-12T08:00:00+00:00");
+    const entries = [
+      ["a", "A"],
+      ["b", "B, again"],
+    ];
+    commit("one", "2026-11-10T08:00:00+00:00", {
+      "page.txt": "one",
+      [STANDARDS]: list([
+        ["a", "A"],
+        ["b", "B"],
+      ]),
+    });
+    commit("two", "2026-11-11T08:00:00+00:00", {
+      "page.txt": "two",
+      [STANDARDS]: list(entries),
+    });
+    commit("three", "2026-11-12T08:00:00+00:00", { "other.txt": "three" });
+    commit("four", "2026-11-13T08:00:00+00:00", {
+      [STANDARDS]: list(entries, true),
+    });
     git(root, "checkout", "--quiet", "-b", "rewritten", hashes.one);
-    commit("rewritten", "2026-11-13T08:00:00+00:00");
+    commit("rewritten", "2026-11-14T08:00:00+00:00", {
+      "page.txt": "rewritten",
+    });
     git(root, "checkout", "--quiet", "main");
     shallow = mkdtempSync(join(tmpdir(), "indexnow-shallow-"));
     git(shallow, "clone", "--quiet", "--depth=1", `file://${root}`, ".");
@@ -184,60 +297,66 @@ describe("the commits after one", () => {
     rmSync(shallow, { recursive: true, force: true });
   });
 
-  test("are those made since, newest first, and none for the commit checked out", () => {
-    assert.deepEqual(
-      instants(root, hashes.one),
-      ["2026-11-12T08:00:00+00:00", "2026-11-11T08:00:00+00:00"].map(
-        Date.parse,
-      ),
-    );
-    assert.deepEqual(instants(root, hashes.three), []);
-    assert.deepEqual(
-      instants(root, hashes.two.slice(0, 10)),
-      ["2026-11-12T08:00:00+00:00"].map(Date.parse),
-    );
+  test("is the files they touched, and the entries whose text they changed", () => {
+    assert.deepEqual(changed(root, hashes.one), [
+      "other.txt",
+      "page.txt",
+      STANDARDS,
+      `${STANDARDS}#b`,
+    ]);
+    assert.deepEqual(changed(root, hashes.two.slice(0, 10)), [
+      "other.txt",
+      STANDARDS,
+    ]);
+    assert.deepEqual(changed(root, hashes.four), []);
   });
 
-  test("where history was rewritten, are those that are here and were not there", () => {
+  test("is no entry, where a commit only laid out the list again", () => {
+    assert.deepEqual(changed(root, hashes.three), [STANDARDS]);
+  });
+
+  test("where history was rewritten, is what the commits here and not there changed", () => {
     git(root, "checkout", "--quiet", "rewritten");
     try {
-      // main was at three, and is now at a commit three is not behind
-      assert.deepEqual(
-        instants(root, hashes.three),
-        ["2026-11-13T08:00:00+00:00"].map(Date.parse),
-      );
+      // main was at four, and is now at a commit four is not behind
+      assert.deepEqual(changed(root, hashes.four), ["page.txt"]);
     } finally {
       git(root, "checkout", "--quiet", "main");
     }
   });
 
-  test("leave out a commit that only reformats", () => {
-    writeFileSync(join(root, ".git-blame-ignore-revs"), `${hashes.three}\n`);
+  test("leaves out what a commit that only reformats touched", () => {
+    writeFileSync(
+      join(root, ".git-blame-ignore-revs"),
+      `${hashes.three}\n${hashes.four}\n`,
+    );
     try {
-      assert.deepEqual(
-        instants(root, hashes.one),
-        ["2026-11-11T08:00:00+00:00"].map(Date.parse),
-      );
+      assert.deepEqual(changed(root, hashes.two), []);
+      assert.deepEqual(changed(root, hashes.one), [
+        "page.txt",
+        STANDARDS,
+        `${STANDARDS}#b`,
+      ]);
     } finally {
       rmSync(join(root, ".git-blame-ignore-revs"));
     }
   });
 
-  test("are every commit, for the all-zero name of the commit before a first push", () => {
+  test("is everything, for the all-zero name of the commit before a first push", () => {
     assert.deepEqual(commitsAfter(root, "0".repeat(40)), { all: true });
   });
 
-  test("are refused for a commit this clone does not have, by name", () => {
-    const { refused, dates } = commitsAfter(root, "f".repeat(40));
-    assert.equal(dates, undefined);
+  test("is refused for a commit this clone does not have, by name", () => {
+    const { refused, changed } = commitsAfter(root, "f".repeat(40));
+    assert.equal(changed, undefined);
     assert.match(refused, /no commit f{40}/);
   });
 
-  test("are refused in a shallow clone, whose build has no dates to find them by", () => {
+  test("is refused in a shallow clone, whose history cannot say", () => {
     assert.match(commitsAfter(shallow, hashes.two).refused, /shallow/);
   });
 
-  test("are refused where there is no repository", () => {
+  test("is refused where there is no repository", () => {
     assert.match(commitsAfter("/", hashes.one).refused, /no history/);
   });
 });

@@ -1,30 +1,9 @@
 import type { APIRoute } from "astro";
-import { comparisonSlug, comparisons } from "../data/comparisons";
-import { flows } from "../data/flows";
-import { cases } from "../data/guide";
-import { implementationProfiles } from "../data/implementations";
 import { pageDates } from "../lib/page-dates";
-
-/** Static pages come from the filesystem; parameterized routes come from published data. */
-const pages = Object.keys(import.meta.glob("./**/*.{astro,mdx}"))
-  .map((p) =>
-    p
-      .replace(/^\./, "")
-      .replace(/\.(astro|mdx)$/, "")
-      .replace(/\/index$/, "/"),
-  )
-  .filter((p) => !p.includes("[") && p !== "/404")
-  .map((p) => (p.endsWith("/") ? p : `${p}/`));
+import { sitePages } from "../lib/site-pages";
 
 export const GET: APIRoute = ({ site }) => {
   const base = site ?? new URL("https://whosonfirst.ai");
-  const urls = [
-    ...pages,
-    ...flows.map((f) => `/flows/${f.slug}/`),
-    ...comparisons.map((c) => `/compare/${comparisonSlug(c)}/`),
-    ...cases.map((s) => `/guide/${s.slug}/`),
-    ...implementationProfiles.map((p) => `/implementations/${p.slug}/`),
-  ].sort();
   // A page says when it last changed only where that is known: from the
   // repository's history, which a build may not have. The date is the one in
   // the page's own structured data, so the two cannot disagree.
@@ -34,7 +13,7 @@ export const GET: APIRoute = ({ site }) => {
   };
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(entry).join("\n")}
+${sitePages.map(entry).join("\n")}
 </urlset>
 `;
   return new Response(body, {

@@ -16,15 +16,19 @@
  * minutes with nothing sent. .github/workflows/indexnow.yml runs the script
  * that way after every push to main, with the commit main was at before.
  *
- * The list comes from the built sitemap, whose dates are read from the
- * repository's history (src/integrations/page-dates.mjs). A page's date is the
- * date of the last commit that changed what it is made from. So "changed by
- * the commits after that one" is asked of the history and not of a clock: the
- * pages whose date is the date of one of those commits. A commit made last
- * week and merged today is one of them, where a day or a time would miss it.
+ * The list comes from the built sitemap. A day is compared with each page's
+ * date there, which is read from the repository's history
+ * (src/integrations/page-dates.mjs). A commit is not: "changed by the commits
+ * after that one" is asked of what each page is made from, which the build
+ * writes beside the sitemap as sitemap-sources.json (src/lib/page-sources.ts).
+ * The script reads from the history the files those commits changed, and the
+ * entries whose text they changed, and a page is sent when anything it is made
+ * from is among them. A page's date would miss some: one changed by a commit
+ * made on the 12th and merged after one made on the 14th stays dated the 14th.
  *
  * A build made from a shallow clone dates only the implementation records, so
- * a day there finds only those, and a commit is refused. The key is the file
+ * a day there finds only those, and a commit is refused: the history is not
+ * there to say what it changed. The key is the file
  * in public/ that holds its own name: the protocol asks for a key at the
  * site's root to show that whoever sends the list also runs the site. It is
  * not a secret.
@@ -36,7 +40,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ignoredRevisions } from "../src/integrations/page-dates.mjs";
+import {
+  ENTRIES,
+  entriesOf,
+  ignoredRevisions,
+} from "../src/integrations/page-dates.mjs";
 import { requireCurrentBuild } from "./built-site.mjs";
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
@@ -45,6 +53,8 @@ const USAGE =
 /** How long `--wait` waits for the deploy, and how often it looks. */
 const WAIT_MS = 10 * 60_000;
 const EVERY_MS = 15_000;
+/** Marks a commit's line in the log. */
+const MARK = "\u0001";
 
 /**
  * What the command line asks for: `{ all }`, `{ day }` or `{ commit }`, with
@@ -90,28 +100,52 @@ export function changedSince(pages, day) {
 }
 
 /**
- * The pages changed by some commits: those whose date is the date of one of
- * them. `dates` is each commit's date as `git log --format=%cI` prints it.
+ * The pages made from something that changed. `sources` is what each page is
+ * made from, by its address, as sitemap-sources.json has it: files,
+ * directories ending in "/", and entries as `<file>#<name>`. `changed` is the
+ * files and the entries that changed, in the same form. A directory is made
+ * of every file under it.
  */
-export function changedBy(pages, dates) {
-  const instants = new Set(dates.map((date) => Date.parse(date)));
-  return pages.filter((p) => p.lastmod && instants.has(Date.parse(p.lastmod)));
+export function changedBy(pages, sources, changed) {
+  const names = new Set(changed);
+  const files = changed.filter((name) => !name.includes("#"));
+  const hit = (name) =>
+    name.endsWith("/")
+      ? files.some((file) => file.startsWith(name))
+      : names.has(name);
+  return pages.filter((p) => (sources[p.loc] ?? []).some(hit));
 }
 
 /**
- * The commits after `commit`, up to the one checked out at `root`: every one
- * that is here and was not there, which is also right where history was
- * rewritten and `commit` is no longer behind this one. Returns `{ dates }`,
- * the date of each, without the commits that only reformat; or `{ all: true }`
- * for the name GitHub gives to "no commit", all zeros, which is what came
- * before a branch's first push; or `{ refused }`, a sentence, where the answer
- * cannot be read from this clone.
+ * The entries that differ between two texts of a file that is a list of them:
+ * those added, taken away, or whose text without its layout is not the same,
+ * as src/integrations/page-dates.mjs compares them to date an entry.
+ */
+export function changedEntries(before, now, key) {
+  const then = entriesOf(before, key);
+  const later = entriesOf(now, key);
+  return [...new Set([...then.keys(), ...later.keys()])].filter(
+    (name) => then.get(name) !== later.get(name),
+  );
+}
+
+/**
+ * What the commits after `commit` changed, up to the one checked out at
+ * `root`: the commits that are here and were not there, which is also right
+ * where history was rewritten and `commit` is no longer behind this one.
+ * Returns `{ changed }`: the files those commits touched, less what the
+ * commits that only reformat touched, and for each of those files that is a
+ * list of entries, the entries that differ between `commit` and this one, as
+ * `<file>#<name>`. Or `{ all: true }` for the name GitHub gives to "no
+ * commit", all zeros, which is what came before a branch's first push; or
+ * `{ refused }`, a sentence, where the answer cannot be read from this clone.
  */
 export function commitsAfter(root, commit) {
   const git = (...args) =>
     execFileSync("git", args, {
       cwd: root,
       encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
       stdio: ["ignore", "pipe", "ignore"],
     });
   if (/^0+$/.test(commit)) return { all: true };
@@ -119,7 +153,7 @@ export function commitsAfter(root, commit) {
     if (git("rev-parse", "--is-shallow-repository").trim() !== "false")
       return {
         refused:
-          "This clone is shallow, so its history cannot say which commits came after that one, and its build has no dates to find them by. Fetch the rest (`git fetch --unshallow`) and build again.",
+          "This clone is shallow, so its history cannot say what the commits after that one changed. Fetch the rest (`git fetch --unshallow`) and build again.",
       };
   } catch {
     return { refused: "There is no history to read here." };
@@ -135,13 +169,36 @@ export function commitsAfter(root, commit) {
   const ignored = existsSync(revs)
     ? ignoredRevisions(readFileSync(revs, "utf8"))
     : new Set();
-  const dates = git("log", "--format=%H %cI", `${commit}..HEAD`)
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => line.split(" "))
-    .filter(([hash]) => !ignored.has(hash))
-    .map(([, date]) => date);
-  return { dates };
+  // A commit's line is marked, so a file name cannot be taken for one. A file
+  // moved is one taken away and one added, and both are named.
+  const files = new Set();
+  let passedOver = false;
+  const log = git(
+    "log",
+    `--format=${MARK}%H`,
+    "--name-only",
+    "--no-renames",
+    `${commit}..HEAD`,
+  );
+  for (const line of log.split("\n")) {
+    if (line.startsWith(MARK)) passedOver = ignored.has(line.slice(1));
+    else if (line && !passedOver) files.add(line);
+  }
+  const at = (rev, file) => {
+    try {
+      return git("show", `${rev}:${file}`);
+    } catch {
+      // the file is not there at that commit
+      return "";
+    }
+  };
+  const entries = ENTRIES.filter(({ file }) => files.has(file)).flatMap(
+    ({ file, key }) =>
+      changedEntries(at(commit, file), at("HEAD", file), key).map(
+        (name) => `${file}#${name}`,
+      ),
+  );
+  return { changed: [...files, ...entries] };
 }
 
 /**
@@ -234,9 +291,8 @@ async function main(args) {
     return 1;
   }
 
-  const pages = readSitemap(
-    readFileSync(join(here, "dist", "client", "sitemap.xml"), "utf8"),
-  );
+  const built = join(here, "dist", "client");
+  const pages = readSitemap(readFileSync(join(built, "sitemap.xml"), "utf8"));
   let sending = pages;
   if (asked.day) sending = changedSince(pages, asked.day);
   if (asked.commit) {
@@ -247,10 +303,15 @@ async function main(args) {
     }
     if (after.all)
       console.log("There was no commit before this one: every page is new.");
-    else sending = changedBy(pages, after.dates);
+    else
+      sending = changedBy(
+        pages,
+        JSON.parse(readFileSync(join(built, "sitemap-sources.json"), "utf8")),
+        after.changed,
+      );
   }
   const undated = pages.filter((p) => !p.lastmod).length;
-  if (sending !== pages && undated)
+  if (asked.day && undated)
     console.error(
       `${undated} of ${pages.length} pages have no date in this build's sitemap and are left out. Build from a full clone to date them.`,
     );

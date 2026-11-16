@@ -29,7 +29,12 @@ const site: Site = {
   glossaryStandards: glossary.flatMap((term) => term.standard ?? []),
 };
 
+/** What a page is made from: files, directories ending in "/" and entries as `<file>#<name>`. */
+export function pageSources(path: string): string[] {
+  return madeFrom(path, site);
+}
+
 /** A page's dates, or nothing where the history could not be read or does not have the page. */
 export function pageDates(path: string): PageDates | undefined {
-  return datesFor(madeFrom(path, site), history);
+  return datesFor(pageSources(path), history);
 }
