@@ -28,7 +28,8 @@ export default {
   speak: {
     DPoP: "dee-pop",
     JWT: "jot",
-    "whosonfirst.ai": "who’s on first dot A I",
+    // "A I" is said as the word "a" and then "I". Written together it is said as two letters.
+    "whosonfirst.ai": "who’s on first dot AI",
   },
   beats: [
     // The question the film answers at its end. Asked first, so that whoever
