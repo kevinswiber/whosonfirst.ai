@@ -19,8 +19,8 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "15",
-      "state": "Not posted anywhere yet. Cut 15 is the latest: on paper, said by a clone of the owner's own voice, with the room under it and a cover made for it. Nothing about it is left to decide but where it is posted, and under what title.",
+      "latest": "16",
+      "state": "Not posted anywhere yet. Cut 16 is the latest: on paper whose dots fade toward the edges, said by a clone of the owner's own voice, with the room under it and a cover made for it. What is left to decide is where it is posted, and under what title.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
@@ -34,7 +34,7 @@
           "seconds": 78.24,
           "by": "The site's owner, who made the reading and gave it. Its settings are read from its file's name",
           "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 14, one to a paragraph, with the words under `speak` written as they sound. A recogniser heard 239 of its 244 words as written, and “jot” as “job”: to be checked by ear",
-          "use": "14-kevin and cut 15. Give it once with --reading, and the film can be made again with --voice kevin",
+          "use": "14-kevin and cuts 15 and 16. Give it once with --reading, and the film can be made again with --voice kevin",
           "bytes": 3130557,
           "sha256": "030722cf15b53be99a571d4dd065a11f6fb6965439c43f1aac3e12e48ec97ea5"
         },
@@ -788,19 +788,13 @@
           "id": "15",
           "made": "2026-11-16",
           "commit": "c916ac3",
-          "status": "current",
+          "status": "superseded",
           "layout": "fixed",
           "look": "paper",
           "voice": "ElevenLabs, a clone of the owner's own voice",
           "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
           "what": "Cut 14 said by a clone of the owner's own voice, which is now the films' voice. 90 seconds. The narrated film is 14-kevin's, and the silent film and the cover are cut 14's: neither has a voice in it. Its cover is a picture made for it, to be read as a thumbnail: the flow's name, the film's question, and each request with its answer.",
-          "made_with": [
-            "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
-            "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\"",
-            "node scripts/flow-film.mjs --flow dpop",
-            "node scripts/flow-film.mjs --flow dpop --voice kevin --cover"
-          ],
           "files": [
             {
               "key": "flows/dpop/cuts/15/film.mp4",
@@ -838,6 +832,62 @@
               "bytes": 109559,
               "sha256": "d2d7ddec3315a05ebc8686e55c8c95f5b4055f87a941983627c83d8da9574aef"
             }
+          ]
+        },
+        {
+          "id": "16",
+          "made": "2026-11-16",
+          "commit": "18eb42a",
+          "status": "current",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 15 with the paper's dots fading out above and below the stage, clear of the heading and the address, and softening at the sides. The cover has the same fade.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/16/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5512369,
+              "sha256": "63ab0a34646f53657ba39d400881b42a80b639ad1a836bebd92812986c596192"
+            },
+            {
+              "key": "flows/dpop/cuts/16/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4610851,
+              "sha256": "28c4d34f4cf34b1af783ae21f2d24e953bab2fe7c960d12ec6293efe34cb8f42"
+            },
+            {
+              "key": "flows/dpop/cuts/16/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/16/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/16/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            },
+            {
+              "key": "flows/dpop/cuts/16/cover.png",
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 126689,
+              "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
+            }
+          ],
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop",
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --cover"
           ]
         }
       ]
