@@ -9,6 +9,7 @@
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
  *   node scripts/flow-film.mjs --flow dpop --layout fixed      a prototype: parties that stay put, drawn by scripts/film-stage-fixed.js
+ *   node scripts/flow-film.mjs --flow dpop --layout fixed --look depth   and a try at a page with depth
  *
  * Writes to social/, which is not committed:
  *
@@ -73,6 +74,14 @@ const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
  * "fixed": a prototype, in which the parties stay put with a line between
  * them and only what is sent moves.
  */
+/**
+ * How the stage looks. "flat": the page's white, and nothing casts a shadow.
+ * "depth": a try at a tinted page that the parties and listings sit above,
+ * with a shadow under what is on its way. Made for the fixed layout.
+ */
+const LOOK = option("--look") ?? "flat";
+if (!["flat", "depth"].includes(LOOK))
+  throw new Error(`--look is flat or depth, not ${LOOK}`);
 const LAYOUT = option("--layout") ?? "rows";
 if (!["rows", "fixed"].includes(LAYOUT))
   throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
@@ -328,7 +337,11 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
   .party.tall { justify-content: flex-start; padding-top: 26px; }
-  .channel { fill: none; stroke: var(--border-strong); stroke-width: 5; }
+  .channel { fill: none; stroke: var(--border-strong); stroke-width: 5; transform: var(--move); }
+  .aim { fill: none; stroke: var(--role); stroke-width: 6; }
+  .aim-head { fill: var(--role); }
+  .aim-head.other { fill: var(--border-strong); }
+  .cargo { --lift: 0; }
   .tall ~ .keystore { width: 284px; }
   .badge.inline { position: static; transform: none; flex: none; --dim: 0; }
   .cargo { align-items: center; }
@@ -339,9 +352,22 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .pip i { opacity: 0; position: absolute; inset: -2px; border-radius: 50%; display: grid; place-items: center; font-style: normal; color: var(--bg); }
   .pip .now { background: var(--role); }
   .pip .told { background: color-mix(in srgb, var(--bg) 45%, var(--fg)); }
+  /* The look with depth. The page is tinted, so what is white sits above it;
+     a party and a listing cast a shadow, and what is sent casts a longer one
+     while it is on its way. Someone else, and a proof that is not there, cast none. */
+  .lit { --stage: color-mix(in srgb, var(--bg-sunken) 72%, var(--border)); --shade: 24 34 56; background: var(--stage); }
+  .lit::after { content: ""; position: absolute; inset: 0; z-index: 90; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 42%, transparent 55%, rgb(var(--shade) / 0.08) 100%); }
+  .lit .curtain { background: var(--stage); }
+  .lit .party { border-top-width: 16px; box-shadow: 0 1px 2px rgb(var(--shade) / 0.12), 0 8px 22px rgb(var(--shade) / 0.12); }
+  .lit .party.other { border-top-width: 4px; box-shadow: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
+  .lit .held, .lit .verdict, .lit .act { box-shadow: 0 1px 2px rgb(var(--shade) / 0.16), 0 3px 8px rgb(var(--shade) / 0.1); }
+  .lit .sent, .lit .cargo .badge { translate: 0 calc(var(--lift) * -5px); box-shadow: 0 calc(1px + var(--lift) * 11px) calc(3px + var(--lift) * 20px) rgb(var(--shade) / calc(0.16 + var(--lift) * 0.14)); }
+  .lit .sent-missing { box-shadow: none; background: transparent; }
+  .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
+  .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
@@ -409,7 +435,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-const name = `film-${flow.slug}${LAYOUT === "fixed" ? "-fixed" : ""}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "fixed" ? "-fixed" : ""}${LOOK === "depth" ? "-depth" : ""}${VOICE ? "-voiced" : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {

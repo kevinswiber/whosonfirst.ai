@@ -55,6 +55,12 @@
   const me = parties[0];
   const api = parties.find((p) => p.role === "resource");
   const others = parties.filter((p) => p !== me && p !== api).map((p) => p.id);
+  /**
+   * While only the agent and the API take part, before the flow and after
+   * it, the API stands level with the middle of the agent, and the line
+   * between them is at that height. For the flow it is in its place below.
+   */
+  const TWO = me.y;
 
   // ---------- making things ----------
   const make = (tag, cls, parent = stage, text) => {
@@ -78,7 +84,7 @@
   };
 
   // ---------- where each thing is at which second ----------
-  const START = { opacity: 0, x: 0, y: 0, scale: 1, draw: 0, dim: 0 };
+  const START = { opacity: 0, x: 0, y: 0, scale: 1, draw: 0, dim: 0, lift: 0 };
   const tracks = [];
   const trackOf = (node, prop) => {
     let found = tracks.find((t) => t.node === node && t.prop === prop);
@@ -180,7 +186,45 @@
       y,
     );
 
-  // ---------- what is sent, travelling along a line ----------
+  // ---------- which way, and then what is sent ----------
+  /**
+   * Which way the next thing goes, said before it moves: the line between
+   * two parties is drawn over in the sender's color, from the sender to an
+   * arrowhead at the receiver. It stays until `until`.
+   */
+  const aim = (x1, x2, y, role, t, until) => {
+    const dir = Math.sign(x2 - x1);
+    const length = Math.abs(x2 - x1) - 16;
+    const way = svg(
+      "line",
+      {
+        class: `aim role-${role}`,
+        x1,
+        x2: x2 - dir * 16,
+        y1: y,
+        y2: y,
+        "stroke-dasharray": length,
+        "stroke-dashoffset": length,
+      },
+      lines,
+    );
+    way.drawTo = (p) => way.setAttribute("stroke-dashoffset", length * (1 - p));
+    from(way, "opacity", 1);
+    const tip = svg(
+      "polygon",
+      {
+        class: `aim-head role-${role}`,
+        points: `${x2},${y} ${x2 - dir * 20},${y - 11} ${x2 - dir * 20},${y + 11}`,
+      },
+      lines,
+    );
+    to(way, "draw", t, 0.55, 1, "out");
+    show(tip, t + 0.4, 0.15);
+    hide(way, until, 0.25);
+    hide(tip, until, 0.25);
+    return t + 0.55;
+  };
+
   /**
    * What a message carries, at height `y`, from `x1` to `x2`: a token, a
    * proof, an answer, each a small labelled thing, behind the number of the
@@ -214,9 +258,16 @@
     node.style.left = `${start}px`;
     node.left = start;
     node.top = y;
-    node.travel = (t, dur = 1.4) => {
-      show(node, t - 0.25, 0.2);
+    /**
+     * It is at the sender from `wait` seconds before second `t`, leaves then,
+     * and is at the receiver `dur` seconds later. On the way it is lifted
+     * off the line, which a stage with depth shows as a shadow under it.
+     */
+    node.travel = (t, dur = 1.4, wait = 0.25) => {
+      pop(node, t - wait);
+      to(node, "lift", t - 0.15, 0.3, 1);
       to(node, "x", t, dur, end - start, "travel");
+      to(node, "lift", t + dur - 0.3, 0.4, 0);
       return t + dur;
     };
     return node;
@@ -329,9 +380,9 @@
   make("strong", "", other, "Someone else");
   const ABOVE = OTHER.y - 92;
   const places = ["tool call", "log", "trace"].map((name, i) =>
-    at(make("div", "place", stage, name), 680 + i * 245, api.y - 54),
+    at(make("div", "place", stage, name), 680 + i * 245, TWO - 54),
   );
-  const copy = chip("token", 925, api.y);
+  const copy = chip("token", 925, TWO);
   const copyBound = chip("bound", OTHER.x, ABOVE);
   /**
    * Someone else's own way to the API: along under the agent's line and up
@@ -340,12 +391,12 @@
   const BEND = NEAR + 100;
   const attempt = (carries) => {
     const length =
-      BEND - (OTHER.x + OTHER.w / 2) + (OTHER.y - (api.y + RIGHT.h / 2));
+      BEND - (OTHER.x + OTHER.w / 2) + (OTHER.y - (TWO + RIGHT.h / 2) - 16);
     const path = svg(
       "path",
       {
         class: "channel other",
-        d: `M${OTHER.x + OTHER.w / 2} ${OTHER.y}H${BEND}V${api.y + RIGHT.h / 2}`,
+        d: `M${OTHER.x + OTHER.w / 2} ${OTHER.y}H${BEND}V${TWO + RIGHT.h / 2 + 16}`,
         "stroke-dasharray": length,
         "stroke-dashoffset": length,
       },
@@ -354,17 +405,28 @@
     path.drawTo = (p) =>
       path.setAttribute("stroke-dashoffset", length * (1 - p));
     from(path, "opacity", 1);
+    const bottom = TWO + RIGHT.h / 2;
+    const tip = svg(
+      "polygon",
+      {
+        class: "aim-head other",
+        points: `${BEND},${bottom} ${BEND - 11},${bottom + 20} ${BEND + 11},${bottom + 20}`,
+      },
+      lines,
+    );
+    // their line is drawn first, to its arrowhead at the API, and then what they send goes along it
     const send = (t) => {
       to(path, "draw", t, 0.8, 1);
+      show(tip, t + 0.7, 0.15);
       const sent = cargo(carries, OTHER.x + OTHER.w / 2, BEND, OTHER.y);
-      return { arrived: sent.travel(t + 0.5, 1.0), sent };
+      return { arrived: sent.travel(t + 0.9, 1.1, 0.7), sent };
     };
-    return { path, send };
+    return { path, tip, send };
   };
   const ANSWER = {
     x: RIGHT.x + 100,
-    under: api.y + RIGHT.h / 2 + 48,
-    over: api.y - RIGHT.h / 2 - 44,
+    under: TWO + RIGHT.h / 2 + 48,
+    over: TWO - RIGHT.h / 2 - 44,
   };
   const watchKey = chip("key", MIDDLE - 225, me.y);
   const watchToken = chip("token", MIDDLE + 225, me.y);
@@ -393,6 +455,12 @@
     if (p.line) from(p.line, "opacity", level);
   }
   from(plain, "opacity", 1);
+  const level = (t, dur, dy) => {
+    to(api.box, "y", t, dur, dy);
+    to(api.line, "y", t, dur, dy);
+  };
+  from(api.box, "y", TWO - api.y);
+  from(api.line, "y", TWO - api.y);
   const opening = beats.find((b) => b.head);
   if (opening && beats.indexOf(opening) === 0) {
     head(0, opening.head);
@@ -420,11 +488,12 @@
       const { arrived, sent } = asked.send(when(beat, "Can") - 0.7);
       const mark = verdict("?", null, ANSWER.x, ANSWER.under);
       pop(mark, Math.max(arrived, when(beat, "use")));
-      passing = [other, askCopy, asked.path, sent, mark];
+      passing = [other, askCopy, asked.path, asked.tip, sent, mark];
     } else if (beat.scene === "spend") {
       clear(t);
-      const sent = cargo(["token"], LEFT, NEAR, api.y);
-      const arrived = sent.travel(t + 0.6);
+      const sent = cargo(["token"], LEFT, NEAR, TWO);
+      const aimed = aim(LEFT, NEAR, TWO, me.role, t + 0.3, t + dur - 0.3);
+      const arrived = sent.travel(aimed + 0.1, 1.4, 0.6);
       const ok = verdict("200 OK", true, ANSWER.x, ANSWER.over);
       pop(ok, Math.max(arrived, when(beat, "spend")));
       passing = [sent, ok];
@@ -435,7 +504,7 @@
         show(place, when(beat, named[i]) - 0.1, 0.3);
       // and a copy of it is left in one of them
       show(copy, when(beat, "logs") + 0.3, 0.3);
-      to(copy, "y", when(beat, "logs") + 0.4, 0.6, ABOVE - api.y, "out");
+      to(copy, "y", when(beat, "logs") + 0.4, 0.6, ABOVE - TWO, "out");
       passing.push(copy, ...places);
     } else if (beat.scene === "steal") {
       show(other, t, 0.4);
@@ -444,7 +513,7 @@
       const { arrived, sent } = taken.send(t + 1.0);
       const ok = verdict("200 OK", true, ANSWER.x, ANSWER.under);
       pop(ok, Math.max(arrived, when(beat, "works")));
-      passing.push(other, taken.path, sent, ok);
+      passing.push(other, taken.path, taken.tip, sent, ok);
     } else if (beat.scene === "title") {
       show(curtain, t, 0.5);
       show(titleCard, t + 0.3, 0.5);
@@ -452,6 +521,8 @@
       passing.push(plain);
       clear(reset, 0.01);
       light(reset, []);
+      // behind the title, the API goes to its place for the flow
+      level(reset, 0.001, 0);
       hide(titleCard, t + dur - 0.5, 0.4);
       hide(curtain, t + dur - 0.4, 0.4);
     } else if (beat.scene === "cast") {
@@ -503,7 +574,6 @@
             sender.role,
           );
           told.sent = sent;
-          sent.travel(t + 0.5);
           // What was sent is gone once the step has been told. Unless the
           // receiver keeps it, or the next step is the receiver checking it:
           // then it waits where it stopped until it has been checked.
@@ -517,8 +587,18 @@
           );
           const next = flow.steps[n];
           const checked = next && !next.to && next.from === receiver.id;
-          if (!kept)
-            hide(sent, (checked ? toldUntil(n + 1) : until) - 0.3, 0.25);
+          const gone = (checked ? toldUntil(n + 1) : until) - 0.3;
+          // first which way, and then what is sent
+          const aimed = aim(
+            out ? LEFT : NEAR,
+            out ? NEAR : LEFT,
+            y,
+            sender.role,
+            t + 0.3,
+            gone,
+          );
+          sent.travel(aimed + 0.1, 1.4, 0.6);
+          if (!kept) hide(sent, gone, 0.25);
         } else {
           // what one party does by itself: beside the agent, or beside what the other party was sent
           told.act = act(
@@ -586,13 +666,15 @@
     } else if (beat.scene === "refuse") {
       light(t, [api.id], others);
       hide(strip, t, 0.4);
+      // the authorization server has gone, and the API comes level with the agent again
+      level(t, 0.7, TWO - api.y);
       show(other, t + 0.2, 0.4);
       pop(copyBound, when(beat, "copy"));
       const tried = attempt(["bound", "missing"]);
       const { arrived, sent } = tried.send(when(beat, "Without"));
       const no = verdict("Refused: no proof", false, ANSWER.x, ANSWER.under);
       pop(no, Math.max(arrived, when(beat, "refuses")));
-      passing = [other, copyBound, tried.path, sent, no];
+      passing = [other, copyBound, tried.path, tried.tip, sent, no];
     } else if (beat.scene === "caveat") {
       clear(t, 0.4);
       light(t, [me.id], others);
@@ -617,6 +699,8 @@
     for (const [node, v] of now) {
       if (v.draw !== undefined) node.drawTo(v.draw);
       if (v.opacity !== undefined) node.style.opacity = v.opacity.toFixed(3);
+      if (v.lift !== undefined)
+        node.style.setProperty("--lift", v.lift.toFixed(3));
       if (v.x !== undefined || v.y !== undefined || v.scale !== undefined)
         node.style.setProperty(
           "--move",
