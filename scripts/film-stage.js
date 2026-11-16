@@ -141,6 +141,9 @@
     // What a party holds is drawn under it as it comes to hold it, so the line
     // the page writes under its name, which says so from the start, is left out.
     make("strong", "", p.box, p.label);
+    // with more than three parties, a box is as wide as there is room for
+    if (parties.length > 3)
+      p.box.style.width = `${Math.min(PARTY_W, 1260 / (parties.length - 1) - 40)}px`;
     p.life = svg(
       "line",
       {
@@ -309,7 +312,8 @@
   const card = (step, picks, x, t, until) => {
     const source = step.code.text.split("\n");
     const node = make("div", "card");
-    node.style.left = `${x}px`;
+    // a listing beside the outermost party is kept on the stage
+    node.style.left = `${Math.min(Math.max(x, 130 + 450), 1790 - 450)}px`;
     node.style.top = `${CARD_TOP}px`;
     const marks = [];
     for (const pick of picks) {
@@ -368,6 +372,9 @@
       throw new Error(`“${beat.say}” has no word that starts ${word}`);
     return beat.start + found.start;
   };
+  /** The second a cue is due: at its word, or at `otherwise` where a draft names no word. */
+  const due = (beat, word, otherwise) =>
+    typeof word === "string" ? when(beat, word) : otherwise;
 
   // ---------- the film, beat by beat ----------
   const agent = parties.find((p) => p.role === "agent");
@@ -596,9 +603,10 @@
       // what a party comes to hold, at the word that says so
       if (beat.gain)
         for (const [, what] of step.gain ?? []) {
-          if (what.startsWith("private key")) pop(key, when(beat, beat.gain));
+          if (what.startsWith("private key"))
+            pop(key, due(beat, beat.gain, t + 2.5));
           else if (what.startsWith("access token")) {
-            const held = when(beat, beat.gain);
+            const held = due(beat, beat.gain, t + 2.5);
             // the key makes room, so that the two sit either side of the line
             to(key, "x", held - 0.55, 0.4, -HELD);
             // and the token that arrived goes up to sit beside it
@@ -654,6 +662,13 @@
     }
   }
   // ---------- one frame ----------
+  // What this film never shows is not there: a thing made for a scene the
+  // film does not have would otherwise sit on the stage for the whole of it.
+  const shown = new Set(
+    tracks.filter((t) => t.prop === "opacity").map((t) => t.node),
+  );
+  for (const node of stage.children)
+    if (node !== lines && !shown.has(node)) node.style.opacity = 0;
   for (const track of tracks) track.keys.sort((a, b) => a.t - b.t);
   const nodes = [...new Set(tracks.map((t) => t.node))];
   /** Puts the stage as it is at second `t`, and says what that is, so a frame like the last is not drawn twice. */
