@@ -37,6 +37,7 @@ node scripts/flow-film.mjs --flow dpop
 | `--voice kokoro`                  | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes                                                                                                                                                 |
 | `--voice <name> --reading <file>` | Said by a recording of the whole film, by a person or a voice made elsewhere. The recording is cut into the film’s lines once, and kept under that name. Needs `faster-whisper`: see the top of `scripts/film-voice-import.py` |
 | `--voice-note "<line>"`           | With a recorded voice: a line for the description under the film, such as that the voice is synthetic and whose it is                                                                                                          |
+| `--room <file>`                   | The sound of a quiet room under the voice for the whole film. `--room-level` is how loud, in LUFS: −56 if left out, against the voice’s −16                                                                                    |
 | `--captions on\|off`              | Whether each sentence is written under the scene. On when there is no voice                                                                                                                                                    |
 | `--beats`                         | Prints when each beat starts and how long it lasts, opens the stage, and draws nothing                                                                                                                                         |
 | `--stills 26,44.5`                | Pictures at those seconds, and no video. The fastest way to look at a change                                                                                                                                                   |
@@ -65,8 +66,18 @@ Stop and ask when a flow does not fit, when a film needs a kind of scene or part
 1920 by 1080, 30 frames a second. A frame is a function of its second: nothing runs on a clock.
 
 - **Silent cut.** The scene has the top 812 pixels. Under a rule at 822 is the sentence being told, 46px, centred, in a band 200 high. There is no heading.
-- **Narrated cut.** There is no sentence. The whole scene is moved down 118 pixels, and a heading sits at the top left (130, 46). All measurements below are before that move.
-- The page's address is at the bottom left of both (60, 1034), 21px.
+- **Narrated cut.** There is no sentence. The whole scene is moved down 96 pixels, and a heading sits at the top left (130, 58). All measurements below are before that move.
+- The page's address is at the bottom left of both (96, 996), 21px.
+
+### Safe areas
+
+A film is watched in a player, which lays things over it: a bar of controls along the bottom when it is paused or pointed at, and captions above that when they are on. Screens also crop the edges a little.
+
+- **Everything is inside the middle nine tenths of the frame:** x 96 to 1824, y 54 to 1026. That is the title-safe area for 16:9. The address, the heading and the widest answer were each outside it once.
+- **In a narrated cut, nothing that has to be seen is under y 890.** A player’s captions sit there, two lines of them from about y 890 to 1026, and a narrated film is the one posted with captions. “Someone else”, the lowest thing on the stage, ends at y 886.
+- **In a silent cut the sentence is in that place itself,** from y 822, so no captions are wanted over it.
+- **What is being looked at is in the middle of the frame.** What is sent travels between x 490 and 1390, and listings are centred on x 940. A narrated flow sits between y 286 and 766, about the middle of the height.
+- The film is 16:9 and laid out for it. A tall cut for a feed, where the bottom fifth to a quarter is covered by buttons and captions, would be another layout and not a crop.
 
 ### Fixed layout
 
@@ -202,6 +213,7 @@ Each of these was got wrong once and noticed by the owner. Check them on every c
 8. **A thing that will move is seen at rest first**, with its direction cue.
 9. **Nothing is cut off** by the edge of the stage, the sentence band or another part. In the silent cut the scene ends at 812.
 10. **The moment the film is for stays up long enough to read.** A listing is on the stage for at least three seconds after its last line is marked. Give the beat `hold` if it is not.
+11. **Nothing is outside the safe areas,** and in a narrated cut nothing that has to be seen is under y 890.
 
 ## Checking a cut
 
@@ -209,7 +221,7 @@ A model cannot watch a film or hear one. It can look at stills, and it must say 
 
 1. Run `--beats`, and pick a second in the middle of every beat, plus one about 1.2 seconds into each step that sends something (the thing is then half way).
 2. Render those with `--stills`, for the depth look and again for the flat look, and for the silent cut as well as the narrated one. Look at every picture at full size, not only at a sheet of small ones.
-3. On each picture, go down the ten rules of spacing. Then ask: is what the sentence says on the stage, and is anything on the stage that the sentence does not say?
+3. On each picture, go down the eleven rules of spacing. Then ask: is what the sentence says on the stage, and is anything on the stage that the sentence does not say?
 4. Look for these, each of which has happened: a thing fading when it should be solid; a thing left behind after its step; a direction cue still lit in the next step; a part from another film’s scenes sitting on the stage; a step number in the strip in the wrong state; a listing covering a line that is lit; a long line of a listing running out of its card.
 5. Render the videos. Take a few frames back out of the finished file and look at them, since a still and the video are made by the same code but not in the same run.
 6. Run `npm run check` and `npm test`.
@@ -268,6 +280,15 @@ A film can be said by one recording of the whole of it, in place of Kokoro: a pe
 4. After that, `--voice <name>` alone makes the film again. A line that has changed has not been said, and the script says which.
 
 The DPoP film was tried this way on 16 November 2026 with an ElevenLabs voice, at the service’s `stability` of 0.7: a steadier read, since the film’s manner is plain. One read of the whole film is 1,434 characters. A film said by a synthetic voice says so in its description, with `--voice-note`.
+
+### A room under the voice
+
+Between its lines a film’s sound track is dead silence, which no recording of a person has: a room is never silent. `--room <file>` lays a steady recording of a quiet room under the whole film, so that a line does not start out of nothing and end in nothing. It is a recording with nothing happening in it, of any length: it is repeated, each copy faded into the next.
+
+- **It is not meant to be noticed.** It is 40 LU under the voice. If it can be heard as a sound, it is too loud.
+- **It goes under after the voice has been brought to its loudness,** at a level of its own. Brought to one loudness together with the voice, it would be turned up in every pause.
+- **It is not music and it marks nothing.** What was read about music under a voice does not bear on it, and nothing was found that tests it. It is a sound editor’s practice, tried here on 16 November 2026 and not decided.
+- It changes the quiet between lines. It does not change how the voice itself sounds.
 
 The first try cut each line where the recogniser said its last word ended. That time is early, and the owner heard it at once: breaths cut off, and the end of “original” left at the start of the next line. A recogniser is trusted for when a word starts and not for when it ends.
 

@@ -84,6 +84,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - A word the voice would say wrong is written for it as it sounds (`speak`), and what it says is checked by ear.
 - The track is brought to −16 LUFS.
 - No music under the voice. See [what else is known](#what-else-is-known).
+- The sound of a quiet room can be laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026, and not decided.
 - The description says the voice is synthetic.
 - A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines. It was tried with an ElevenLabs voice on 16 November 2026. Which voice the films are posted with has not been decided.
 
