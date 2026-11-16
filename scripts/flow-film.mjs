@@ -103,13 +103,14 @@ if (!["rows", "fixed"].includes(LAYOUT))
 /**
  * How the stage looks. "depth": a tinted page that the parties and listings
  * sit above, with a shadow under what is on its way. "flat": the page's
- * white, and nothing casts a shadow. Depth is made for the fixed layout and
+ * white, and nothing casts a shadow. "paper": depth on a warmer page with a
+ * faint grid of dots, tried on 16 November 2026. Depth is made for the fixed layout and
  * is the usual look there; the rows have only been looked at flat.
  */
 const USUAL_LOOK = LAYOUT === "fixed" ? "depth" : "flat";
 const LOOK = option("--look") ?? USUAL_LOOK;
-if (!["flat", "depth"].includes(LOOK))
-  throw new Error(`--look is flat or depth, not ${LOOK}`);
+if (!["flat", "depth", "paper"].includes(LOOK))
+  throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -465,10 +466,18 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .sent, .lit .cargo .badge { translate: 0 calc(var(--lift) * -5px); box-shadow: 0 calc(1px + var(--lift) * 11px) calc(3px + var(--lift) * 20px) rgb(var(--shade) / calc(0.16 + var(--lift) * 0.14)); }
   .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
+  /* "paper": depth on a warmer page, with a faint grid of dots that never
+     moves. A curtain has the same dots, in the same places, so nothing
+     jumps when one comes down: a curtain covers the frame exactly, from its
+     top corner (the scene is 96px down in a said-aloud film),
+     as the stage does. */
+  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); }
+  .paper, .paper .curtain { background-color: var(--stage); background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; }
+  .said-aloud.paper .curtain { top: -96px; height: 1080px; }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 96px; top: 996px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : ""}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
