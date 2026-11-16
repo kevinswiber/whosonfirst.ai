@@ -264,10 +264,12 @@ A film can be said by one recording of the whole of it, in place of Kokoro: a pe
 
 1. Get the film’s lines as the voice should be given them, with the words under `speak` written as they sound, one line to a paragraph. One paragraph to a line matters: the quiet between paragraphs is where the recording is cut.
 2. Record or generate the whole of it once, as one file.
-3. Run the film with `--voice <name> --reading <file>`. A speech recogniser hears the recording and says when each word was said; its words are matched to the film’s own, each line is cut out in the quiet on either side of it, and the lines are kept in `social/voice/`. The script prints each line with where it was found, and how many words were heard as written.
+3. Run the film with `--voice <name> --reading <file>`. A speech recogniser hears the recording and says when each word starts, and its words are matched to the film’s own. That finds each line. Where a line ends is measured on the recording itself: it is cut in the middle of the longest quiet before the next line, so the last sound of a word and the breath after it stay with their line. The lines are kept in `social/voice/`. The script prints each line with where it was found and how much quiet follows it, and how many words were heard as written. A line followed by less than a fifth of a second of quiet is one to listen to.
 4. After that, `--voice <name>` alone makes the film again. A line that has changed has not been said, and the script says which.
 
 The DPoP film was tried this way on 16 November 2026 with an ElevenLabs voice, at the service’s `stability` of 0.7: a steadier read, since the film’s manner is plain. One read of the whole film is 1,434 characters. A film said by a synthetic voice says so in its description, with `--voice-note`.
+
+The first try cut each line where the recogniser said its last word ended. That time is early, and the owner heard it at once: breaths cut off, and the end of “original” left at the start of the next line. A recogniser is trusted for when a word starts and not for when it ends.
 
 ## Changing the design
 
