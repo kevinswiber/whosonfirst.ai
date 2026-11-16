@@ -103,9 +103,12 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 **Cover**
 
-- A film’s cover is a still made for it, with `--cover`, and is not a frame of the film. It is the film’s answer in one picture, under the question the film opens with: the agent’s request, with its proof, accepted, and someone else’s copy, with no proof, refused. Decided on 16 November 2026, from cut 15.
+- A film’s cover is a picture made for it, with `--cover`, and is not a frame of the film. A frame is drawn to be watched at full size, and a cover is mostly seen as a thumbnail a few hundred pixels wide, where a frame’s boxes and labels cannot be read.
+- It has the flow’s short name, the question the film opens with, and the film’s answer in two rows: what your agent sends and what comes back, and what someone else sends and what comes back. Each answer is at the end of its own row. Decided on 16 November 2026, from cut 15.
+- Tried first and not kept: the stage itself with both requests on it. “200 OK” and “Refused” both sat by the API, and nothing said which request each was the answer to.
 - The film does not show the two at once. It tells one thing at a time, and the copy is tried after the flow has been told.
-- It is drawn from the scenes that follow DPoP’s steps, so another flow’s film needs its own.
+- The rows are DPoP’s, drawn from the scenes that follow its steps. Another flow’s film needs its own.
+- Nothing is in its bottom right corner, where a video site writes how long the film is.
 
 **Captions and description**
 

@@ -136,7 +136,6 @@ const LEAST = {
   caveat: 5,
   recap: 4,
   end: 4,
-  cover: 3,
   step: 2.6,
   listing: 3.4,
 };
@@ -189,23 +188,14 @@ if (DRAFT) {
 }
 
 /**
- * With --cover, a still for the film's cover and no film: the copy refused,
- * and with it the agent's own request, with its proof, accepted. It is a
- * scene of its own that the film does not have, set after the copy is
- * refused, under the question the film opens with.
+ * With --cover, a picture for the film's cover and no film: what the agent
+ * sends and the answer it gets, and what someone else sends and theirs, under
+ * the flow's short name and the question the film opens with. It is drawn
+ * large, to be read at the size of a thumbnail.
  */
 const COVER = args.includes("--cover");
-if (COVER) {
-  const refused = script.beats.findIndex((b) => b.scene === "refuse");
-  if (refused < 0 || LAYOUT !== "fixed")
-    throw new Error(
-      "--cover is for a film that has the scene refuse, in the fixed layout",
-    );
-  script.beats.splice(refused + 1, 0, {
-    scene: "cover",
-    head: script.beats[0].head,
-  });
-}
+if (COVER && LAYOUT !== "fixed")
+  throw new Error("--cover is drawn by the fixed layout");
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -461,6 +451,19 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card .also small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
   .end-card .descriptor { font-size: 40px; margin-top: 22px; }
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
+  .cover-card { position: absolute; z-index: 95; left: 0; top: 0; width: 1920px; height: 1080px; background: var(--bg); }
+  .lit .cover-card { background: var(--stage); }
+  .paper .cover-card { background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; }
+  .cover-card h1 { position: absolute; left: 130px; top: 70px; margin: 0; font: 600 210px/1 var(--font-display); letter-spacing: -0.03em; }
+  .cover-card .asks { position: absolute; left: 136px; top: 310px; margin: 0; font: 600 76px/1.15 var(--font-body); }
+  .cover-row { position: absolute; left: 130px; top: 520px; display: flex; align-items: center; height: 150px; }
+  .cover-row.other { top: 740px; --role: var(--border-strong); }
+  .cover-row strong { width: 400px; font: 600 54px/1.1 var(--font-body); }
+  .cover-row.other strong { color: var(--fg-muted); }
+  .cover-sent { display: flex; gap: 10px; zoom: 2.4; width: 282px; }
+  .cover-arrow { position: relative; width: 120px; height: 10px; margin: 0 44px 0 24px; background: var(--role); }
+  .cover-arrow::after { content: ""; position: absolute; right: -26px; top: -19px; border: 24px solid transparent; border-left: 40px solid var(--role); border-right: 0; }
+  .cover-row .verdict { position: static; transform: none; font: 600 62px var(--font-mono); padding: 18px 34px; border-radius: 18px; border-width: 6px; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
@@ -588,6 +591,7 @@ let also;
 film = {
   flow,
   also,
+  cover: COVER,
   beats,
   duration,
   band: BAND,
@@ -608,8 +612,6 @@ if (args.includes("--beats")) process.exit(0);
 const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
 if (COVER) {
-  const beat = beats.find((b) => b.scene === "cover");
-  await page.evaluate((s) => window.seek(s), beat.start + beat.dur - 0.5);
   const file = join(out, `${name}-cover.png`);
   await page.screenshot({ path: file });
   console.log(file);

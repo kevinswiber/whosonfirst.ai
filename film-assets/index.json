@@ -794,7 +794,7 @@
           "voice": "ElevenLabs, a clone of the owner's own voice",
           "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
-          "what": "Cut 14 said by a clone of the owner's own voice, which is now the films' voice. 90 seconds. The narrated film is 14-kevin's, and the silent film and the cover are cut 14's: neither has a voice in it. Its cover is a still made for it: the agent's request accepted and the copy refused, in one picture.",
+          "what": "Cut 14 said by a clone of the owner's own voice, which is now the films' voice. 90 seconds. The narrated film is 14-kevin's, and the silent film and the cover are cut 14's: neither has a voice in it. Its cover is a picture made for it, to be read as a thumbnail: the flow's name, the film's question, and each request with its answer.",
           "made_with": [
             "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
             "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\"",
@@ -834,9 +834,9 @@
             },
             {
               "key": "flows/dpop/cuts/15/cover.png",
-              "what": "The cover: the agent's request, with its proof, accepted, and the copy, with none, refused",
-              "bytes": 429186,
-              "sha256": "f69dbb612ab8e8c56c1fac11db3454302a8f0499b17bf0d9cddded27a042bb72"
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 109559,
+              "sha256": "d2d7ddec3315a05ebc8686e55c8c95f5b4055f87a941983627c83d8da9574aef"
             }
           ]
         }

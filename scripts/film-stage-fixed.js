@@ -698,6 +698,40 @@
     for (const line of film.also) make("span", "", also, line);
   }
 
+  // ---------- the cover ----------
+  // Not in the film: a picture for its cover, made with --cover. It is the
+  // film's answer with nothing else in it, drawn large enough to read at the
+  // size of a thumbnail: what the agent sends and what comes back, and under
+  // it what someone else sends and what comes back. Each answer is at the
+  // end of its own row, so there is no asking which request it is to.
+  if (film.cover) {
+    fromStory("cover");
+    const card = make("div", "cover-card", document.getElementById("stage"));
+    make("h1", "", card, flow.short);
+    make("p", "asks", card, beats[0].head);
+    const row = (who, cls, kinds, answer, ok) => {
+      const line = make("div", `cover-row ${cls}`, card);
+      make("strong", "", line, who);
+      const sent = make("div", "cover-sent", line);
+      for (const kind of kinds) {
+        const pill = make("span", `sent sent-${kind}`, sent);
+        pill.innerHTML = `<span></span>${kind === "bound" ? `<i>${KEY}</i>` : ""}`;
+        pill.firstChild.textContent =
+          kind === "bound" ? "token" : kind === "missing" ? "no proof" : kind;
+      }
+      make("b", "cover-arrow", line);
+      make("em", `verdict ${ok ? "ok" : "no"}`, line, answer);
+    };
+    row(
+      `Your ${hub.label.toLowerCase()}`,
+      `role-${hub.role}`,
+      ["bound", "proof"],
+      "200 OK",
+      true,
+    );
+    row("Someone else", "other", ["bound", "missing"], "Refused", false);
+  }
+
   let passing = [];
   const clear = (t, dur = 0.35) => {
     for (const node of passing) hide(node, t, dur);
@@ -949,23 +983,6 @@
       const no = verdict("Refused: no proof", false, ANSWER.x, ANSWER.under);
       pop(no, Math.max(arrived, when(beat, "refuses")));
       passing = [other, copyBound, tried.path, tried.tip, sent, no];
-    } else if (beat.scene === "cover") {
-      // Not in the film: a still for its cover, made with --cover. The
-      // copy refused is left where it is, and the agent's own request,
-      // with its proof, is set over it and accepted. The two answers are
-      // the film's, in one picture.
-      fromStory(beat.scene);
-      light(t, [hub.id, api.id], absent);
-      const [a, b] = [
-        { x: LEFT, y: TWO },
-        { x: NEAR, y: TWO },
-      ];
-      const sent = cargo(["bound", "proof"], a, b);
-      const aimed = aim(a, b, hub.role, t, t + dur);
-      sent.travel(aimed, 0.2, 0.1);
-      const ok = verdict("200 OK", true, ANSWER.x, ANSWER.over);
-      show(ok, t, 0.1);
-      passing.push(sent, ok);
     } else if (beat.scene === "caveat") {
       fromStory(beat.scene);
       clear(t, 0.4);
