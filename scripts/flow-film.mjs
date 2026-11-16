@@ -431,8 +431,10 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .curtain.close { z-index: 70; height: 1080px; }
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
-  .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 40px; }
-  .end-card .basis { font-size: 30px; margin-top: 30px; }
+  .said-aloud .end-card { top: 234px; }
+  .end-card .descriptor { font-size: 40px; margin-top: 22px; }
+  .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
+  .end-card .standards { font-size: 30px; margin: 28px auto 0; max-width: 1500px; text-wrap: balance; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
@@ -479,8 +481,8 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
-<script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
+<script src="/__film/stage.js"></script>
 `;
 
 let film;
@@ -522,20 +524,40 @@ page.on("pageerror", (error) => problems.push(error.message));
 
 // what the film says of itself at its end is read from the page, as its other facts are
 await page.goto(`${origin}/flows/${flow.slug}/`, { waitUntil: "networkidle" });
-const basis = await page.evaluate(
-  () =>
-    document
-      .querySelector(".page-facts .doc-line")
-      ?.textContent.replace(/\s+/g, " ")
-      .trim() ?? "",
-);
+const { basis, standards, descriptor } = await page.evaluate(() => {
+  const line = document.querySelector(".page-facts .doc-line");
+  const said = (node) => node?.textContent.replace(/\s+/g, " ").trim() ?? "";
+  // The end card names the standards and leaves out their dates and the
+  // guide's: a film is watched long after it is made, and a date on its last
+  // frame reads as the film's own. The description, which a video site shows
+  // beside the date it was posted, keeps them.
+  const fact = line?.querySelector(".doc-fact");
+  const names = [...(fact?.querySelectorAll("a.spec") ?? [])].map(said);
+  const listed =
+    names.length < 3
+      ? names.join(" and ")
+      : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  const site = [
+    ...document.querySelectorAll('script[type="application/ld+json"]'),
+  ]
+    .flatMap((s) => JSON.parse(s.textContent)["@graph"] ?? [])
+    .find((node) => node["@type"] === "WebSite");
+  return {
+    basis: said(line),
+    standards: names.length
+      ? `${said(fact.querySelector(".doc-key")).replace(/:$/, "")} ${listed}`
+      : "",
+    descriptor: site?.description.replace(/\.$/, "") ?? "",
+  };
+});
 film = {
   flow,
   beats,
   duration,
   band: BAND,
   address: `whosonfirst.ai/flows/${flow.slug}`,
-  basis,
+  standards,
+  descriptor,
 };
 
 await page.goto(`${origin}/__film/`, { waitUntil: "networkidle" });

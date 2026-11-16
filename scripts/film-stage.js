@@ -435,8 +435,9 @@
   const close = make("div", "curtain close");
   const endCard = make("div", "title-card end-card");
   make("h1", "", endCard, "Who’s on First");
+  if (film.descriptor) make("p", "descriptor", endCard, film.descriptor);
   make("p", "address", endCard, film.address);
-  make("p", "basis", endCard, film.basis);
+  if (film.standards) make("p", "standards", endCard, film.standards);
 
   /**
    * A line over the scene that says what this part of the film is: the
@@ -662,6 +663,12 @@
     } else if (beat.scene === "end") {
       show(close, t, 0.5);
       show(endCard, t + 0.3, 0.5);
+      // the address is on the end card, so it goes from the corner
+      const where = document.querySelector(".where");
+      if (where) {
+        from(where, "opacity", 1);
+        hide(where, t, 0.5);
+      }
     }
   }
   // ---------- one frame ----------
