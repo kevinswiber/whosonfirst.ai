@@ -439,12 +439,11 @@
   make("p", "address", endCard, film.address);
   if (film.standards) make("p", "standards", endCard, film.standards);
   // a trial: the question of a comparison this flow is half of
-  if (film.next) {
-    endCard.classList.add("has-next");
-    const next = make("p", "next", endCard);
-    make("small", "", next, "Next");
-    next.append(film.next.question);
-    if (film.next.address) make("code", "", next, film.next.address);
+  if (film.also) {
+    endCard.classList.add("has-also");
+    const also = make("p", "also", endCard);
+    make("small", "", also, "Also in the guide");
+    also.append(film.also);
   }
 
   /**
