@@ -314,12 +314,14 @@ const beats = script.beats.map((beat, index) => {
   const clip = beat.say ? voiced?.get(beat.say) : undefined;
   const length = clip ? clip.duration : count / SPEAK;
   // A step that has been told is given a moment before the next begins: a
-  // little longer than the breath between two lines of the same step.
+  // little longer than the breath between two lines of the same step. A
+  // recorded line already ends in the breath its reader took, so what is
+  // added to it is short: more, and the film drags between its lines.
   const next = script.beats[index + 1];
   const boundary = !beat.step || next?.step !== beat.step;
   // `hold` is a beat's own extra time: for a moment worth looking at longer.
   const dur =
-    Math.max(least, LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH)) +
+    Math.max(least, LEAD + length + (clip ? (boundary ? 0.4 : 0.12) : BREATH)) +
     (beat.hold ?? 0);
   const words = clip
     ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))

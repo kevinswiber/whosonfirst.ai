@@ -39,8 +39,8 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 **The telling**
 
-- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, the whole of it in one line, where to read more.
-- About a minute and a half. The DPoP film says 236 words in 98 seconds.
+- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, where to read more. A line that said the whole of it again came after what is not protected until cut 11. It repeated the answer the film had just shown, and was cut on 16 November 2026.
+- About a minute and a half. Cut 11 of the DPoP film says 239 words in 99 seconds, about 145 a minute. Cut 10 said 271 in 117.
 - The title card is the flow's short name and the rest of its title. It does not repeat the sentence being said.
 
 **The stage**
@@ -76,12 +76,17 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 - Written for the ear: one idea to a beat, short enough to say in a breath. A step that carries two ideas is told in two beats.
 - Spoken to the person watching.
+- No line that only turns the film: “So yes.”, “DPoP changes the answer.”, “That is DPoP.” Each says nothing the picture does not, and a run of them is what makes a script sound written by a machine. Cut from cut 11.
+- Said as a person says it: “it’s”, “there’s” and “isn’t” where a person would say them. The site’s written prose does not change.
 - A sentence is not said and written at once.
 
 **Voice**
 
-- Kokoro, voice `af_heart`, at its own pace: a little under three words a second, with a third of a second between two lines of one step and about twice that between steps.
+- At the voice’s own pace. A recorded line keeps the breath its reader took after it, and the film adds little to that: an eighth of a second between two lines of one step and 0.4 seconds between steps. Until cut 11 it added 0.3 and 0.65, which made the film 18 seconds longer than its reading and slow to watch.
+- Without a recording the voice is Kokoro, `af_heart`.
 - A word the voice would say wrong is written for it as it sounds (`speak`), and what it says is checked by ear.
+- A hosted voice gives more than one take. Before one is chosen, each is written down by a speech recogniser and read against the script. For cut 11, one of Matilda’s two takes was heard to say “cache” for “cash”, and the other was used. A recogniser is not an ear, and the cut still has to be heard.
+- A reading can be mended from another by the same voice, with the same model and settings: cut 11’s “Now copy the token alone” is the line from the reading of cut 10, put in place of a line that said something the picture did not. The reading in the index is the mended one, so the cut can be made again from it.
 - The track is brought to −16 LUFS.
 - No music under the voice. See [what else is known](#what-else-is-known).
 - The sound of a quiet room can be laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026, and not decided.
@@ -103,7 +108,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
 - **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
-- **A cover.** The first frame is the agent, the API and a token. Nothing chooses a frame for a thumbnail.
+- **A cover.** From cut 11 a still of the copied token refused is kept with the cut, as `cover.png`, made with `--stills`. Whether it is the one to post has not been decided.
 - **A dark version.**
 - **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.
