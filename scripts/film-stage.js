@@ -420,6 +420,9 @@
   const titleCard = make("div", "title-card");
   // its short name, and the rest of its title: what is said is under it already
   make("h1", "", titleCard, flow.short);
+  // what the short name stands for, where the film's script gives it
+  const expands = beats.find((b) => b.scene === "title")?.expands;
+  if (expands) make("p", "expands", titleCard, expands);
   make("p", "", titleCard, flow.title.replace(` (${flow.short})`, ""));
   // at the end the whole stage is covered, the line that was said with it
   const close = make("div", "curtain close");

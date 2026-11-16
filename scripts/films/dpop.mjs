@@ -16,7 +16,9 @@
  * moment it is said, with a note: for a word that is not said as it is
  * spelled. `carries` is what a step's message carries, which travels along
  * its row from sender to receiver. `head` is a line over a scene that says
- * what this part of the film is; a step has the name of its part of the flow. The other beats are scenes the stage knows by name: see
+ * what this part of the film is; a step has the name of its part of the flow.
+ * `expands`, on the title, is what the flow's short name stands for, written
+ * under it. The other beats are scenes the stage knows by name: see
  * scripts/film-stage.js.
  *
  * `speak` is how a word is written for a voice that would say it wrong.
@@ -46,6 +48,8 @@ export default {
     // the tagline: "Bind a token to a key so that stealing the token is not enough to use it."
     {
       scene: "title",
+      // the summary: "Demonstrating Proof of Possession (DPoP) fixes the cash problem…"
+      expands: "Demonstrating Proof of Possession",
       say: "DPoP changes the answer. It binds the token to a key, so stealing the token is not enough.",
     },
     // who takes part, and what to watch, before any of it moves

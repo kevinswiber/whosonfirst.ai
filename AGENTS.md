@@ -56,7 +56,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Nothing essential waits behind a click, a hover or a script.** What a figure or a diagram shows is also on the page in words.
 - **Vendors are described from their own documentation.** Mention is not recommendation.
 - **An implementation or a deployment report is added by the procedure in [docs/implementation-research.md](docs/implementation-research.md):** start from `npm run implementations:coverage`, copy the passage that carries the claim from the source, and run `npm run implementations:check` on the worksheet before anything goes into `src/data/implementations/records.ts`.
-- **A film says only what its flow’s page says.** [docs/films.md](docs/films.md) says how one is told and what has been decided about its manner. Read it before making one or changing how one looks or sounds, and change it when a decision changes.
+- **A film says only what its flow’s page says.** [docs/films.md](docs/films.md) says how one is told and what has been decided about its manner. Read it before making one or changing how one looks or sounds, and change it when a decision changes. [docs/film-design.md](docs/film-design.md) has the measurements, the parts, the two looks and what to check on every cut.
 - **Write as the site does:** plain words, short sentences, no selling. The site’s prose uses typographic quotes and apostrophes (“ ” ’), and its code does not.
 - New flows, lessons and pages start as an issue, not a pull request. What the site leaves out is deliberate.
 

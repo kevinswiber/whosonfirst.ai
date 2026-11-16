@@ -443,7 +443,7 @@ npm run film -- --flow dpop
 
 It writes `film-<slug>.mp4` to `social/`, with captions (`.vtt`, `.srt`) and a description with chapters (`.txt`).
 
-[Films](films.md) says how one is told: what it holds to, what has been decided about how it looks and sounds, and what the next one needs.
+[Films](films.md) says how one is told: what it holds to, what has been decided about how it looks and sounds, and what the next one needs. The [film design guide](film-design.md) says where things go on the stage, how they move, how the flat look and the look with depth differ, and how a cut is checked.
 
 **What is said, and what is drawn.** What is said is in `scripts/films/<slug>.mjs`, a line to a beat, written for the ear and held to what the flow's page says: each line's source on the page is in a comment beside it. What is drawn is the flow's own data, read from `src/data/flows/<slug>.ts`: its parties, each step's arrow and label, the lines of its listings, and what a party comes to hold. `scripts/film-stage.js` draws it, and runs in the page the script opens. The scenes before and after the steps (the problem, the copied token refused, the caveat) are written for DPoP: another flow needs its own.
 

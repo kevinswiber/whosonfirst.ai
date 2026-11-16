@@ -25,14 +25,16 @@
 
   // ---------- where things are, in a stage of 1920 by 1080 ----------
   /** The agent: a tall box at the left, with what it holds inside it. */
-  const AGENT = { x: 290, top: 190, w: 320, h: 480 };
+  const AGENT = { x: 310, top: 190, w: 360, h: 480 };
   const LEFT = AGENT.x + AGENT.w / 2; // where its lines leave it
   /** The other parties: boxes at the right, between these two heights. */
-  const RIGHT = { x: 1570, w: 380, h: 104, first: 250, last: 620 };
+  const RIGHT = { x: 1580, w: 380, h: 104, first: 250, last: 620 };
   const NEAR = RIGHT.x - RIGHT.w / 2; // where a line reaches one
   /** Where the agent holds things, inside its box: the first, and the second under it. */
   const SLOT = [330, 400];
-  const KEYSTORE_Y = 584;
+  const KEYSTORE_Y = 572;
+  /** How wide a listing is, and how many letters of a line it has room for. */
+  const CARD = { w: 860, letters: 44 };
   /** Between the agent and the others: where a listing is shown. */
   const MIDDLE = (LEFT + NEAR) / 2;
   /** Where someone else stands, when someone else has a copy of the token. */
@@ -300,7 +302,14 @@
       const text = found.trim();
       const line = make("div", "code", node);
       const mark = make("i", "", line);
-      make("span", "", line, text.length > 46 ? `${text.slice(0, 45)}…` : text);
+      make(
+        "span",
+        "",
+        line,
+        text.length > CARD.letters
+          ? `${text.slice(0, CARD.letters - 1)}…`
+          : text,
+      );
       if (pick.at !== undefined) marks.push({ mark, at: pick.at });
     }
     to(node, "y", t + 0.5, 0.001, 14);
@@ -374,7 +383,7 @@
   const keystore = at(
     make("div", "keystore", stage, "keystore"),
     me.x,
-    KEYSTORE_Y + 12,
+    KEYSTORE_Y + 14,
   );
   const other = at(make("div", "party other"), OTHER.x, OTHER.y);
   make("strong", "", other, "Someone else");
@@ -435,6 +444,9 @@
   const curtain = make("div", "curtain");
   const titleCard = make("div", "title-card");
   make("h1", "", titleCard, flow.short);
+  // what the short name stands for, where the film's script gives it
+  const expands = beats.find((b) => b.scene === "title")?.expands;
+  if (expands) make("p", "expands", titleCard, expands);
   make("p", "", titleCard, flow.title.replace(` (${flow.short})`, ""));
   const close = make("div", "curtain close");
   const endCard = make("div", "title-card end-card");
@@ -629,7 +641,7 @@
             ...pick,
             at: pick.on ? when(beat, pick.on) : undefined,
           })),
-          receiver ? MIDDLE : LEFT + 40 + 450,
+          receiver ? MIDDLE : LEFT + 40 + CARD.w / 2,
           top,
           t,
           told.until,

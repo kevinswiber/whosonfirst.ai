@@ -123,6 +123,26 @@ if (!flow)
   throw new Error(
     `src/data/flows/${script.flow}.ts has no flow named ${script.flow}`,
   );
+// The fixed layout has an agent at the left and a line from it to each of
+// two other parties. A flow it cannot draw is refused here, and not drawn wrong.
+if (LAYOUT === "fixed") {
+  const agents = flow.participants.filter((p) => p.role === "agent");
+  const stray = flow.steps.find(
+    (s) => s.to && s.from !== agents[0]?.id && s.to !== agents[0]?.id,
+  );
+  const why =
+    agents.length !== 1
+      ? `it has ${agents.length} parties with the role "agent", and the layout wants one`
+      : flow.participants.length !== 3
+        ? `it has ${flow.participants.length} parties, and the layout has places for three`
+        : stray
+          ? `“${stray.label}” goes from ${stray.from} to ${stray.to}, and the layout has no line between them`
+          : undefined;
+  if (why)
+    throw new Error(
+      `The fixed layout cannot draw ${flow.slug}: ${why}. Use --layout rows, or see docs/film-design.md.`,
+    );
+}
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -328,6 +348,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .title-card { position: absolute; z-index: 51; left: 0; width: 1920px; top: 230px; text-align: center; }
   .title-card h1 { margin: 0; font: 600 170px/1.1 var(--font-display); letter-spacing: -0.03em; }
   .title-card p { margin: 18px 0 0; font: 400 46px/1.3 var(--font-body); color: var(--fg-muted); }
+  .title-card .expands { margin: 4px 0 26px; font: 500 34px/1.3 var(--font-mono); color: var(--fg); }
   .curtain.close { z-index: 70; height: 1080px; }
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
@@ -342,7 +363,9 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .aim-head { fill: var(--role); }
   .aim-head.other { fill: var(--border-strong); }
   .cargo { --lift: 0; }
-  .tall ~ .keystore { width: 284px; }
+  .tall ~ .keystore { width: 328px; height: 136px; }
+  .tall ~ .card { width: 860px; }
+  .tall ~ .card .code { padding: 0 26px; }
   .badge.inline { position: static; transform: none; flex: none; --dim: 0; }
   .cargo { align-items: center; }
   .cargo .badge.inline { width: 46px; height: 46px; font-size: 23px; }
@@ -362,7 +385,7 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .party.other { border-top-width: 4px; box-shadow: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
   .lit .held, .lit .verdict, .lit .act { box-shadow: 0 1px 2px rgb(var(--shade) / 0.16), 0 3px 8px rgb(var(--shade) / 0.1); }
   .lit .sent, .lit .cargo .badge { translate: 0 calc(var(--lift) * -5px); box-shadow: 0 calc(1px + var(--lift) * 11px) calc(3px + var(--lift) * 20px) rgb(var(--shade) / calc(0.16 + var(--lift) * 0.14)); }
-  .lit .sent-missing { box-shadow: none; background: transparent; }
+  .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 60px; top: 1034px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }

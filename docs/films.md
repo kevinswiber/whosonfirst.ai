@@ -35,7 +35,7 @@ Three more, which are not Mayer's:
 
 ## What has been decided
 
-These are the film's manner so far. Change one for a reason, and change it here.
+These are the film's manner so far. Change one for a reason, and change it here. Where things go, how big they are, how they move and how a cut is checked are in the [film design guide](film-design.md).
 
 **The telling**
 
@@ -89,7 +89,7 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 - **Whose voice.** The voice principle asks for a person's. Kokoro was chosen to hear the film with a voice at all, with no account and no cost. A recording by a person fits the same script: a beat lasts as long as its clip. A hosted voice is the third choice, and needs an account. Studies with newer machine voices mostly find no difference in what is learned: see below.
 - **How much of what has happened stays on the stage.** One earlier row stays, muted. The research on animation says what has gone is its main cost, which argues for keeping more.
-- **Flat, or with depth.** The film is the page’s white, and nothing casts a shadow. `--look depth` is a try at the other: a tinted page that the parties and listings sit above, a shadow under each, and a longer one under what is sent while it is on its way. Someone else, and a proof that is not there, cast none. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
+- **Flat, or with depth.** The site's owner likes depth better (16 November 2026) and wants both kept for now. The film is the page’s white, and nothing casts a shadow. `--look depth` is a try at the other: a tinted page that the parties and listings sit above, a shadow under each, and a longer one under what is sent while it is on its way. Someone else, and a proof that is not there, cast none. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
 - **Rows, or parties that stay where they are.** The film draws the page's sequence diagram, a row to a step. The other way is to fix the parties in place with a line between each pair, and let only what is sent move. It keeps everything where it was, and has to show the order of the steps some other way. There is a prototype of it: `node scripts/flow-film.mjs --flow dpop --layout fixed`, drawn by `scripts/film-stage-fixed.js`. The agent stands at the left with what it holds inside it, the other parties at the right, and what is sent carries its step’s number, with a strip of numbers saying how far the flow has got. Before anything is sent, the line it will go along is drawn over in the sender’s color, from the sender to an arrowhead at the receiver, so nothing moves without the eye knowing where it is going. While only the agent and the API take part, before the flow and after it, the API stands level with the middle of the agent. It is there to be set beside the rows and has not been chosen. If it is, the two stages should share the part that places things in time, which the prototype copies.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
 - **A cover.** The first frame is the agent, the API and a token. Nothing chooses a frame for a thumbnail.
@@ -129,9 +129,9 @@ Read on 15 November 2026, for this guide. Most of the papers were read from thei
 1. **Find the flow's question.** One the page answers, that someone could guess at before watching. It is usually in the flow's summary or tagline.
 2. **Write what is said**, in `scripts/films/<slug>.mjs`. A line to a beat, with its source on the page in a comment. Read it aloud before anything is drawn.
 3. **Choose what each step shows**: which lines of its listing, the word at which each is marked, the word at which a party comes to hold what the step gives it.
-4. **Write its opening and its ending.** The scenes before and after the steps are DPoP's, and are in `scripts/film-stage.js`: a request with a token, a copy in a log, someone else trying the copy, the copy refused, the key put away. The steps themselves need nothing written.
+4. **Write its opening and its ending.** The scenes before and after the steps are DPoP's, and are in `scripts/film-stage.js` and `scripts/film-stage-fixed.js`: a request with a token, a copy in a log, someone else trying the copy, the copy refused, the key put away. The steps themselves need nothing written.
 5. **List the words a voice will get wrong.** Each goes under `speak`, as it sounds. One that is not said as it is spelled also goes on the stage with `gloss`, with the source for how it is said. PKCE is “pixy” ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)), and JWT is “jot”.
-6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice.
+6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice. The [film design guide](film-design.md#checking-a-cut) says what to look at.
 7. **Listen to it.** Nothing checks how it sounds. Listen for each name, for a line that is rushed, and for anything on the stage that the words do not say.
 8. **Keep each cut where it will last.** `social/` is not committed. The cuts of the DPoP film are kept on a page of their own, outside the repository.
 
