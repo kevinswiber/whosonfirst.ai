@@ -443,7 +443,7 @@
     endCard.classList.add("has-also");
     const also = make("p", "also", endCard);
     make("small", "", also, "Also in the guide");
-    also.append(film.also);
+    for (const line of film.also) make("span", "", also, line);
   }
 
   /**

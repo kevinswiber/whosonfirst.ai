@@ -113,12 +113,17 @@ if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
 
 /**
- * With --also, a line at the foot of the end card asks the question of a
- * comparison the flow is half of, under "Also in the guide". A trial, of 16
- * November 2026. It has no address: a second one on the frame was too much.
- * And it does not say "Next", which promised a film that there is not.
+ * With --also, a line at the foot of the end card says what a comparison the
+ * flow is half of compares, under "Also in the guide". A trial, of 16
+ * November 2026. "gist" is the comparison's own one-line gist, broken at its
+ * colon. "lead" is its description as far as the colon. It is not the
+ * comparison's question, which for DPoP is three names in mixed case in a
+ * row. It has no address: a second one on the frame was too much. And it
+ * does not say "Next", which promised a film that there is not.
  */
-const ALSO = args.includes("--also");
+const ALSO = option("--also");
+if (ALSO && !["gist", "lead"].includes(ALSO))
+  throw new Error(`--also is gist or lead, not ${ALSO}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -441,7 +446,8 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .end-card h1 { font-size: 110px; }
   .said-aloud .end-card { top: 234px; }
   .said-aloud .end-card.has-also { top: 180px; }
-  .end-card .also { margin: 84px auto 0; padding-top: 34px; width: 900px; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
+  .end-card .also { margin: 72px auto 0; padding-top: 34px; width: 1000px; line-height: 1.4; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
+  .end-card .also span { display: block; }
   .end-card .also small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
   .end-card .descriptor { font-size: 40px; margin-top: 22px; }
   .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
@@ -561,8 +567,7 @@ const { basis, standards, descriptor } = await page.evaluate(() => {
     descriptor: site?.description.replace(/\.$/, "") ?? "",
   };
 });
-// The first comparison the flow is half of, in the order the site lists
-// them: its question is the page's own heading.
+// The first comparison the flow is half of, in the order the site lists them.
 let also;
 if (ALSO) {
   const dir = join(here, "src", "data", "comparisons");
@@ -574,7 +579,11 @@ if (ALSO) {
     const made = Object.values(await import(join(dir, `${file}.ts`)));
     found.push(...made.filter((c) => c?.flows?.includes(flow.slug)));
   }
-  also = found[0]?.question;
+  if (found[0])
+    also =
+      ALSO === "gist"
+        ? found[0].gist.split(/(?<=:) /)
+        : [found[0].description.split(":")[0]];
 }
 film = {
   flow,
