@@ -101,13 +101,14 @@ const LAYOUT = option("--layout") ?? "fixed";
 if (!["rows", "fixed"].includes(LAYOUT))
   throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
 /**
- * How the stage looks. "depth": a tinted page that the parties and listings
- * sit above, with a shadow under what is on its way. "flat": the page's
- * white, and nothing casts a shadow. "paper": depth on a warmer page with a
- * faint grid of dots, tried on 16 November 2026. Depth is made for the fixed layout and
- * is the usual look there; the rows have only been looked at flat.
+ * How the stage looks. "paper": a warm page with a faint grid of dots that
+ * the parties and listings sit above, with a shadow under what is on its
+ * way. "depth": the same shadows on a cooler grey page with no dots. "flat":
+ * the page's white, and nothing casts a shadow. Paper is the usual look for
+ * the fixed layout, chosen on 16 November 2026 over depth, which is kept; the
+ * rows have only been looked at flat.
  */
-const USUAL_LOOK = LAYOUT === "fixed" ? "depth" : "flat";
+const USUAL_LOOK = LAYOUT === "fixed" ? "paper" : "flat";
 const LOOK = option("--look") ?? USUAL_LOOK;
 if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);

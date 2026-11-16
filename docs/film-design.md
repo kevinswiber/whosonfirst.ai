@@ -7,8 +7,8 @@ How a film looks, in measurements, and how to check one. It is written for whoev
 ## Where things stand
 
 - There are two layouts. **Fixed** keeps the parties where they are, with a line between each two that speak, and only what is sent moves. **Rows** is the page's sequence diagram, a step to a row.
-- There are two looks. **Depth** is a tinted page with shadows. **Flat** is the page's white.
-- **Fixed with depth is what the script makes when nothing else is asked for.** The site's owner chose it on 16 November 2026 and wants flat kept, in case that changes. So a change to how a film looks is made in both looks, and both are checked.
+- There are three looks. **Paper** is a warm page with a faint grid of dots, and shadows. **Depth** is the same shadows on a cooler grey page with no dots. **Flat** is the page's white.
+- **Fixed on paper is what the script makes when nothing else is asked for.** The site's owner chose depth over flat on 16 November 2026, and later that day paper over depth, which was cold to watch. Depth and flat are kept, in case that changes. So a change to how a film looks is made in every look, and each is checked.
 - Rows has only been looked at flat, and flat is its usual look.
 
 ## Start here
@@ -33,7 +33,7 @@ node scripts/flow-film.mjs --flow dpop
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--flow <slug>`                   | Which flow. Its film is `scripts/films/<slug>.mjs`                                                                                                                                                                             |
 | `--layout fixed\|rows`            | The stage. Fixed if left out                                                                                                                                                                                                   |
-| `--look depth\|flat`              | The look. Depth if left out, and flat for rows                                                                                                                                                                                 |
+| `--look paper\|depth\|flat`       | The look. Paper if left out, and flat for rows                                                                                                                                                                                 |
 | `--voice kokoro`                  | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes                                                                                                                                                 |
 | `--voice <name> --reading <file>` | Said by a recording of the whole film, by a person or a voice made elsewhere. The recording is cut into the film’s lines once, and kept under that name. Needs `faster-whisper`: see the top of `scripts/film-voice-import.py` |
 | `--voice-note "<line>"`           | With a recorded voice: a line for the description under the film, such as that the voice is synthetic and whose it is                                                                                                          |
@@ -175,9 +175,11 @@ One thing moves at a time, and nothing moves without the eye knowing where it is
 - A beat lasts as long as its sentence takes to say, and never less than the times in `LEAST` in `scripts/flow-film.mjs`. If a scene needs longer for what happens on the stage, raise its number there. If one beat is the moment the film is for, give that beat `hold` in the script: seconds it stays up after its words.
 - Nothing flashes, nothing loops, and the picture does not zoom or pan. Parties do not move, with the one exception of the API coming level in DPoP’s film.
 
-## The two looks
+## The looks
 
-A change to a part is made for both. The styles are in the `<style>` block in `scripts/flow-film.mjs`; the depth look is the rules that start `.lit`.
+A change to a part is made for both. The styles are in the `<style>` block in `scripts/flow-film.mjs`; the depth look is the rules that start `.lit`, and paper is depth with the rules that start `.paper` over it.
+
+Paper differs from depth in the page alone: a warm grey (`#ecebe6`) in place of the cooler tint, shadows tinted to match, and a dot every 36 pixels at 16 parts in a hundred of the shadow's colour. The dots never move. A curtain has the same dots in the same places, so nothing jumps when a title or end card comes down. A dimmed party is partly clear, and a few dots show inside it.
 
 | Property                 | Flat                   | Depth                                                                         |
 | ------------------------ | ---------------------- | ----------------------------------------------------------------------------- |
@@ -195,7 +197,7 @@ What depth means, so that a new part gets the right treatment:
 - **A shadow means it is part of the system and it is there.** Someone else and a missing proof cast none.
 - **A longer shadow means it is on its way.** Only what is sent has one.
 - **A listing is nearest the viewer**, because it is laid over the stage to be read.
-- **Nothing is added that is not a party, a thing held or a thing sent.** No texture, no glow, no moving background. The research in [Films](films.md#what-else-is-known) is against decoration, and silent on shadows.
+- **Nothing is added that is not a party, a thing held or a thing sent.** No glow, no moving background. Paper's dots are the page the diagram is drawn on, as its tint is: they are still, faint, and the same in every frame. The research in [Films](films.md#what-else-is-known) is against decoration, and silent on shadows.
 
 ## Rules of spacing
 
@@ -220,7 +222,7 @@ Each of these was got wrong once and noticed by the owner. Check them on every c
 A model cannot watch a film or hear one. It can look at stills, and it must say that is all it did.
 
 1. Run `--beats`, and pick a second in the middle of every beat, plus one about 1.2 seconds into each step that sends something (the thing is then half way).
-2. Render those with `--stills`, for the depth look and again for the flat look, and for the silent cut as well as the narrated one. Look at every picture at full size, not only at a sheet of small ones.
+2. Render those with `--stills`, for the paper look and again for the depth and flat looks, and for the silent cut as well as the narrated one. Look at every picture at full size, not only at a sheet of small ones.
 3. On each picture, go down the eleven rules of spacing. Then ask: is what the sentence says on the stage, and is anything on the stage that the sentence does not say?
 4. Look for these, each of which has happened: a thing fading when it should be solid; a thing left behind after its step; a direction cue still lit in the next step; a part from another film’s scenes sitting on the stage; a step number in the strip in the wrong state; a listing covering a line that is lit; a long line of a listing running out of its card.
 5. Render the videos. Take a few frames back out of the finished file and look at them, since a still and the video are made by the same code but not in the same run.
