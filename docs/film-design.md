@@ -29,16 +29,18 @@ node scripts/flow-film.mjs --flow dpop --stills 26,44,57
 node scripts/flow-film.mjs --flow dpop
 ```
 
-| Option                 | What it does                                                                              |
-| ---------------------- | ----------------------------------------------------------------------------------------- |
-| `--flow <slug>`        | Which flow. Its film is `scripts/films/<slug>.mjs`                                        |
-| `--layout fixed\|rows` | The stage. Fixed if left out                                                              |
-| `--look depth\|flat`   | The look. Depth if left out, and flat for rows                                            |
-| `--voice kokoro`       | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes            |
-| `--captions on\|off`   | Whether each sentence is written under the scene. On when there is no voice               |
-| `--beats`              | Prints when each beat starts and how long it lasts, opens the stage, and draws nothing    |
-| `--stills 26,44.5`     | Pictures at those seconds, and no video. The fastest way to look at a change              |
-| `--draft`              | The flow told in its steps' own titles, with no script. What a flow with no film yet gets |
+| Option                            | What it does                                                                                                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--flow <slug>`                   | Which flow. Its film is `scripts/films/<slug>.mjs`                                                                                                                                                                             |
+| `--layout fixed\|rows`            | The stage. Fixed if left out                                                                                                                                                                                                   |
+| `--look depth\|flat`              | The look. Depth if left out, and flat for rows                                                                                                                                                                                 |
+| `--voice kokoro`                  | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes                                                                                                                                                 |
+| `--voice <name> --reading <file>` | Said by a recording of the whole film, by a person or a voice made elsewhere. The recording is cut into the film’s lines once, and kept under that name. Needs `faster-whisper`: see the top of `scripts/film-voice-import.py` |
+| `--voice-note "<line>"`           | With a recorded voice: a line for the description under the film, such as that the voice is synthetic and whose it is                                                                                                          |
+| `--captions on\|off`              | Whether each sentence is written under the scene. On when there is no voice                                                                                                                                                    |
+| `--beats`                         | Prints when each beat starts and how long it lasts, opens the stage, and draws nothing                                                                                                                                         |
+| `--stills 26,44.5`                | Pictures at those seconds, and no video. The fastest way to look at a change                                                                                                                                                   |
+| `--draft`                         | The flow told in its steps' own titles, with no script. What a flow with no film yet gets                                                                                                                                      |
 
 Everything is written to `social/`, which is not committed. A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
 
@@ -255,6 +257,17 @@ Take a still about 2.5 seconds into every step. Look hardest at any step between
 ### The last line
 
 The film ends by saying where the rest is, and what is there that the film did not show. DPoP’s is “Every step, and what your API has to check, is at whosonfirst.ai.” Name something on the page that the person watching would want next. Do not ask them to like, follow or subscribe. The address is written for the voice under `speak`, as “who’s on first dot AI”. Letters that are said as letters are written together: “A I”, with a space, is said as the word “a” and then “I”. A model cannot hear a line, but it can have the voice’s line written back by a speech recogniser and read what comes out, which is how this one was found.
+
+### A recorded voice
+
+A film can be said by one recording of the whole of it, in place of Kokoro: a person reading it, or a voice made by a service.
+
+1. Get the film’s lines as the voice should be given them, with the words under `speak` written as they sound, one line to a paragraph. One paragraph to a line matters: the quiet between paragraphs is where the recording is cut.
+2. Record or generate the whole of it once, as one file.
+3. Run the film with `--voice <name> --reading <file>`. A speech recogniser hears the recording and says when each word was said; its words are matched to the film’s own, each line is cut out in the quiet on either side of it, and the lines are kept in `social/voice/`. The script prints each line with where it was found, and how many words were heard as written.
+4. After that, `--voice <name>` alone makes the film again. A line that has changed has not been said, and the script says which.
+
+The DPoP film was tried this way on 16 November 2026 with an ElevenLabs voice, at the service’s `stability` of 0.7: a steadier read, since the film’s manner is plain. One read of the whole film is 1,434 characters. A film said by a synthetic voice says so in its description, with `--voice-note`.
 
 ## Changing the design
 

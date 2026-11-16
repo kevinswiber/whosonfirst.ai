@@ -459,6 +459,8 @@ FILM_PYTHON=~/.venvs/kokoro/bin/python npm run film -- --flow dpop --voice kokor
 
 A line is said once and kept in `social/voice/`, so a film made again says only what has changed. A word the voice would say wrong is written for it as it sounds, under `speak` in the film's script. A word that is not said as it is spelled can be written on the stage as it is said, with `gloss`: JWT is said “jot” ([RFC 7519](https://www.rfc-editor.org/rfc/rfc7519#section-1)).
 
+A film can be said by a recording too: `--voice <name> --reading <file>` takes one recording of the whole film, by a person or a voice made elsewhere, and `scripts/film-voice-import.py` cuts it into the film’s lines. The [film design guide](film-design.md#a-recorded-voice) has the steps.
+
 Nobody has to listen for the film to be made, and nothing checks how it sounds. Listen to a voiced film before it is posted.
 
 ## Response headers

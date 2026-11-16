@@ -6,6 +6,7 @@
  *
  *   npm run build && node scripts/flow-film.mjs --flow dpop
  *   node scripts/flow-film.mjs --flow dpop --voice kokoro      said aloud, by scripts/film-voice.py
+ *   node scripts/flow-film.mjs --flow dpop --voice hope --reading hope.mp3   said by a recording of the whole film, cut into its lines
  *   node scripts/flow-film.mjs --flow dpop --stills 2,12,30    pictures at those seconds, and no video
  *   node scripts/flow-film.mjs --flow dpop --beats             when each beat starts, and how long it lasts
  *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
@@ -68,8 +69,15 @@ const option = (name) => {
 };
 const SLUG = option("--flow") ?? "dpop";
 const STILLS = option("--stills")?.split(",").map(Number);
-/** Who says it: nobody, or Kokoro. */
+/**
+ * Who says it: nobody, Kokoro, or a voice by any other name whose lines were
+ * recorded. A recorded voice's lines are cut from one reading of the whole
+ * film, given once with --reading, and kept.
+ */
 const VOICE = option("--voice");
+const READING = option("--reading");
+/** A line for the description under a film with a recorded voice, such as who or what the voice is. */
+const VOICE_NOTE = option("--voice-note");
 /** Which of Kokoro's voices, and how fast it speaks. */
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
 /** Whether what is said is written under the scene: by default, only where nobody says it. */
@@ -192,7 +200,13 @@ const written = (said) => {
 function recordings(lines) {
   const kept = (text) => {
     const name = createHash("sha1")
-      .update(JSON.stringify([VOICE, KOKORO, spoken(text)]))
+      .update(
+        JSON.stringify(
+          VOICE === "kokoro"
+            ? [VOICE, KOKORO, spoken(text)]
+            : ["recorded", VOICE, spoken(text)],
+        ),
+      )
       .digest("hex")
       .slice(0, 16);
     return {
@@ -201,23 +215,46 @@ function recordings(lines) {
     };
   };
   const missing = lines.filter((text) => !existsSync(kept(text).json));
-  if (missing.length) {
+  const recorded = VOICE !== "kokoro";
+  if (recorded && READING && !existsSync(READING))
+    throw new Error(`There is no recording at ${READING}`);
+  if (recorded && missing.length && !READING)
+    throw new Error(
+      `The voice ${VOICE} has not said ${missing.length} of the film's ${lines.length} lines, the first of them “${missing[0]}”. Give one recording of the whole film with --reading, or use --voice kokoro.`,
+    );
+  if (missing.length || (recorded && READING)) {
     const job = join(out, "voice", "job.json");
+    // Kokoro says the lines that are new. A recording is of the whole film,
+    // so every line is cut from it again.
     writeFileSync(
       job,
-      JSON.stringify({
-        ...KOKORO,
-        lines: missing.map((text) => ({ text: spoken(text), ...kept(text) })),
-      }),
+      JSON.stringify(
+        recorded
+          ? {
+              reading: READING,
+              lines: lines.map((text) => ({
+                text: spoken(text),
+                ...kept(text),
+              })),
+            }
+          : {
+              ...KOKORO,
+              lines: missing.map((text) => ({
+                text: spoken(text),
+                ...kept(text),
+              })),
+            },
+      ),
     );
+    const script = recorded ? "film-voice-import.py" : "film-voice.py";
     const said = spawnSync(
       process.env.FILM_PYTHON ?? "python3",
-      [join(here, "scripts", "film-voice.py"), job],
+      [join(here, "scripts", script), job],
       { stdio: ["ignore", "inherit", "inherit"] },
     );
     if (said.status !== 0) {
       console.error(
-        "The voice did not finish. See scripts/film-voice.py for what it needs.",
+        `The voice did not finish. See scripts/${script} for what it needs.`,
       );
       process.exit(1);
     }
@@ -229,8 +266,10 @@ function recordings(lines) {
     ]),
   );
 }
-if (VOICE && VOICE !== "kokoro")
-  throw new Error(`No voice is named ${VOICE}: the one there is, is kokoro`);
+if (READING && (!VOICE || VOICE === "kokoro"))
+  throw new Error(
+    "--reading is a recording of a voice: name the voice with --voice",
+  );
 const voiced = VOICE
   ? recordings(script.beats.filter((b) => b.say).map((b) => b.say))
   : undefined;
@@ -484,7 +523,7 @@ if (problems.length) {
 // opened, so a flow or a script it cannot draw has already been refused.
 if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE ? "-voiced" : ""}`;
+const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}`;
 
 if (STILLS) {
   for (const t of STILLS) {
@@ -615,7 +654,7 @@ if (STILLS) {
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   writeFileSync(
     join(out, `${name}.txt`),
-    `${flow.title}\n${flow.tagline}\n\nhttps://${film.address}/\n\n${chapters.map(([at, title]) => `${clock(at)} ${title}`).join("\n")}\n\n${basis}\n${VOICE ? "The voice is synthetic: Kokoro, an open text-to-speech model.\n" : ""}`,
+    `${flow.title}\n${flow.tagline}\n\nhttps://${film.address}/\n\n${chapters.map(([at, title]) => `${clock(at)} ${title}`).join("\n")}\n\n${basis}\n${VOICE === "kokoro" ? "The voice is synthetic: Kokoro, an open text-to-speech model.\n" : VOICE_NOTE ? `${VOICE_NOTE}\n` : ""}`,
   );
 
   const count = lines.reduce((n, b) => n + b.say.trim().split(/\s+/).length, 0);

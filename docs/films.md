@@ -85,6 +85,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - The track is brought to −16 LUFS.
 - No music under the voice. See [what else is known](#what-else-is-known).
 - The description says the voice is synthetic.
+- A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines. It was tried with an ElevenLabs voice on 16 November 2026. Which voice the films are posted with has not been decided.
 
 **Captions and description**
 
