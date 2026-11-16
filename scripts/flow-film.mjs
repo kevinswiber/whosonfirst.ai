@@ -497,13 +497,14 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
   /* "paper": depth on a warmer page, with a faint grid of dots that never
-     moves. The dots are at their full strength in the middle of the frame
-     and fade, gently, to about a fifth of it at the corners: a grid as strong
-     at the edge as in the middle leads the eye out of the picture. A curtain has the same dots, in the same places, so nothing
+     moves. The dots are at their full strength behind the stage and fade
+     to nothing above and below it, and to less at the sides: a grid as
+     strong at the edge as in the middle leads the eye out of the picture,
+     and a heading reads better on clear paper than over dots. A curtain has the same dots, in the same places, so nothing
      jumps when one comes down: a curtain covers the frame exactly, from its
      top corner (the scene is 96px down in a said-aloud film),
      as the stage does. */
-  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); --fade: radial-gradient(ellipse 1150px 700px at 960px 520px, #000 50%, rgb(0 0 0 / 0.22) 100%); }
+  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); --fade: radial-gradient(ellipse 1250px 440px at 960px 610px, #000 45%, transparent 100%); }
   .paper, .paper .curtain { background-color: var(--stage); }
   .paper::before, .paper .curtain::before, .paper .cover-card::before { content: ""; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; -webkit-mask-image: var(--fade); mask-image: var(--fade); }
   .said-aloud.paper .curtain { top: -96px; height: 1080px; }
