@@ -17,6 +17,8 @@ index.json                 what every file is, and which cut of each film is the
 README.md                  this file
 shared/                    what more than one film uses
   room/                    the sound of a quiet room, to lay under a voice
+channel/                   what the films are posted under
+  youtube/                 the YouTube channel's banner and picture
 flows/<slug>/              one film
   readings/                one recording of the whole film by a voice, each as it was made
     tests/                 short readings made to hear a voice, in no cut

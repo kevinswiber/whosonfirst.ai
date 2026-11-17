@@ -15,6 +15,26 @@
       "sha256": "8f1519c1dbde955e0fc53687f6c21a2991b2eb65c6fdbf81f6b3c94e592e5044"
     }
   ],
+  "channel": [
+    {
+      "key": "channel/youtube/banner.png",
+      "what": "The YouTube channel's banner: the owl, “Who’s on First” and “A field guide to agent authentication and authorization” on the films' paper, as the end card sets them",
+      "made": "2026-11-17",
+      "facts": "2560 × 1440. Everything is inside the 1546 × 423 strip in the middle that YouTube shows on every device; outside it is paper, with dots that fade, for a TV",
+      "use": "Uploaded as the channel's banner",
+      "bytes": 72391,
+      "sha256": "69f39217050d351527c5c8e721534437f80a460c5194ac5c69e537d11023822d"
+    },
+    {
+      "key": "channel/youtube/avatar.png",
+      "what": "The YouTube channel's picture: the site's owl, dark, on the films' paper",
+      "made": "2026-11-17",
+      "facts": "800 × 800, drawn from public/favicon.svg. Chosen over the dark app icon, whose owl reads smaller and fainter in YouTube's circle",
+      "use": "Uploaded as the channel's picture",
+      "bytes": 25220,
+      "sha256": "c4a853f8439bc3e23e7caa63e13fb8c0b22a75a3ba375b1b202bf5aa02ef51d9"
+    }
+  ],
   "flows": {
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
