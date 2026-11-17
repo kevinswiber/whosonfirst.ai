@@ -1438,6 +1438,38 @@ export const standards: Standard[] = [
     agents: "Keeps downstream credentials out of the agent and the model.",
     url: "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation",
   },
+  // Read on 17 November 2026: the proposal's own text at the head of its pull
+  // request, which says "Status: Draft" and "Created: 2025-12-05", and the pull
+  // requests themselves, both open. The authorization extensions repository's
+  // README on main lists stable extensions only, and no DPoP.
+  {
+    id: "mcp-dpop",
+    name: "MCP DPoP Profile",
+    ref: "SEP-1932",
+    body: "MCP",
+    status: "draft",
+    detail:
+      "Proposal in draft since December 2025, not merged and in no released revision of MCP.",
+    related: [
+      {
+        entry: "rfc9449",
+        kind: "builds-on",
+        note: "Unchanged: the profile adds no claims and no proof material.",
+      },
+      {
+        name: "Mark DPoP as experimental extension (ext-auth pull request 38)",
+        url: "https://github.com/modelcontextprotocol/ext-auth/pull/38",
+        kind: "source",
+        note: "Open in November 2026. It would publish the profile as an experimental extension, the stage MCP keeps for prototypes.",
+      },
+    ],
+    topics: ["agent-protocol", "proof-of-possession"],
+    summary:
+      "An optional MCP extension for DPoP-bound access tokens. A client gets its tokens with a DPoP proof and retries when a server asks for a nonce. An MCP server refuses a proof whose `iat` is more than five minutes from its own clock.",
+    agents:
+      "MCP’s own authorization sends a bearer token, which works for whoever copies it. This would let an MCP server refuse one copied out of a log.",
+    url: "https://github.com/modelcontextprotocol/modelcontextprotocol/pull/1932",
+  },
 
   /* ───────────── Agent protocols ───────────── */
   {

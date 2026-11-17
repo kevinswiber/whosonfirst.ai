@@ -85,7 +85,7 @@ Also report:
 
 ### Other drafts and versioned specifications
 
-Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage.
+Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `mcp-dpop`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage. For `mcp-dpop`, whether SEP-1932 or ext-auth pull request 38 has merged, and whether the MCP TypeScript SDK's server package now checks proofs: the DPoP page's note says it does not.
 
 And the specifications that publish dated or numbered revisions:
 
