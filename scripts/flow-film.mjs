@@ -509,11 +509,19 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .paper::before, .paper .curtain::before, .paper .cover-card::before { content: ""; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; -webkit-mask-image: var(--fade); mask-image: var(--fade); }
   .said-aloud.paper .curtain { top: -96px; height: 1080px; }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
-  .where { position: absolute; z-index: 61; left: 96px; top: 996px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
+  .where { position: absolute; z-index: 61; left: 96px; top: 980px; display: flex; align-items: center; gap: 14px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
+  .where .mark { width: 46px; height: 46px; }
+  .mark { flex: none; }
+  .mark .owl-body { fill: var(--mark-body); } .mark .owl-eye { fill: var(--mark-eye); } .mark .owl-pupil { fill: var(--mark-pupil); } .mark .owl-beak { fill: var(--mark-beak); }
+  /* The name and the owl in the proportions of the site's header: the owl
+     1.79 times the height of the letters, 0.56 of it away, and the letters
+     set as the header sets them. */
+  .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 54px; font-size: 96px; letter-spacing: -0.02em; }
+  .end-card h1 .mark { width: 172px; height: 172px; }
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
-<script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
+<script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.mark + "<span>" + window.FILM.address + "</span></div>");</script>
 <script src="/__film/stage.js"></script>
 `;
 
@@ -591,8 +599,16 @@ let also;
   }
   if (found[0]) also = [found[0].description.split(":")[0], found[0].question];
 }
+// The site's mark, from the icon's own file, as the site's header draws it:
+// without the icon's style sheet, so that its classes take the page's colors.
+const mark = readFileSync(join(here, "public", "favicon.svg"), "utf8")
+  .replace(/<!--[\s\S]*?-->/g, "")
+  .replace(/<style>[\s\S]*?<\/style>/, "")
+  .replace("<svg ", '<svg class="mark" aria-hidden="true" ')
+  .replace(/\s*\n\s*/g, "");
 film = {
   flow,
+  mark,
   also,
   cover: COVER,
   beats,

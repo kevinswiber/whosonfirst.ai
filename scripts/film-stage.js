@@ -434,7 +434,9 @@
   // at the end the whole stage is covered, the line that was said with it
   const close = make("div", "curtain close");
   const endCard = make("div", "title-card end-card");
-  make("h1", "", endCard, "Who’s on First");
+  // the site's mark beside its name, as in the site's header
+  make("h1", "", endCard).innerHTML =
+    `${film.mark ?? ""}<span>Who’s on First</span>`;
   if (film.descriptor) make("p", "descriptor", endCard, film.descriptor);
   make("p", "address", endCard, film.address);
   // what a comparison this flow is half of compares, and its question

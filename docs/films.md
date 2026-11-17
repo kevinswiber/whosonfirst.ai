@@ -49,6 +49,7 @@ These are the film's manner so far. Change one for a reason, and change it here.
   - One address. The comparison's own was tried under its question and was too much.
   - Not the question alone. “DPoP or OAuth mTLS?” is three names in mixed case in a row, so a plain sentence comes first.
   - The address leaves the corner while the end card, which has it, is up.
+  - The site's owl stands beside its name, in the proportions of the site's header: the owl 1.79 times the height of the letters and 0.56 of it away, with the header's spacing between letters. From cut 18. In cut 17 the owl was little taller than the letters, and the two did not look like the site's.
 
 **The stage**
 
@@ -70,6 +71,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - Before anything is sent, the line it will go along is drawn over in the sender's color, from the sender to an arrowhead at the receiver, and what will be sent waits at the sender while that happens. Without it, a thing that moved came as a surprise.
 - Whoever speaks to the most parties is the tall one at the left, with what it holds inside it. In most flows that is the agent.
 - The page is warm paper with a faint grid of dots, and what is on it casts a shadow (`--look paper`). The site's owner found the white (`--look flat`) flat to watch and chose a grey page with shadows (`--look depth`) on 16 November 2026, then found that cold and chose paper the same day, from cut 14. All three are kept. A shadow says a thing is part of the system and there, and a longer one that it is on its way. The dots are the page the diagram is drawn on: still, faint and the same in every frame. From cut 16 they fade out above and below the stage, clear of the heading, and soften at the sides, so that nothing leads the eye out of the picture. Nothing else is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows, lighting or a paper ground in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear. How the dots look after a video site has compressed them has not been checked.
+- The site's owl stands left of the flow's address in the bottom corner for the whole film, 46 pixels across: at 34 it could not be seen to be an owl, and at 58 it outweighed the address. It is read from the icon's own file, as the site's header reads it, with its eyes white: they are the lightest thing in it, and on paper that takes white. Its white and its blue are already on the stage, in a listing and in a proof. From cut 17. It is not on the cover, which is full.
 - The film's last line says where the rest is and what is there. Nothing asks the person watching to follow or subscribe.
 
 **Motion**
@@ -99,7 +101,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - The sound of a quiet room is laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026 in cut 10, and kept that day.
 - The description says the voice is synthetic.
 - A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines.
-- The films are said in the voice of the site’s owner: a clone of his own voice, made with ElevenLabs, reading the whole film once. Chosen on 16 November 2026, from cut 15, over Matilda, one of ElevenLabs’ own voices: his own is more personal. It is still a machine’s voice, and the description says so. A reading he records himself fits the same way.
+- The films are said in the voice of the site’s owner: a clone of their own voice, made with ElevenLabs, reading the whole film once. Chosen on 16 November 2026, from cut 15, over Matilda, one of ElevenLabs’ own voices: their own is more personal. It is still a machine’s voice, and the description says so. A reading they record themself fits the same way.
 
 **Cover**
 
@@ -121,7 +123,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 ## What has not been decided
 
-- **Whether the owner records the films himself.** The voice is a clone of his own, which is a machine saying it. The voice principle asks for a person’s, and a recording by him fits the same script: a beat lasts as long as its clip. Studies with newer machine voices mostly find no difference in what is learned: see below.
+- **Whether the owner records the films themself.** The voice is a clone of their own, which is a machine saying it. The voice principle asks for a person’s, and a recording by them fits the same script: a beat lasts as long as its clip. Studies with newer machine voices mostly find no difference in what is learned: see below.
 - **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
 - **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
