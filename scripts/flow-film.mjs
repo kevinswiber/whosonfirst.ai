@@ -833,11 +833,12 @@ if (COVER) {
     );
     const file = join(dir, `${String(i + 1).padStart(2, "0")}.png`);
     await page.screenshot({ path: file });
-    await page.evaluate(() =>
-      document
-        .querySelectorAll(".said p.series, .strip-note")
-        .forEach((node) => node.remove()),
-    );
+    await page.evaluate(() => {
+      for (const node of document.querySelectorAll(
+        ".said p.series, .strip-note",
+      ))
+        node.remove();
+    });
     files.push(file);
     // What the picture shows, in words, for whoever cannot see it: what the
     // script says it shows, or what can be told of a step from the flow.
