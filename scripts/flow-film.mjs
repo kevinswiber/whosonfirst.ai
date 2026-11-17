@@ -513,8 +513,11 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .where .mark { width: 46px; height: 46px; }
   .mark { flex: none; }
   .mark .owl-body { fill: var(--mark-body); } .mark .owl-eye { fill: var(--mark-eye); } .mark .owl-pupil { fill: var(--mark-pupil); } .mark .owl-beak { fill: var(--mark-beak); }
-  .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 34px; }
-  .end-card h1 .mark { width: 124px; height: 124px; }
+  /* The name and the owl in the proportions of the site's header: the owl
+     1.79 times the height of the letters, 0.56 of it away, and the letters
+     set as the header sets them. */
+  .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 54px; font-size: 96px; letter-spacing: -0.02em; }
+  .end-card h1 .mark { width: 172px; height: 172px; }
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
