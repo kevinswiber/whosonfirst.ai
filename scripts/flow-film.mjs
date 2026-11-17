@@ -13,6 +13,7 @@
  *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
  *   node scripts/flow-film.mjs --flow dpop --layout rows       the page's own drawing, a step to a row
  *   node scripts/flow-film.mjs --flow ciba --draft             a flow with no film yet, told in its steps' own titles
+ *   node scripts/flow-film.mjs --flow dpop --shape 4:5 --voice kevin   for a feed: 1080 × 1350, said and written
  *
  * Writes to social/, which is not committed:
  *
@@ -21,7 +22,7 @@
  *   film-<slug>.txt            a description to paste under it, with its chapters
  *   voice/                     each line as it was said, kept so it is not said again
  *
- * A name also says what is not the usual: -rows, -flat or -depth, -draft.
+ * A name also says what is not the usual: -rows, -flat or -depth, -draft, -4x5.
  *
  * What is said is in scripts/films/<slug>.mjs, written for the ear and held
  * to what the flow's page says. What is drawn is the flow's own data: its
@@ -90,8 +91,25 @@ const ROOM = option("--room");
 const ROOM_LEVEL = Number(option("--room-level") ?? -56);
 /** Which of Kokoro's voices, and how fast it speaks. */
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
-/** Whether what is said is written under the scene: by default, only where nobody says it. */
-const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
+/**
+ * The shape of the frame. "16:9" is 1920 × 1080. "4:5" is 1080 × 1350, for
+ * a feed, where a video starts with its sound off: the stage is laid out
+ * again for a tall frame, with larger letters, and each sentence is written
+ * under it even where a voice says it. docs/reviews/films-in-a-feed-2026-11-17.md
+ * says why.
+ */
+const SHAPE = option("--shape") ?? "16:9";
+if (!["16:9", "4:5"].includes(SHAPE))
+  throw new Error(`--shape is 16:9 or 4:5, not ${SHAPE}`);
+const FRAME = SHAPE === "4:5" ? { w: 1080, h: 1350 } : { w: 1920, h: 1080 };
+/** Whether what is said is written under the scene: by default, only where nobody says it, and always in 4:5. */
+const BAND = option("--captions")
+  ? option("--captions") === "on"
+  : !VOICE || SHAPE === "4:5";
+if (SHAPE === "4:5" && !BAND)
+  throw new Error(
+    "A 4:5 film writes each sentence under the stage: leave out --captions off",
+  );
 /**
  * How the stage is laid out. "fixed": the parties stay put with a line
  * between each two that speak, and only what is sent moves. "rows": the
@@ -112,6 +130,8 @@ const USUAL_LOOK = LAYOUT === "fixed" ? "paper" : "flat";
 const LOOK = option("--look") ?? USUAL_LOOK;
 if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
+if (SHAPE === "4:5" && LAYOUT !== "fixed")
+  throw new Error("A 4:5 film is drawn by the fixed layout");
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -196,6 +216,8 @@ if (DRAFT) {
 const COVER = args.includes("--cover");
 if (COVER && LAYOUT !== "fixed")
   throw new Error("--cover is drawn by the fixed layout");
+if (COVER && SHAPE === "4:5")
+  throw new Error("A cover for the 4:5 film has not been drawn yet");
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -518,8 +540,49 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
      set as the header sets them. */
   .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 54px; font-size: 96px; letter-spacing: -0.02em; }
   .end-card h1 .mark { width: 172px; height: 172px; }
+  /* 4:5, for a feed. A frame 1080 wide is seen about 390 points wide on a
+     phone, so no letter is under 28 pixels. The parts are laid out again for
+     a tall frame: where each goes is in scripts/film-stage-fixed.js. */
+  #stage.portrait, .portrait #scene { width: 1080px; height: 1350px; }
+  .portrait .party strong { font-size: 34px; }
+  .portrait .party.tall { flex-direction: row; justify-content: flex-start; align-items: center; padding: 0 0 0 44px; }
+  .portrait .held { height: 64px; padding: 0 22px; gap: 12px; border-radius: 34px; font-size: 28px; }
+  .portrait .held .glyph { width: 34px; height: 34px; }
+  .portrait .held-bound i { width: 44px; height: 44px; }
+  .portrait .held.large { width: 410px; height: 84px; padding: 0 34px; border-radius: 50px; font-size: 38px; }
+  .portrait .held.large .glyph { width: 46px; height: 46px; }
+  .portrait .sent { height: 58px; padding: 0 20px; border-radius: 30px; font-size: 28px; }
+  .portrait .sent i { width: 40px; height: 40px; }
+  .portrait .sent .glyph { width: 28px; height: 28px; }
+  .portrait .badge, .portrait .cargo .badge.inline { width: 52px; height: 52px; font-size: 28px; }
+  .portrait .verdict { font-size: 30px; }
+  .portrait .verdict.open { font-size: 40px; }
+  .portrait .place { padding: 4px 16px; font-size: 28px; white-space: nowrap; }
+  .portrait .tall ~ .keystore { width: 340px; height: 140px; padding-bottom: 4px; font-size: 28px; }
+  .portrait .tall ~ .card { width: 900px; }
+  .portrait .strip { left: 90px; top: 74px; }
+  .portrait .pip { width: 52px; height: 52px; font-size: 28px; }
+  .portrait .heading.question { left: 90px; right: 90px; top: 62px; }
+  .portrait .heading.question strong { font-size: 58px; line-height: 1.1; }
+  .portrait .curtain { width: 1080px; height: 1000px; }
+  .portrait .curtain.close { height: 1350px; }
+  .portrait .title-card { width: 1080px; top: 290px; }
+  .portrait .end-card, .portrait .end-card.has-also { top: 370px; }
+  .portrait .end-card h1 { gap: 38px; font-size: 68px; }
+  .portrait .end-card h1 .mark { width: 122px; height: 122px; }
+  .portrait .end-card .descriptor { margin: 28px 90px 0; font-size: 40px; text-wrap: balance; }
+  .portrait .end-card .also { width: 900px; font-size: 36px; }
+  .portrait .end-card .also span + span { font-size: 32px; }
+  .portrait .end-card .also small { font-size: 28px; }
+  .portrait .said { left: 90px; width: 900px; top: 1010px; height: 180px; }
+  .portrait .said p { font-size: 40px; }
+  /* the address in the middle at the bottom, clear of the corners where a feed puts its buttons */
+  .portrait .where { left: 0; width: 1080px; top: 1206px; justify-content: center; font-size: 28px; }
+  .portrait .where .mark { width: 60px; height: 60px; }
+  .portrait.paper { --fade: radial-gradient(ellipse 760px 620px at 540px 580px, #000 45%, transparent 100%); }
+  .portrait.paper::before, .portrait.paper .curtain::before { width: 1080px; height: 1350px; }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}${film.shape === "4:5" ? " portrait" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.mark + "<span>" + window.FILM.address + "</span></div>");</script>
 <script src="/__film/stage.js"></script>
@@ -554,7 +617,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  viewport: { width: 1920, height: 1080 },
+  viewport: { width: FRAME.w, height: FRAME.h },
   deviceScaleFactor: 1,
   colorScheme: "light",
 });
@@ -614,6 +677,7 @@ film = {
   beats,
   duration,
   band: BAND,
+  shape: SHAPE,
   address: `whosonfirst.ai/flows/${flow.slug}`,
   descriptor,
 };
@@ -628,7 +692,7 @@ if (problems.length) {
 // opened, so a flow or a script it cannot draw has already been refused.
 if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
+const name = `film-${flow.slug}${SHAPE === "4:5" ? "-4x5" : ""}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
 if (COVER) {
   const file = join(out, `${name}-cover.png`);

@@ -33,6 +33,7 @@ node scripts/flow-film.mjs --flow dpop
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--flow <slug>`                   | Which flow. Its film is `scripts/films/<slug>.mjs`                                                                                                                                                                             |
 | `--layout fixed\|rows`            | The stage. Fixed if left out                                                                                                                                                                                                   |
+| `--shape 16:9\|4:5`               | The frame. 16:9 if left out. 4:5 is for a feed: see [A tall frame for a feed](#a-tall-frame-for-a-feed)                                                                                                                        |
 | `--look paper\|depth\|flat`       | The look. Paper if left out, and flat for rows                                                                                                                                                                                 |
 | `--voice kokoro`                  | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes                                                                                                                                                 |
 | `--voice <name> --reading <file>` | Said by a recording of the whole film, by a person or a voice made elsewhere. The recording is cut into the film’s lines once, and kept under that name. Needs `faster-whisper`: see the top of `scripts/film-voice-import.py` |
@@ -106,6 +107,42 @@ In DPoP's film, while only the agent and the API take part, before the flow and 
 The room under the scene is left for a reason. In a silent cut the sentence is written there, from y 822. In DPoP’s film “Someone else” stands there. A flow with four parties uses the height down to 780, which leaves 40 pixels over that sentence’s rule, and nothing starts closer than 64 pixels under the strip of numbers.
 
 A part made for a scene that a film does not have is not on the stage: anything the film never shows is hidden.
+
+### A tall frame for a feed
+
+`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [The review of 17 November 2026](reviews/films-in-a-feed-2026-11-17.md) says why. It was drawn on 17 November 2026 and looked at in stills only. The owner has not yet said yes to it, and no film has been made in it.
+
+It is the same stage turned on its side, and not the 16:9 frame cropped or shrunk:
+
+- **The tall party stands across the top,** with what it holds side by side in it, right of its name. The others stand in a row under it, and each line runs straight down. What is sent travels down or up.
+- **Every listing has one place,** under the row of parties, the width of the stage. There is no room for it beside a line.
+- **Each sentence is written under the stage, with the voice.** It is the exception to “a sentence is not said and written at once”: in a feed most people do not hear the voice. There is no heading over the scene, as in a silent cut.
+- **The question the film opens with is written in large letters over the stage from the first frame,** and stays until the title. A viewer whose feed does not play videos sees only that frame.
+- **No letter is under 28 pixels.** A frame 1080 wide is seen about 390 points wide on a phone.
+- **The address is in the middle at the bottom,** clear of the corners, where a feed puts its buttons.
+
+| Part                        | Where, in 4:5                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Opening question            | 58px semibold, left edge at x 90, top at y 62                                                          |
+| Strip of step numbers       | Left edge at x 90, y 74. Circles 52 across, numbers 28px                                               |
+| Tall party                  | A box 900 by 180: x 90 to 990, y 170 to 350. Its name 34px at the left                                 |
+| What the tall party holds   | Two places, centred on x 440 and x 810, level with the middle of the box. Pills 64 high, 28px mono     |
+| The other parties           | Boxes 420 by 104, centred on y 702. Two are centred on x 290 and x 790, one on x 540                   |
+| Line to the tall party      | Upright, from the bottom of the tall party (y 350) to the top of the other (y 650)                     |
+| Thing sent                  | Pills 58 high, 28px mono, behind a number 52 across                                                    |
+| What a party does by itself | Under the tall party, in the middle of the frame. Under a party in the row, 54 in from its edge        |
+| Listing                     | 900 wide, centred on x 540, from y 794. 30px mono, cut at 46 characters                                |
+| Gloss                       | In the middle of the frame, half way down the lines                                                    |
+| Sentence                    | 40px, centred, in a band 900 wide from a rule at y 1010, 180 high                                      |
+| Address                     | 28px mono, centred, from y 1206, with the owl 60 across                                                |
+| Someone else (DPoP)         | A dashed box 340 wide, centred on (224, 900). Its line goes along under the row and up into the API    |
+| Answers (DPoP)              | To someone else, under the API and left of their line up to it. To the agent, left of the agent's line |
+| Places (DPoP)               | Right of the line to the API, from y 410, 90 apart                                                     |
+| Keystore (DPoP)             | Drawn around the private key, where it is. The key and the token are already apart                     |
+
+In DPoP's film the API stays where it is: its line runs straight down from the agent whoever else is there. In the scene of the copy, what the agent spent and its answer go first, so that the places have the length of the line.
+
+It draws a flow of up to three parties, and refuses two in the row that speak to each other: their line would be the short gap between them. `--cover` is not drawn for it yet.
 
 ### Rows layout
 

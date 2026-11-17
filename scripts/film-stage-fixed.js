@@ -15,6 +15,13 @@
  * place. Each thing sent carries its step's number, and a strip of numbers
  * says how far the flow has got.
  *
+ * A film for a feed is 4:5, 1080 by 1350, and the same stage turned on its
+ * side: the party that speaks to the most others stands across the top, the
+ * others stand in a row under it, and each line runs straight down. Under
+ * the row is the room for a listing, and under that each sentence is
+ * written. Its letters are larger, since a frame 1080 wide is seen about 390
+ * points wide on a phone.
+ *
  * It takes the same `window.FILM` as scripts/film-stage.js and gives the
  * same `window.seek(t)`. The part that places things in time is the same as
  * that stage's, copied: a fix to it goes in both.
@@ -24,8 +31,11 @@
   const { flow, beats } = film;
   const stage = document.getElementById("scene");
   const DIM = 0.3;
+  /** A film for a feed: 4:5, with the parties across the top and in a row under it. */
+  const TALL = film.shape === "4:5";
+  const FRAME = TALL ? { w: 1080, h: 1350 } : { w: 1920, h: 1080 };
 
-  // ---------- who stands where, in a stage of 1920 by 1080 ----------
+  // ---------- who stands where, in a stage of 1920 by 1080 or 1080 by 1350 ----------
   /** Who each party speaks to. */
   const speaks = new Map(flow.participants.map((p) => [p.id, new Set()]));
   for (const step of flow.steps)
@@ -82,25 +92,56 @@
    * whatever the flow, and is taller where three parties stand beside it:
    * down to where, in a silent cut, the sentence is written.
    */
-  const BOX =
-    stacked.length > 2
+  // 4:5 has been drawn for three parties at most, and for two in the row
+  // that do not speak to each other: their line would be the short gap
+  // between them.
+  if (TALL && stacked.length > 2)
+    throw new Error(
+      `The 4:5 layout has places for three parties, and ${flow.slug} has ${flow.participants.length}`,
+    );
+  if (TALL && stacked.length === 2 && linked(stacked[0], stacked[1]))
+    throw new Error(
+      `The 4:5 layout cannot draw ${flow.slug}: two of the parties in its row speak to each other`,
+    );
+  const BOX = TALL
+    ? { x: 540, w: 900, top: 170, h: 180 }
+    : stacked.length > 2
       ? { x: 310, w: 360, top: 190, h: 590 }
       : { x: 310, w: 360, top: 190, h: 480 };
   const LEFT = BOX.x + BOX.w / 2; // where its lines leave it
   const MID = BOX.top + BOX.h / 2;
-  /** The other parties: boxes at the right. */
-  const RIGHT = { x: 1580, w: 380, h: 104 };
+  /** The other parties: boxes at the right, or in 4:5 in a row under the tall party. */
+  const RIGHT = TALL
+    ? { x: 540, w: 420, h: 104, y: 702 }
+    : { x: 1580, w: 380, h: 104 };
   const NEAR = RIGHT.x - RIGHT.w / 2; // where a level line reaches one
   /** Between the tall party and the others: where a listing is shown. */
-  const MIDDLE = (LEFT + NEAR) / 2;
-  /** How wide a listing is, and how many letters of a line it has room for. */
-  const CARD = { w: 820, letters: 42 };
-  /** What the tall party holds: the first thing here, and each next one this far under it. */
-  const SLOT = { first: BOX.top + 140, step: 70 };
-  const SLOTS = Math.floor((BOX.h - 140 - 40) / SLOT.step) + 1;
-  const KEYSTORE_Y = BOX.top + 374;
+  const MIDDLE = TALL ? 540 : (LEFT + NEAR) / 2;
+  /**
+   * How wide a listing is, and how many letters of a line it has room for.
+   * In 4:5 a listing has a place of its own under the row of parties.
+   */
+  const CARD = TALL
+    ? { w: 900, letters: 46, top: 794 }
+    : { w: 820, letters: 42 };
+  /**
+   * What the tall party holds: the first thing here, and each next one this
+   * far under it. In 4:5, beside it, to the right of the party's name.
+   */
+  const SLOT = TALL
+    ? { first: 440, step: 370, axis: "x" }
+    : { first: BOX.top + 140, step: 70, axis: "y" };
+  const SLOTS = TALL ? 2 : Math.floor((BOX.h - 140 - 40) / SLOT.step) + 1;
+  /** Where the n-th thing the tall party holds is. */
+  const slot = (n) =>
+    SLOT.axis === "x"
+      ? { x: SLOT.first + n * SLOT.step, y: MID }
+      : { x: BOX.x, y: SLOT.first + n * SLOT.step };
+  const KEYSTORE = TALL
+    ? { x: SLOT.first, y: MID - 14 }
+    : { x: BOX.x, y: BOX.top + 374 };
   /** Where someone else stands, when someone else has a copy of the token. */
-  const OTHER = { x: 720, y: 742, w: 400 };
+  const OTHER = TALL ? { x: 224, y: 900, w: 340 } : { x: 720, y: 742, w: 400 };
 
   // Down the right: the gaps share what room there is, and a gap that has a
   // line in it has three times the room of one that has none.
@@ -111,9 +152,13 @@
     .map((p, i) => (linked(stacked[i], p) ? 3 : 1));
   const whole = weights.reduce((sum, w) => sum + w, 0);
   let down = span[0];
+  // In 4:5 the row: one party under the middle of the tall one, or two
+  // with a line down to each, far enough apart for what is sent along one.
+  const across = stacked.length === 1 ? [540] : [290, 790];
   const parties = [
     { ...tall, x: BOX.x, y: MID },
     ...stacked.map((p, i) => {
+      if (TALL) return { ...p, x: across[i], y: RIGHT.y };
       const y = stacked.length === 1 ? MID : down + RIGHT.h / 2;
       down += RIGHT.h + (free * (weights[i] ?? 0)) / (whole || 1);
       return { ...p, x: RIGHT.x, y };
@@ -205,7 +250,7 @@
   // ---------- the parties, and a line between each two that speak ----------
   const lines = svg(
     "svg",
-    { class: "lines", width: 1920, height: 1080 },
+    { class: "lines", width: FRAME.w, height: FRAME.h },
     stage,
   );
   hub.box = at(make("div", `party tall role-${hub.role}`), hub.x, hub.y);
@@ -226,6 +271,12 @@
    * under what hangs from it if anything does.
    */
   const ends = (a, b) => {
+    // in 4:5, straight down from the bottom of the tall party to the top of the other
+    if (a === hub && TALL)
+      return [
+        { x: b.x, y: BOX.top + BOX.h },
+        { x: b.x, y: b.y - RIGHT.h / 2 },
+      ];
     if (a === hub)
       return [
         { x: LEFT, y: b.y },
@@ -294,15 +345,19 @@
       label.textContent = kind === "key" ? "private key" : "access token";
       return node;
     }
-    const extra = kind === "token" ? 0 : 40;
-    const room = 324 - 44 - extra;
-    const small = words.length * 14.4 > room;
-    const each = small ? 12 : 14.4;
+    // In 4:5 the letters are never set smaller, which a phone would not show: long words are cut short.
+    const fit = TALL
+      ? { widest: 340, least: 300, around: 50, each: 16.8, extra: 46 }
+      : { widest: 324, least: 280, around: 44, each: 14.4, extra: 40 };
+    const extra = kind === "token" ? 0 : fit.extra;
+    const room = fit.widest - fit.around - extra;
+    const small = !TALL && words.length * fit.each > room;
+    const each = small ? 12 : fit.each;
     const most = Math.floor(room / each);
     const text = words.length > most ? `${words.slice(0, most - 1)}…` : words;
     label.textContent = text;
     if (small) node.style.fontSize = "20px";
-    node.style.width = `${Math.max(280, Math.ceil(text.length * each) + 44 + extra)}px`;
+    node.style.width = `${Math.max(fit.least, Math.ceil(text.length * each) + fit.around + extra)}px`;
     return node;
   };
   const verdict = (text, ok, x, y) =>
@@ -334,28 +389,30 @@
         ? "bound"
         : "token";
     const mine = held.get(p);
+    let x = p.x;
     let y = p.y + RIGHT.h / 2;
     if (p === hub) {
       if (mine.length === SLOTS) {
         hide(mine.shift().node, t - 0.4, 0.3);
         for (const thing of mine) {
           thing.dy -= SLOT.step;
-          to(thing.node, "y", t - 0.4, 0.3, thing.dy);
+          to(thing.node, SLOT.axis, t - 0.4, 0.3, thing.dy);
         }
       }
-      y = SLOT.first + mine.length * SLOT.step;
+      ({ x, y } = slot(mine.length));
     } else for (const thing of mine.splice(0)) hide(thing.node, t - 0.1, 0.2);
     const thing = {
-      node: chip(kind, p.x, y, words),
+      node: chip(kind, x, y, words),
       kind,
       what,
       words,
+      x,
       y,
       dy: 0,
     };
     mine.push(thing);
     if (arrived && p === hub) {
-      to(arrived, "x", t - 0.5, 0.5, p.x - arrived.left);
+      to(arrived, "x", t - 0.5, 0.5, x - arrived.left);
       to(arrived, "y", t - 0.5, 0.5, y - arrived.top);
       hide(arrived, t - 0.05, 0.1);
     } else if (arrived) hide(arrived, t - 0.1, 0.2);
@@ -380,7 +437,7 @@
     if (p === hub)
       for (const thing of mine.slice(found)) {
         thing.dy -= SLOT.step;
-        to(thing.node, "y", t + 0.2, 0.3, thing.dy);
+        to(thing.node, SLOT.axis, t + 0.2, 0.3, thing.dy);
       }
   };
 
@@ -432,12 +489,16 @@
    * a level line it stops short of each end by its own half width, and along
    * an upright one by its half height.
    */
+  /** How big what is sent is: its height, its letters, and the number in front of it. */
+  const SENT = TALL
+    ? { h: 58, each: 16.8, around: 46, badge: 52 }
+    : { h: 46, each: 12.7, around: 38, badge: 46 };
   const cargo = (kinds, a, b, number, role) => {
     const node = make("div", "cargo");
     let width = 10 * (kinds.length - 1);
     if (number) {
       make("b", `badge inline role-${role}`, node, String(number));
-      width += 46 + 10;
+      width += SENT.badge + 10;
     }
     for (const kind of kinds) {
       const known = ["token", "bound", "proof", "missing"].includes(kind);
@@ -451,7 +512,8 @@
       pill.innerHTML = `<span></span>${kind === "bound" ? `<i>${KEY}</i>` : ""}`;
       pill.firstChild.textContent = words;
       // its width is reckoned, since the page's type may not be loaded yet
-      width += words.length * 12.7 + 38 + (kind === "bound" ? 44 : 0);
+      width +=
+        words.length * SENT.each + SENT.around + (kind === "bound" ? 44 : 0);
     }
     const level = a.y === b.y;
     const dir = Math.sign(level ? b.x - a.x : b.y - a.y);
@@ -459,10 +521,10 @@
     if (level && dir < 0) node.style.flexDirection = "row-reverse";
     const start = level
       ? { x: a.x + dir * (width / 2 + 30), y: a.y }
-      : { x: a.x, y: a.y + dir * (23 + 14) };
+      : { x: a.x, y: a.y + dir * (SENT.h / 2 + 14) };
     const end = level
       ? { x: b.x - dir * (width / 2 + 30), y: b.y }
-      : { x: b.x, y: b.y - dir * (23 + 30) };
+      : { x: b.x, y: b.y - dir * (SENT.h / 2 + 30) };
     at(node, start.x, start.y);
     node.left = start.x;
     node.top = start.y;
@@ -490,6 +552,17 @@
     else node.style.right = `${1920 - NEAR + 20}px`;
     make("b", `badge inline role-${p.role}`, node, String(n));
     make("span", "", node, step.label);
+    // In 4:5: under the tall party and in the middle of the frame, or under
+    // a party in the row and in from the edge of the frame on its side.
+    if (TALL) {
+      node.style.right = "";
+      node.style.left = "";
+      if (p === hub) {
+        node.style.left = "540px";
+        node.style.translate = "-50% 0";
+      } else if (p.x > 540) node.style.right = "54px";
+      else node.style.left = "54px";
+    }
     pop(node, t + 0.2);
     return node;
   };
@@ -558,14 +631,25 @@
   const due = (beat, word, otherwise) =>
     typeof word === "string" ? when(beat, word) : otherwise;
   let heading;
-  const head = (t, title, eyebrow = "") => {
+  /**
+   * A heading over the scene, where nobody writes the sentence under it. In
+   * 4:5 the question the film opens with is written over the scene in large
+   * letters all the same, `asked`: a feed may not play the film, and its
+   * first frame is then all there is.
+   */
+  const head = (t, title, eyebrow = "", asked = false) => {
     if (heading) hide(heading, t, 0.3);
     heading = undefined;
-    if (film.band || !title) return;
-    heading = make("div", "heading", document.getElementById("stage"));
+    if ((film.band && !asked) || !title) return;
+    heading = make(
+      "div",
+      film.band ? "heading question" : "heading",
+      document.getElementById("stage"),
+    );
     if (eyebrow) make("small", "", heading, eyebrow);
     make("strong", "", heading, title);
-    show(heading, t + 0.2, 0.4);
+    // the question is there from the first frame, and does not fade in
+    if (!asked) show(heading, t + 0.2, 0.4);
   };
 
   // ---------- how far the flow has got ----------
@@ -608,34 +692,50 @@
    * it, the API stands level with the middle of the agent, and the line
    * between them is at that height. For the flow it is in its place below.
    */
-  const TWO = MID;
-  const plain = chip("token", hub.x, SLOT.first);
+  // In 4:5 the line to the API runs straight down whoever else is there, so
+  // the API stays in its place.
+  const TWO = TALL ? (api?.y ?? MID) : MID;
+  const apiX = api?.x ?? MIDDLE;
+  const plain = chip("token", slot(0).x, slot(0).y);
   const keystore = at(
     make("div", "keystore", stage, "keystore"),
-    hub.x,
-    KEYSTORE_Y + 14,
+    KEYSTORE.x,
+    KEYSTORE.y + 14,
   );
   const other = at(make("div", "party other"), OTHER.x, OTHER.y);
+  other.style.width = `${OTHER.w}px`;
   make("strong", "", other, "Someone else");
-  const ABOVE = OTHER.y - 108;
+  const ABOVE = OTHER.y - (TALL ? 120 : 108);
+  // Where a token passes through, in order along the line to the API: over
+  // it, or in 4:5 to the right of it, from the top down.
   const places = ["tool call", "log", "trace"].map((name, i) =>
-    at(make("div", "place", stage, name), 680 + i * 245, TWO - 54),
+    TALL
+      ? at(
+          make("div", "place", stage, name),
+          apiX + 24 + (name.length * 16.8 + 40) / 2,
+          410 + i * 90,
+        )
+      : at(make("div", "place", stage, name), 680 + i * 245, TWO - 54),
   );
-  const copy = chip("token", 925, TWO);
+  // the copy left in the log: on the line under it, or in 4:5 across the line from it
+  const copy = TALL
+    ? chip("token", apiX - 30 - 150, 500)
+    : chip("token", 925, TWO);
   const copyBound = chip("bound", OTHER.x, ABOVE);
   /**
    * Someone else's own way to the API: along under the agent's line and up
-   * to the API from below. What they send travels along the level part.
+   * to the API from below. What they send travels along the level part. In
+   * 4:5 it goes along under the row and up into the right of the API.
    */
-  const BEND = NEAR + 60;
+  const BEND = TALL ? apiX + 140 : NEAR + 60;
+  const UNDER_API = TWO + RIGHT.h / 2;
   const attempt = (carries) => {
-    const length =
-      BEND - (OTHER.x + OTHER.w / 2) + (OTHER.y - (TWO + RIGHT.h / 2) - 16);
+    const length = BEND - (OTHER.x + OTHER.w / 2) + (OTHER.y - UNDER_API - 16);
     const path = svg(
       "path",
       {
         class: "channel other",
-        d: `M${OTHER.x + OTHER.w / 2} ${OTHER.y}H${BEND}V${TWO + RIGHT.h / 2 + 16}`,
+        d: `M${OTHER.x + OTHER.w / 2} ${OTHER.y}H${BEND}V${UNDER_API + 16}`,
         "stroke-dasharray": length,
         "stroke-dashoffset": length,
       },
@@ -644,7 +744,7 @@
     path.drawTo = (p) =>
       path.setAttribute("stroke-dashoffset", length * (1 - p));
     from(path, "opacity", 1);
-    const bottom = TWO + RIGHT.h / 2;
+    const bottom = UNDER_API;
     const tip = svg(
       "polygon",
       {
@@ -666,14 +766,39 @@
     };
     return { path, tip, send };
   };
-  const ANSWER = {
-    // its widest, “Refused: no proof”, ends at the safe edge
-    x: RIGHT.x + 75,
-    under: TWO + RIGHT.h / 2 + 66,
-    over: TWO - RIGHT.h / 2 - 66,
-  };
-  const watchKey = chip("key", MIDDLE - 225, MID);
-  const watchToken = chip("token", MIDDLE + 225, MID);
+  /**
+   * Where the API's answer goes: to someone else's request under the API,
+   * and to the agent's over it. Each is given where it is in the middle, or
+   * in 4:5 where its right edge is, since the answers differ in width: under
+   * the API and left of someone else's way up to it, and left of the agent's
+   * line, level with what the agent sent.
+   */
+  const ANSWER = TALL
+    ? {
+        under: { right: BEND - 30, y: UNDER_API + 58 },
+        over: { right: apiX - 95, y: TWO - RIGHT.h / 2 - 59 },
+      }
+    : {
+        // its widest, “Refused: no proof”, ends at the safe edge
+        under: { x: RIGHT.x + 75, y: TWO + RIGHT.h / 2 + 66 },
+        over: { x: RIGHT.x + 75, y: TWO - RIGHT.h / 2 - 66 },
+      };
+  const answer = (text, ok, spot) =>
+    verdict(
+      text,
+      ok,
+      spot.right === undefined
+        ? spot.x
+        : spot.right - (ok === null ? 74 : text.length * 18 + 46) / 2,
+      spot.y,
+    );
+  // the two things to watch: side by side between the parties, or in 4:5 one over the other
+  const watchKey = TALL
+    ? chip("key", MIDDLE, MID + 180)
+    : chip("key", MIDDLE - 225, MID);
+  const watchToken = TALL
+    ? chip("token", MIDDLE, MID + 300)
+    : chip("token", MIDDLE + 225, MID);
   watchKey.classList.add("large");
   watchToken.classList.add("large");
 
@@ -755,7 +880,7 @@
   } else light(0, [], [], true);
   const opening = beats.find((b) => b.head);
   if (opening && beats.indexOf(opening) === 0) {
-    head(0, opening.head);
+    head(0, opening.head, "", TALL);
     if (heading) from(heading, "opacity", 1);
   }
   let part = -1;
@@ -778,39 +903,47 @@
       pop(askCopy, when(beat, "copies"));
       const asked = attempt(["token"]);
       const { arrived, sent } = asked.send(when(beat, "Can") - 0.7);
-      const mark = verdict("?", null, ANSWER.x, ANSWER.under);
+      const mark = answer("?", null, ANSWER.under);
       pop(mark, Math.max(arrived, when(beat, "use")));
       passing = [other, askCopy, asked.path, asked.tip, sent, mark];
     } else if (beat.scene === "spend") {
       fromStory(beat.scene);
       clear(t);
-      const [a, b] = [
-        { x: LEFT, y: TWO },
-        { x: NEAR, y: TWO },
-      ];
+      const [a, b] = TALL
+        ? ends(hub, api)
+        : [
+            { x: LEFT, y: TWO },
+            { x: NEAR, y: TWO },
+          ];
       const sent = cargo(["token"], a, b);
       const aimed = aim(a, b, hub.role, t + 0.3, t + dur - 0.3);
       const arrived = sent.travel(aimed + 0.1, 1.4, 0.6);
-      const ok = verdict("200 OK", true, ANSWER.x, ANSWER.over);
+      const ok = answer("200 OK", true, ANSWER.over);
       pop(ok, Math.max(arrived, when(beat, "spend")));
       passing = [sent, ok];
     } else if (beat.scene === "copy") {
       fromStory(beat.scene);
+      // In 4:5 the places need the length of the line, and what was spent
+      // and its answer go first.
+      if (TALL) clear(t);
       // the places a token passes through are along the line it travels
       const named = ["tool", "logs", "traces"];
       for (const [i, place] of places.entries())
         show(place, when(beat, named[i]) - 0.1, 0.3);
       // and a copy of it is left in one of them
       show(copy, when(beat, "logs") + 0.3, 0.3);
-      to(copy, "y", when(beat, "logs") + 0.4, 0.6, ABOVE - TWO, "out");
+      if (!TALL)
+        to(copy, "y", when(beat, "logs") + 0.4, 0.6, ABOVE - TWO, "out");
       passing.push(copy, ...places);
     } else if (beat.scene === "steal") {
       fromStory(beat.scene);
       show(other, t, 0.4);
-      to(copy, "x", t + 0.2, 0.7, OTHER.x - 925);
+      // the copy goes to whoever has it
+      to(copy, "x", t + 0.2, 0.7, OTHER.x - (TALL ? apiX - 180 : 925));
+      if (TALL) to(copy, "y", t + 0.2, 0.7, ABOVE - 500);
       const taken = attempt(["token"]);
       const { arrived, sent } = taken.send(t + 1.0);
-      const ok = verdict("200 OK", true, ANSWER.x, ANSWER.under);
+      const ok = answer("200 OK", true, ANSWER.under);
       pop(ok, Math.max(arrived, when(beat, "works")));
       passing.push(other, taken.path, taken.tip, sent, ok);
     } else if (beat.scene === "title") {
@@ -898,8 +1031,10 @@
           // with the middle of it.
           const listed = beats.find((b) => b.step === n && b.show);
           const under = listed ? cardHeight(listed.show.length) + 26 : 0;
-          told.actY =
-            sender === hub
+          // In 4:5: under the tall party, or under a party in the row.
+          told.actY = TALL
+            ? sender.y + (sender === hub ? BOX.h : RIGHT.h) / 2 + 75
+            : sender === hub
               ? MID - under / 2
               : sender.y + (sender.y > MID ? -90 : 90);
           told.act = act(step, n, sender, told.actY, t);
@@ -912,27 +1047,32 @@
         // Beside a level line: under an upper one, over a lower one. Beside
         // an upright one: level with the middle of it. And for what a party
         // does by itself: on the far side of its words from its line.
-        const top = !receiver
-          ? sender === hub
-            ? told.actY + 61
-            : sender.y > MID
-              ? told.actY - 61 - height
-              : told.actY + 61
-          : sender === hub || receiver === hub
-            ? far.y <= MID
-              ? far.y + 62
-              : far.y - 62 - height
-            : Math.min(
-                Math.max((sender.y + receiver.y) / 2 - height / 2, BOX.top),
-                BOX.top + BOX.h - height,
-              );
+        // In 4:5 every listing is in the place under the row of parties.
+        const top = TALL
+          ? CARD.top
+          : !receiver
+            ? sender === hub
+              ? told.actY + 61
+              : sender.y > MID
+                ? told.actY - 61 - height
+                : told.actY + 61
+            : sender === hub || receiver === hub
+              ? far.y <= MID
+                ? far.y + 62
+                : far.y - 62 - height
+              : Math.min(
+                  Math.max((sender.y + receiver.y) / 2 - height / 2, BOX.top),
+                  BOX.top + BOX.h - height,
+                );
         told.card = card(
           step,
           beat.show.map((pick) => ({
             ...pick,
             at: pick.on ? when(beat, pick.on) : undefined,
           })),
-          !receiver && sender === hub ? LEFT + 40 + CARD.w / 2 : MIDDLE,
+          !TALL && !receiver && sender === hub
+            ? LEFT + 40 + CARD.w / 2
+            : MIDDLE,
           top,
           t,
           told.until,
@@ -958,13 +1098,17 @@
           );
           if (sent) told.sent = undefined;
         }
+      // A word written as it is said goes under the listing, or in 4:5, where
+      // under it is the sentence, in the middle of the lines.
       if (beat.gloss)
         gloss(
           beat.gloss,
-          told.card?.x ?? MIDDLE,
-          told.card
-            ? told.card.top + cardHeight(told.card.lines) + 56
-            : MID + 90,
+          TALL ? MIDDLE : (told.card?.x ?? MIDDLE),
+          TALL
+            ? (BOX.top + BOX.h + RIGHT.y - RIGHT.h / 2) / 2
+            : told.card
+              ? told.card.top + cardHeight(told.card.lines) + 56
+              : MID + 90,
           when(beat, beat.gloss.on),
           told.until,
         );
@@ -982,7 +1126,7 @@
       pop(copyBound, when(beat, "copy"));
       const tried = attempt(["bound", "missing"]);
       const { arrived, sent } = tried.send(when(beat, "Without"));
-      const no = verdict("Refused: no proof", false, ANSWER.x, ANSWER.under);
+      const no = answer("Refused: no proof", false, ANSWER.under);
       pop(no, Math.max(arrived, when(beat, "refuses")));
       passing = [other, copyBound, tried.path, tried.tip, sent, no];
     } else if (beat.scene === "caveat") {
@@ -993,8 +1137,10 @@
       const key = held.get(hub).find((thing) => thing.kind === "key");
       const token = held.get(hub).find((thing) => thing.kind !== "key");
       show(keystore, when(beat, "keep") - 0.2, 0.4);
-      to(key.node, "y", when(beat, "keep"), 0.8, KEYSTORE_Y - key.y);
-      to(token.node, "y", when(beat, "keep"), 0.8, SLOT.first - token.y);
+      // in 4:5 the key and the token are already apart, and the keystore is drawn around the key
+      to(key.node, "y", when(beat, "keep"), 0.8, KEYSTORE.y - key.y);
+      if (TALL) to(key.node, "x", when(beat, "keep"), 0.8, KEYSTORE.x - key.x);
+      else to(token.node, "y", when(beat, "keep"), 0.8, SLOT.first - token.y);
     } else if (beat.scene === "end") {
       if (!story) hide(strip, t, 0.4);
       show(close, t, 0.5);
