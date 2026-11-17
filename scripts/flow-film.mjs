@@ -571,6 +571,8 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .portrait .tall ~ .card { width: 900px; }
   .portrait .strip { left: 90px; top: 74px; }
   .portrait .pip { width: 52px; height: 52px; font-size: 28px; }
+  /* in a series of pictures, which steps a picture stands for, beside the strip */
+  .strip-note { align-self: center; margin-left: 12px; font: 500 28px var(--font-body); color: var(--fg-muted); white-space: nowrap; }
   .portrait .heading.question { left: 90px; right: 90px; top: 62px; }
   .portrait .heading.question strong { font-size: 58px; line-height: 1.1; }
   .portrait .curtain { width: 1080px; height: 1000px; }
@@ -766,17 +768,52 @@ if (COVER) {
       : scene === "title"
         ? end.start + end.dur / 2
         : end.start + end.dur - 0.4;
+    // A sentence that leans on the one before it in the film loses its
+    // "And" or "But" where that one is not on the picture: here nothing has
+    // been said before it.
     const said = cover
       ? ""
       : told
           .map((b) => b.say)
           .filter(Boolean)
-          .join(" ");
+          .join(" ")
+          .replace(/^(?:And|But) (\S)/, (_, first) => first.toUpperCase());
+    // Which steps a picture of the flow stands for: the part of the flow its
+    // step is in, as the page gives the parts, or else the steps it says.
+    // Written beside the strip, it says why the steps before are already
+    // told, and that they have not been missed out.
+    let steps;
+    let part;
+    if (step) {
+      const phases = flow.phases ?? [];
+      const index = phases.findLastIndex((p) => p.from <= step);
+      part = phases[index] && {
+        ...phases[index],
+        n: index + 1,
+        of: phases.length,
+      };
+      const toldSteps = told.map((b) => b.step).filter(Boolean);
+      const first = part ? part.from : Math.min(...toldSteps, step);
+      const last = part
+        ? (phases[index + 1]?.from ?? flow.steps.length + 1) - 1
+        : Math.max(...toldSteps, step);
+      steps =
+        first === last
+          ? `Step ${first} of ${flow.steps.length}`
+          : `Steps ${first} ${last - first === 1 ? "and" : "to"} ${last} of ${flow.steps.length}`;
+    }
     await page.evaluate(
-      ({ at, said, cover }) => {
+      ({ at, said, cover, steps }) => {
         window.seek(at);
         const card = document.querySelector(".cover-card");
         if (card) card.style.display = cover ? "" : "none";
+        const strip = document.querySelector(".strip");
+        if (strip && steps) {
+          const note = document.createElement("span");
+          note.className = "strip-note";
+          note.textContent = steps;
+          strip.append(note);
+        }
         // what is said in all of the page's beats, as large as fits in the band
         const band = document.querySelector(".said");
         if (!band || !said) return;
@@ -792,12 +829,14 @@ if (COVER) {
         )
           p.style.fontSize = `${size - 2}px`;
       },
-      { at, said, cover: Boolean(cover) },
+      { at, said, cover: Boolean(cover), steps },
     );
     const file = join(dir, `${String(i + 1).padStart(2, "0")}.png`);
     await page.screenshot({ path: file });
     await page.evaluate(() =>
-      document.querySelector(".said p.series")?.remove(),
+      document
+        .querySelectorAll(".said p.series, .strip-note")
+        .forEach((node) => node.remove()),
     );
     files.push(file);
     // What the picture shows, in words, for whoever cannot see it: what the
@@ -812,6 +851,11 @@ if (COVER) {
     if (step) {
       const s = flow.steps[step - 1];
       const who = (id) => flow.participants.find((p) => p.id === id).label;
+      words.push(
+        part
+          ? `Part ${part.n} of ${part.of}, ${steps.toLowerCase()}: ${part.title}.`
+          : `${steps}.`,
+      );
       words.push(
         `Step ${step} of ${flow.steps.length}: ${s.label}, ${s.to ? `from ${who(s.from)} to ${who(s.to)}` : `by ${who(s.from)}`}.`,
       );

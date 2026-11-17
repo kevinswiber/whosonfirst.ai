@@ -151,7 +151,7 @@ It draws a flow of up to three parties, and refuses two in the row that speak to
 
 ### A series of pictures
 
-`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md#for-a-feed) says why DPoP's is nine. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
+`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md#for-a-feed) says why DPoP's is eight. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
 
 | In `series` | What it is                                                                                                                           |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -160,7 +160,7 @@ It draws a flow of up to three parties, and refuses two in the row that speak to
 | `say`       | The beats whose sentences are written under it, named the same way. `at` if left out                                                 |
 | `shows`     | What the picture shows, in words, for its alt text, where its step and its sentences do not say it. Write it for a scene, not a step |
 
-A picture is taken just before what was sent goes, and the title in the middle of its beat. Under the stage is what its beats say, in the band, from 40px down to 34px where it would not otherwise fit. Nothing is drawn for the series that the film does not draw, and no word is written that the film does not say.
+A picture is taken just before what was sent goes, and the title in the middle of its beat. Under the stage is what its beats say, in the band, from 40px down to 34px where it would not otherwise fit. A picture of a step has, beside the strip of numbers, which steps it stands for: the part of the flow its step is in, as the page gives the parts, as “Steps 1 to 3 of 7” in 28px. Nothing else is drawn for the series that the film does not draw. No word is written that the film does not say, and a picture's first sentence loses an “And” or a “But” that leans on one before it.
 
 Beside the pictures, in `social/film-<slug>…-series/`, are `alt.txt`, a description of each picture to give as its alt text (what the script says it shows, or what step it is and from whom to whom, the lines of the listing with long runs of base64 left out, and what is said), and the series as one PDF, a picture to a page. It is made in either shape, and was first made in 4:5 on 17 November 2026.
 

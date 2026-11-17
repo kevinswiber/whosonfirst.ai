@@ -147,11 +147,14 @@ export default {
   // every one after it loses some who were looking, so this is a choice of
   // the film's moments and not the film a beat at a time: the cover, the
   // problem once, the idea, the flow in the three parts the page gives it,
-  // the copy refused, what is not protected, and where to read more. `at`
-  // is the moment, as the end of a scene or a step ("step 4.1" is its first
-  // beat), and `say` the beats whose sentences are written under it: every
-  // word is the film's. `shows` is what a picture shows, for its alt text,
-  // where it is more than its step and its sentences say.
+  // the copy refused, and where to read more. What DPoP does not protect is
+  // left to the film and the page: in a feed, the picture after the answer
+  // is where people stop. `at` is the moment, as the end of a scene or a
+  // step ("step 4.1" is its first beat), and `say` the beats whose sentences
+  // are written under it: the film's words, without an "And" or "But" that
+  // leans on a sentence not on the picture. `shows` is what a picture
+  // shows, for its alt text, where it is more than its step and its
+  // sentences say.
   series: [
     {
       cover: true,
@@ -177,11 +180,6 @@ export default {
       at: "refuse",
       shows:
         "Your agent holds the private key and the access token bound to it. Someone else holds a copy of the token, sends it to the API with no proof, and the API answers Refused: no proof.",
-    },
-    {
-      at: "caveat",
-      shows:
-        "Inside your agent, the private key is in a keystore of its own, apart from the access token.",
     },
     { at: "end" },
   ],
