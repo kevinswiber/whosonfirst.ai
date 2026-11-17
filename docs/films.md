@@ -14,7 +14,7 @@ The film was read against Richard Mayer's principles for learning from words and
 
 | Principle           | What it asks                                                                  | What the film does                                                                                                                                        | Kept          |
 | ------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Coherence           | Leave out what is not needed                                                  | No music, no decoration, nothing of the page's furniture. The stage, and the flow's address in one corner                                                 | Yes           |
+| Coherence           | Leave out what is not needed                                                  | No music, nothing of the page's furniture, and no decoration but the paper the stage is drawn on. The stage, and the flow's address in one corner         | Yes           |
 | Signaling           | Point at what matters                                                         | The parties that take no part in a step are dimmed. The step before is muted. A line of a listing is marked when it is spoken of                          | Yes           |
 | Redundancy          | Pictures with a voice, not pictures with a voice and the same words on screen | Said aloud, the sentence is left off the picture and is in the caption files. Silent, it is written under the scene, as the only words there are          | With a voice  |
 | Modality            | Say the words, do not write them beside the picture                           | The same                                                                                                                                                  | With a voice  |
@@ -24,7 +24,7 @@ The film was read against Richard Mayer's principles for learning from words and
 | Pre-training        | Name the main things first                                                    | Before the flow is told, each party is named and lit, and the two things to watch are shown. A word not said as it is spelled is written when it is said  | Yes           |
 | Multimedia          | Words and pictures, not words alone                                           | Every sentence has a picture of what it says                                                                                                              | Yes           |
 | Personalization     | Speak as to a person                                                          | “Your agent”, not “the agent”                                                                                                                             | Yes           |
-| Voice               | A human voice, not a machine's                                                | The voice is a machine's                                                                                                                                  | No: see below |
+| Voice               | A human voice, not a machine's                                                | A machine's, made from the voice of the site's owner                                                                                                      | No: see below |
 | Image               | A speaker on screen does not necessarily help                                 | There is no speaker on screen                                                                                                                             | Yes           |
 
 Three more, which are not Mayer's:
@@ -39,9 +39,16 @@ These are the film's manner so far. Change one for a reason, and change it here.
 
 **The telling**
 
-- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, the whole of it in one line, where to read more.
-- About a minute and a half. The DPoP film says 236 words in 98 seconds.
+- The order is: the question, the problem shown, the title, who takes part and what to watch, the steps, the question answered, what is not protected, where to read more. A line that said the whole of it again came after what is not protected until cut 11. It repeated the answer the film had just shown, and was cut on 16 November 2026.
+- About a minute and a half. Cut 11 of the DPoP film says 239 words in 99 seconds, about 145 a minute. Cut 10 said 271 in 117.
 - The title card is the flow's short name and the rest of its title. It does not repeat the sentence being said.
+- The end card is the site's name, what the site is in its own words, and the flow's address. Under a rule and the words “Also in the guide” it says what a comparison the flow is half of compares, in the comparison's own words: its description as far as the colon, and its question under that, smaller. A flow in no comparison has nothing under the rule. Decided on 16 November 2026, in cuts 12 and 13:
+  - No dates. A film is watched long after it is made, and “published September 2023” on its last frame reads as the film's own date.
+  - No “Based on” line. Whoever wants the standard follows the address, where the page says it first, and some standards' names are longer than the frame is wide. The description keeps the line, with its dates.
+  - Not “Next”, which promises another film.
+  - One address. The comparison's own was tried under its question and was too much.
+  - Not the question alone. “DPoP or OAuth mTLS?” is three names in mixed case in a row, so a plain sentence comes first.
+  - The address leaves the corner while the end card, which has it, is up.
 
 **The stage**
 
@@ -62,7 +69,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 - The parties stay where they are, with a line between each two that speak, and only what is sent moves. The page's own drawing, a step to a row, was the first stage and is kept (`--layout rows`). Parties that stay put are easier to follow: nothing is drawn and taken away, and what each party holds is in one place for the whole film. What is given up is the order of the steps as a place on the stage. Each thing sent carries its step's number, and a strip of numbers says how far the flow has got.
 - Before anything is sent, the line it will go along is drawn over in the sender's color, from the sender to an arrowhead at the receiver, and what will be sent waits at the sender while that happens. Without it, a thing that moved came as a surprise.
 - Whoever speaks to the most parties is the tall one at the left, with what it holds inside it. In most flows that is the agent.
-- The page is tinted and what is on it casts a shadow (`--look depth`), and the plain white is kept (`--look flat`). The site's owner found the white flat to watch and chose depth on 16 November 2026, keeping both in case that changes. A shadow says a thing is part of the system and there, and a longer one that it is on its way. Nothing is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows or lighting in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear.
+- The page is warm paper with a faint grid of dots, and what is on it casts a shadow (`--look paper`). The site's owner found the white (`--look flat`) flat to watch and chose a grey page with shadows (`--look depth`) on 16 November 2026, then found that cold and chose paper the same day, from cut 14. All three are kept. A shadow says a thing is part of the system and there, and a longer one that it is on its way. The dots are the page the diagram is drawn on: still, faint and the same in every frame. From cut 16 they fade out above and below the stage, clear of the heading, and soften at the sides, so that nothing leads the eye out of the picture. Nothing else is added that is not a party, a thing held or a thing sent, and the picture still does not zoom or pan. No study that was found tests shadows, lighting or a paper ground in a film that teaches, so this is a matter of whether it is more pleasant to watch and no less clear. How the dots look after a video site has compressed them has not been checked.
 - The film's last line says where the rest is and what is there. Nothing asks the person watching to follow or subscribe.
 
 **Motion**
@@ -76,17 +83,32 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 - Written for the ear: one idea to a beat, short enough to say in a breath. A step that carries two ideas is told in two beats.
 - Spoken to the person watching.
+- No line that only turns the film: “So yes.”, “DPoP changes the answer.”, “That is DPoP.” Each says nothing the picture does not, and a run of them is what makes a script sound written by a machine. Cut from cut 11.
+- Said as a person says it: “it’s”, “there’s” and “isn’t” where a person would say them. The site’s written prose does not change.
 - A sentence is not said and written at once.
 
 **Voice**
 
-- Kokoro, voice `af_heart`, at its own pace: a little under three words a second, with a third of a second between two lines of one step and about twice that between steps.
+- At the voice’s own pace. A recorded line keeps the breath its reader took after it, and the film adds little to that: an eighth of a second between two lines of one step and 0.4 seconds between steps. Until cut 11 it added 0.3 and 0.65, which made the film 18 seconds longer than its reading and slow to watch.
+- Without a recording the voice is Kokoro, `af_heart`.
 - A word the voice would say wrong is written for it as it sounds (`speak`), and what it says is checked by ear.
+- A hosted voice gives more than one take. Before one is chosen, each is written down by a speech recogniser and read against the script. For cut 11, one of Matilda’s two takes was heard to say “cache” for “cash”, and the other was used. A recogniser is not an ear, and the cut still has to be heard.
+- A reading can be mended from another by the same voice, with the same model and settings: cut 11’s “Now copy the token alone” is the line from the reading of cut 10, put in place of a line that said something the picture did not. The reading in the index is the mended one, so the cut can be made again from it.
 - The track is brought to −16 LUFS.
 - No music under the voice. See [what else is known](#what-else-is-known).
-- The sound of a quiet room can be laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026, and not decided.
+- The sound of a quiet room is laid under the voice (`--room`), far under it, so the gaps between lines are not dead silence. It is a sound editor’s practice and not something the research covers. Tried on 16 November 2026 in cut 10, and kept that day.
 - The description says the voice is synthetic.
-- A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines. It was tried with an ElevenLabs voice on 16 November 2026. Which voice the films are posted with has not been decided.
+- A film can be said by a recording in Kokoro’s place: one reading of the whole film, by a person or by a voice made elsewhere, cut into the film’s lines.
+- The films are said in the voice of the site’s owner: a clone of his own voice, made with ElevenLabs, reading the whole film once. Chosen on 16 November 2026, from cut 15, over Matilda, one of ElevenLabs’ own voices: his own is more personal. It is still a machine’s voice, and the description says so. A reading he records himself fits the same way.
+
+**Cover**
+
+- A film’s cover is a picture made for it, with `--cover`, and is not a frame of the film. A frame is drawn to be watched at full size, and a cover is mostly seen as a thumbnail a few hundred pixels wide, where a frame’s boxes and labels cannot be read.
+- It has the flow’s short name, the question the film opens with, and the film’s answer in two rows: what your agent sends and what comes back, and what someone else sends and what comes back. Each answer is at the end of its own row. Decided on 16 November 2026, from cut 15.
+- Tried first and not kept: the stage itself with both requests on it. “200 OK” and “Refused” both sat by the API, and nothing said which request each was the answer to.
+- The film does not show the two at once. It tells one thing at a time, and the copy is tried after the flow has been told.
+- The rows are DPoP’s, drawn from the scenes that follow its steps. Another flow’s film needs its own.
+- Nothing is in its bottom right corner, where a video site writes how long the film is.
 
 **Captions and description**
 
@@ -99,11 +121,10 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 ## What has not been decided
 
-- **Whose voice.** The voice principle asks for a person's. Kokoro was chosen to hear the film with a voice at all, with no account and no cost. A recording by a person fits the same script: a beat lasts as long as its clip. A hosted voice is the third choice, and needs an account. Studies with newer machine voices mostly find no difference in what is learned: see below.
+- **Whether the owner records the films himself.** The voice is a clone of his own, which is a machine saying it. The voice principle asks for a person’s, and a recording by him fits the same script: a beat lasts as long as its clip. Studies with newer machine voices mostly find no difference in what is learned: see below.
 - **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
 - **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
 - **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
-- **A cover.** The first frame is the agent, the API and a token. Nothing chooses a frame for a thumbnail.
 - **A dark version.**
 - **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.

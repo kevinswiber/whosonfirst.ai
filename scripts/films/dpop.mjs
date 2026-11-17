@@ -47,20 +47,23 @@ export default {
     // "Agents put tokens in riskier places. They pass through tool calls, logs, traces…"
     {
       scene: "copy",
-      say: "And agents put tokens in risky places. They pass through tool calls, logs and traces.",
+      say: "And an agent’s tokens pass through tool calls, logs and traces.",
     },
-    { scene: "steal", say: "So yes. A copy works as well as the original." },
+    {
+      scene: "steal",
+      say: "A copy from any of them works as well as the original.",
+    },
     // the tagline: "Bind a token to a key so that stealing the token is not enough to use it."
     {
       scene: "title",
       // the summary: "Demonstrating Proof of Possession (DPoP) fixes the cash problem…"
       expands: "Demonstrating Proof of Possession",
-      say: "DPoP changes the answer. It binds the token to a key, so stealing the token is not enough.",
+      say: "DPoP binds the token to a key, so stealing the token is not enough.",
     },
     // who takes part, and what to watch, before any of it moves
     {
       scene: "cast",
-      say: "Three parties take part: your agent, the authorization server, and the API. Watch two things: a key, and a token.",
+      say: "Three parties take part: your agent, the authorization server, and the API. Watch the key, and the token.",
     },
     {
       step: 1,
@@ -77,17 +80,17 @@ export default {
     // English word 'jot'." https://www.rfc-editor.org/rfc/rfc7519#section-1
     {
       step: 2,
-      say: "The proof is a small JWT. It carries the public key, and it is signed with the private one.",
+      say: "The proof is a small JWT. It carries the public key, and it’s signed with the private one.",
       gloss: { term: "JWT", note: "said “jot”", on: "JWT" },
     },
     {
       step: 3,
-      say: "The authorization server puts the key’s thumbprint inside the token.",
+      say: "The authorization server puts the key’s thumbprint in the token.",
       carries: ["bound"],
       show: [{ line: '"cnf"' }, { line: '"jkt"', on: "thumbprint" }],
     },
-    { step: 3, say: "The token is now bound to that key.", gain: "bound" },
-    { step: 4, say: "Before each API call, your agent signs a new proof." },
+    { step: 3, say: "Now the token is bound to that key.", gain: "bound" },
+    { step: 4, say: "Before each API call, your agent signs a fresh proof." },
     {
       step: 4,
       say: "It names the method and the URL, and carries a hash of the token.",
@@ -99,7 +102,7 @@ export default {
     },
     {
       step: 5,
-      say: "It sends the token and the proof together.",
+      say: "Then it sends the token and the proof together.",
       // the request the whole flow is for: it is left up a moment longer
       hold: 1.2,
       carries: ["bound", "proof"],
@@ -130,14 +133,8 @@ export default {
     // same file as the token, the thief takes both. Use a platform keystore…"
     {
       scene: "caveat",
-      say: "DPoP protects the token, not the key. So keep the key where the token is not.",
+      say: "But DPoP protects the token, not the key. So keep the key somewhere the token isn’t.",
       head: "What DPoP does not protect",
-    },
-    // the summary: "A stolen token without the key is rejected."
-    {
-      scene: "recap",
-      say: "That is DPoP. The token is bound to a key, and a stolen token without the key is refused.",
-      head: "DPoP, in one line",
     },
     // The API's part on the page: "If the API is yours, so is this check."
     {

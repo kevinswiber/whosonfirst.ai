@@ -101,15 +101,17 @@ const LAYOUT = option("--layout") ?? "fixed";
 if (!["rows", "fixed"].includes(LAYOUT))
   throw new Error(`--layout is rows or fixed, not ${LAYOUT}`);
 /**
- * How the stage looks. "depth": a tinted page that the parties and listings
- * sit above, with a shadow under what is on its way. "flat": the page's
- * white, and nothing casts a shadow. Depth is made for the fixed layout and
- * is the usual look there; the rows have only been looked at flat.
+ * How the stage looks. "paper": a warm page with a faint grid of dots that
+ * the parties and listings sit above, with a shadow under what is on its
+ * way. "depth": the same shadows on a cooler grey page with no dots. "flat":
+ * the page's white, and nothing casts a shadow. Paper is the usual look for
+ * the fixed layout, chosen on 16 November 2026 over depth, which is kept; the
+ * rows have only been looked at flat.
  */
-const USUAL_LOOK = LAYOUT === "fixed" ? "depth" : "flat";
+const USUAL_LOOK = LAYOUT === "fixed" ? "paper" : "flat";
 const LOOK = option("--look") ?? USUAL_LOOK;
-if (!["flat", "depth"].includes(LOOK))
-  throw new Error(`--look is flat or depth, not ${LOOK}`);
+if (!["flat", "depth", "paper"].includes(LOOK))
+  throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -184,6 +186,16 @@ if (DRAFT) {
     { scene: "end" },
   ];
 }
+
+/**
+ * With --cover, a picture for the film's cover and no film: what the agent
+ * sends and the answer it gets, and what someone else sends and theirs, under
+ * the flow's short name and the question the film opens with. It is drawn
+ * large, to be read at the size of a thumbnail.
+ */
+const COVER = args.includes("--cover");
+if (COVER && LAYOUT !== "fixed")
+  throw new Error("--cover is drawn by the fixed layout");
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -314,12 +326,14 @@ const beats = script.beats.map((beat, index) => {
   const clip = beat.say ? voiced?.get(beat.say) : undefined;
   const length = clip ? clip.duration : count / SPEAK;
   // A step that has been told is given a moment before the next begins: a
-  // little longer than the breath between two lines of the same step.
+  // little longer than the breath between two lines of the same step. A
+  // recorded line already ends in the breath its reader took, so what is
+  // added to it is short: more, and the film drags between its lines.
   const next = script.beats[index + 1];
   const boundary = !beat.step || next?.step !== beat.step;
   // `hold` is a beat's own extra time: for a moment worth looking at longer.
   const dur =
-    Math.max(least, LEAD + length + (clip ? (boundary ? 0.65 : 0.3) : BREATH)) +
+    Math.max(least, LEAD + length + (clip ? (boundary ? 0.4 : 0.12) : BREATH)) +
     (beat.hold ?? 0);
   const words = clip
     ? clip.words.map((w) => ({ text: written(w.text), start: LEAD + w.start }))
@@ -428,8 +442,27 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .curtain.close { z-index: 70; height: 1080px; }
   .end-card { z-index: 71; top: 330px; }
   .end-card h1 { font-size: 110px; }
-  .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 40px; }
-  .end-card .basis { font-size: 30px; margin-top: 30px; }
+  .said-aloud .end-card { top: 262px; }
+  .end-card.has-also { top: 262px; }
+  .said-aloud .end-card.has-also { top: 166px; }
+  .end-card .also { margin: 72px auto 0; padding-top: 34px; width: 1000px; line-height: 1.4; border-top: 2px solid var(--border-strong); font-size: 34px; color: var(--fg); }
+  .end-card .also span { display: block; }
+  .end-card .also span + span { margin-top: 6px; font-size: 28px; color: var(--fg-muted); }
+  .end-card .also small { display: block; font: 500 20px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-subtle); margin-bottom: 8px; }
+  .end-card .descriptor { font-size: 40px; margin-top: 22px; }
+  .end-card .address { font: 500 44px var(--font-mono); color: var(--accent); margin-top: 56px; }
+  .cover-card { position: absolute; z-index: 95; left: 0; top: 0; width: 1920px; height: 1080px; background: var(--bg); }
+  .lit .cover-card { background: var(--stage); }
+  .cover-card h1 { position: absolute; left: 130px; top: 70px; margin: 0; font: 600 210px/1 var(--font-display); letter-spacing: -0.03em; }
+  .cover-card .asks { position: absolute; left: 136px; top: 310px; margin: 0; font: 600 76px/1.15 var(--font-body); }
+  .cover-row { position: absolute; left: 130px; top: 520px; display: flex; align-items: center; height: 150px; }
+  .cover-row.other { top: 740px; --role: var(--border-strong); }
+  .cover-row strong { width: 400px; font: 600 54px/1.1 var(--font-body); }
+  .cover-row.other strong { color: var(--fg-muted); }
+  .cover-sent { display: flex; gap: 10px; zoom: 2.4; width: 282px; }
+  .cover-arrow { position: relative; width: 120px; height: 10px; margin: 0 44px 0 24px; background: var(--role); }
+  .cover-arrow::after { content: ""; position: absolute; right: -26px; top: -19px; border: 24px solid transparent; border-left: 40px solid var(--role); border-right: 0; }
+  .cover-row .verdict { position: static; transform: none; font: 600 62px var(--font-mono); padding: 18px 34px; border-radius: 18px; border-width: 6px; }
   .said { position: absolute; z-index: 60; left: 170px; width: 1580px; top: 822px; height: 200px; border-top: 2px solid var(--border); }
   .said p { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; text-wrap: balance; font: 500 46px/1.3 var(--font-body); }
   /* What only the fixed layout has: a tall agent, a line to each other party, what a party does by itself, and the strip of steps. */
@@ -463,13 +496,25 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .lit .sent, .lit .cargo .badge { translate: 0 calc(var(--lift) * -5px); box-shadow: 0 calc(1px + var(--lift) * 11px) calc(3px + var(--lift) * 20px) rgb(var(--shade) / calc(0.16 + var(--lift) * 0.14)); }
   .lit .sent-missing { box-shadow: none; background: var(--stage); }
   .lit .card { background: var(--bg); border-color: transparent; box-shadow: 0 2px 4px rgb(var(--shade) / 0.1), 0 16px 38px rgb(var(--shade) / 0.16); }
+  /* "paper": depth on a warmer page, with a faint grid of dots that never
+     moves. The dots are at their full strength behind the stage and fade
+     to nothing above and below it, and to less at the sides: a grid as
+     strong at the edge as in the middle leads the eye out of the picture,
+     and a heading reads better on clear paper than over dots. A curtain has the same dots, in the same places, so nothing
+     jumps when one comes down: a curtain covers the frame exactly, from its
+     top corner (the scene is 96px down in a said-aloud film),
+     as the stage does. */
+  .paper { --stage: #ecebe6; --shade: 60 48 32; --grid: radial-gradient(circle, rgb(var(--shade) / 0.16) 1.7px, transparent 2.2px); --fade: radial-gradient(ellipse 1250px 440px at 960px 610px, #000 45%, transparent 100%); }
+  .paper, .paper .curtain { background-color: var(--stage); }
+  .paper::before, .paper .curtain::before, .paper .cover-card::before { content: ""; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; -webkit-mask-image: var(--fade); mask-image: var(--fade); }
+  .said-aloud.paper .curtain { top: -96px; height: 1080px; }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
   .where { position: absolute; z-index: 61; left: 96px; top: 996px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : ""}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
-<script src="/__film/stage.js"></script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.address + "</div>");</script>
+<script src="/__film/stage.js"></script>
 `;
 
 let film;
@@ -511,20 +556,50 @@ page.on("pageerror", (error) => problems.push(error.message));
 
 // what the film says of itself at its end is read from the page, as its other facts are
 await page.goto(`${origin}/flows/${flow.slug}/`, { waitUntil: "networkidle" });
-const basis = await page.evaluate(
-  () =>
-    document
-      .querySelector(".page-facts .doc-line")
-      ?.textContent.replace(/\s+/g, " ")
-      .trim() ?? "",
-);
+const { basis, descriptor } = await page.evaluate(() => {
+  const line = document.querySelector(".page-facts .doc-line");
+  const said = (node) => node?.textContent.replace(/\s+/g, " ").trim() ?? "";
+  const site = [
+    ...document.querySelectorAll('script[type="application/ld+json"]'),
+  ]
+    .flatMap((s) => JSON.parse(s.textContent)["@graph"] ?? [])
+    .find((node) => node["@type"] === "WebSite");
+  return {
+    // For the description under the film, and not for its end card: a film is
+    // watched long after it is made, and a standard's date on its last frame
+    // reads as the film's own.
+    basis: said(line),
+    descriptor: site?.description.replace(/\.$/, "") ?? "",
+  };
+});
+// Under "Also in the guide", the end card says what the first comparison the
+// flow is half of compares, in the order the site lists them: its
+// description as far as the colon, and its question under that, smaller. The
+// question alone is, for DPoP, three names in mixed case in a row. There is
+// no address: a second one on the frame was too much. And it does not say
+// "Next", which promised a film that there is not.
+let also;
+{
+  const dir = join(here, "src", "data", "comparisons");
+  const listed = readFileSync(join(dir, "index.ts"), "utf8");
+  const found = [];
+  for (const [, file] of listed.matchAll(
+    /from "\.\/([a-z0-9-]+-vs-[a-z0-9-]+)"/g,
+  )) {
+    const made = Object.values(await import(join(dir, `${file}.ts`)));
+    found.push(...made.filter((c) => c?.flows?.includes(flow.slug)));
+  }
+  if (found[0]) also = [found[0].description.split(":")[0], found[0].question];
+}
 film = {
   flow,
+  also,
+  cover: COVER,
   beats,
   duration,
   band: BAND,
   address: `whosonfirst.ai/flows/${flow.slug}`,
-  basis,
+  descriptor,
 };
 
 await page.goto(`${origin}/__film/`, { waitUntil: "networkidle" });
@@ -539,7 +614,11 @@ if (args.includes("--beats")) process.exit(0);
 
 const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
-if (STILLS) {
+if (COVER) {
+  const file = join(out, `${name}-cover.png`);
+  await page.screenshot({ path: file });
+  console.log(file);
+} else if (STILLS) {
   for (const t of STILLS) {
     await page.evaluate((s) => window.seek(s), t);
     const file = join(out, `${name}-at-${String(t).padStart(3, "0")}.png`);

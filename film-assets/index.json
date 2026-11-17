@@ -10,7 +10,7 @@
       "by": "ElevenLabs sound effects, asked for by the site's owner",
       "asked_for": "Very quiet neutral room tone of a small treated studio room. Soft steady low air presence, no hum, no voices, no music, no footsteps, no distinct noises. Even and unobtrusive.",
       "facts": "30 seconds, stereo, made to be repeated. -63.2 LUFS as it came",
-      "use": "Under the voice in DPoP's cut 10, at -56 LUFS. Tried, and not decided",
+      "use": "Under the voice from cut 10, at -56 LUFS. Kept on 16 November 2026",
       "bytes": 498240,
       "sha256": "8f1519c1dbde955e0fc53687f6c21a2991b2eb65c6fdbf81f6b3c94e592e5044"
     }
@@ -19,9 +19,25 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "10",
-      "state": "Not posted anywhere yet. Cut 10 is the latest. Still to decide: whose voice (Kokoro in cut 9, an ElevenLabs voice in cut 10), and whether the room stays under it.",
+      "latest": "16",
+      "state": "Not posted anywhere yet. Cut 16 is the latest: on paper whose dots fade toward the edges, said by a clone of the owner's own voice, with the room under it and a cover made for it. What is left to decide is where it is posted, and under what title.",
       "readings": [
+        {
+          "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "what": "Cut 14's nineteen lines read once by a clone of the site owner's own voice",
+          "service": "ElevenLabs",
+          "voice": "Kevin, an instant voice clone the owner made of his own voice",
+          "model": "eleven_v4",
+          "stability": 0.7,
+          "similarity": 0.75,
+          "made": "2026-11-16",
+          "seconds": 78.24,
+          "by": "The site's owner, who made the reading and gave it. Its settings are read from its file's name",
+          "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 14, one to a paragraph, with the words under `speak` written as they sound. A recogniser heard 239 of its 244 words as written, and “jot” as “job”: to be checked by ear",
+          "use": "14-kevin and cuts 15 and 16. Give it once with --reading, and the film can be made again with --voice kevin",
+          "bytes": 3130557,
+          "sha256": "030722cf15b53be99a571d4dd065a11f6fb6965439c43f1aac3e12e48ec97ea5"
+        },
         {
           "key": "flows/dpop/readings/2026-11-16-matilda.mp3",
           "what": "The whole film read once by Matilda",
@@ -38,6 +54,20 @@
           "use": "Cut 10 and 09-matilda. Give it once with --reading, and the film can be made again with --voice matilda",
           "bytes": 1646373,
           "sha256": "fa9a969e610fd36ebda49d6ae46925918b32a32c925ab9951c38f16ffe466df9"
+        },
+        {
+          "key": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "what": "Cut 11's nineteen lines read by Matilda, with its refusal line taken from the reading of cut 10",
+          "service": "ElevenLabs",
+          "voice": "Matilda - Knowledgable, Professional",
+          "voice_id": "XrExE9yKIg1WjnnlVkGX",
+          "model": "eleven_v4",
+          "made": "2026-11-16",
+          "credits": 2606,
+          "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 11, one to a paragraph, with the words under `speak` written as they sound. Two takes were made, and the second was kept: a recogniser heard the first say “cache” for “cash”. Its line “Now try the copy again…” said the copy was the one from the opening, which it is not, so it was replaced by “Now copy the token alone…” from 2026-11-16-matilda.mp3, cut at a quiet on each side",
+          "use": "Cuts 11 to 14. Give it once with --reading, and the film can be made again with --voice matilda",
+          "bytes": 1419433,
+          "sha256": "50e8f68c95e76e020c535f6b02bcbf3c910b3d5c83aa8c0a5ded715c4cc5ca20"
         },
         {
           "key": "flows/dpop/readings/2026-11-16-hope.mp3",
@@ -419,7 +449,7 @@
           "id": "10",
           "made": "2026-11-16",
           "commit": "9960ced",
-          "status": "current",
+          "status": "kept to compare",
           "layout": "fixed",
           "look": "depth",
           "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
@@ -462,6 +492,402 @@
               "bytes": 488,
               "sha256": "c7e228d992c966ae5372f57c2bcdcdbaec27c097a3d9489c1fa4f76c8f4de18c"
             }
+          ]
+        },
+        {
+          "id": "11",
+          "made": "2026-11-16",
+          "commit": "4a954ec",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "depth",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Shorter: the lines that only turned the film (“So yes.”, “DPoP changes the answer.”, “That is DPoP.”) and the line that said it all again are gone, a person's contractions are said, and less is added after each line. 239 words in 99 seconds, where cut 10 had 271 in 117. A cover is kept with it.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/11/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 5416139,
+              "sha256": "0f517ecf24dcbdc506ef1749f8e589472dbeda53db8672852d204592d383c15d"
+            },
+            {
+              "key": "flows/dpop/cuts/11/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 3988485,
+              "sha256": "d639199e6f1a40f11429ef65696b98e3724e67b4d73202cc1c970afa2d623764"
+            },
+            {
+              "key": "flows/dpop/cuts/11/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/11/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/11/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/11/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 407727,
+              "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ]
+        },
+        {
+          "id": "12",
+          "made": "2026-11-16",
+          "commit": "0967ab5",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "superseded",
+          "look": "depth",
+          "what": "Cut 11 with a new end card: the site's name, what the site is in its own words, the flow's address and “Based on RFC 9449”, with no dates. The address leaves the corner while the end card is up. The description keeps the dates.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/12/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 5430393,
+              "sha256": "2f16cf21d012a2781f2c33f8b65d13c2f6c51cb761bf5d6ea90da4a85384611f"
+            },
+            {
+              "key": "flows/dpop/cuts/12/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4003541,
+              "sha256": "b239e6e4d53ad99e560e6e49daa093fc1c37b78e9ac0a4d228dbaa3f53926b3f"
+            },
+            {
+              "key": "flows/dpop/cuts/12/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/12/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/12/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/12/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 407727,
+              "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ]
+        },
+        {
+          "id": "12-paper",
+          "made": "2026-11-16",
+          "commit": "0967ab5",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "superseded",
+          "look": "paper",
+          "what": "Cut 12 on warm paper with a faint grid of dots (--look paper). Its captions and description are cut 12's.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/12-paper/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 6177012,
+              "sha256": "bf4cc04a34ce821c9f3eb95aa637e010f0c2a005f0b91b2f0375adabe3634065"
+            },
+            {
+              "key": "flows/dpop/cuts/12-paper/cover.png",
+              "what": "The cover, on paper",
+              "bytes": 412298,
+              "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
+            }
+          ]
+        },
+        {
+          "id": "13",
+          "made": "2026-11-16",
+          "commit": "aff1881",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "kept to compare",
+          "look": "depth",
+          "what": "Cut 12 with a new end card: the site's name, what the site is and the flow's address, and under a rule and “Also in the guide”, “Two ways to bind an access token to a key, compared” with “DPoP or OAuth mTLS?” under it. “Based on RFC 9449” is in the description alone. The last cut in the depth look.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/13/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 5452566,
+              "sha256": "4efe33998344ead00f0c29c710e3c9e028bd964cf5f61fe4c717f8750ff1cec0"
+            },
+            {
+              "key": "flows/dpop/cuts/13/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4020893,
+              "sha256": "9879dc65f11f7f395e1ed6a81bd04d2fe27f6638a2d3d5e811e4764f759e0631"
+            },
+            {
+              "key": "flows/dpop/cuts/13/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/13/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/13/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/13/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 407727,
+              "sha256": "613f93f1067999d82882a633eb5365e033ef7b45da1f83b262abaeb97fb04b4c"
+            }
+          ]
+        },
+        {
+          "id": "13-paper",
+          "made": "2026-11-16",
+          "commit": "aff1881",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "superseded",
+          "look": "paper",
+          "what": "Cut 13 on warm paper with a faint grid of dots (--look paper). Its captions and description are cut 13's.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/13-paper/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 6192852,
+              "sha256": "7d5a3f74c820c81027eba697f56ddf034c788e48d7620fc3117b9368f31895a4"
+            },
+            {
+              "key": "flows/dpop/cuts/13-paper/cover.png",
+              "what": "The cover, on paper",
+              "bytes": 412298,
+              "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
+            }
+          ]
+        },
+        {
+          "id": "14",
+          "made": "2026-11-16",
+          "commit": "4786301",
+          "layout": "fixed",
+          "voice": "ElevenLabs, Matilda - Knowledgable, Professional",
+          "reading": "flows/dpop/readings/2026-11-16-matilda-shorter.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "status": "kept to compare",
+          "look": "paper",
+          "what": "Cut 13 on warm paper with a faint grid of dots, which is now the look the script makes when nothing else is asked for. The narrated film is 13-paper's, and the silent one is new. The last cut said by Matilda.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/14/film.mp4",
+              "what": "Narrated, 99 seconds",
+              "bytes": 6192852,
+              "sha256": "7d5a3f74c820c81027eba697f56ddf034c788e48d7620fc3117b9368f31895a4"
+            },
+            {
+              "key": "flows/dpop/cuts/14/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4955137,
+              "sha256": "67162247a6b7302417af18ea4344052f4b731bcb20f615c3f9bb9861b3d61206"
+            },
+            {
+              "key": "flows/dpop/cuts/14/captions.vtt",
+              "what": "Captions for the narrated cuts",
+              "bytes": 1931,
+              "sha256": "c7d43ee868669395bf22ed0c0d7b64ed1bb649e486078f04ab8ae850632b1032"
+            },
+            {
+              "key": "flows/dpop/cuts/14/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "38d8fb7def598758cd855719a529cbd001a544760bd31e66003228cc5e5c35fe"
+            },
+            {
+              "key": "flows/dpop/cuts/14/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 488,
+              "sha256": "74df53fc1af4ebc8ab083cf206fb37c648b4141b3540fe526b5af4eff7736dcc"
+            },
+            {
+              "key": "flows/dpop/cuts/14/cover.png",
+              "what": "A still of the copied token refused, for a thumbnail",
+              "bytes": 412298,
+              "sha256": "8f0bf57079e5b7c2349cc551b61f1b133c2104ca0b1b06de2a9ebf17ca0b804f"
+            }
+          ]
+        },
+        {
+          "id": "14-kevin",
+          "made": "2026-11-16",
+          "commit": "ae293bd",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 14 said by a clone of the owner's own voice. The reading is quicker than Matilda's, so the film is 90 seconds where cut 14 is 99.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/14-kevin/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5805396,
+              "sha256": "4adf3d84b90aa7e6eb0860bf1c7a8238ba7ea7346172c31ee3c5a6ed2ebeadb1"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/captions.vtt",
+              "what": "Captions, timed to this voice",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/14-kevin/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            }
+          ]
+        },
+        {
+          "id": "15",
+          "made": "2026-11-16",
+          "commit": "c916ac3",
+          "status": "superseded",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 14 said by a clone of the owner's own voice, which is now the films' voice. 90 seconds. The narrated film is 14-kevin's, and the silent film and the cover are cut 14's: neither has a voice in it. Its cover is a picture made for it, to be read as a thumbnail: the flow's name, the film's question, and each request with its answer.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/15/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5805396,
+              "sha256": "4adf3d84b90aa7e6eb0860bf1c7a8238ba7ea7346172c31ee3c5a6ed2ebeadb1"
+            },
+            {
+              "key": "flows/dpop/cuts/15/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4955137,
+              "sha256": "67162247a6b7302417af18ea4344052f4b731bcb20f615c3f9bb9861b3d61206"
+            },
+            {
+              "key": "flows/dpop/cuts/15/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/15/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/15/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            },
+            {
+              "key": "flows/dpop/cuts/15/cover.png",
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 109559,
+              "sha256": "d2d7ddec3315a05ebc8686e55c8c95f5b4055f87a941983627c83d8da9574aef"
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "made": "2026-11-16",
+          "commit": "18eb42a",
+          "status": "current",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 15 with the paper's dots fading out above and below the stage, clear of the heading and the address, and softening at the sides. The cover has the same fade.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/16/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5512369,
+              "sha256": "63ab0a34646f53657ba39d400881b42a80b639ad1a836bebd92812986c596192"
+            },
+            {
+              "key": "flows/dpop/cuts/16/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4610851,
+              "sha256": "28c4d34f4cf34b1af783ae21f2d24e953bab2fe7c960d12ec6293efe34cb8f42"
+            },
+            {
+              "key": "flows/dpop/cuts/16/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/16/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/16/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            },
+            {
+              "key": "flows/dpop/cuts/16/cover.png",
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 126689,
+              "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
+            }
+          ],
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\"",
+            "node scripts/flow-film.mjs --flow dpop",
+            "node scripts/flow-film.mjs --flow dpop --voice kevin --cover"
           ]
         }
       ]
