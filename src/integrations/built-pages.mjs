@@ -60,10 +60,10 @@ export function builtPages(root) {
           html,
           title,
           site,
-          // "Token exchange — Who’s on First" is "Token exchange"; the home page's
+          // "Token exchange - Who’s on First" is "Token exchange"; the home page's
           // title starts with the site's name and is left whole
           name:
-            site && title.endsWith(` — ${site}`)
+            site && title.endsWith(` - ${site}`)
               ? title.slice(0, -site.length - 3)
               : title,
           description: attribute(head, /name="description"/, "content") ?? "",
