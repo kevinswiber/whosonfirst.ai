@@ -19,8 +19,8 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "17",
-      "state": "Not posted anywhere yet. Cut 17 is the latest: cut 16 with the site's owl by the address and on the end card. What is left to decide is where it is posted, and under what title.",
+      "latest": "18",
+      "state": "Not posted anywhere yet. Cut 18 is the latest: cut 17 with the owl and the name on the end card set as the site's header sets them. What is left to decide is where it is posted, and under what title.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
@@ -34,7 +34,7 @@
           "seconds": 78.24,
           "by": "The site's owner, who made the reading and gave it. Its settings are read from its file's name",
           "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 14, one to a paragraph, with the words under `speak` written as they sound. A recogniser heard 239 of its 244 words as written, and “jot” as “job”: to be checked by ear",
-          "use": "14-kevin and cuts 15 to 17. Give it once with --reading, and the film can be made again with --voice kevin",
+          "use": "14-kevin and cuts 15 to 18. Give it once with --reading, and the film can be made again with --voice kevin",
           "bytes": 3130557,
           "sha256": "030722cf15b53be99a571d4dd065a11f6fb6965439c43f1aac3e12e48ec97ea5"
         },
@@ -888,7 +888,7 @@
           "id": "17",
           "made": "2026-11-17",
           "commit": "c06887d",
-          "status": "current",
+          "status": "superseded",
           "layout": "fixed",
           "look": "paper",
           "voice": "ElevenLabs, a clone of the owner's own voice",
@@ -928,6 +928,56 @@
             },
             {
               "key": "flows/dpop/cuts/17/cover.png",
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 126689,
+              "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
+            }
+          ]
+        },
+        {
+          "id": "18",
+          "made": "2026-11-17",
+          "commit": "6048257",
+          "status": "current",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 17 with the end card's owl and name in the proportions of the site's header: the owl larger beside the letters, further from them, and the letters spaced as the header spaces them. The cover is cut 17's.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/18/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5519261,
+              "sha256": "7a1e01e03d189dc83033ceb3931997c430e6dc609bba0a658421896c061e61b1"
+            },
+            {
+              "key": "flows/dpop/cuts/18/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4614876,
+              "sha256": "c2aa5d706fb624b8376d084faa73d9d60369f9c24b9edbc876acc725df6ef9bc"
+            },
+            {
+              "key": "flows/dpop/cuts/18/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/18/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/18/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            },
+            {
+              "key": "flows/dpop/cuts/18/cover.png",
               "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
               "bytes": 126689,
               "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
