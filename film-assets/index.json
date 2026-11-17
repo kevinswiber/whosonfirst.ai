@@ -26,7 +26,7 @@
           "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
           "what": "Cut 14's nineteen lines read once by a clone of the site owner's own voice",
           "service": "ElevenLabs",
-          "voice": "Kevin, an instant voice clone the owner made of his own voice",
+          "voice": "Kevin, an instant voice clone the owner made of their own voice",
           "model": "eleven_v4",
           "stability": 0.7,
           "similarity": 0.75,
