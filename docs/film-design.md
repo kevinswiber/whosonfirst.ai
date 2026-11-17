@@ -147,7 +147,7 @@ It draws a flow of up to three parties, and refuses two in the row that speak to
 
 **The cover** in 4:5 has what the 16:9 cover has: the flow's short name at 200px, the question at 76px, and the two rows. Each row's party is written over what it sends, and the two answers stand one over the other at the right. The bottom right corner is empty.
 
-**The file** is encoded at 6,000 kbps on average, H.264 High Profile, where a 16:9 film is encoded at a constant quality and comes out near 500 kbps. X asks for 5,000 kbps or more and encodes what it is given again ([X developer documentation](https://docs.x.com/x-api/media/quickstart/best-practices)). One file is posted to both LinkedIn and X.
+**The file** is H.264 High Profile, asked for at 6,000 kbps on average, where a 16:9 film is encoded at a constant quality and comes out near 500 kbps. X asks for 5,000 kbps or more and encodes what it is given again ([X developer documentation](https://docs.x.com/x-api/media/quickstart/best-practices)). Cut 18-4x5 came out at about 1,500 kbps all the same: most of its frames are the frame before, and the encoder has nothing to spend the rest on. That is three times the 16:9 film's bits for a smaller frame. Whether X's own encoding of it is soft is to be seen on the first post. One file is posted to both LinkedIn and X.
 
 ### A series of pictures
 

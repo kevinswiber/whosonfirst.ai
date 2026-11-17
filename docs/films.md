@@ -120,7 +120,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 **Format**
 
 - 1920 × 1080, 30 frames a second, H.264, with AAC at 48 kHz where there is a voice.
-- For a feed, 1080 × 1350 (4:5), the same, encoded at 6,000 kbps for X.
+- For a feed, 1080 × 1350 (4:5), the same, H.264 High Profile, asked for at 6,000 kbps for X.
 
 **For a feed**
 
