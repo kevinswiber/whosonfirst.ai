@@ -9,7 +9,8 @@ export const CONTENT_LICENSE = "https://creativecommons.org/licenses/by/4.0/";
 
 /**
  * Who makes the site, and where to find them. The first address is the one a
- * reader is sent to: the footer, the About page and the page metadata all use it.
+ * reader is sent to: the About page and the page metadata use it. The footer
+ * sends a reader to the About page's "Who makes it", which lists them all.
  */
 export const AUTHOR = {
   name: "Kevin Swiber",
