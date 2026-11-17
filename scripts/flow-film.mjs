@@ -102,10 +102,18 @@ const SHAPE = option("--shape") ?? "16:9";
 if (!["16:9", "4:5"].includes(SHAPE))
   throw new Error(`--shape is 16:9 or 4:5, not ${SHAPE}`);
 const FRAME = SHAPE === "4:5" ? { w: 1080, h: 1350 } : { w: 1920, h: 1080 };
-/** Whether what is said is written under the scene: by default, only where nobody says it, and always in 4:5. */
+/**
+ * Whether what is said is written under the scene: by default, only where
+ * nobody says it, and always in 4:5 and in a series of pictures, which
+ * nobody hears.
+ */
 const BAND = option("--captions")
   ? option("--captions") === "on"
-  : !VOICE || SHAPE === "4:5";
+  : !VOICE || SHAPE === "4:5" || args.includes("--series");
+if (args.includes("--series") && !BAND)
+  throw new Error(
+    "A series of pictures writes what is said under each: leave out --captions off",
+  );
 if (SHAPE === "4:5" && !BAND)
   throw new Error(
     "A 4:5 film writes each sentence under the stage: leave out --captions off",
