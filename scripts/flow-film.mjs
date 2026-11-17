@@ -509,8 +509,8 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .paper::before, .paper .curtain::before, .paper .cover-card::before { content: ""; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-image: var(--grid); background-size: 36px 36px; background-position: 18px 18px; -webkit-mask-image: var(--fade); mask-image: var(--fade); }
   .said-aloud.paper .curtain { top: -96px; height: 1080px; }
   .lit .channel { stroke: color-mix(in srgb, var(--border-strong) 60%, var(--fg-subtle)); }
-  .where { position: absolute; z-index: 61; left: 96px; top: 990px; display: flex; align-items: center; gap: 12px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
-  .where .mark { width: 34px; height: 34px; }
+  .where { position: absolute; z-index: 61; left: 96px; top: 980px; display: flex; align-items: center; gap: 14px; font: 400 21px var(--font-mono); color: var(--fg-subtle); }
+  .where .mark { width: 46px; height: 46px; }
   .mark { flex: none; }
   .mark .owl-body { fill: var(--mark-body); } .mark .owl-eye { fill: var(--mark-eye); } .mark .owl-pupil { fill: var(--mark-pupil); } .mark .owl-beak { fill: var(--mark-beak); }
   .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 34px; }
