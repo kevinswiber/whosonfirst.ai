@@ -132,7 +132,8 @@ Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed
 - The question the film opens with is written in large letters from the first frame. A feed may not play the film, and its first frame is then all there is.
 - No letter is under 28 pixels.
 - A cover of its own, in the same shape. LinkedIn takes one from a desktop browser only. Nothing from X says a post can have one, so there the first frame is the cover.
-- The film can also be made as a series of pictures (`--series`), a scene or a step to a picture. Whether a post of pictures or a post of the film does better has not been found out: see below.
+- The film can also be made as a series of pictures (`--series`). DPoP's is nine, chosen in its script: the cover; the problem, with the question once; the idea, on the three parties and the two things to watch; the flow in the three parts its page gives it; the copy refused; what is not protected; and where to read more. Decided on 17 November 2026, from cut 19-4x5. The first try was a scene or a step to a picture, sixteen in all, and four of them asked the question before DPoP was named: a series swiped in a feed loses some of its viewers at every picture, and the first does most of the work. Every word on a picture is the film's own.
+- Whether a post of pictures or a post of the film does better has not been found out: see below.
 
 ## What has not been decided
 

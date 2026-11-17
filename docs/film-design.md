@@ -151,9 +151,18 @@ It draws a flow of up to three parties, and refuses two in the row that speak to
 
 ### A series of pictures
 
-`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages: one picture for each scene, and one for each step of the flow however many beats tell it. DPoP's is 16 pictures. Each is taken at the moment its step is done, just before what was sent goes, and the title in the middle of its beat. Under the stage is what all of its beats say, in the band, from 40px down to 34px where it would not otherwise fit. Nothing is drawn for the series that the film does not draw.
+`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md#for-a-feed) says why DPoP's is nine. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
 
-Beside the pictures, in `social/film-<slug>…-series/`, are `alt.txt`, a description of each picture to give as its alt text (what step it is, from whom to whom, the lines of the listing with long runs of base64 left out, and what is said), and the series as one PDF, a picture to a page. It is made in either shape, and was first made in 4:5 on 17 November 2026.
+| In `series` | What it is                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `cover`     | `true`: the cover, as `--cover` draws it                                                                                             |
+| `at`        | The moment: the end of a scene, by its name, or of a step, as `"step 3"`. `"step 4.1"` is the end of its first beat                  |
+| `say`       | The beats whose sentences are written under it, named the same way. `at` if left out                                                 |
+| `shows`     | What the picture shows, in words, for its alt text, where its step and its sentences do not say it. Write it for a scene, not a step |
+
+A picture is taken just before what was sent goes, and the title in the middle of its beat. Under the stage is what its beats say, in the band, from 40px down to 34px where it would not otherwise fit. Nothing is drawn for the series that the film does not draw, and no word is written that the film does not say.
+
+Beside the pictures, in `social/film-<slug>…-series/`, are `alt.txt`, a description of each picture to give as its alt text (what the script says it shows, or what step it is and from whom to whom, the lines of the listing with long runs of base64 left out, and what is said), and the series as one PDF, a picture to a page. It is made in either shape, and was first made in 4:5 on 17 November 2026.
 
 ### Rows layout
 
@@ -299,6 +308,7 @@ In the stage files, an order matters that is easy to get wrong: a thing's `trave
 | `check`   | a step's beat       | The word at which a check is seen to pass. What the party was sent in the step before waits beside it until then                                                                           |
 | `gloss`   | a step's beat       | `{ term, note, on }`: a word written under the listing at the moment it is said                                                                                                            |
 | `hold`    | a beat              | Seconds the beat stays up after its words: for the one moment the film is for                                                                                                              |
+| `series`  | the script          | The film as a few pictures, for `--series`: see [A series of pictures](#a-series-of-pictures)                                                                                              |
 
 A word named in `on`, `gain`, `check` or `gloss` has to be in that beat's sentence, or the script stops and says so.
 

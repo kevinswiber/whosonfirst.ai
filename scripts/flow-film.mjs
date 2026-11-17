@@ -692,7 +692,8 @@ film = {
   flow,
   mark,
   also,
-  cover: COVER,
+  // a series that starts with the cover draws it, and shows it on that picture alone
+  cover: COVER || (SERIES && Boolean(script.series?.some((p) => p.cover))),
   beats,
   duration,
   band: BAND,
@@ -718,30 +719,64 @@ if (COVER) {
   await page.screenshot({ path: file });
   console.log(file);
 } else if (SERIES) {
-  // A page for each scene, and one for each step however many beats tell it.
-  const pages = [];
-  for (const beat of beats) {
-    const last = pages[pages.length - 1];
-    if (beat.step && last?.step === beat.step) last.beats.push(beat);
-    else pages.push({ step: beat.step, scene: beat.scene, beats: [beat] });
-  }
+  // The pictures the film's script chooses, under `series`: the cover, and
+  // a moment of the film with what one or more of its beats say. A film
+  // whose script chooses none has a picture for each scene and one for each
+  // step, however many beats tell it.
+  const named = (key) => {
+    // "steal" is a scene, "step 3" every beat of a step, "step 4.1" the first of them
+    const step = /^step (\d+)(?:\.(\d+))?$/.exec(key);
+    const found = step
+      ? beats.filter((b) => b.step === Number(step[1]))
+      : beats.filter((b) => b.scene === key);
+    const picked = step?.[2] ? [found[Number(step[2]) - 1]] : found;
+    if (!picked[0])
+      throw new Error(`The series names ${key}, and the film has no such beat`);
+    return picked;
+  };
+  const pages = script.series
+    ? script.series.map((p) =>
+        p.cover
+          ? { cover: true, shows: p.shows }
+          : {
+              at: named(p.at),
+              told: (p.say ?? [p.at]).flatMap(named),
+              shows: p.shows,
+            },
+      )
+    : [];
+  if (!script.series)
+    for (const beat of beats) {
+      const last = pages[pages.length - 1];
+      if (beat.step && last?.at[0].step === beat.step) last.at.push(beat);
+      else pages.push({ at: [beat] });
+    }
+  for (const p of pages) p.told ??= p.at;
   const dir = join(out, `${name}-series`);
   mkdirSync(dir, { recursive: true });
   const described = [];
   const files = [];
-  for (const [i, { step, scene, beats: told }] of pages.entries()) {
-    const end = told[told.length - 1];
+  for (const [i, { cover, at: seen, told, shows }] of pages.entries()) {
+    const end = seen?.[seen.length - 1];
+    const { step, scene } = end ?? {};
     // The moment the last of it is done, just before what was sent goes. A
     // card that comes down for its beat is taken in the middle of it.
-    const at =
-      scene === "title" ? end.start + end.dur / 2 : end.start + end.dur - 0.4;
-    const said = told
-      .map((b) => b.say)
-      .filter(Boolean)
-      .join(" ");
+    const at = !end
+      ? 0
+      : scene === "title"
+        ? end.start + end.dur / 2
+        : end.start + end.dur - 0.4;
+    const said = cover
+      ? ""
+      : told
+          .map((b) => b.say)
+          .filter(Boolean)
+          .join(" ");
     await page.evaluate(
-      ({ at, said }) => {
+      ({ at, said, cover }) => {
         window.seek(at);
+        const card = document.querySelector(".cover-card");
+        if (card) card.style.display = cover ? "" : "none";
         // what is said in all of the page's beats, as large as fits in the band
         const band = document.querySelector(".said");
         if (!band || !said) return;
@@ -757,7 +792,7 @@ if (COVER) {
         )
           p.style.fontSize = `${size - 2}px`;
       },
-      { at, said },
+      { at, said, cover: Boolean(cover) },
     );
     const file = join(dir, `${String(i + 1).padStart(2, "0")}.png`);
     await page.screenshot({ path: file });
@@ -765,12 +800,14 @@ if (COVER) {
       document.querySelector(".said p.series")?.remove(),
     );
     files.push(file);
-    // what the picture shows, in words, for whoever cannot see it
+    // What the picture shows, in words, for whoever cannot see it: what the
+    // script says it shows, or what can be told of a step from the flow.
     const words = [];
-    if (scene === "ask") words.push(script.beats[0].head);
-    if (scene === "title")
+    if (shows) words.push(shows);
+    if (!shows && scene === "ask") words.push(script.beats[0].head);
+    if (!shows && scene === "title")
       words.push(
-        `${flow.short}: ${told[0].expands ?? ""}. ${flow.title.replace(` (${flow.short})`, "")}.`,
+        `${flow.short}: ${end.expands ?? ""}. ${flow.title.replace(` (${flow.short})`, "")}.`,
       );
     if (step) {
       const s = flow.steps[step - 1];
@@ -778,7 +815,7 @@ if (COVER) {
       words.push(
         `Step ${step} of ${flow.steps.length}: ${s.label}, ${s.to ? `from ${who(s.from)} to ${who(s.to)}` : `by ${who(s.from)}`}.`,
       );
-      const shown = told.flatMap((b) => b.show ?? []);
+      const shown = seen.flatMap((b) => b.show ?? []);
       if (shown.length)
         words.push(
           `Shown from the ${s.code.lang === "http" ? "request" : "listing"}: ${shown
