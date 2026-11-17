@@ -699,7 +699,7 @@ export default function markdownPages() {
             `markdown-pages: no section in SECTIONS for ${left.map((p) => p.path).join(", ")}. Add one, or give the page markdown={false}.`,
           );
 
-        const [name, descriptor] = home.title.split(" — ");
+        const [name, descriptor] = home.title.split(" - ");
         const link = (p) =>
           `- [${p.name === home.name ? name : p.name}](${new URL(p.markdown, site).href}): ${p.description}`;
         const llms = [

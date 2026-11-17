@@ -276,8 +276,8 @@ export default function socialCards() {
         ];
         const pages = builtPages(root).filter((p) => p.indexed && p.card);
         const home = pages.find((p) => p.path === "/");
-        // "Who’s on First — A field guide to …": the name, then what it is
-        const [, descriptor = ""] = home.title.split(" — ");
+        // "Who’s on First - A field guide to …": the name, then what it is
+        const [, descriptor = ""] = home.title.split(" - ");
         let bytes = 0;
         for (const p of pages) {
           const svg = await satori(

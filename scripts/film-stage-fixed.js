@@ -648,8 +648,10 @@
     );
     if (eyebrow) make("small", "", heading, eyebrow);
     make("strong", "", heading, title);
-    // the question is there from the first frame, and does not fade in
-    if (!asked) show(heading, t + 0.2, 0.4);
+    // one made at second 0 is there from the first frame, which is all a
+    // viewer sees whose feed does not play the film by itself
+    if (t > 0) show(heading, t + 0.2, 0.4);
+    else from(heading, "opacity", 1);
   };
 
   // ---------- how far the flow has got ----------
@@ -881,7 +883,6 @@
   const opening = beats.find((b) => b.head);
   if (opening && beats.indexOf(opening) === 0) {
     head(0, opening.head, "", TALL);
-    if (heading) from(heading, "opacity", 1);
   }
   let part = -1;
   /** The last second at which a step is still being told. */
