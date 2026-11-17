@@ -145,12 +145,13 @@ DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7…`,
       body: `An attacker who copied only the access token cannot use it at an API that enforces the binding: they cannot make a proof without the private key. A token and a proof copied together, which is what a log of request headers holds, can be replayed at the same method and URL until the proof ages out, unless the API remembers \`jti\` values. A nonce from the server shortens that time. It does not by itself stop a repeat inside it. The proof does not cover the query string or the body.`,
     },
   ],
-  standards: ["rfc9449", "rfc8705", "rfc9700", "rfc7638"],
+  standards: ["rfc9449", "rfc8705", "rfc9700", "rfc7638", "mcp-dpop"],
   roles: {
     rfc9449: "required", // the mechanism: every step
     rfc7638: "required", // the thumbprint in `cnf.jkt`, steps 3 and 6
     rfc8705: "optional", // mutual TLS, offered as the other way to bind a token to a key; no step uses it
     rfc9700: "background", // recommends sender-constrained tokens, by this or by mutual TLS; not named on this page
+    "mcp-dpop": "background", // a draft profile of this flow for MCP, in the note; no step depends on it
   },
   related: [
     "authorization-code-pkce",
@@ -163,6 +164,10 @@ DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7…`,
     {
       title: "DPoP, mutual TLS, or message signatures",
       body: `All three prove that the caller holds a key. With [OAuth mutual TLS](/flows/oauth-mtls/), the TLS endpoint verifies the client’s proof and the API checks the certificate against the token. A TLS-terminating proxy needs to enforce the binding or pass trusted certificate information to the API. With **DPoP**, the API verifies a signed proof carried in HTTP. **HTTP Message Signatures** (RFC 9421) sign chosen parts of the request itself, and cover the body when a digest of it is one of them. They are the basis for newer work such as [Web Bot Auth](/flows/web-bot-auth/), the WIMSE HTTP signature profile and [AAuth](/flows/aauth/). WIMSE’s other application-layer proof, the [workload proof token](/flows/wimse-workload-tokens/), is inspired by DPoP. For the first two, [DPoP or OAuth mTLS?](/compare/dpop-vs-oauth-mtls/) asks the same questions of each.`,
+    },
+    {
+      title: "DPoP in MCP",
+      body: `[MCP’s authorization](/flows/mcp-authorization/) sends a bearer token with every request. A profile that adds DPoP to MCP as an optional extension, [SEP-1932](/standards/#mcp-dpop), is a draft, and in no released revision of MCP. It uses RFC 9449 unchanged. A client gets its tokens with a proof and retries when a server asks for a nonce, and an MCP server refuses a proof whose \`iat\` is more than five minutes from its own clock. The MCP TypeScript SDK’s client already sends proofs. Its server package lists no checking of them, so an MCP server that accepts DPoP tokens checks them itself, as step 6 does.`,
     },
   ],
 };

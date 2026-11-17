@@ -502,6 +502,8 @@
   "https://github.com/kubernetes-sigs/kube-agentic-networking": {},
   "https://github.com/kubernetes/enhancements/tree/master/keps/sig-auth/3221-structured-authorization-configuration": {},
   "https://github.com/modelcontextprotocol/ext-auth": {},
+  "https://github.com/modelcontextprotocol/ext-auth/pull/38": {},
+  "https://github.com/modelcontextprotocol/modelcontextprotocol/pull/1932": {},
   "https://github.com/modelcontextprotocol/typescript-sdk/blob/main/packages/client/CHANGELOG.md": {},
   "https://github.com/panva/oauth4webapi/blob/main/README.md": {},
   "https://github.com/panva/oauth4webapi/blob/main/docs/README.md": {},
