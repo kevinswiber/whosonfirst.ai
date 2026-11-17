@@ -20,7 +20,7 @@
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
       "latest": "19",
-      "state": "Not posted anywhere yet. Cut 19 is the latest at 16:9: cut 18 with its opening question there from the first frame. Cut 18-4x5 is the same film laid out at 4:5 for LinkedIn and X, with each sentence written under the stage, a cover of its own and a series of 16 pictures; the owner said yes to its layout on 17 November 2026, and it never had the fault cut 19 mends. It is to be posted once on X first, to see how X shows 4:5. Still to decide: where the 16:9 cut is posted, and under what title.",
+      "state": "Not posted anywhere yet. Cut 19 is the latest at 16:9: cut 18 with its opening question there from the first frame. For LinkedIn and X: the film and its cover are cut 18-4x5's, laid out at 4:5 with each sentence written under the stage, and the series of pictures is cut 19-4x5's, nine of them with the cover first. The owner said yes to the 4:5 layout on 17 November 2026. It is to be posted once on X first, to see how X shows 4:5. Still to decide: where the 16:9 cut is posted, and under what title.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
@@ -1001,7 +1001,7 @@
           "voice": "ElevenLabs, a clone of the owner's own voice",
           "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
           "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
-          "what": "Cut 18 laid out again at 4:5 for a feed: the agent across the top, the others in a row under it with a line straight down to each, every listing in one place under the row, each sentence written under the stage with the voice, the opening question in large letters from the first frame, and no letter under 28 pixels. With a cover in 4:5 and the film as a series of 16 pictures. The 16:9 film is unchanged.",
+          "what": "Cut 18 laid out again at 4:5 for a feed: the agent across the top, the others in a row under it with a line straight down to each, every listing in one place under the row, each sentence written under the stage with the voice, the opening question in large letters from the first frame, and no letter under 28 pixels. With a cover in 4:5 and the film as a series of 16 pictures. The 16:9 film is unchanged. Its series of 16 pictures, a scene or a step to a picture, was passed by cut 19-4x5's nine.",
           "files": [
             {
               "key": "flows/dpop/cuts/18-4x5/film.mp4",
@@ -1190,6 +1190,87 @@
             "node scripts/flow-film.mjs --flow dpop --voice kevin --reading film-assets/flows/dpop/readings/2026-11-16-kevin.mp3 --beats",
             "node scripts/flow-film.mjs --flow dpop --voice kevin --room film-assets/shared/room/small-treated-studio.mp3 --voice-note \"The voice is synthetic: a clone of the author’s own voice, made with ElevenLabs.\"",
             "The silent film and the cover are cut 18's: flows/dpop/cuts/18/film-silent.mp4 and flows/dpop/cuts/18/cover.png"
+          ]
+        },
+        {
+          "id": "19-4x5",
+          "made": "2026-11-17",
+          "commit": "35e6826",
+          "status": "current",
+          "layout": "fixed",
+          "shape": "4:5",
+          "look": "paper",
+          "what": "The film as nine pictures, chosen in its script, in place of cut 18-4x5's sixteen: the cover first, the question once, the flow in the three parts its page gives it. Every word is the film's. The 4:5 film and its cover are cut 18-4x5's, which nothing since has changed: the first picture is the cover, byte for byte.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/01.png",
+              "what": "Picture 1 of 9: The cover",
+              "bytes": 103798,
+              "sha256": "3597aefa2233a75d727904b013efc4d13dbf63c950dbd5005646e967ac8fa888"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/02.png",
+              "what": "Picture 2 of 9: The problem: someone else's copy gets 200 OK",
+              "bytes": 396684,
+              "sha256": "e6b8b8d51cc50427ef95367a8ca3725647546407c3df282edc01dc3588c7a117"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/03.png",
+              "what": "Picture 3 of 9: The idea: the three parties, the key and the token",
+              "bytes": 344589,
+              "sha256": "49fe53cd199a3ed281aa357300748c82d1e995c2d7a3d1cbd69b5225044314f8"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/04.png",
+              "what": "Picture 4 of 9: Step 3: the token bound to the key",
+              "bytes": 385804,
+              "sha256": "e381e535dd43547dc37b2b93213cc655eb3caabd0bccc62f1bf779e847933049"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/05.png",
+              "what": "Picture 5 of 9: Steps 4 and 5: a fresh proof, sent with the token",
+              "bytes": 416071,
+              "sha256": "865aa4e7cbe032197dd538c1db61bd69eb8a02ce9a808c43e53878ff1afafbef"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/06.png",
+              "what": "Picture 6 of 9: Steps 6 and 7: the API checks, and the request succeeds",
+              "bytes": 381488,
+              "sha256": "edcb446a3bbd0635a4c4fe597b5f6bc9c4d67120a54c2bc3fef6da4b3dbb16b0"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/07.png",
+              "what": "Picture 7 of 9: The copy refused",
+              "bytes": 378887,
+              "sha256": "94682e55da4eb6f531bf3efdad33a9fe5b446ec40b498054133fd4e0b67b03cc"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/08.png",
+              "what": "Picture 8 of 9: What DPoP does not protect",
+              "bytes": 342406,
+              "sha256": "a039d1a01a0e37435e6b28f49f0e01e4e57d0fed74c4d8afe2f70ce0d7427355"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/09.png",
+              "what": "Picture 9 of 9: The end card",
+              "bytes": 326542,
+              "sha256": "57f1b5bcb55ff1c2946f09ebe31e5d114eff4dd0ff8fecd2e839bbe4e3512e33"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/alt.txt",
+              "what": "What each picture shows, to give as its alt text",
+              "bytes": 2039,
+              "sha256": "74cea9f06b9c8b734ca5c0ce5efc48d7e7118de4c19a86a16617c97cf88be4f4"
+            },
+            {
+              "key": "flows/dpop/cuts/19-4x5/series/series.pdf",
+              "what": "The nine pictures as the pages of one PDF, for a LinkedIn document",
+              "bytes": 2125184,
+              "sha256": "d034d2c2fbdc40924f53d00290fc3011a1c44c162da644cffff4824cd628639a"
+            }
+          ],
+          "made_with": [
+            "node scripts/flow-film.mjs --flow dpop --shape 4:5 --voice kevin --series"
           ]
         }
       ]
