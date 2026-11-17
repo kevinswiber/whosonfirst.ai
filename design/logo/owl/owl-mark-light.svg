@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<title>Who, light</title>
+<g id="mark">
+  <g id="body">
+    <path d="M11.55 5.02L34.26 20.2L60.79 13.71L56.79 36.36A25 25 0 0 1 7.55 27.67Z" fill="#15171a" fill-rule="evenodd"/>
+  </g>
+  <g id="eyes">
+    <path d="M10.09 29.14A10.5 10.5 0 0 1 30.77 32.78A10.5 10.5 0 0 1 10.09 29.14Z" fill="#ffffff" fill-rule="evenodd"/>
+    <path d="M33.23 33.22A10.5 10.5 0 0 1 53.91 36.86A10.5 10.5 0 0 1 33.23 33.22Z" fill="#ffffff" fill-rule="evenodd"/>
+  </g>
+  <g id="pupils">
+    <path d="M18.56 28.6A5 5 0 0 1 28.41 30.34A5 5 0 0 1 18.56 28.6Z" fill="#0b3fc4" fill-rule="evenodd"/>
+    <path d="M41.7 32.68A5 5 0 0 1 51.55 34.42A5 5 0 0 1 41.7 32.68Z" fill="#0b3fc4" fill-rule="evenodd"/>
+  </g>
+  <g id="beak">
+    <polygon points="26.37,37.59 35.72,39.24 29.4,47.77" fill="#ffffff"/>
+  </g>
+</g>
+</svg>

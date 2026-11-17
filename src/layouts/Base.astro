@@ -17,6 +17,7 @@ import plexMono500 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500
 import plexMono600 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-600-normal.woff2?url";
 import plexSans400 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url";
 import plexSans600 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url";
+import markFile from "../../public/favicon.svg?raw";
 import Here from "../components/Here.astro";
 import { longDate, pageDates } from "../lib/page-dates";
 import {
@@ -187,6 +188,16 @@ const jsonLd = JSON.stringify({
 // behind the menu. Concepts, the one-page version of the lessons, is reached
 // from them and from the footer.
 const QUICK = { href: "/learn/", label: "Learn" };
+
+/**
+ * The site's mark, drawn into the header from the icon's own file. Its style
+ * sheet follows the system's color scheme, which is right for a tab; here the
+ * classes are colored by the page.
+ */
+const MARK = markFile
+  .replace(/<!--[\s\S]*?-->/g, "")
+  .replace(/<style>[\s\S]*?<\/style>/, "")
+  .replace("<svg ", '<svg class="mark" aria-hidden="true" ');
 const nav = [
   QUICK,
   { href: "/guide/", label: "Choose a flow" },
@@ -272,6 +283,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     <header class="site-header">
       <div class="wrap bar">
         <a class="brand" href="/" aria-label={`${SITE}, home`}>
+          <Fragment set:html={MARK} />
           <span class="wordmark">{SITE}</span>
         </a>
         <a class="quick" href={QUICK.href} aria-current={path.startsWith(QUICK.href) ? 'page' : undefined}>
@@ -683,6 +695,26 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     color: var(--fg);
     margin-right: auto;
     padding-block: 0.6rem;
+  }
+  /* The owl, from the site's icon. Its colors are the page's here, so it
+     follows the theme the reader picked and not only the system's. */
+  .brand :global(.mark) {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-right: 0.55rem;
+  }
+  .brand :global(.owl-body) {
+    fill: var(--mark-body);
+  }
+  .brand :global(.owl-eye) {
+    fill: var(--mark-eye);
+  }
+  .brand :global(.owl-pupil) {
+    fill: var(--mark-pupil);
+  }
+  .brand :global(.owl-beak) {
+    fill: var(--mark-beak);
   }
   .wordmark {
     font-family: var(--font-display);

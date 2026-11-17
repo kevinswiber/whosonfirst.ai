@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<title>Who, white</title>
+<g id="mark">
+  <g id="body">
+    <path d="M12.87 6.91L33.98 21.8L58.91 15.02L55.19 36.07A23.38 23.38 0 0 1 9.15 27.96Z" fill="none" stroke="#ffffff" stroke-width="3.25" stroke-linecap="butt" stroke-linejoin="miter"/>
+  </g>
+  <g id="eyes">
+    <path d="M10.09 29.14A10.5 10.5 0 0 1 30.77 32.78A10.5 10.5 0 0 1 10.09 29.14ZM18.56 28.6A5 5 0 0 1 28.41 30.34A5 5 0 0 1 18.56 28.6Z" fill="#ffffff" fill-rule="evenodd"/>
+    <path d="M33.23 33.22A10.5 10.5 0 0 1 53.91 36.86A10.5 10.5 0 0 1 33.23 33.22ZM41.7 32.68A5 5 0 0 1 51.55 34.42A5 5 0 0 1 41.7 32.68Z" fill="#ffffff" fill-rule="evenodd"/>
+  </g>
+  <g id="beak">
+    <polygon points="26.37,37.59 35.72,39.24 29.4,47.77" fill="#ffffff"/>
+  </g>
+</g>
+</svg>
