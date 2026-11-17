@@ -1,7 +1,7 @@
 {
   "about": "What the films of whosonfirst.ai are made from, and every cut made of them. This file says what each thing is and which is the latest. The files are in the R2 bucket named here; film-assets/README.md says how they are kept.",
   "bucket": "whosonfirst-ai-films",
-  "updated": "2026-11-16",
+  "updated": "2026-11-17",
   "shared": [
     {
       "key": "shared/room/small-treated-studio.mp3",
@@ -19,8 +19,8 @@
     "dpop": {
       "page": "https://whosonfirst.ai/flows/dpop/",
       "script": "scripts/films/dpop.mjs",
-      "latest": "16",
-      "state": "Not posted anywhere yet. Cut 16 is the latest: on paper whose dots fade toward the edges, said by a clone of the owner's own voice, with the room under it and a cover made for it. What is left to decide is where it is posted, and under what title.",
+      "latest": "17",
+      "state": "Not posted anywhere yet. Cut 17 is the latest: cut 16 with the site's owl by the address and on the end card. What is left to decide is where it is posted, and under what title.",
       "readings": [
         {
           "key": "flows/dpop/readings/2026-11-16-kevin.mp3",
@@ -34,7 +34,7 @@
           "seconds": 78.24,
           "by": "The site's owner, who made the reading and gave it. Its settings are read from its file's name",
           "text": "The film's lines as scripts/films/dpop.mjs gives them for cut 14, one to a paragraph, with the words under `speak` written as they sound. A recogniser heard 239 of its 244 words as written, and “jot” as “job”: to be checked by ear",
-          "use": "14-kevin and cuts 15 and 16. Give it once with --reading, and the film can be made again with --voice kevin",
+          "use": "14-kevin and cuts 15 to 17. Give it once with --reading, and the film can be made again with --voice kevin",
           "bytes": 3130557,
           "sha256": "030722cf15b53be99a571d4dd065a11f6fb6965439c43f1aac3e12e48ec97ea5"
         },
@@ -838,7 +838,7 @@
           "id": "16",
           "made": "2026-11-16",
           "commit": "18eb42a",
-          "status": "current",
+          "status": "superseded",
           "layout": "fixed",
           "look": "paper",
           "voice": "ElevenLabs, a clone of the owner's own voice",
@@ -878,6 +878,56 @@
             },
             {
               "key": "flows/dpop/cuts/16/cover.png",
+              "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
+              "bytes": 126689,
+              "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
+            }
+          ]
+        },
+        {
+          "id": "17",
+          "made": "2026-11-17",
+          "commit": "c06887d",
+          "status": "current",
+          "layout": "fixed",
+          "look": "paper",
+          "voice": "ElevenLabs, a clone of the owner's own voice",
+          "reading": "flows/dpop/readings/2026-11-16-kevin.mp3",
+          "room": "shared/room/small-treated-studio.mp3, at -56 LUFS",
+          "what": "Cut 16 with the site's owl: left of the address in the bottom corner for the whole film, and beside “Who's on First” on the end card. The cover is cut 16's picture, made again.",
+          "files": [
+            {
+              "key": "flows/dpop/cuts/17/film.mp4",
+              "what": "Narrated, 90 seconds",
+              "bytes": 5539044,
+              "sha256": "bc6a3efebbf046d17262d752dbcf0f382a09e3015c72e41a7f61d8b15e826b7e"
+            },
+            {
+              "key": "flows/dpop/cuts/17/film-silent.mp4",
+              "what": "Silent, with each sentence written under the scene, 114 seconds",
+              "bytes": 4612647,
+              "sha256": "f6c76409871f1365e7d84887f7f4706fadc583d6ab27087cdd67a8f7f1ef9eb8"
+            },
+            {
+              "key": "flows/dpop/cuts/17/captions.vtt",
+              "what": "Captions for the narrated cut",
+              "bytes": 1931,
+              "sha256": "5aac63e6e73d17e47ff586677630c42a35390ec8323c07985dbda095a8949151"
+            },
+            {
+              "key": "flows/dpop/cuts/17/captions.srt",
+              "what": "The same, as SRT",
+              "bytes": 1923,
+              "sha256": "13303919fd61ffdf2b9c2c2cb94d11baa6e484b0f4d8fa4476120cd6c7c80fd1"
+            },
+            {
+              "key": "flows/dpop/cuts/17/description.txt",
+              "what": "The description to paste under it, with its chapters",
+              "bytes": 535,
+              "sha256": "91e7800c4534b22128135a5ccd5f6a68da2ccf506e3e393d492c70ffecd9b4aa"
+            },
+            {
+              "key": "flows/dpop/cuts/17/cover.png",
               "what": "The cover, drawn large for a thumbnail: what your agent sends and “200 OK”, what someone else sends and “Refused”",
               "bytes": 126689,
               "sha256": "d6dded6ab75af90f7cde26a49ee0c06fe1320ff45c03aeb75379af4f9a29fd79"
