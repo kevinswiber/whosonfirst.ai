@@ -26,9 +26,14 @@ flows/<slug>/              one film
     film-silent.mp4        with each sentence written under the scene
     captions.vtt, .srt     what is said, while it is said
     description.txt        what to paste under it where it is posted
+    cover.png              what shows before it is played, where a site takes one
+    series/                the film as pictures, where it was made as a series
+      01.png, 02.png …     a scene or a step to a picture
+      alt.txt              what each picture shows, to give as its alt text
+      series.pdf           the pictures as the pages of one document
 ```
 
-A cut's number goes up by one each time the film changes. The same cut said by another voice, or tried another way, takes the number with a name after it: `09-matilda`.
+A cut's number goes up by one each time the film changes. The same cut said by another voice, or tried another way, takes the number with a name after it: `09-matilda`. The same cut in another shape does too: `18-4x5` is cut 18 laid out at 4:5 for a feed.
 
 ## The index
 

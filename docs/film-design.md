@@ -42,6 +42,7 @@ node scripts/flow-film.mjs --flow dpop
 | `--captions on\|off`              | Whether each sentence is written under the scene. On when there is no voice                                                                                                                                                    |
 | `--beats`                         | Prints when each beat starts and how long it lasts, opens the stage, and draws nothing                                                                                                                                         |
 | `--stills 26,44.5`                | Pictures at those seconds, and no video. The fastest way to look at a change                                                                                                                                                   |
+| `--series`                        | The film as a series of pictures, and no video: see [A series of pictures](#a-series-of-pictures)                                                                                                                              |
 | `--draft`                         | The flow told in its steps' own titles, with no script. What a flow with no film yet gets                                                                                                                                      |
 
 Everything is written to `social/`, which is not committed. A cut that is to be kept is copied from there to `film-assets/`, which is sent to an R2 bucket: see [Changing the design](#changing-the-design). A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
@@ -110,7 +111,7 @@ A part made for a scene that a film does not have is not on the stage: anything 
 
 ### A tall frame for a feed
 
-`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [The review of 17 November 2026](reviews/films-in-a-feed-2026-11-17.md) says why. It was drawn on 17 November 2026 and looked at in stills only. The owner has not yet said yes to it, and no film has been made in it.
+`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [The review of 17 November 2026](reviews/films-in-a-feed-2026-11-17.md) says why. It was drawn on 17 November 2026, and the owner said yes to it the same day. Cut 18-4x5 of DPoP is the first film in it.
 
 It is the same stage turned on its side, and not the 16:9 frame cropped or shrunk:
 
@@ -142,7 +143,17 @@ It is the same stage turned on its side, and not the 16:9 frame cropped or shrun
 
 In DPoP's film the API stays where it is: its line runs straight down from the agent whoever else is there. In the scene of the copy, what the agent spent and its answer go first, so that the places have the length of the line.
 
-It draws a flow of up to three parties, and refuses two in the row that speak to each other: their line would be the short gap between them. `--cover` is not drawn for it yet.
+It draws a flow of up to three parties, and refuses two in the row that speak to each other: their line would be the short gap between them.
+
+**The cover** in 4:5 has what the 16:9 cover has: the flow's short name at 200px, the question at 76px, and the two rows. Each row's party is written over what it sends, and the two answers stand one over the other at the right. The bottom right corner is empty.
+
+**The file** is encoded at 6,000 kbps on average, H.264 High Profile, where a 16:9 film is encoded at a constant quality and comes out near 500 kbps. X asks for 5,000 kbps or more and encodes what it is given again ([X developer documentation](https://docs.x.com/x-api/media/quickstart/best-practices)). One file is posted to both LinkedIn and X.
+
+### A series of pictures
+
+`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages: one picture for each scene, and one for each step of the flow however many beats tell it. DPoP's is 16 pictures. Each is taken at the moment its step is done, just before what was sent goes, and the title in the middle of its beat. Under the stage is what all of its beats say, in the band, from 40px down to 34px where it would not otherwise fit. Nothing is drawn for the series that the film does not draw.
+
+Beside the pictures, in `social/film-<slug>…-series/`, are `alt.txt`, a description of each picture to give as its alt text (what step it is, from whom to whom, the lines of the listing with long runs of base64 left out, and what is said), and the series as one PDF, a picture to a page. It is made in either shape, and was first made in 4:5 on 17 November 2026.
 
 ### Rows layout
 

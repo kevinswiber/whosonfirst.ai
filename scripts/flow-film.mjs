@@ -208,6 +208,17 @@ if (DRAFT) {
 }
 
 /**
+ * With --series, the film as a series of pictures and no film: one for each
+ * scene and one for each step of the flow, each at the moment its step is
+ * done, with what is said in it written under the stage. For a post that
+ * holds several pictures, or a document of pages. Beside the pictures are a
+ * description of each, to give as its alt text, and the series as a PDF.
+ */
+const SERIES = args.includes("--series");
+if (SERIES && LAYOUT !== "fixed")
+  throw new Error("--series is drawn by the fixed layout");
+
+/**
  * With --cover, a picture for the film's cover and no film: what the agent
  * sends and the answer it gets, and what someone else sends and theirs, under
  * the flow's short name and the question the film opens with. It is drawn
@@ -216,8 +227,6 @@ if (DRAFT) {
 const COVER = args.includes("--cover");
 if (COVER && LAYOUT !== "fixed")
   throw new Error("--cover is drawn by the fixed layout");
-if (COVER && SHAPE === "4:5")
-  throw new Error("A cover for the 4:5 film has not been drawn yet");
 
 mkdirSync(join(out, "voice"), { recursive: true });
 
@@ -580,7 +589,17 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
   .portrait .where { left: 0; width: 1080px; top: 1206px; justify-content: center; font-size: 28px; }
   .portrait .where .mark { width: 60px; height: 60px; }
   .portrait.paper { --fade: radial-gradient(ellipse 760px 620px at 540px 580px, #000 45%, transparent 100%); }
-  .portrait.paper::before, .portrait.paper .curtain::before { width: 1080px; height: 1350px; }
+  .portrait.paper::before, .portrait.paper .curtain::before, .portrait.paper .cover-card::before { width: 1080px; height: 1350px; }
+  /* The cover in 4:5: the same, with each row's party over what it sends and the answer. */
+  .portrait .cover-card { width: 1080px; height: 1350px; }
+  .portrait .cover-card h1 { left: 90px; top: 170px; font-size: 200px; }
+  .portrait .cover-card .asks { left: 96px; right: 90px; top: 410px; font-size: 76px; text-wrap: balance; }
+  .portrait .cover-row { left: 90px; width: 900px; top: 690px; height: auto; flex-wrap: wrap; row-gap: 22px; }
+  .portrait .cover-row.other { top: 950px; }
+  .portrait .cover-row strong { width: 100%; }
+  .portrait .cover-sent { zoom: 1.25; width: 362px; }
+  .portrait .cover-arrow { width: 60px; margin: 0 50px 0 20px; }
+  .portrait .cover-row .verdict { padding: 12px 28px; font-size: 56px; }
 </style>
 <div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}${film.shape === "4:5" ? " portrait" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
@@ -698,6 +717,109 @@ if (COVER) {
   const file = join(out, `${name}-cover.png`);
   await page.screenshot({ path: file });
   console.log(file);
+} else if (SERIES) {
+  // A page for each scene, and one for each step however many beats tell it.
+  const pages = [];
+  for (const beat of beats) {
+    const last = pages[pages.length - 1];
+    if (beat.step && last?.step === beat.step) last.beats.push(beat);
+    else pages.push({ step: beat.step, scene: beat.scene, beats: [beat] });
+  }
+  const dir = join(out, `${name}-series`);
+  mkdirSync(dir, { recursive: true });
+  const described = [];
+  const files = [];
+  for (const [i, { step, scene, beats: told }] of pages.entries()) {
+    const end = told[told.length - 1];
+    // The moment the last of it is done, just before what was sent goes. A
+    // card that comes down for its beat is taken in the middle of it.
+    const at =
+      scene === "title" ? end.start + end.dur / 2 : end.start + end.dur - 0.4;
+    const said = told
+      .map((b) => b.say)
+      .filter(Boolean)
+      .join(" ");
+    await page.evaluate(
+      ({ at, said }) => {
+        window.seek(at);
+        // what is said in all of the page's beats, as large as fits in the band
+        const band = document.querySelector(".said");
+        if (!band || !said) return;
+        for (const p of band.querySelectorAll("p")) p.style.opacity = 0;
+        const p = document.createElement("p");
+        p.className = "series";
+        p.textContent = said;
+        band.append(p);
+        for (
+          let size = 40;
+          size > 32 && p.scrollHeight > band.clientHeight;
+          size -= 2
+        )
+          p.style.fontSize = `${size - 2}px`;
+      },
+      { at, said },
+    );
+    const file = join(dir, `${String(i + 1).padStart(2, "0")}.png`);
+    await page.screenshot({ path: file });
+    await page.evaluate(() =>
+      document.querySelector(".said p.series")?.remove(),
+    );
+    files.push(file);
+    // what the picture shows, in words, for whoever cannot see it
+    const words = [];
+    if (scene === "ask") words.push(script.beats[0].head);
+    if (scene === "title")
+      words.push(
+        `${flow.short}: ${told[0].expands ?? ""}. ${flow.title.replace(` (${flow.short})`, "")}.`,
+      );
+    if (step) {
+      const s = flow.steps[step - 1];
+      const who = (id) => flow.participants.find((p) => p.id === id).label;
+      words.push(
+        `Step ${step} of ${flow.steps.length}: ${s.label}, ${s.to ? `from ${who(s.from)} to ${who(s.to)}` : `by ${who(s.from)}`}.`,
+      );
+      const shown = told.flatMap((b) => b.show ?? []);
+      if (shown.length)
+        words.push(
+          `Shown from the ${s.code.lang === "http" ? "request" : "listing"}: ${shown
+            .map((pick) =>
+              s.code.text
+                .split("\n")
+                .find((line) => line.includes(pick.line))
+                .trim()
+                // a long run of base64 is noise when read aloud
+                .replace(/[A-Za-z0-9_-]{20,}…?/g, "…"),
+            )
+            .join(" ")}`,
+        );
+    }
+    if (scene === "end")
+      words.push(
+        `Who’s on First. ${descriptor}. ${film.address}.${also ? ` Also in the guide: ${also.join(" ")}` : ""}`,
+      );
+    if (said && scene !== "end") words.push(said);
+    described.push(
+      `${String(i + 1).padStart(2, "0")}.png\n${words.join(" ")}\n`,
+    );
+  }
+  writeFileSync(join(dir, "alt.txt"), described.join("\n"));
+  // the same pictures as the pages of a PDF, one to a page, at their own size
+  const pdf = await context.newPage();
+  await pdf.setContent(
+    `<!doctype html><style>@page { size: ${FRAME.w}px ${FRAME.h}px; margin: 0 } body { margin: 0 } img { display: block; width: ${FRAME.w}px; height: ${FRAME.h}px; break-after: page }</style>${files
+      .map(
+        (f) =>
+          `<img src="data:image/png;base64,${readFileSync(f).toString("base64")}">`,
+      )
+      .join("")}`,
+  );
+  await pdf.pdf({
+    path: join(dir, `${name}-series.pdf`),
+    width: `${FRAME.w}px`,
+    height: `${FRAME.h}px`,
+    printBackground: true,
+  });
+  console.log(`${dir}: ${files.length} pictures, alt.txt, ${name}-series.pdf`);
 } else if (STILLS) {
   for (const t of STILLS) {
     await page.evaluate((s) => window.seek(s), t);
@@ -826,8 +948,22 @@ if (COVER) {
       "libx264",
       "-pix_fmt",
       "yuv420p",
-      "-crf",
-      "18",
+      // A 4:5 film is posted to X, which asks for H.264 High Profile at
+      // 5,000 kbps or more and encodes it again: given less, a frame of fine
+      // letters and dots comes out soft.
+      // https://docs.x.com/x-api/media/quickstart/best-practices
+      ...(SHAPE === "4:5"
+        ? [
+            "-profile:v",
+            "high",
+            "-b:v",
+            "6000k",
+            "-maxrate",
+            "8000k",
+            "-bufsize",
+            "12000k",
+          ]
+        : ["-crf", "18"]),
       "-preset",
       "medium",
       "-movflags",
