@@ -49,7 +49,7 @@ These are the film's manner so far. Change one for a reason, and change it here.
   - One address. The comparison's own was tried under its question and was too much.
   - Not the question alone. “DPoP or OAuth mTLS?” is three names in mixed case in a row, so a plain sentence comes first.
   - The address leaves the corner while the end card, which has it, is up.
-  - The site's owl stands beside its name, as in the site's header. From cut 17.
+  - The site's owl stands beside its name, in the proportions of the site's header: the owl 1.79 times the height of the letters and 0.56 of it away, with the header's spacing between letters. From cut 18. In cut 17 the owl was little taller than the letters, and the two did not look like the site's.
 
 **The stage**
 
