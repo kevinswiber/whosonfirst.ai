@@ -33,6 +33,7 @@ node scripts/flow-film.mjs --flow dpop
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--flow <slug>`                   | Which flow. Its film is `scripts/films/<slug>.mjs`                                                                                                                                                                             |
 | `--layout fixed\|rows`            | The stage. Fixed if left out                                                                                                                                                                                                   |
+| `--shape 16:9\|4:5`               | The frame. 16:9 if left out. 4:5 is for a feed: see [A tall frame for a feed](#a-tall-frame-for-a-feed)                                                                                                                        |
 | `--look paper\|depth\|flat`       | The look. Paper if left out, and flat for rows                                                                                                                                                                                 |
 | `--voice kokoro`                  | Said aloud. Needs the Python that the top of `scripts/film-voice.py` describes                                                                                                                                                 |
 | `--voice <name> --reading <file>` | Said by a recording of the whole film, by a person or a voice made elsewhere. The recording is cut into the film’s lines once, and kept under that name. Needs `faster-whisper`: see the top of `scripts/film-voice-import.py` |
@@ -41,6 +42,7 @@ node scripts/flow-film.mjs --flow dpop
 | `--captions on\|off`              | Whether each sentence is written under the scene. On when there is no voice                                                                                                                                                    |
 | `--beats`                         | Prints when each beat starts and how long it lasts, opens the stage, and draws nothing                                                                                                                                         |
 | `--stills 26,44.5`                | Pictures at those seconds, and no video. The fastest way to look at a change                                                                                                                                                   |
+| `--series`                        | The film as a series of pictures, and no video: see [A series of pictures](#a-series-of-pictures)                                                                                                                              |
 | `--draft`                         | The flow told in its steps' own titles, with no script. What a flow with no film yet gets                                                                                                                                      |
 
 Everything is written to `social/`, which is not committed. A cut that is to be kept is copied from there to `film-assets/`, which is sent to an R2 bucket: see [Changing the design](#changing-the-design). A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
@@ -106,6 +108,61 @@ In DPoP's film, while only the agent and the API take part, before the flow and 
 The room under the scene is left for a reason. In a silent cut the sentence is written there, from y 822. In DPoP’s film “Someone else” stands there. A flow with four parties uses the height down to 780, which leaves 40 pixels over that sentence’s rule, and nothing starts closer than 64 pixels under the strip of numbers.
 
 A part made for a scene that a film does not have is not on the stage: anything the film never shows is hidden.
+
+### A tall frame for a feed
+
+`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [The review of 17 November 2026](reviews/films-in-a-feed-2026-11-17.md) says why. It was drawn on 17 November 2026, and the owner said yes to it the same day. Cut 18-4x5 of DPoP is the first film in it.
+
+It is the same stage turned on its side, and not the 16:9 frame cropped or shrunk:
+
+- **The tall party stands across the top,** with what it holds side by side in it, right of its name. The others stand in a row under it, and each line runs straight down. What is sent travels down or up.
+- **Every listing has one place,** under the row of parties, the width of the stage. There is no room for it beside a line.
+- **Each sentence is written under the stage, with the voice.** It is the exception to “a sentence is not said and written at once”: in a feed most people do not hear the voice. There is no heading over the scene, as in a silent cut.
+- **The question the film opens with is written in large letters over the stage from the first frame,** and stays until the title. A viewer whose feed does not play videos sees only that frame.
+- **No letter is under 28 pixels.** A frame 1080 wide is seen about 390 points wide on a phone.
+- **The address is in the middle at the bottom,** clear of the corners, where a feed puts its buttons.
+
+| Part                        | Where, in 4:5                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Opening question            | 58px semibold, left edge at x 90, top at y 62                                                          |
+| Strip of step numbers       | Left edge at x 90, y 74. Circles 52 across, numbers 28px                                               |
+| Tall party                  | A box 900 by 180: x 90 to 990, y 170 to 350. Its name 34px at the left                                 |
+| What the tall party holds   | Two places, centred on x 440 and x 810, level with the middle of the box. Pills 64 high, 28px mono     |
+| The other parties           | Boxes 420 by 104, centred on y 702. Two are centred on x 290 and x 790, one on x 540                   |
+| Line to the tall party      | Upright, from the bottom of the tall party (y 350) to the top of the other (y 650)                     |
+| Thing sent                  | Pills 58 high, 28px mono, behind a number 52 across                                                    |
+| What a party does by itself | Under the tall party, in the middle of the frame. Under a party in the row, 54 in from its edge        |
+| Listing                     | 900 wide, centred on x 540, from y 794. 30px mono, cut at 46 characters                                |
+| Gloss                       | In the middle of the frame, half way down the lines                                                    |
+| Sentence                    | 40px, centred, in a band 900 wide from a rule at y 1010, 180 high                                      |
+| Address                     | 28px mono, centred, from y 1206, with the owl 60 across                                                |
+| Someone else (DPoP)         | A dashed box 340 wide, centred on (224, 900). Its line goes along under the row and up into the API    |
+| Answers (DPoP)              | To someone else, under the API and left of their line up to it. To the agent, left of the agent's line |
+| Places (DPoP)               | Right of the line to the API, from y 410, 90 apart                                                     |
+| Keystore (DPoP)             | Drawn around the private key, where it is. The key and the token are already apart                     |
+
+In DPoP's film the API stays where it is: its line runs straight down from the agent whoever else is there. In the scene of the copy, what the agent spent and its answer go first, so that the places have the length of the line.
+
+It draws a flow of up to three parties, and refuses two in the row that speak to each other: their line would be the short gap between them.
+
+**The cover** in 4:5 has what the 16:9 cover has: the flow's short name at 200px, the question at 76px, and the two rows. Each row's party is written over what it sends, and the two answers stand one over the other at the right. The bottom right corner is empty.
+
+**The file** is H.264 High Profile, asked for at 6,000 kbps on average, where a 16:9 film is encoded at a constant quality and comes out near 500 kbps. X asks for 5,000 kbps or more and encodes what it is given again ([X developer documentation](https://docs.x.com/x-api/media/quickstart/best-practices)). Cut 18-4x5 came out at about 1,500 kbps all the same: most of its frames are the frame before, and the encoder has nothing to spend the rest on. That is three times the 16:9 film's bits for a smaller frame. Whether X's own encoding of it is soft is to be seen on the first post. One file is posted to both LinkedIn and X.
+
+### A series of pictures
+
+`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md#for-a-feed) says why DPoP's is eight. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
+
+| In `series` | What it is                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `cover`     | `true`: the cover, as `--cover` draws it                                                                                             |
+| `at`        | The moment: the end of a scene, by its name, or of a step, as `"step 3"`. `"step 4.1"` is the end of its first beat                  |
+| `say`       | The beats whose sentences are written under it, named the same way. `at` if left out                                                 |
+| `shows`     | What the picture shows, in words, for its alt text, where its step and its sentences do not say it. Write it for a scene, not a step |
+
+A picture is taken just before what was sent goes, and the title in the middle of its beat. Under the stage is what its beats say, in the band, from 40px down to 34px where it would not otherwise fit. A picture of a step has, beside the strip of numbers, which steps it stands for: the part of the flow its step is in, as the page gives the parts, as “Steps 1 to 3 of 7” in 28px. Nothing else is drawn for the series that the film does not draw. No word is written that the film does not say, and a picture's first sentence loses an “And” or a “But” that leans on one before it.
+
+Beside the pictures, in `social/film-<slug>…-series/`, are `alt.txt`, a description of each picture to give as its alt text (what the script says it shows, or what step it is and from whom to whom, the lines of the listing with long runs of base64 left out, and what is said), and the series as one PDF, a picture to a page. It is made in either shape, and was first made in 4:5 on 17 November 2026.
 
 ### Rows layout
 
@@ -251,6 +308,7 @@ In the stage files, an order matters that is easy to get wrong: a thing's `trave
 | `check`   | a step's beat       | The word at which a check is seen to pass. What the party was sent in the step before waits beside it until then                                                                           |
 | `gloss`   | a step's beat       | `{ term, note, on }`: a word written under the listing at the moment it is said                                                                                                            |
 | `hold`    | a beat              | Seconds the beat stays up after its words: for the one moment the film is for                                                                                                              |
+| `series`  | the script          | The film as a few pictures, for `--series`: see [A series of pictures](#a-series-of-pictures)                                                                                              |
 
 A word named in `on`, `gain`, `check` or `gloss` has to be in that beat's sentence, or the script stops and says so.
 

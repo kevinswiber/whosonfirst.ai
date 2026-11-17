@@ -13,6 +13,7 @@
  *   node scripts/flow-film.mjs --flow dpop --look flat         the page's white, with no shadows
  *   node scripts/flow-film.mjs --flow dpop --layout rows       the page's own drawing, a step to a row
  *   node scripts/flow-film.mjs --flow ciba --draft             a flow with no film yet, told in its steps' own titles
+ *   node scripts/flow-film.mjs --flow dpop --shape 4:5 --voice kevin   for a feed: 1080 × 1350, said and written
  *
  * Writes to social/, which is not committed:
  *
@@ -21,7 +22,7 @@
  *   film-<slug>.txt            a description to paste under it, with its chapters
  *   voice/                     each line as it was said, kept so it is not said again
  *
- * A name also says what is not the usual: -rows, -flat or -depth, -draft.
+ * A name also says what is not the usual: -rows, -flat or -depth, -draft, -4x5.
  *
  * What is said is in scripts/films/<slug>.mjs, written for the ear and held
  * to what the flow's page says. What is drawn is the flow's own data: its
@@ -90,8 +91,33 @@ const ROOM = option("--room");
 const ROOM_LEVEL = Number(option("--room-level") ?? -56);
 /** Which of Kokoro's voices, and how fast it speaks. */
 const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
-/** Whether what is said is written under the scene: by default, only where nobody says it. */
-const BAND = option("--captions") ? option("--captions") === "on" : !VOICE;
+/**
+ * The shape of the frame. "16:9" is 1920 × 1080. "4:5" is 1080 × 1350, for
+ * a feed, where a video starts with its sound off: the stage is laid out
+ * again for a tall frame, with larger letters, and each sentence is written
+ * under it even where a voice says it. docs/reviews/films-in-a-feed-2026-11-17.md
+ * says why.
+ */
+const SHAPE = option("--shape") ?? "16:9";
+if (!["16:9", "4:5"].includes(SHAPE))
+  throw new Error(`--shape is 16:9 or 4:5, not ${SHAPE}`);
+const FRAME = SHAPE === "4:5" ? { w: 1080, h: 1350 } : { w: 1920, h: 1080 };
+/**
+ * Whether what is said is written under the scene: by default, only where
+ * nobody says it, and always in 4:5 and in a series of pictures, which
+ * nobody hears.
+ */
+const BAND = option("--captions")
+  ? option("--captions") === "on"
+  : !VOICE || SHAPE === "4:5" || args.includes("--series");
+if (args.includes("--series") && !BAND)
+  throw new Error(
+    "A series of pictures writes what is said under each: leave out --captions off",
+  );
+if (SHAPE === "4:5" && !BAND)
+  throw new Error(
+    "A 4:5 film writes each sentence under the stage: leave out --captions off",
+  );
 /**
  * How the stage is laid out. "fixed": the parties stay put with a line
  * between each two that speak, and only what is sent moves. "rows": the
@@ -112,6 +138,8 @@ const USUAL_LOOK = LAYOUT === "fixed" ? "paper" : "flat";
 const LOOK = option("--look") ?? USUAL_LOOK;
 if (!["flat", "depth", "paper"].includes(LOOK))
   throw new Error(`--look is flat, depth or paper, not ${LOOK}`);
+if (SHAPE === "4:5" && LAYOUT !== "fixed")
+  throw new Error("A 4:5 film is drawn by the fixed layout");
 
 const here = fileURLToPath(new URL("../", import.meta.url));
 const site = join(here, "dist", "client");
@@ -186,6 +214,17 @@ if (DRAFT) {
     { scene: "end" },
   ];
 }
+
+/**
+ * With --series, the film as a series of pictures and no film: one for each
+ * scene and one for each step of the flow, each at the moment its step is
+ * done, with what is said in it written under the stage. For a post that
+ * holds several pictures, or a document of pages. Beside the pictures are a
+ * description of each, to give as its alt text, and the series as a PDF.
+ */
+const SERIES = args.includes("--series");
+if (SERIES && LAYOUT !== "fixed")
+  throw new Error("--series is drawn by the fixed layout");
 
 /**
  * With --cover, a picture for the film's cover and no film: what the agent
@@ -518,8 +557,61 @@ ${sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
      set as the header sets them. */
   .end-card h1 { display: flex; align-items: center; justify-content: center; gap: 54px; font-size: 96px; letter-spacing: -0.02em; }
   .end-card h1 .mark { width: 172px; height: 172px; }
+  /* 4:5, for a feed. A frame 1080 wide is seen about 390 points wide on a
+     phone, so no letter is under 28 pixels. The parts are laid out again for
+     a tall frame: where each goes is in scripts/film-stage-fixed.js. */
+  #stage.portrait, .portrait #scene { width: 1080px; height: 1350px; }
+  .portrait .party strong { font-size: 34px; }
+  .portrait .party.tall { flex-direction: row; justify-content: flex-start; align-items: center; padding: 0 0 0 44px; }
+  .portrait .held { height: 64px; padding: 0 22px; gap: 12px; border-radius: 34px; font-size: 28px; }
+  .portrait .held .glyph { width: 34px; height: 34px; }
+  .portrait .held-bound i { width: 44px; height: 44px; }
+  .portrait .held.large { width: 410px; height: 84px; padding: 0 34px; border-radius: 50px; font-size: 38px; }
+  .portrait .held.large .glyph { width: 46px; height: 46px; }
+  .portrait .sent { height: 58px; padding: 0 20px; border-radius: 30px; font-size: 28px; }
+  .portrait .sent i { width: 40px; height: 40px; }
+  .portrait .sent .glyph { width: 28px; height: 28px; }
+  .portrait .badge, .portrait .cargo .badge.inline { width: 52px; height: 52px; font-size: 28px; }
+  .portrait .verdict { font-size: 30px; }
+  .portrait .verdict.open { font-size: 40px; }
+  .portrait .place { padding: 4px 16px; font-size: 28px; white-space: nowrap; }
+  .portrait .tall ~ .keystore { width: 340px; height: 140px; padding-bottom: 4px; font-size: 28px; }
+  .portrait .tall ~ .card { width: 900px; }
+  .portrait .strip { left: 90px; top: 74px; }
+  .portrait .pip { width: 52px; height: 52px; font-size: 28px; }
+  /* in a series of pictures, which steps a picture stands for, beside the strip */
+  .strip-note { align-self: center; margin-left: 12px; font: 500 28px var(--font-body); color: var(--fg-muted); white-space: nowrap; }
+  .portrait .heading.question { left: 90px; right: 90px; top: 62px; }
+  .portrait .heading.question strong { font-size: 58px; line-height: 1.1; }
+  .portrait .curtain { width: 1080px; height: 1000px; }
+  .portrait .curtain.close { height: 1350px; }
+  .portrait .title-card { width: 1080px; top: 290px; }
+  .portrait .end-card, .portrait .end-card.has-also { top: 370px; }
+  .portrait .end-card h1 { gap: 38px; font-size: 68px; }
+  .portrait .end-card h1 .mark { width: 122px; height: 122px; }
+  .portrait .end-card .descriptor { margin: 28px 90px 0; font-size: 40px; text-wrap: balance; }
+  .portrait .end-card .also { width: 900px; font-size: 36px; }
+  .portrait .end-card .also span + span { font-size: 32px; }
+  .portrait .end-card .also small { font-size: 28px; }
+  .portrait .said { left: 90px; width: 900px; top: 1010px; height: 180px; }
+  .portrait .said p { font-size: 40px; }
+  /* the address in the middle at the bottom, clear of the corners where a feed puts its buttons */
+  .portrait .where { left: 0; width: 1080px; top: 1206px; justify-content: center; font-size: 28px; }
+  .portrait .where .mark { width: 60px; height: 60px; }
+  .portrait.paper { --fade: radial-gradient(ellipse 760px 620px at 540px 580px, #000 45%, transparent 100%); }
+  .portrait.paper::before, .portrait.paper .curtain::before, .portrait.paper .cover-card::before { width: 1080px; height: 1350px; }
+  /* The cover in 4:5: the same, with each row's party over what it sends and the answer. */
+  .portrait .cover-card { width: 1080px; height: 1350px; }
+  .portrait .cover-card h1 { left: 90px; top: 170px; font-size: 200px; }
+  .portrait .cover-card .asks { left: 96px; right: 90px; top: 410px; font-size: 76px; text-wrap: balance; }
+  .portrait .cover-row { left: 90px; width: 900px; top: 690px; height: auto; flex-wrap: wrap; row-gap: 22px; }
+  .portrait .cover-row.other { top: 950px; }
+  .portrait .cover-row strong { width: 100%; }
+  .portrait .cover-sent { zoom: 1.25; width: 362px; }
+  .portrait .cover-arrow { width: 60px; margin: 0 50px 0 20px; }
+  .portrait .cover-row .verdict { padding: 12px 28px; font-size: 56px; }
 </style>
-<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}"><div id="scene"></div></div>
+<div id="stage" class="${film.band ? "written" : "said-aloud"}${LOOK === "depth" ? " lit" : LOOK === "paper" ? " lit paper" : ""}${film.shape === "4:5" ? " portrait" : ""}"><div id="scene"></div></div>
 <script>window.FILM = ${JSON.stringify(film).replace(/</g, "\\u003c")};</script>
 <script>document.getElementById("stage").insertAdjacentHTML("beforeend", '<div class="where">' + window.FILM.mark + "<span>" + window.FILM.address + "</span></div>");</script>
 <script src="/__film/stage.js"></script>
@@ -554,7 +646,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  viewport: { width: 1920, height: 1080 },
+  viewport: { width: FRAME.w, height: FRAME.h },
   deviceScaleFactor: 1,
   colorScheme: "light",
 });
@@ -610,10 +702,12 @@ film = {
   flow,
   mark,
   also,
-  cover: COVER,
+  // a series that starts with the cover draws it, and shows it on that picture alone
+  cover: COVER || (SERIES && Boolean(script.series?.some((p) => p.cover))),
   beats,
   duration,
   band: BAND,
+  shape: SHAPE,
   address: `whosonfirst.ai/flows/${flow.slug}`,
   descriptor,
 };
@@ -628,12 +722,194 @@ if (problems.length) {
 // opened, so a flow or a script it cannot draw has already been refused.
 if (args.includes("--beats")) process.exit(0);
 
-const name = `film-${flow.slug}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
+const name = `film-${flow.slug}${SHAPE === "4:5" ? "-4x5" : ""}${LAYOUT === "rows" ? "-rows" : ""}${LOOK === USUAL_LOOK ? "" : `-${LOOK}`}${DRAFT ? "-draft" : ""}${VOICE === "kokoro" ? "-voiced" : VOICE ? `-${VOICE}` : ""}${ROOM ? "-room" : ""}`;
 
 if (COVER) {
   const file = join(out, `${name}-cover.png`);
   await page.screenshot({ path: file });
   console.log(file);
+} else if (SERIES) {
+  // The pictures the film's script chooses, under `series`: the cover, and
+  // a moment of the film with what one or more of its beats say. A film
+  // whose script chooses none has a picture for each scene and one for each
+  // step, however many beats tell it.
+  const named = (key) => {
+    // "steal" is a scene, "step 3" every beat of a step, "step 4.1" the first of them
+    const step = /^step (\d+)(?:\.(\d+))?$/.exec(key);
+    const found = step
+      ? beats.filter((b) => b.step === Number(step[1]))
+      : beats.filter((b) => b.scene === key);
+    const picked = step?.[2] ? [found[Number(step[2]) - 1]] : found;
+    if (!picked[0])
+      throw new Error(`The series names ${key}, and the film has no such beat`);
+    return picked;
+  };
+  const pages = script.series
+    ? script.series.map((p) =>
+        p.cover
+          ? { cover: true, shows: p.shows }
+          : {
+              at: named(p.at),
+              told: (p.say ?? [p.at]).flatMap(named),
+              shows: p.shows,
+            },
+      )
+    : [];
+  if (!script.series)
+    for (const beat of beats) {
+      const last = pages[pages.length - 1];
+      if (beat.step && last?.at[0].step === beat.step) last.at.push(beat);
+      else pages.push({ at: [beat] });
+    }
+  for (const p of pages) p.told ??= p.at;
+  const dir = join(out, `${name}-series`);
+  mkdirSync(dir, { recursive: true });
+  const described = [];
+  const files = [];
+  for (const [i, { cover, at: seen, told, shows }] of pages.entries()) {
+    const end = seen?.[seen.length - 1];
+    const { step, scene } = end ?? {};
+    // The moment the last of it is done, just before what was sent goes. A
+    // card that comes down for its beat is taken in the middle of it.
+    const at = !end
+      ? 0
+      : scene === "title"
+        ? end.start + end.dur / 2
+        : end.start + end.dur - 0.4;
+    // A sentence that leans on the one before it in the film loses its
+    // "And" or "But" where that one is not on the picture: here nothing has
+    // been said before it.
+    const said = cover
+      ? ""
+      : told
+          .map((b) => b.say)
+          .filter(Boolean)
+          .join(" ")
+          .replace(/^(?:And|But) (\S)/, (_, first) => first.toUpperCase());
+    // Which steps a picture of the flow stands for: the part of the flow its
+    // step is in, as the page gives the parts, or else the steps it says.
+    // Written beside the strip, it says why the steps before are already
+    // told, and that they have not been missed out.
+    let steps;
+    let part;
+    if (step) {
+      const phases = flow.phases ?? [];
+      const index = phases.findLastIndex((p) => p.from <= step);
+      part = phases[index] && {
+        ...phases[index],
+        n: index + 1,
+        of: phases.length,
+      };
+      const toldSteps = told.map((b) => b.step).filter(Boolean);
+      const first = part ? part.from : Math.min(...toldSteps, step);
+      const last = part
+        ? (phases[index + 1]?.from ?? flow.steps.length + 1) - 1
+        : Math.max(...toldSteps, step);
+      steps =
+        first === last
+          ? `Step ${first} of ${flow.steps.length}`
+          : `Steps ${first} ${last - first === 1 ? "and" : "to"} ${last} of ${flow.steps.length}`;
+    }
+    await page.evaluate(
+      ({ at, said, cover, steps }) => {
+        window.seek(at);
+        const card = document.querySelector(".cover-card");
+        if (card) card.style.display = cover ? "" : "none";
+        const strip = document.querySelector(".strip");
+        if (strip && steps) {
+          const note = document.createElement("span");
+          note.className = "strip-note";
+          note.textContent = steps;
+          strip.append(note);
+        }
+        // what is said in all of the page's beats, as large as fits in the band
+        const band = document.querySelector(".said");
+        if (!band || !said) return;
+        for (const p of band.querySelectorAll("p")) p.style.opacity = 0;
+        const p = document.createElement("p");
+        p.className = "series";
+        p.textContent = said;
+        band.append(p);
+        for (
+          let size = 40;
+          size > 32 && p.scrollHeight > band.clientHeight;
+          size -= 2
+        )
+          p.style.fontSize = `${size - 2}px`;
+      },
+      { at, said, cover: Boolean(cover), steps },
+    );
+    const file = join(dir, `${String(i + 1).padStart(2, "0")}.png`);
+    await page.screenshot({ path: file });
+    await page.evaluate(() => {
+      for (const node of document.querySelectorAll(
+        ".said p.series, .strip-note",
+      ))
+        node.remove();
+    });
+    files.push(file);
+    // What the picture shows, in words, for whoever cannot see it: what the
+    // script says it shows, or what can be told of a step from the flow.
+    const words = [];
+    if (shows) words.push(shows);
+    if (!shows && scene === "ask") words.push(script.beats[0].head);
+    if (!shows && scene === "title")
+      words.push(
+        `${flow.short}: ${end.expands ?? ""}. ${flow.title.replace(` (${flow.short})`, "")}.`,
+      );
+    if (step) {
+      const s = flow.steps[step - 1];
+      const who = (id) => flow.participants.find((p) => p.id === id).label;
+      words.push(
+        part
+          ? `Part ${part.n} of ${part.of}, ${steps.toLowerCase()}: ${part.title}.`
+          : `${steps}.`,
+      );
+      words.push(
+        `Step ${step} of ${flow.steps.length}: ${s.label}, ${s.to ? `from ${who(s.from)} to ${who(s.to)}` : `by ${who(s.from)}`}.`,
+      );
+      const shown = seen.flatMap((b) => b.show ?? []);
+      if (shown.length)
+        words.push(
+          `Shown from the ${s.code.lang === "http" ? "request" : "listing"}: ${shown
+            .map((pick) =>
+              s.code.text
+                .split("\n")
+                .find((line) => line.includes(pick.line))
+                .trim()
+                // a long run of base64 is noise when read aloud
+                .replace(/[A-Za-z0-9_-]{20,}…?/g, "…"),
+            )
+            .join(" ")}`,
+        );
+    }
+    if (scene === "end")
+      words.push(
+        `Who’s on First. ${descriptor}. ${film.address}.${also ? ` Also in the guide: ${also.join(" ")}` : ""}`,
+      );
+    if (said && scene !== "end") words.push(said);
+    described.push(
+      `${String(i + 1).padStart(2, "0")}.png\n${words.join(" ")}\n`,
+    );
+  }
+  writeFileSync(join(dir, "alt.txt"), described.join("\n"));
+  // the same pictures as the pages of a PDF, one to a page, at their own size
+  const pdf = await context.newPage();
+  await pdf.setContent(
+    `<!doctype html><style>@page { size: ${FRAME.w}px ${FRAME.h}px; margin: 0 } body { margin: 0 } img { display: block; width: ${FRAME.w}px; height: ${FRAME.h}px; break-after: page }</style>${files
+      .map(
+        (f) =>
+          `<img src="data:image/png;base64,${readFileSync(f).toString("base64")}">`,
+      )
+      .join("")}`,
+  );
+  await pdf.pdf({
+    path: join(dir, `${name}-series.pdf`),
+    width: `${FRAME.w}px`,
+    height: `${FRAME.h}px`,
+    printBackground: true,
+  });
+  console.log(`${dir}: ${files.length} pictures, alt.txt, ${name}-series.pdf`);
 } else if (STILLS) {
   for (const t of STILLS) {
     await page.evaluate((s) => window.seek(s), t);
@@ -762,8 +1038,22 @@ if (COVER) {
       "libx264",
       "-pix_fmt",
       "yuv420p",
-      "-crf",
-      "18",
+      // A 4:5 film is posted to X, which asks for H.264 High Profile at
+      // 5,000 kbps or more and encodes it again: given less, a frame of fine
+      // letters and dots comes out soft.
+      // https://docs.x.com/x-api/media/quickstart/best-practices
+      ...(SHAPE === "4:5"
+        ? [
+            "-profile:v",
+            "high",
+            "-b:v",
+            "6000k",
+            "-maxrate",
+            "8000k",
+            "-bufsize",
+            "12000k",
+          ]
+        : ["-crf", "18"]),
       "-preset",
       "medium",
       "-movflags",

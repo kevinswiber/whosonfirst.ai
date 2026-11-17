@@ -120,14 +120,31 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 **Format**
 
 - 1920 × 1080, 30 frames a second, H.264, with AAC at 48 kHz where there is a voice.
+- For a feed, 1080 × 1350 (4:5), the same, H.264 High Profile, asked for at 6,000 kbps for X.
+
+**For a feed**
+
+Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed-2026-11-17.md) proposed, from cut 18-4x5. Where each part goes is in the [film design guide](film-design.md#a-tall-frame-for-a-feed).
+
+- One 4:5 cut, 1080 × 1350, for LinkedIn and X. It is the stage laid out again for a tall frame, and not the 16:9 film cropped or shrunk.
+- The paper look, as in 16:9. No dark cut.
+- The voice, and each sentence written under the stage. This is the one place a sentence is said and written at once: in a feed most people do not hear it.
+- The question the film opens with is written in large letters from the first frame. A feed may not play the film, and its first frame is then all there is.
+- No letter is under 28 pixels.
+- A cover of its own, in the same shape. LinkedIn takes one from a desktop browser only. Nothing from X says a post can have one, so there the first frame is the cover.
+- The film can also be made as a series of pictures (`--series`). DPoP's is eight, chosen in its script: the cover; the problem, with the question once; the idea, on the three parties and the two things to watch; the flow in the three parts its page gives it; the copy refused; and where to read more. Decided on 17 November 2026, from cut 20-4x5. The first try was a scene or a step to a picture, sixteen in all, and four of them asked the question before DPoP was named: a series swiped in a feed loses some of its viewers at every picture, and the first does most of the work. The second try had nine, and what DPoP does not protect came after the answer, where people stop. It is left to the film and the page.
+- Every word on a picture is the film's own, but for an “And” or a “But” at the start of a picture's first sentence, which leans on a sentence the picture does not have.
+- A picture of the flow says beside the strip of numbers which steps it stands for, as “Steps 1 to 3 of 7”: the part of the flow its page gives. The steps before it are drawn as told, as in the film, and without the words they looked missed out.
+- Whether a post of pictures or a post of the film does better has not been found out: see below.
 
 ## What has not been decided
 
 - **Whether the owner records the films themself.** The voice is a clone of their own, which is a machine saying it. The voice principle asks for a person’s, and a recording by them fits the same script: a beat lasts as long as its clip. Studies with newer machine voices mostly find no difference in what is learned: see below.
 - **How much of what has happened stays on the stage.** With rows, one earlier row stays, muted. With the parties staying put, what each party holds stays and what was sent goes. The research on animation says what has gone is its main cost, which argues for keeping more.
 - **A message between two parties that both stand at the right.** Its line is the gap between them, so what is sent travels only a short way. It was looked at in drafts and not in a film.
-- **A shape for a feed.** The stage is laid out for 16:9. A square or 4:5 cut is another layout, not a crop.
-- **A dark version.**
+- **How X shows the 4:5 film in its feed.** Nobody has said. The owner will post it once to find out. If X crops it, a square cut is the next thing to make.
+- **A post of pictures or a post of the film.** X has allowed 20 pictures to a post since 12 November 2026, as an X engineer announced it and the press reported it; X's own help pages did not yet say so on 17 November. LinkedIn allows 20 pictures, and a PDF as a document. The only figures found are vendors' benchmarks of other people's posts, which put pictures and documents a little ahead of video on LinkedIn and pictures a little ahead on X. Research on learning finds animation a little better than still pictures overall, and seldom better than well-made ones. None of it was measured in a feed. One post of each is how it will be seen, and it will not show which reaches more people.
+- **A dark version.** The same review turns one down for now: nothing found tests matching a feed's theme.
 - **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.
 

@@ -142,4 +142,45 @@ export default {
       say: "Every step, and what your API has to check, is at whosonfirst.ai.",
     },
   ],
+  // The film as a few pictures, for a post of pictures or a document, made
+  // with --series. In a feed the first picture does most of the work and
+  // every one after it loses some who were looking, so this is a choice of
+  // the film's moments and not the film a beat at a time: the cover, the
+  // problem once, the idea, the flow in the three parts the page gives it,
+  // the copy refused, and where to read more. What DPoP does not protect is
+  // left to the film and the page: in a feed, the picture after the answer
+  // is where people stop. `at` is the moment, as the end of a scene or a
+  // step ("step 4.1" is its first beat), and `say` the beats whose sentences
+  // are written under it: the film's words, without an "And" or "But" that
+  // leans on a sentence not on the picture. `shows` is what a picture
+  // shows, for its alt text, where it is more than its step and its
+  // sentences say.
+  series: [
+    {
+      cover: true,
+      shows:
+        "DPoP. Can a copied token be used? Your agent sends a token bound to a key and a proof, and gets 200 OK. Someone else sends the token with no proof, and is refused.",
+    },
+    {
+      at: "steal",
+      say: ["copy", "steal"],
+      shows:
+        "Can a copied token be used? Your agent holds an access token, and its line to the API passes a tool call, a log and a trace. Someone else holds a copy, sends it to the API, and gets 200 OK.",
+    },
+    {
+      at: "cast",
+      say: ["title"],
+      shows:
+        "Three parties: your agent, the authorization server and the API. The two things to watch: the private key, and the access token.",
+    },
+    { at: "step 3" },
+    { at: "step 5", say: ["step 4.1", "step 5"] },
+    { at: "step 7", say: ["step 6", "step 7"] },
+    {
+      at: "refuse",
+      shows:
+        "Your agent holds the private key and the access token bound to it. Someone else holds a copy of the token, sends it to the API with no proof, and the API answers Refused: no proof.",
+    },
+    { at: "end" },
+  ],
 };
