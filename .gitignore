@@ -17,3 +17,6 @@ film-assets/*
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# the page `node design/logo/generate.mjs` writes to look its drawings over
+design/logo/sheet.html

@@ -76,3 +76,56 @@ for (const theme of ["light", "dark"]) {
     }
   });
 }
+
+/**
+ * The site's mark is a drawing, not text, so its parts are held to 3:1: the
+ * owl against whatever it sits on, its eyes against its body, its pupils
+ * against its eyes. A dark owl on a dark page fails the first, so in the dark
+ * theme the body is a grey.
+ */
+const GRAPHIC = 3;
+const MARK_PAIRS = [
+  ["--mark-body", "--bg"],
+  ["--mark-body", "--bg-raised"],
+  ["--mark-eye", "--mark-body"],
+  ["--mark-pupil", "--mark-eye"],
+  ["--mark-beak", "--mark-body"],
+];
+
+for (const theme of ["light", "dark"]) {
+  describe(`${theme} theme: the mark's parts at least ${GRAPHIC}:1 against what is behind them`, () => {
+    for (const [fg, bg] of MARK_PAIRS) {
+      test(`${fg} on ${bg}`, (t) => {
+        assert.ok(tokens[fg] && tokens[bg], "a token is missing");
+        const r = ratio(tokens[fg][theme], tokens[bg][theme]);
+        t.diagnostic(`${r.toFixed(2)}:1`);
+        assert.ok(r >= GRAPHIC, `${r.toFixed(2)}:1`);
+      });
+    }
+  });
+}
+
+test("the icon is drawn in the mark's colors, in both themes", () => {
+  const icon = readFileSync(
+    new URL("../../public/favicon.svg", import.meta.url),
+    "utf8",
+  );
+  const [light, dark = ""] = icon
+    .slice(icon.indexOf("<style>"), icon.indexOf("</style>"))
+    .split("@media (prefers-color-scheme: dark)");
+  const fills = (rules) =>
+    Object.fromEntries(
+      [...rules.matchAll(/\.owl-(\w+)\s*\{\s*fill:\s*(#[0-9a-f]{6})/g)].map(
+        ([, part, hex]) => [`--mark-${part}`, hex],
+      ),
+    );
+  const want = (theme) =>
+    Object.fromEntries(
+      ["body", "eye", "pupil", "beak"].map((part) => [
+        `--mark-${part}`,
+        tokens[`--mark-${part}`]?.[theme],
+      ]),
+    );
+  assert.deepEqual(fills(light), want("light"), "the light colors differ");
+  assert.deepEqual(fills(dark), want("dark"), "the dark colors differ");
+});

@@ -43,7 +43,12 @@ const ACCENT = "#0b3fc4";
  * follows the reader's color scheme; here each shape is given its color
  * outright, so nothing depends on how a drawing library reads a style sheet.
  */
-const INK = { i: `stroke="${FG}"`, c: `fill="${ACCENT}"` };
+const INK = {
+  "owl-body": `fill="${FG}"`,
+  "owl-eye": `fill="${BG}"`,
+  "owl-pupil": `fill="${ACCENT}"`,
+  "owl-beak": `fill="${BG}"`,
+};
 const MARK = readFileSync(
   new URL("../../public/favicon.svg", import.meta.url),
   "utf8",

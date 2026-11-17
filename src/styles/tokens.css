@@ -38,6 +38,13 @@
   --green-soft: light-dark(#dff1e2, #12301a);
   --amber: light-dark(#7a5200, #e8c063);
   --amber-soft: light-dark(#f8ecc8, #3a2c08);
+  /* The owl. Its body is dark on every ground, and on a dark one it is a
+     grey that still stands 3 to 1 against the page. public/favicon.svg has
+     the same values, for the tab. */
+  --mark-body: light-dark(#15171a, #6a6f79);
+  --mark-eye: light-dark(#ffffff, #ffffff);
+  --mark-pupil: light-dark(#0b3fc4, #0b3fc4);
+  --mark-beak: light-dark(#ffffff, #e9e9e7);
 
   --font-display:
     "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
