@@ -126,7 +126,6 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `docs/implementation-research.md`      | How an implementation or a deployment report is found, checked and added                           |
 | `README.md`                            | What a visitor to the repository reads first: what the site is and where to start in it            |
 | `scripts/readme-figure.mjs`            | Draws the picture at the top of the README from the built site, in each theme                      |
-| `scripts/social-assets.mjs`            | Draws what goes in a post that announces the site: a carousel, pictures, a flow stepped through    |
 | `scripts/implementation-coverage.mjs`  | Says which parties of each flow have no implementation recorded, and what else is thin             |
 | `scripts/implementation-check.mjs`     | Checks a research worksheet, and asks each source whether it still has the passage an entry quotes |
 | `scripts/built-site.mjs`               | Stops a script that reads the built site when the build is older than its sources                  |
@@ -391,77 +390,9 @@ The first says `text/markdown` and where the copy lives; the second says `text/h
 
 Before the Worker, a URL rewrite rule in the Cloudflare dashboard did this, by looking for `text/markdown` in the header. The host's rules cannot read a weight, so it could not tell a request that refused Markdown from one that asked for it. With the Worker deployed, that rule should be deleted: it runs before the Worker and would go on answering in its place.
 
-## Pictures for a post
+## Films and pictures for posts
 
-A link shared by itself shows the page's card. A post that announces the site, or one flow, wants more than a card: a picture that makes its point where it is seen, before anyone follows the link. `scripts/social-assets.mjs` draws those from the built site:
-
-```bash
-npm run build
-```
-
-```bash
-npm run social:assets
-```
-
-It writes to `social/`, which is not committed:
-
-| File                                              | What                                                                                                                                                                                                                              |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `carousel.pdf`, `carousel-01.png` …               | Nine pages of 1080 × 1350, for a document post: the question, the first lesson's figure one choice at a time, the three choices side by side, every flow, a flow in one of its steps, the tracker's counts, and the three ways in |
-| `three-questions.png`, `three-questions-wide.png` | The three choices side by side, as one picture: at 4:5, and at 16:9 for where pictures are cropped wide                                                                                                                           |
-| `flows.png`, `standards.png`                      | Two of the carousel's pages, each as a picture by itself                                                                                                                                                                          |
-| `flow-<slug>.mp4`, `flow-<slug>-cover.png`        | One flow stepped through, each step held for as long as its frame takes to read, and the frame it opens on                                                                                                                        |
-| `flow-<slug>.vtt`, `flow-<slug>.srt`              | The video's captions, in two formats: the words of each frame, for as long as it is shown                                                                                                                                         |
-| `flow-<slug>.txt`                                 | A description to paste under the video: the flow's title and tagline, the page's address, chapters, what the flow is based on and when it was reviewed, and the license                                                           |
-| `repository.png`                                  | 1280 × 640, for the repository's social preview, which is set by hand in the repository's settings on GitHub                                                                                                                      |
-
-`--flow <slug>` chooses the flow the video steps through and the carousel shows a step of; without it that is MCP authorization. `--all-flows` makes the video, its cover, its captions and its description for every flow the flows page lists, and prints a line for each. The carousel and the other pictures are still made once, with the flow `--flow` names. `--no-video` leaves the video out, and its captions and description with it; the cover is still made. `--dark` draws the same pictures in the site's dark theme, into `social/dark/`: every color is already a light and dark pair, the mark carries both, and the diagram is photographed from the page in that theme. The video needs `ffmpeg` on the path, and is skipped with a note where there is none.
-
-The video is made to go on a video site as it is. Each frame is held for as long as its words take to read, at a little over three words a second, and for no less than two seconds and no more than ten. The words counted for a step are the ones new on its frame: who the message goes between and how, the step's title, the label on its row of the diagram, and the phase's name on the step that opens it. The diagram glides from one step to the next, inside the next step's time. The cover and the closing frame are timed the same way.
-
-The captions say what each frame says: the flow's title and tagline, each phase as it opens, each step's number and title, and where to find the rest. A caption is at most two lines of 42 characters. What is longer is split into captions that follow each other, at the end of a sentence where there is one. A step's explanation is not in them. The frame does not show it, and it takes several times longer to read than the frame is held.
-
-The description lists the flow's phases as chapters. A video site takes a list that starts at 0:00, has at least three chapters and has none shorter than ten seconds. So a phase starts on a whole second, a phase shorter than ten seconds joins the shorter of its neighbors under both names, and a flow that still cannot make three gets no list. The description ends with the page's own line for what the flow is based on and when it was reviewed, and with the license the page names. The video, the captions and the description are timed from one list of frames, so they agree.
-
-The pictures are read on a phone, where a page 1080 pixels wide is shown at about a third of its size. So nothing on one is set smaller than 23 pixels, and most labels are 26. Keep to that when a page is changed: type that looks comfortable at full size is too small to read in a feed.
-
-Every word in these pictures is read from the pages as built: the home page's question and its ways in, the first lesson's figure, the groups and ratings on the flows page, the tracker's counts, a flow's steps and its diagram as drawn. The script holds the layout and none of the content, so a picture cannot say what the site does not. If a page it reads has changed shape, it stops and names what it could not find, and if a picture has outgrown its frame it says which. It also stops if anything under `src/` or `public/` has changed since the site was built, and names a file: the pictures are read from the build, so an old build draws an old site, with the old count of flows and the old list. The rendered checks and the script for the README's picture stop for the same reason. The three share one test, in `scripts/built-site.mjs`. Make the pictures again after the content changes. Do not edit them by hand.
-
-The PDF is made to be read without being seen. LinkedIn lets anyone who can see a document post download the document, and gives accessibility as the reason, so the file a reader downloads is the accessible form of the carousel. It is tagged: its headings, tables and lists are marked as such, in reading order, its language is set, and the one picture in it, the diagram, has a description. Its title is the home page's question. The pages of the carousel are written with the elements that say what they are, a heading as a heading and a table as a table, and the tags come from those, so keep them that way.
-
-### A flow as a film
-
-A pilot, for one flow so far. `scripts/flow-film.mjs` tells the DPoP flow as a short film at 1920 × 1080: the question the flow answers, its steps one at a time, and what it does not protect. It is another thing than the stepped video above, which shows the flow's page a step to a frame. The film shows only what has happened so far, dims the parties that take no part in a step, and marks a line of a listing when it is spoken of.
-
-```bash
-npm run build
-```
-
-```bash
-npm run film -- --flow dpop
-```
-
-It writes `film-<slug>.mp4` to `social/`, with captions (`.vtt`, `.srt`) and a description with chapters (`.txt`). A cut that is to be kept, and the readings and sounds it was made from, are kept outside this repository, in a private R2 bucket with an index of its own. A recorded voice is given to the script by its path, wherever it is kept.
-
-[Films](films.md) says how one is told: what it holds to, what has been decided about how it looks and sounds, and what the next one needs. The [film design guide](film-design.md) says where things go on the stage, how they move, how the flat look and the look with depth differ, and how a cut is checked.
-
-**What is said, and what is drawn.** What is said is in `scripts/films/<slug>.mjs`, a line to a beat, written for the ear and held to what the flow's page says: each line's source on the page is in a comment beside it. What is drawn is the flow's own data, read from `src/data/flows/<slug>.ts`: its parties, what each step sends, the lines of its listings, and what a party comes to hold. `scripts/film-stage-fixed.js` draws it with the parties staying where they are, on a tinted page with shadows, and runs in the page the script opens. `--layout rows` draws the page's own diagram with `scripts/film-stage.js`, and `--look flat` leaves the page white. A flow with no script is drawn as a draft, told in its steps' own titles, to see how it sits on the stage. The scenes before and after the steps (the problem, the copied token refused, the caveat) are written for DPoP: another flow needs its own.
-
-**A frame at a time.** The stage can be put at any second, and each frame is a photograph of it at its own. Nothing waits on a clock, so the same film comes out every time. A frame like the one before it is not photographed again.
-
-**With a voice.** `--voice kokoro` has each line said by [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), an open text-to-speech model that runs on a processor. A beat then lasts as long as its recording, and what happens on the stage happens at the word that names it. The words are left off the picture, since the same words said and written at once get in each other's way; they are in the caption files, and `--captions on` puts them back. Without a voice a beat lasts as long as its words take to say, and they are written under the scene.
-
-Kokoro is not one of this repository's dependencies. It needs a Python of its own, set up as the top of `scripts/film-voice.py` says, and named in `FILM_PYTHON`:
-
-```bash
-FILM_PYTHON=~/.venvs/kokoro/bin/python npm run film -- --flow dpop --voice kokoro
-```
-
-A line is said once and kept in `social/voice/`, so a film made again says only what has changed. A word the voice would say wrong is written for it as it sounds, under `speak` in the film's script. A word that is not said as it is spelled can be written on the stage as it is said, with `gloss`: JWT is said “jot” ([RFC 7519](https://www.rfc-editor.org/rfc/rfc7519#section-1)).
-
-A film can be said by a recording too: `--voice <name> --reading <file>` takes one recording of the whole film, by a person or a voice made elsewhere, and `scripts/film-voice-import.py` cuts it into the film’s lines. The [film design guide](film-design.md#a-recorded-voice) has the steps.
-
-Nobody has to listen for the film to be made, and nothing checks how it sounds. Listen to a voiced film before it is posted.
+The site's films, and the pictures that go in a post announcing it, are made in a private repository, from this one's built site and data. Nothing here is needed for them, and nothing in them is needed to build or check the site. The films are on the site's [YouTube channel](https://www.youtube.com/@whosonfirstai).
 
 ## Response headers
 

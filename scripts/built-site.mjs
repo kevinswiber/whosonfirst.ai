@@ -2,8 +2,9 @@
  * What a script that reads the built site asks before it does anything else:
  * is the build there, and was it made after the last change to its sources?
  *
- * The rendered checks (test/build/ and test/browser/), readme-figure.mjs and
- * social-assets.mjs all read dist/client/, and none of them builds it. Run on a build made before the
+ * The rendered checks (test/build/ and test/browser/), readme-figure.mjs,
+ * reader-audit.mjs and indexnow.mjs all read dist/client/, and none of them
+ * builds it. Run on a build made before the
  * last change, each would do its work on the site as it was then: the checks
  * could pass where the site as it is now would fail, and a picture would show
  * a list of flows that is one short. Nothing in what they print or draw would

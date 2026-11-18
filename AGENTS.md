@@ -21,7 +21,7 @@ Node 22 or later. Install with `npm ci`.
 | `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name               |
 | `npm run check:rendered` | Reads the built site, opens it in a browser and runs its Worker. Refuses an old build     |
 
-`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes under a minute. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` and `npm run social:assets` do the same.
+`npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes under a minute. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` does the same.
 
 The checks are tests for Node's own test runner, in `test/`. While working on one thing, run its file after a build, such as `node --test test/browser/print.test.mjs`. [docs/development.md](docs/development.md#checks) says what each directory holds.
 
@@ -56,7 +56,6 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Nothing essential waits behind a click, a hover or a script.** What a figure or a diagram shows is also on the page in words.
 - **Vendors are described from their own documentation.** Mention is not recommendation.
 - **An implementation or a deployment report is added by the procedure in [docs/implementation-research.md](docs/implementation-research.md):** start from `npm run implementations:coverage`, copy the passage that carries the claim from the source, and run `npm run implementations:check` on the worksheet before anything goes into `src/data/implementations/records.ts`.
-- **A film says only what its flow’s page says.** [docs/films.md](docs/films.md) says how one is told and what has been decided about its manner. Read it before making one or changing how one looks or sounds, and change it when a decision changes. [docs/film-design.md](docs/film-design.md) has the measurements, the parts, the two looks and what to check on every cut.
 - **Write as the site does:** plain words, short sentences, no selling. The site’s prose uses typographic quotes and apostrophes (“ ” ’), and its code does not.
 - New flows, lessons and pages start as an issue, not a pull request. What the site leaves out is deliberate.
 
@@ -72,7 +71,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Biome does not format `.mdx`.** Keep those files tidy by hand.
 - **A new check is a test.** It goes in the file under `test/` for what it reads. A browser test opens a page with `open()` from `test/support/browser.mjs`, not with a fixed wait. Tests in a suite may share a page, but each sets up the state it needs and does not count on the test before it, so any one passes when run by its name alone. The content security policy sweep waits for network idle, longer than `open()`, and has to. Run suites side by side only where each has a page of its own and nothing waits on a clock.
 - **A page’s address has no dot in it.** The speculation rules on every page take an address with a dot for a file and leave it alone. The one `.txt` file in `public/` with a name made of hexadecimal digits is the IndexNow key, not a stray: `npm run indexnow` needs it.
-- **Generated files are not edited.** `dist/` is not committed. The films, and the readings and sounds they are made from, are kept in a private R2 bucket, outside this repository, and so is the record of where each went out. The two pictures in `docs/images/` come from `npm run readme:figure`. The pictures for a post come from `npm run social:assets`, into `social/`, which is not committed either. `public/favicon.svg` and the files in `design/logo/owl/` are written by `node design/logo/generate.mjs`. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
+- **Generated files are not edited.** `dist/` is not committed. The site's films and the pictures for its posts are made and kept in a private repository. The two pictures in `docs/images/` come from `npm run readme:figure`. `public/favicon.svg` and the files in `design/logo/owl/` are written by `node design/logo/generate.mjs`. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
 
 ## Branches, commits and pull requests
 

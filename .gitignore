@@ -1,9 +1,5 @@
 node_modules/
 dist/
-# what `npm run social:assets` draws
-social/
-# a local copy of the films' bucket, which is kept in a private repository
-film-assets/
 .astro/
 .DS_Store
 *.log
