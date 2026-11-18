@@ -23,3 +23,14 @@ export const AUTHOR = {
   /** The account a shared link is credited to on X. */
   x: "@kevinswiber",
 };
+
+/**
+ * The site's own YouTube channel, where its films are. It is the site's and
+ * not its author's, so it is not among the author's profiles: the footer and
+ * the About page link it, and the page metadata names it for the site.
+ */
+export const CHANNEL = {
+  name: "YouTube",
+  handle: "@whosonfirstai",
+  url: "https://www.youtube.com/@whosonfirstai",
+};

@@ -22,6 +22,7 @@ import Here from "../components/Here.astro";
 import { longDate, pageDates } from "../lib/page-dates";
 import {
   AUTHOR,
+  CHANNEL,
   CONTENT_LICENSE,
   REVIEWED,
   REVIEWED_ISO,
@@ -114,6 +115,7 @@ const graph = [
     inLanguage: "en",
     publisher: { "@id": authorId },
     license: CONTENT_LICENSE,
+    sameAs: [CHANNEL.url],
   },
   {
     "@type": "Person",
@@ -336,7 +338,8 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             {DESCRIPTOR}. Who is acting, for whom, and who said they could?
           </p>
           <p class="by">
-            Made by <a href="/about/#who-makes-it" rel="author">{AUTHOR.name}</a>. The <a href={SOURCE}>source is on GitHub</a>.
+            Made by <a href="/about/#who-makes-it" rel="author">{AUTHOR.name}</a>. The <a href={SOURCE}>source is on GitHub</a>,
+            and the <a href={CHANNEL.url}>films are on YouTube</a>.
             Found something wrong or out of date? <a href="/about/#corrections">Say so</a>.
           </p>
           {
