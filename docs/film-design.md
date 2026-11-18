@@ -45,7 +45,7 @@ node scripts/flow-film.mjs --flow dpop
 | `--series`                        | The film as a series of pictures, and no video: see [A series of pictures](#a-series-of-pictures)                                                                                                                              |
 | `--draft`                         | The flow told in its steps' own titles, with no script. What a flow with no film yet gets                                                                                                                                      |
 
-Everything is written to `social/`, which is not committed. A cut that is to be kept is copied from there to `film-assets/`, which is sent to an R2 bucket: see [Changing the design](#changing-the-design). A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
+Everything is written to `social/`, which is not committed. A cut that is to be kept is copied from there to the private R2 bucket the films are kept in: see [Changing the design](#changing-the-design). A file's name says what is not the usual: `-rows`, `-flat`, `-draft`, `-voiced`. Beside each video are its captions as `.vtt` and `.srt`, a cue to a sentence and timed to the voice, and a `.txt` to paste under it where it is posted. Upload the captions with the narrated video: they are how it is followed with the sound off. The build has to be newer than every file under `src/` and `public/`, or the script stops and says which file is newer.
 
 A beat's times differ between the silent cut and the narrated one, so run `--beats` with the same options as the stills.
 
@@ -111,7 +111,7 @@ A part made for a scene that a film does not have is not on the stage: anything 
 
 ### A tall frame for a feed
 
-`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [The review of 17 November 2026](reviews/films-in-a-feed-2026-11-17.md) says why. It was drawn on 17 November 2026, and the owner said yes to it the same day. Cut 18-4x5 of DPoP is the first film in it.
+`--shape 4:5` draws the fixed layout at 1080 by 1350, for LinkedIn and X, where a video plays in a feed, mostly on a phone and with its sound off. [Films](films.md) says why, under “For a feed”. It was drawn on 17 November 2026, and the owner said yes to it the same day. Cut 18-4x5 of DPoP is the first film in it.
 
 It is the same stage turned on its side, and not the 16:9 frame cropped or shrunk:
 
@@ -151,7 +151,7 @@ It draws a flow of up to three parties, and refuses two in the row that speak to
 
 ### A series of pictures
 
-`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md#for-a-feed) says why DPoP's is eight. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
+`--series` makes the film as pictures and no video, for a post that holds several pictures or a document of pages. The film's script chooses them, under `series`: the cover first, then a few of the film's moments, each with the sentences of one or more of its beats written under the stage. [Films](films.md), under “For a feed”, says why DPoP's is eight. A script that chooses none gets a picture for each scene and one for each step, however many beats tell it: sixteen for DPoP, and too many to post.
 
 | In `series` | What it is                                                                                                                           |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -357,4 +357,4 @@ The first try cut each line where the recogniser said its last word ended. That 
 - **A measurement** is a constant at the top of a stage file. **A style** is in the `<style>` block in `scripts/flow-film.mjs`. **A time** is in `LEAST` there, or beside the motion in a stage file.
 - Change it for both looks, look at both, and change this guide in the same commit.
 - A decision about manner, as against a measurement, is recorded in [Films](films.md), with its reason.
-- Keep each cut, and what it was made from, as [film-assets/README.md](../film-assets/README.md) says: in the bucket, and in `film-assets/index.json` with a line on what changed, so that one cut can be set beside another and none has to be made twice.
+- Keep each cut, and what it was made from, in the private bucket the films are kept in, with a line in its index on what changed, so that one cut can be set beside another and none has to be made twice.

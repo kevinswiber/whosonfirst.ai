@@ -95,8 +95,8 @@ const KOKORO = { voice: option("--kokoro-voice") ?? "af_heart", speed: 1 };
  * The shape of the frame. "16:9" is 1920 × 1080. "4:5" is 1080 × 1350, for
  * a feed, where a video starts with its sound off: the stage is laid out
  * again for a tall frame, with larger letters, and each sentence is written
- * under it even where a voice says it. docs/reviews/films-in-a-feed-2026-11-17.md
- * says why.
+ * under it even where a voice says it. docs/films.md, "For a feed", says
+ * why.
  */
 const SHAPE = option("--shape") ?? "16:9";
 if (!["16:9", "4:5"].includes(SHAPE))
