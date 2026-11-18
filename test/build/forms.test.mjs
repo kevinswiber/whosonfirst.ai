@@ -6,6 +6,7 @@ import { strict as assert } from "node:assert";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { faults, kind } from "../support/mermaid.mjs";
 import {
   attr,
@@ -438,7 +439,7 @@ test("what each page in the sitemap is made from is beside it, and names a file 
   );
   const sources = JSON.parse(file("sitemap-sources.json"));
   assert.deepEqual(Object.keys(sources), urls);
-  const repo = join(root, "..", "..");
+  const repo = fileURLToPath(new URL("../../", import.meta.url));
   const nowhere = Object.entries(sources)
     .filter(
       ([, names]) =>

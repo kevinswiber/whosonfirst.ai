@@ -2,20 +2,20 @@
  * The built site, read as files: what every test under test/build/ and
  * test/browser/ starts from.
  *
- * Importing this stops the test file if dist/client/ is missing or older than
+ * Importing this stops the test file if the build is missing or older than
  * its sources. What is checked is the build, not the sources, and a build made
  * before the last change can pass where the site as it is now would fail.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { requireCurrentBuild } from "../../scripts/built-site.mjs";
+import {
+  BUILT_ASSETS,
+  requireCurrentBuild,
+} from "../../scripts/built-site.mjs";
 
 requireCurrentBuild("The checks would report on the site as it was then.");
 
-export const root = fileURLToPath(
-  new URL("../../dist/client/", import.meta.url),
-);
+export const root = BUILT_ASSETS;
 export const ORIGIN = "https://whosonfirst.ai";
 
 /** The pages a test looks at closely: one flow and one lesson stand for the rest. */

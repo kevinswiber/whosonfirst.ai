@@ -4,10 +4,10 @@ How the site is built, where things are and how its content is edited. The [READ
 
 ## Develop
 
-Requires Node 22 or later.
+Use the latest patch release of Node 22, 24 or 26. The minimum on Node 22 is 22.23.4.
 
 ```bash
-npm install
+npm ci
 ```
 
 ```bash
@@ -36,9 +36,15 @@ npm run check:rendered
 
 `npm run check` runs [Biome](https://biomejs.dev/) over the repository: formatting, lint rules and import order. `npm run fmt` does the same and writes the fixes. `npm test` runs the site's own checks: types (`astro check`), the rating rule, the decision guide’s names, the color contrast audit and the list of sources. `npm run check:rendered` reads the built site, then opens it in a browser. It does not build the site: run `npm run build` first, and again after a change, or it stops and names a file that is newer than the build.
 
-`npm run build` writes a fully static site to `dist/client/`. There is no client-side framework, and one small piece of code that runs when a page is asked for: a Worker that sends a page's Markdown copy to a request that asks for it, described under [Markdown at the page's own address](#markdown-at-the-pages-own-address). Interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
+`npm run build` runs `cf build`, which invokes Astro and validates the deployable output in `.cloudflare/output/v1/`. The pages and other static files are under `workers/default/assets/` in that output. There is no client-side framework, and one small piece of code that runs when a page is asked for: a Worker that sends a page's Markdown copy to a request that asks for it, described under [Markdown at the page's own address](#markdown-at-the-pages-own-address). Interactive pieces are small custom elements that enhance HTML rendered at build time, so every page reads correctly with JavaScript off.
 
 Once the pages are written, the build makes two more forms of each one from the page itself: a card for where its link is shared, and a copy in Markdown. See [Other forms of a page](#other-forms-of-a-page).
+
+### Workers Builds
+
+In the Cloudflare dashboard, set the production deploy command to `npm run deploy` and the preview command to `npx cf previews deploy`. Both commands build the site, so leave the separate build command empty. Set the build environment to a supported Node version. Coordinate the dashboard switch with landing the migration so production builds use the command available at their commit. [Cloudflare’s Workers Builds settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/) describes these fields.
+
+Run `npm run deploy -- --dry-run` to validate the production build locally. Run `npm run generate-types` to refresh the Worker declarations in `.cloudflare/types/`. The build output, generated types and local state under `.cloudflare/` are ignored by Git.
 
 ### Formatting and linting
 
@@ -60,7 +66,7 @@ The checks are tests for Node's own test runner, `node:test`, in `test/`. Each f
 | `test/browser/` | The built site, opened in Chromium                                       | `npm run check:rendered` |
 | `test/worker/`  | The built site, served by the Workers runtime as it is deployed          | `npm run check:rendered` |
 
-What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves `dist/client/` with the site's own headers and starts a browser, one for each test file. `worker.mjs` starts `wrangler dev` on the configuration the site is deployed with, on ports that were free when it asked, and stops it when the file is done; it runs on the machine and needs no account. It also opens pages: `open()` waits for the load event, the fonts and a drawn frame: enough to measure what is drawn, and no longer. The content security policy sweep, `test/browser/csp.test.mjs`, waits longer, until a page has sent nothing for half a second. A script can ask for something from another origin a moment after the load event, and a request the policy refuses is never sent, so only the console shows it, and only once the script has asked. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to. `mermaid.mjs` says whether a piece of text parses as Mermaid. It asks [mmdflux](https://github.com/kevinswiber/mmdflux), from the `@mmds/wasm` package, which reads Mermaid without a browser.
+What the tests share is in `test/support/`. `site.mjs` reads the built pages, and stops a test file when the build is older than its sources. `browser.mjs` serves the built assets with the site’s own headers and starts a browser, one for each test file. `worker.mjs` starts `astro preview` on the Cloudflare Build Output. It uses a free local port, runs without a Cloudflare account, and stops when the tests finish. The browser helper waits for the load event, the fonts and one drawn frame in `open()`. The content security policy sweep, `test/browser/csp.test.mjs`, waits longer, until a page has sent nothing for half a second. A script can ask for something from another origin a moment after the load event, and a request the policy refuses is never sent, so only the console shows it, and only once the script has asked. A browser test file fails at its end if any page it opened threw a script error or broke its content security policy, and names the page. `measure.mjs` holds the measurements made inside a page, and the thresholds they are held to. `mermaid.mjs` says whether a piece of text parses as Mermaid. It asks [mmdflux](https://github.com/kevinswiber/mmdflux), from the `@mmds/wasm` package, which reads Mermaid without a browser.
 
 While working on one thing, run the test file for it. It still needs a current build:
 
@@ -114,7 +120,7 @@ The workflow names each action by commit, not by tag. `.github/dependabot.yml` o
 | `src/integrations/markdown-pages.mjs`  | Writes each page again as Markdown, and `llms.txt` and `llms-full.txt` from those                  |
 | `src/worker.ts`                        | The Worker in front of the pages: sends a page's Markdown copy to a request that asks for it       |
 | `src/lib/markdown-negotiation.ts`      | Reads an `Accept` header as RFC 9110 defines it, and chooses between a page and its copy           |
-| `src/integrations/markdown-worker.mjs` | Adds that Worker to the configuration the site is deployed with, in front of pages only            |
+| `cloudflare.config.ts` (Worker config) | Names the Worker, its asset binding and the routes it handles                                      |
 | `src/components/FlowDiagram.astro`     | Sequence diagram and step-through panel; a step narrative on a phone                               |
 | `src/data/verify.ts`                   | “What can the API verify?”: two credentials, four checks, and the wording of each verdict          |
 | `src/components/VerifyDetail.astro`    | The full comparison, on the Concepts page                                                          |
@@ -364,15 +370,15 @@ Which of the two a request prefers is settled by weight. The RFC calls two types
 
 The copy is sent with `Content-Location`, which gives the address where that form lives on its own, and with `Vary: Accept`. It is sent without the `X-Robots-Tag: noindex` it has at its own address: there the header keeps a search engine from listing the copy, and here the address is the page's. A page with no copy, such as the style guide, answers with the page.
 
-**Which addresses the Worker stands in front of.** Pages, and nothing else: a request for a file is served as a file, without the Worker, and does not count as a Worker request. `src/integrations/markdown-worker.mjs` says which is which by the rule the site already keeps, that a page's address has no dot in it and a file's has one (`run_worker_first: ["/*", "!/*.*"]`). So the Markdown copies at their own addresses, `llms.txt`, the styles and the pictures never reach it.
+**Which addresses the Worker stands in front of.** Pages, and nothing else: a request for a file is served as a file, without the Worker, and does not count as a Worker request. `cloudflare.config.ts` says which is which by the rule the site already keeps, that a page's address has no dot in it and a file's has one (`runWorkerFirst: ["/*", "!/*.*"]`). So the Markdown copies at their own addresses, `llms.txt`, the styles and the pictures never reach it.
 
-**Why a build step adds it.** Every page is built ahead of time, and for such a site the Cloudflare adapter writes a deployed configuration with files and no Worker: `dist/client/wrangler.json`, which leaves out the `main` of `wrangler.jsonc`. `wrangler deploy` is sent to that file by `.wrangler/deploy/config.json`. The integration adds the Worker to it once the site is built, and stops the build if the file is not there or already has a Worker. Wrangler bundles `src/worker.ts` when it deploys.
+**How the build keeps it.** The Cloudflare adapter emits only assets when Astro uses static output. The config selects server output to retain the Worker bundle, and the route setup hook prerenders every Astro route. `cloudflare.config.ts` selects `src/worker.ts` for the build and Astro’s own entrypoint for `cf dev`, so pages render as they are edited.
 
 It is tested at three levels:
 
 - **How the header is read**, in `test/unit/markdown-negotiation.test.mjs`, which `npm test` runs. The weights are held to the examples RFC 9110 and RFC 7231 work through. Each rule above has its cases. Then a few thousand headers are made from the grammar, the same ones on every run, and held to what must be true of any header: how one is spelled does not change what it says, the order of its ranges does not change any type's weight, and the answer follows from the weights. The same file covers what the Worker sends for each case, with a table standing in for the files.
 - **The deployed configuration**, in `test/build/deploy.test.mjs`: it names the Worker, the files, and the addresses the Worker stands in front of.
-- **The site as it is deployed**, in `test/worker/`, which `npm run check:rendered` runs. `wrangler dev` serves the build in the Workers runtime, and the tests ask it: every page's copy is the one the build wrote, a browser gets every page, both answers keep the headers every response has, a file answers as itself, and a reader that has the copy is told so.
+- **The site as it is deployed**, in `test/worker/`, which `npm run check:rendered` runs. `astro preview` serves the build in the Workers runtime, and the tests ask it: every page's copy is the one the build wrote, a browser gets every page, both answers keep the headers every response has, a file answers as itself, and a reader that has the copy is told so.
 
 The browser tests do not go through the Worker: they serve the built files themselves, with the site's headers.
 

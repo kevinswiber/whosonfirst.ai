@@ -2,7 +2,7 @@
  * The built site served as the host serves it, and a browser to read it with.
  *
  * Every test file under test/browser/ calls useBrowser() once, at its top. It
- * starts a server for dist/client/ and a Chromium for the file's tests, and
+ * starts a server for the built assets and a Chromium for the file's tests, and
  * closes both when they are done. Each file has its own, so the files run side
  * by side.
  *
@@ -51,7 +51,7 @@ const TYPES = {
 };
 
 /**
- * A static server for dist/client/. It sends the headers the host sends, so a
+ * A static server for the built assets. It sends the headers the host sends, so a
  * page that breaks the site's own content security policy fails here and not
  * after it is deployed.
  */
@@ -60,7 +60,8 @@ const serve = async () => {
     let file = normalize(
       join(root, decodeURIComponent(new URL(req.url, "http://x").pathname)),
     );
-    if (!file.startsWith(root)) return res.writeHead(403).end();
+    if (file !== root && !file.startsWith(`${root}/`))
+      return res.writeHead(403).end();
     if (existsSync(file) && statSync(file).isDirectory())
       file = join(file, "index.html");
     if (!existsSync(file)) return res.writeHead(404).end("not found");

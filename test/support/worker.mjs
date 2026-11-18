@@ -2,9 +2,8 @@
  * The built site, served as it is deployed: by the Workers runtime, with the
  * Worker in front of the pages. What the tests in test/worker/ start from.
  *
- * `wrangler dev` is sent to the same configuration `wrangler deploy` is,
- * `dist/client/wrangler.json`, so it bundles src/worker.ts and puts it in
- * front of the same addresses. It runs on this machine and needs no account.
+ * `astro preview` serves the same Cloudflare Build Output that `cf deploy`
+ * uploads. It runs on this machine and needs no account.
  * Each test file that calls this gets a server of its own, on ports that
  * were free when it asked.
  */
@@ -32,20 +31,20 @@ const freePort = () =>
  */
 export async function startWorker() {
   const port = await freePort();
-  const inspector = await freePort();
   const child = spawn(
     process.execPath,
     [
-      join(repository, "node_modules/wrangler/bin/wrangler.js"),
-      "dev",
-      "--ip=127.0.0.1",
-      `--port=${port}`,
-      `--inspector-port=${inspector}`,
-      "--show-interactive-dev-session=false",
+      join(repository, "node_modules/astro/bin/astro.mjs"),
+      "preview",
+      "--ignore-lock",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      String(port),
     ],
     {
       cwd: repository,
-      env: { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1" },
+      env: { ...process.env, CI: "1" },
       stdio: ["ignore", "pipe", "pipe"],
       // a group of its own, so that the runtime it starts stops with it
       detached: true,
@@ -87,7 +86,7 @@ export async function startWorker() {
   const until = Date.now() + 90_000;
   for (;;) {
     if (ended)
-      throw new Error(`wrangler dev stopped before it answered:\n${said}`);
+      throw new Error(`astro preview stopped before it answered:\n${said}`);
     try {
       const answer = await fetch(`${origin}/`, { redirect: "manual" });
       await answer.arrayBuffer();
@@ -97,7 +96,7 @@ export async function startWorker() {
     }
     if (Date.now() > until) {
       await stop();
-      throw new Error(`wrangler dev did not answer in 90 seconds:\n${said}`);
+      throw new Error(`astro preview did not answer in 90 seconds:\n${said}`);
     }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }

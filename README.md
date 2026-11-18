@@ -180,7 +180,7 @@ The site is static. It sets no cookies and loads nothing from another origin, an
 
 ## Working on the site
 
-Requires Node 22 or later.
+Requires Node 22.23.4 or a supported newer release.
 
 ```bash
 npm install

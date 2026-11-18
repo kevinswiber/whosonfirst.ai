@@ -14,7 +14,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { requireCurrentBuild } from "./built-site.mjs";
+import { BUILT_ASSETS, requireCurrentBuild } from "./built-site.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -23,10 +23,10 @@ const { chromium } = require("playwright");
 const FLOW = "dpop";
 const MARGIN = 24; // px of page around the diagram
 
-const root = fileURLToPath(new URL("../dist/client/", import.meta.url));
+const root = BUILT_ASSETS;
 const out = fileURLToPath(new URL("../docs/images/", import.meta.url));
 if (!existsSync(join(root, "flows", FLOW, "index.html"))) {
-  console.error("dist/client/ is missing. Run `npm run build` first.");
+  console.error("The built flow is missing. Run `npm run build` first.");
   process.exit(1);
 }
 // The two pictures are committed, and nothing in a picture says which build it
@@ -48,7 +48,8 @@ const server = createServer((req, res) => {
   let file = normalize(
     join(root, decodeURIComponent(new URL(req.url, "http://x").pathname)),
   );
-  if (!file.startsWith(root)) return res.writeHead(403).end();
+  if (file !== root && !file.startsWith(`${root}/`))
+    return res.writeHead(403).end();
   if (existsSync(file) && statSync(file).isDirectory())
     file = join(file, "index.html");
   if (!existsSync(file)) return res.writeHead(404).end("not found");
