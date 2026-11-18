@@ -124,7 +124,7 @@ The first four of these are how the rows are drawn (`--layout rows`). The stage 
 
 **For a feed**
 
-Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed-2026-11-17.md) proposed, from cut 18-4x5. Where each part goes is in the [film design guide](film-design.md#a-tall-frame-for-a-feed).
+Decided on 17 November 2026, after a review of what LinkedIn, X and the research say about video in a feed, from cut 18-4x5. Where each part goes is in the [film design guide](film-design.md#a-tall-frame-for-a-feed).
 
 - One 4:5 cut, 1080 × 1350, for LinkedIn and X. It is the stage laid out again for a tall frame, and not the 16:9 film cropped or shrunk.
 - The paper look, as in 16:9. No dark cut.
@@ -139,13 +139,7 @@ Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed
 
 **Where it is posted**
 
-The DPoP film went out in November 2026, a form to each place.
-
-- **LinkedIn, 17 November:** the series of pictures, cut 20-4x5, as a PDF document. The post's words lead with the problem for any API, a token copied out of a log, and give MCP's place in it a paragraph of its own; they end on the page's address. LinkedIn showed several pictures differently from one day to another: that day its layout for several pictures looked poor in the composer and the document looked right, and a few days before it had been the other way round. Look at both in the composer on the day.
-- **YouTube, 18 November:** the 16:9 film, cut 19, on the site's own channel, [@whosonfirstai](https://www.youtube.com/@whosonfirstai), as “DPoP explained in 90 seconds: binding an access token to a key”: [youtu.be/YUoA9WJSKZA](https://youtu.be/YUoA9WJSKZA). It was kept unlisted while the channel waited for the verification that lets links in a description be followed, and made public on 18 November, once it came through. Cut 17 went up first, by mistake, and was taken down before it was made public: its opening question all but vanishes in the first frame, which a video site may show before it plays. A video's file cannot be changed once it is up, so a cut posted is checked against the index's latest first.
-- **X, 17 November:** the same series of eight pictures in one post, from the owner's own account and not a new one for the site: on X a post reaches people through whoever posts it.
-
-The channel is the site's and not the owner's, and its banner and picture are kept with the films. A title on YouTube leads with the word people search for and says only what the film shows.
+The films are on the site's own YouTube channel, [@whosonfirstai](https://www.youtube.com/@whosonfirstai), which the footer and the About page link. Where else each film went out, the words posted with it and how it did are recorded outside this repository.
 
 ## What has not been decided
 
@@ -193,7 +187,7 @@ Read on 15 November 2026, for this guide. Most of the papers were read from thei
 5. **List the words a voice will get wrong.** Each goes under `speak`, as it sounds. One that is not said as it is spelled also goes on the stage with `gloss`, with the source for how it is said. PKCE is “pixy” ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)), and JWT is “jot”.
 6. **Make it silent first**, and look at it: `npm run film -- --flow <slug>`. Then with a voice. The [film design guide](film-design.md#checking-a-cut) says what to look at.
 7. **Listen to it.** Nothing checks how it sounds. Listen for each name, for a line that is rushed, and for anything on the stage that the words do not say.
-8. **Keep each cut where it will last.** `social/` is not committed. A cut, and any reading by a voice it was made from, goes into `film-assets/` and from there to the R2 bucket, and `film-assets/index.json` is changed to say it is the latest: [film-assets/README.md](../film-assets/README.md) has the steps. The cuts of the DPoP film are also on a page of their own, outside the repository, to be played side by side.
+8. **Keep each cut where it will last.** `social/` is not committed. A cut, and any reading by a voice it was made from, goes to the private R2 bucket the films are kept in, and that bucket's index is changed to say it is the latest. The bucket and its index are kept outside this repository. The cuts of the DPoP film are also on a page of their own, to be played side by side.
 
 ### What would make the next one easier
 

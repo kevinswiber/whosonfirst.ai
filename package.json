@@ -22,7 +22,6 @@
     "readme:figure": "node scripts/readme-figure.mjs",
     "social:assets": "node scripts/social-assets.mjs",
     "film": "node scripts/flow-film.mjs",
-    "film:assets": "node scripts/film-assets.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "sources:changed": "node scripts/source-changes.mjs",
     "implementations:coverage": "node scripts/implementation-coverage.mjs",

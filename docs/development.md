@@ -441,7 +441,7 @@ npm run build
 npm run film -- --flow dpop
 ```
 
-It writes `film-<slug>.mp4` to `social/`, with captions (`.vtt`, `.srt`) and a description with chapters (`.txt`). A cut that is to be kept goes from there into `film-assets/` and on to an R2 bucket, with the readings and sounds it was made from: `film-assets/index.json` lists every one and says which cut is the latest, and [film-assets/README.md](../film-assets/README.md) says how they are kept. `npm run film:assets` fetches and sends them.
+It writes `film-<slug>.mp4` to `social/`, with captions (`.vtt`, `.srt`) and a description with chapters (`.txt`). A cut that is to be kept, and the readings and sounds it was made from, are kept outside this repository, in a private R2 bucket with an index of its own. A recorded voice is given to the script by its path, wherever it is kept.
 
 [Films](films.md) says how one is told: what it holds to, what has been decided about how it looks and sounds, and what the next one needs. The [film design guide](film-design.md) says where things go on the stage, how they move, how the flat look and the look with depth differ, and how a cut is checked.
 

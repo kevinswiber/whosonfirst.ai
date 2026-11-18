@@ -2,10 +2,8 @@ node_modules/
 dist/
 # what `npm run social:assets` draws
 social/
-# what films are made from and every cut of them: kept in R2, and listed in index.json
-film-assets/*
-!film-assets/index.json
-!film-assets/README.md
+# a local copy of the films' bucket, which is kept in a private repository
+film-assets/
 .astro/
 .DS_Store
 *.log
