@@ -3,7 +3,7 @@
  * is the build there, and was it made after the last change to its sources?
  *
  * The rendered checks (test/build/ and test/browser/), readme-figure.mjs,
- * reader-audit.mjs and indexnow.mjs all read dist/client/, and none of them
+ * reader-audit.mjs and indexnow.mjs all read the built assets, and none of them
  * builds it. Run on a build made before the
  * last change, each would do its work on the site as it was then: the checks
  * could pass where the site as it is now would fail, and a picture would show
@@ -22,6 +22,13 @@ import { fileURLToPath } from "node:url";
 const here = fileURLToPath(new URL("../", import.meta.url));
 /** Where everything the site is built from is kept. */
 const SOURCES = ["src", "public"];
+const BUILD_INPUTS = [
+  "astro.config.mjs",
+  "cloudflare.config.ts",
+  "package-lock.json",
+];
+export const WORKER_BUILD = join(here, ".cloudflare/output/v1/workers/default");
+export const BUILT_ASSETS = join(WORKER_BUILD, "assets");
 
 /**
  * Returns if the build is there and nothing under src/ or public/ has changed
@@ -32,13 +39,17 @@ const SOURCES = ["src", "public"];
  * if it went on with the old build.
  */
 export function requireCurrentBuild(stale) {
-  const home = join(here, "dist", "client", "index.html");
+  const home = join(BUILT_ASSETS, "index.html");
   if (!existsSync(home)) {
-    console.error("dist/client/ is missing. Run `npm run build` first.");
+    console.error(
+      "The Cloudflare build is missing. Run `npm run build` first.",
+    );
     process.exit(1);
   }
   const built = statSync(home).mtimeMs;
-  const newer = [];
+  const newer = BUILD_INPUTS.filter(
+    (file) => statSync(join(here, file)).mtimeMs > built,
+  );
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const file = join(dir, entry.name);

@@ -9,11 +9,10 @@ import {
 } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 // Exploratory extraction audit, not a native Reader compatibility test.
 // Supply an independently obtained Mozilla Readability.js; no network fetch.
 import { chromium } from "playwright";
-import { requireCurrentBuild } from "./built-site.mjs";
+import { BUILT_ASSETS, requireCurrentBuild } from "./built-site.mjs";
 
 const [readabilityPath, outputDirectory] = process.argv.slice(2);
 if (!readabilityPath || !outputDirectory) {
@@ -24,7 +23,7 @@ if (!readabilityPath || !outputDirectory) {
 }
 requireCurrentBuild("The Reader audit needs the current build.");
 mkdirSync(outputDirectory, { recursive: true });
-const root = fileURLToPath(new URL("../dist/client/", import.meta.url));
+const root = BUILT_ASSETS;
 const server = createServer((req, res) => {
   let p = join(root, new URL(req.url, "http://x").pathname);
   if (existsSync(p) && statSync(p).isDirectory()) p = join(p, "index.html");

@@ -4,7 +4,15 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { built, FLOWS, LESSONS, main, pageAt, some } from "../support/site.mjs";
+import {
+  built,
+  FLOWS,
+  file,
+  LESSONS,
+  main,
+  pageAt,
+  some,
+} from "../support/site.mjs";
 
 // A line break in a template between a word and an inline element loses its
 // space, and the two run together on the page ("calls thisclient credentials").
@@ -179,11 +187,7 @@ test("implementation records mark each specification in every entry, and a gener
 // Those are not written twice: the page takes them from the flows' data, and
 // this checks that they arrived, so a figure cannot show a message that the
 // flow's own page does not.
-const copy = (path) =>
-  readFileSync(
-    new URL(`../../dist/client${path}index.md`, import.meta.url),
-    "utf8",
-  );
+const copy = (path) => file(`${path}index.md`);
 const listings = (markdown) =>
   [...markdown.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)].map((m) =>
     m[1].trim(),

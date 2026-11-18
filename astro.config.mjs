@@ -2,24 +2,28 @@ import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
 import { defineConfig } from "astro/config";
 import markdownPages from "./src/integrations/markdown-pages.mjs";
-import markdownWorker from "./src/integrations/markdown-worker.mjs";
 import pageDates from "./src/integrations/page-dates.mjs";
 import socialCards from "./src/integrations/social-cards.mjs";
 import { codeThemes } from "./src/lib/code-themes.mjs";
 
 export default defineConfig({
   site: "https://whosonfirst.ai",
-  // pageDates reads the repository's history before the pages are built, so each
-  // can say when it last changed. The next two run once the pages are built. Each
-  // makes another form of every page from the page itself: a card for where its
-  // link is shared, and Markdown. markdownWorker then puts a Worker in front of
-  // the pages, which sends the Markdown to a request that asks for it.
+  // Keep the Worker bundle even though every Astro route is prerendered.
+  // The only production entrypoint is src/worker.ts.
+  output: "server",
   integrations: [
     mdx(),
+    {
+      name: "prerender-all",
+      hooks: {
+        "astro:route:setup": ({ route }) => {
+          route.prerender = true;
+        },
+      },
+    },
     pageDates(),
     socialCards(),
     markdownPages(),
-    markdownWorker(),
   ],
 
   markdown: {
@@ -29,10 +33,10 @@ export default defineConfig({
     },
   },
 
-  // The site is fully prerendered and never uses sessions. Without this the
-  // adapter injects a SESSION KV binding with no id, which `wrangler preview`
-  // rejects (it does not auto-provision the way `wrangler deploy` does).
   session: false,
 
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: "passthrough",
+    prerenderEnvironment: "node",
+  }),
 });

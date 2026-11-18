@@ -7,9 +7,7 @@
  * src/lib/markdown-negotiation.ts. It makes nothing itself: either answer is a
  * file the build wrote, read from the host's store of them.
  *
- * The build does not put this file in the site. src/integrations/markdown-worker.mjs
- * names it in the configuration the site is deployed with, and says there
- * which addresses it stands in front of.
+ * cloudflare.config.ts names this entrypoint and the addresses it handles.
  *
  * If anything here fails, the request gets what is at its address, as it
  * would with no Worker at all.

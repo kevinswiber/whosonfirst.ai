@@ -2,14 +2,7 @@
 // Worker in front of the pages sends for each: src/lib/markdown-negotiation.ts
 // and src/worker.ts, with a store of files that is only a table here.
 import { strict as assert } from "node:assert";
-import { existsSync } from "node:fs";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
-import {
-  IN_FRONT_OF,
-  WORKER,
-  withWorker,
-} from "../../src/integrations/markdown-worker.mjs";
 import {
   prefersMarkdown,
   ranges,
@@ -399,61 +392,6 @@ test("if choosing fails, the Worker sends what is at the address", async () => {
     console.error = error;
   }
   assert.ok(failed);
-});
-
-// A page's address has no dot in it, and a file's has one. The patterns are
-// read here as the host reads them: `*` is any run of characters, and one
-// that starts with `!` takes away.
-test("the Worker stands in front of every page and of no file", () => {
-  const matches = (pattern, path) =>
-    new RegExp(
-      `^${pattern
-        .split("*")
-        .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
-        .join(".*")}$`,
-    ).test(path);
-  const inFront = (path) =>
-    IN_FRONT_OF.some((p) => !p.startsWith("!") && matches(p, path)) &&
-    !IN_FRONT_OF.some((p) => p.startsWith("!") && matches(p.slice(1), path));
-  for (const page of [
-    "/",
-    "/flows/dpop/",
-    "/guide/own-authority/",
-    "/flows/dpop",
-  ])
-    assert.ok(inFront(page), page);
-  for (const file of [
-    "/flows/dpop/index.md",
-    "/llms.txt",
-    "/sitemap.xml",
-    "/favicon.svg",
-    "/og/flows/dpop.png",
-    "/_astro/Base.01b6i8gf.css",
-  ])
-    assert.ok(!inFront(file), file);
-});
-
-test("the Worker is added to a configuration that has files and no Worker, and to no other", () => {
-  const made = withWorker(
-    {
-      name: "site",
-      assets: { directory: ".", not_found_handling: "404-page" },
-    },
-    "../../src/worker.ts",
-  );
-  assert.equal(made.main, "../../src/worker.ts");
-  assert.deepEqual(made.assets, {
-    directory: ".",
-    not_found_handling: "404-page",
-    binding: "ASSETS",
-    run_worker_first: IN_FRONT_OF,
-  });
-  assert.equal(made.name, "site");
-  assert.throws(() => withWorker({ main: "other.js", assets: {} }, "w.ts"));
-  assert.throws(() => withWorker({ name: "site" }, "w.ts"));
-  assert.ok(
-    existsSync(fileURLToPath(new URL(`../../${WORKER}`, import.meta.url))),
-  );
 });
 
 // The tests above are the cases someone thought of. These hold the reading

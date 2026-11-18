@@ -45,7 +45,7 @@ import {
   entriesOf,
   ignoredRevisions,
 } from "../src/integrations/page-dates.mjs";
-import { requireCurrentBuild } from "./built-site.mjs";
+import { BUILT_ASSETS, requireCurrentBuild } from "./built-site.mjs";
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const USAGE =
@@ -291,7 +291,7 @@ async function main(args) {
     return 1;
   }
 
-  const built = join(here, "dist", "client");
+  const built = BUILT_ASSETS;
   const pages = readSitemap(readFileSync(join(built, "sitemap.xml"), "utf8"));
   let sending = pages;
   if (asked.day) sending = changedSince(pages, asked.day);

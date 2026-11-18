@@ -10,7 +10,7 @@ The source of [whosonfirst.ai](https://whosonfirst.ai), a field guide to agent a
 
 ## Commands
 
-Node 22 or later. Install with `npm ci`.
+Node 22.23.4 or a supported newer release. Install with `npm ci`.
 
 | Command                  | What it does                                                                              |
 | ------------------------ | ----------------------------------------------------------------------------------------- |
@@ -18,7 +18,7 @@ Node 22 or later. Install with `npm ci`.
 | `npm run fmt`            | Biome, writing its fixes: formatting, lint and import order                               |
 | `npm run check`          | Biome, changing nothing                                                                   |
 | `npm test`               | Types (`astro check`), the rating rule, the guide’s names, the contrast audit and sources |
-| `npm run build`          | The static site in `dist/client/`. Refuses a broken cross-reference by name               |
+| `npm run build`          | The site and Worker in `.cloudflare/output/v1/`. Refuses a broken cross-reference by name |
 | `npm run check:rendered` | Reads the built site, opens it in a browser and runs its Worker. Refuses an old build     |
 
 `npm run check:rendered` needs Chromium (`npx playwright install chromium`) and takes under a minute. It does not build the site. Run the build first, and again after any change under `src/` or `public/`: on a build older than one of those files it stops and names the file. `npm run readme:figure` does the same.
@@ -71,7 +71,7 @@ Do not weaken, skip or delete a check to get it to pass. When a check fails, its
 - **Biome does not format `.mdx`.** Keep those files tidy by hand.
 - **A new check is a test.** It goes in the file under `test/` for what it reads. A browser test opens a page with `open()` from `test/support/browser.mjs`, not with a fixed wait. Tests in a suite may share a page, but each sets up the state it needs and does not count on the test before it, so any one passes when run by its name alone. The content security policy sweep waits for network idle, longer than `open()`, and has to. Run suites side by side only where each has a page of its own and nothing waits on a clock.
 - **A page’s address has no dot in it.** The speculation rules on every page take an address with a dot for a file and leave it alone. The one `.txt` file in `public/` with a name made of hexadecimal digits is the IndexNow key, not a stray: `npm run indexnow` needs it.
-- **Generated files are not edited.** `dist/` is not committed. The site's films and the pictures for its posts are made and kept in a private repository. The two pictures in `docs/images/` come from `npm run readme:figure`. `public/favicon.svg` and the files in `design/logo/owl/` are written by `node design/logo/generate.mjs`. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
+- **Generated files are not edited.** `.cloudflare/` and `dist/` are ignored. The site's films and the pictures for its posts are made and kept in a private repository. The two pictures in `docs/images/` come from `npm run readme:figure`. `public/favicon.svg` and the files in `design/logo/owl/` are written by `node design/logo/generate.mjs`. `docs/source-validators.json` is written by `npm run sources:changed`: with `-- --record` at the end of a source review, and with `-- --add` after a link is added to the data.
 
 ## Branches, commits and pull requests
 
