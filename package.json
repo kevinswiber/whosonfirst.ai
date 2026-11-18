@@ -20,8 +20,6 @@
     "check:sources": "node --test --test-reporter=spec test/unit/sources.test.mjs",
     "check:rendered": "node scripts/built-site.mjs && node --test --test-reporter=spec \"test/build/*.test.mjs\" \"test/browser/*.test.mjs\" \"test/worker/*.test.mjs\"",
     "readme:figure": "node scripts/readme-figure.mjs",
-    "social:assets": "node scripts/social-assets.mjs",
-    "film": "node scripts/flow-film.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "sources:changed": "node scripts/source-changes.mjs",
     "implementations:coverage": "node scripts/implementation-coverage.mjs",
