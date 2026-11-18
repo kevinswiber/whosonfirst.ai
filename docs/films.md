@@ -137,6 +137,16 @@ Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed
 - A picture of the flow says beside the strip of numbers which steps it stands for, as “Steps 1 to 3 of 7”: the part of the flow its page gives. The steps before it are drawn as told, as in the film, and without the words they looked missed out.
 - Whether a post of pictures or a post of the film does better has not been found out: see below.
 
+**Where it is posted**
+
+The DPoP film went out in November 2026, a form to each place.
+
+- **LinkedIn, 17 November:** the series of pictures, cut 20-4x5, as a PDF document. The post's words lead with the problem for any API, a token copied out of a log, and give MCP's place in it a paragraph of its own; they end on the page's address. LinkedIn showed several pictures differently from one day to another: that day its layout for several pictures looked poor in the composer and the document looked right, and a few days before it had been the other way round. Look at both in the composer on the day.
+- **YouTube:** the 16:9 film, on the site's own channel, [@whosonfirstai](https://www.youtube.com/@whosonfirstai), as “DPoP explained in 90 seconds: binding an access token to a key”: [youtu.be/Q1J13W2dCXQ](https://youtu.be/Q1J13W2dCXQ). It was uploaded unlisted by 18 November, to be made public when the channel's verification lets links in a description be followed.
+- **X, 17 November:** the same series of eight pictures in one post, from the owner's own account and not a new one for the site: on X a post reaches people through whoever posts it. [The post](https://x.com/kevinswiber/status/2122808673194090891).
+
+The channel is the site's and not the owner's, and its banner and picture are kept with the films. A title on YouTube leads with the word people search for and says only what the film shows.
+
 ## What has not been decided
 
 - **Whether the owner records the films themself.** The voice is a clone of their own, which is a machine saying it. The voice principle asks for a person’s, and a recording by them fits the same script: a beat lasts as long as its clip. Studies with newer machine voices mostly find no difference in what is learned: see below.
@@ -145,7 +155,6 @@ Decided on 17 November 2026, as [the review of that day](reviews/films-in-a-feed
 - **How X shows the 4:5 film in its feed.** Nobody has said. The owner will post it once to find out. If X crops it, a square cut is the next thing to make.
 - **A post of pictures or a post of the film.** X has allowed 20 pictures to a post since 12 November 2026, as an X engineer announced it and the press reported it; X's own help pages did not yet say so on 17 November. LinkedIn allows 20 pictures, and a PDF as a document. The only figures found are vendors' benchmarks of other people's posts, which put pictures and documents a little ahead of video on LinkedIn and pictures a little ahead on X. Research on learning finds animation a little better than still pictures overall, and seldom better than well-made ones. None of it was measured in a feed. One post of each is how it will be seen, and it will not show which reaches more people.
 - **A dark version.** The same review turns one down for now: nothing found tests matching a feed's theme.
-- **Where it is posted, and under what title.**
 - **Whether every film asks about a copied credential.** DPoP's question came from its page. Another flow's question is its own.
 
 ## What else is known
