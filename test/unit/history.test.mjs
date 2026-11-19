@@ -221,3 +221,16 @@ test("a document's history is in the order things happened", () => {
     ["First.", "Second.", "Third."],
   );
 });
+
+test("days are in order whatever a month-only date sits between them", () => {
+  const log = [
+    event({ date: "2026-11-20", summary: "The 20th." }),
+    event({ date: "2026-11", summary: "Some day in November." }),
+    event({ date: "2026-11-10", summary: "The 10th.", standing: "Early." }),
+    event({ date: "2026-10-30", summary: "October." }),
+  ];
+  assert.deepEqual(
+    historyOf(log, "a").map((e) => e.summary),
+    ["October.", "The 10th.", "Some day in November.", "The 20th."],
+  );
+});

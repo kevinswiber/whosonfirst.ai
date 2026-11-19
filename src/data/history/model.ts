@@ -130,22 +130,34 @@ const isUrl = (value: string | undefined) => {
 };
 
 /**
- * Orders two dates where it can. A month and a day inside it are not ordered:
- * the answer is 0, and the log's own order decides.
+ * Puts things in the order they happened. Months are in order, and so are the
+ * days inside a month. A month has no place among the days inside it, so
+ * something dated by its month keeps the place the log gave it among them.
  */
-const compareDates = (a: string, b: string) => {
-  const months = a.slice(0, 7).localeCompare(b.slice(0, 7));
-  if (months !== 0) return months;
-  if (a.length === 10 && b.length === 10) return a.localeCompare(b);
-  return 0;
+const inOrder = <T>(items: T[], dateOf: (item: T) => string): T[] => {
+  const months = new Map<string, T[]>();
+  for (const item of items) {
+    const month = dateOf(item).slice(0, 7);
+    months.set(month, [...(months.get(month) ?? []), item]);
+  }
+  return [...months.keys()].sort().flatMap((month) => {
+    const group = months.get(month) ?? [];
+    const hasDay = (item: T) => dateOf(item).length === 10;
+    const days = group
+      .filter(hasDay)
+      .map((item, at) => ({ item, at }))
+      .sort(
+        (x, y) => dateOf(x.item).localeCompare(dateOf(y.item)) || x.at - y.at,
+      )
+      .map(({ item }) => item);
+    let next = 0;
+    return group.map((item) => (hasDay(item) ? days[next++] : item));
+  });
 };
 
-/** The events in the order they happened. Events the dates do not order keep the log's order. */
+/** The events in the order they happened. */
 export const byDate = (events: HistoryEvent[]) =>
-  events
-    .map((event, at) => ({ event, at }))
-    .sort((a, b) => compareDates(a.event.date, b.event.date) || a.at - b.at)
-    .map(({ event }) => event);
+  inOrder(events, (event) => event.date);
 
 /** One entry's events, in the order they happened. */
 export const historyOf = (events: HistoryEvent[], entry: string) =>
@@ -176,7 +188,7 @@ export const versionsOf = (
       date: version.date ?? event.date,
     });
   }
-  return [...versions.values()].sort((a, b) => compareDates(a.date, b.date));
+  return inOrder([...versions.values()], (version) => version.date);
 };
 
 export interface Standing {
