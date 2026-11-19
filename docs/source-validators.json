@@ -741,6 +741,10 @@
     "etag": "W/\"6aec5f12-14a6c\"",
     "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
   },
+  "https://py.sdk.modelcontextprotocol.io/handlers/elicitation/": {
+    "etag": "W/\"6aec5f12-1531a\"",
+    "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
+  },
   "https://py.sdk.modelcontextprotocol.io/handlers/multi-round-trip/": {
     "etag": "W/\"6aec5f12-195b8\"",
     "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
