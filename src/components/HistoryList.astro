@@ -5,7 +5,7 @@
 // a click.
 import { must } from "../lib/must";
 import { inline } from "../lib/md";
-import { KIND_LABEL, spellDate } from "../lib/history";
+import { eventAnchor, KIND_LABEL, spellDate } from "../lib/history";
 import type { EventGroup } from "../lib/history";
 import { standards } from "../data/standards";
 
@@ -20,7 +20,6 @@ const entry = (id: string) =>
     standards.find((s) => s.id === id),
     `tracker entry "${id}" (named by an event in the log)`,
   );
-const anchor = (id: string) => id.replaceAll("/", "-");
 ---
 
 {
@@ -32,7 +31,7 @@ const anchor = (id: string) => id.replaceAll("/", "-");
           const s = e.entry ? entry(e.entry) : undefined;
           const corrected = e.corrected && by === "recorded" && e.corrected.on === group.key;
           return (
-            <li id={by === "happened" ? anchor(e.id) : undefined}>
+            <li id={by === "happened" ? eventAnchor(e.id) : undefined}>
               <span class="hl-when">
                 {by === "happened" ? spellDate(e.date) : `Happened ${spellDate(e.date)}`}
               </span>

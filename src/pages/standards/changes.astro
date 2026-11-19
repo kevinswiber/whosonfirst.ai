@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import HistoryList from "../../components/HistoryList.astro";
 import { history } from "../../data/history";
 import { standards } from "../../data/standards";
-import { changelog, recordBegan, spellDate } from "../../lib/history";
+import { changelog, FEED, recordBegan, spellDate } from "../../lib/history";
 
 const groups = changelog(history);
 const began = spellDate(recordBegan(history));
@@ -11,6 +11,7 @@ const began = spellDate(recordBegan(history));
 
 <Base
   title="Changelog of the standards tracker"
+  feed={FEED}
   description="When this site’s reporting on each specification changed: every event the standards tracker has recorded, by the day it was recorded, each with its source."
 >
   <div class="page-head">
@@ -23,7 +24,8 @@ const began = spellDate(recordBegan(history));
       <p class="also">
         An event is often recorded some days after it happens, at the next review of the sources.{" "}
         <a href="/standards/timeline/">The timeline</a> lists the same events by the date they happened, and{" "}
-        <a href="/standards/">the tracker</a> says where each specification stands now.
+        <a href="/standards/">the tracker</a> says where each specification stands now. To follow it, there is{" "}
+        <a href={FEED.href}>a feed of this page</a>.
       </p>
     </div>
   </div>

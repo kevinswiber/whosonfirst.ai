@@ -185,6 +185,7 @@ test("a file answers as itself, whatever the request asks for", async () => {
   for (const [path, sent] of [
     ["/llms.txt", "text/plain"],
     ["/sitemap.xml", "application/xml"],
+    ["/standards/changes.xml", "application/atom+xml"],
     ["/favicon.svg", "image/svg+xml"],
     [`${FLOW}index.md`, "text/markdown"],
   ]) {

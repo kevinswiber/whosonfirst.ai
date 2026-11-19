@@ -38,6 +38,12 @@
 /llms-full.txt
   X-Robots-Tag: noindex
 
+# The changelog of the standards tracker as an Atom feed, for a feed reader.
+# The host would call it XML and no more.
+/standards/changes.xml
+  Content-Type: application/atom+xml; charset=utf-8
+  X-Robots-Tag: noindex
+
 # What each page is made from, for scripts/indexnow.mjs. It is not for reading.
 /sitemap-sources.json
   X-Robots-Tag: noindex

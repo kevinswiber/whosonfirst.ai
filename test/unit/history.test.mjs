@@ -10,6 +10,7 @@ import {
   changelog,
   currentOf,
   eventIds,
+  feedOf,
   historyOf,
   recordBegan,
   spellDate,
@@ -352,4 +353,63 @@ test("the timeline is by the month things happened, and the changelog by the day
   assert.equal(recordBegan(log), "2026-11-19");
   assert.equal(spellDate("2026-11-02"), "November 2, 2026");
   assert.equal(spellDate("2026-10"), "October 2026");
+});
+
+test("the feed has an entry for each event, newest recording first, and none for a baseline", () => {
+  const log = [
+    event({
+      date: "2026-10-30",
+      recorded: "2026-11-11",
+      summary: "A <b> & c.",
+    }),
+    base,
+    event({
+      kind: "version",
+      date: "2026-11-20",
+      recorded: "2026-11-21",
+      summary: "Revision -02.",
+      version: { label: "-02", url: "https://example.org/a-02" },
+      changes: ["One thing."],
+      changesSource: "https://example.org/diff",
+    }),
+    event({
+      date: "2026-11",
+      recorded: "2026-11-12",
+      summary: "Late.",
+      corrected: { on: "2026-11-25", note: "The month." },
+    }),
+  ];
+  const feed = feedOf(log, "https://whosonfirst.ai", (id) => `Doc ${id}`);
+  const all = (pattern) => [...feed.matchAll(pattern)].map((m) => m[1]);
+  assert.deepEqual(all(/<entry>\s*<id>([^<]+)<\/id>/g), [
+    "tag:whosonfirst.ai,2026:standards/a/2026-11/process",
+    "tag:whosonfirst.ai,2026:standards/a/2026-11-20/version",
+    "tag:whosonfirst.ai,2026:standards/a/2026-10-30/process",
+  ]);
+  // the feed is as new as its newest entry, which is the correction
+  assert.match(
+    feed,
+    /<feed[^>]*>\s*<id>https:\/\/whosonfirst\.ai\/standards\/changes\.xml<\/id>/,
+  );
+  assert.equal(all(/^ {2}<updated>([^<]+)</gm)[0], "2026-11-25T00:00:00Z");
+  assert.deepEqual(all(/^ {4}<updated>([^<]+)</gm), [
+    "2026-11-25T00:00:00Z",
+    "2026-11-21T00:00:00Z",
+    "2026-11-11T00:00:00Z",
+  ]);
+  // only an event dated to a day says when it happened
+  assert.deepEqual(all(/<published>([^<]+)</g), [
+    "2026-11-20T00:00:00Z",
+    "2026-10-30T00:00:00Z",
+  ]);
+  assert.match(feed, /<title>New version: Doc a<\/title>/);
+  assert.match(
+    feed,
+    /href="https:\/\/whosonfirst\.ai\/standards\/timeline\/#a-2026-11-20-version"/,
+  );
+  assert.match(feed, /- One thing\./);
+  assert.match(feed, /Corrected: The month\./);
+  // what an event says is text, and is escaped
+  assert.match(feed, /A &lt;b&gt; &amp; c\./);
+  assert.ok(!feed.includes("<b>"));
 });
