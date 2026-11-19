@@ -1074,10 +1074,10 @@ export const standards: Standard[] = [
         note: "Asked whether they were interested in the problem, with this draft as a starting point: 16 yes, none no, 2 no opinion.",
       },
       {
-        name: "WIMSE agenda for IETF 127",
-        url: "https://datatracker.ietf.org/doc/agenda-127-wimse-sessa/",
+        name: "WIMSE minutes, IETF 127",
+        url: "https://datatracker.ietf.org/doc/minutes-127-wimse-202611182200/",
         kind: "source",
-        note: "A 30-minute slot for the draft on 18 November 2026.",
+        note: "Presented on 18 November 2026, as proposed work rather than a working group document. The discussion included how it relates to ID-JAG.",
       },
     ],
     topics: ["workload"],
