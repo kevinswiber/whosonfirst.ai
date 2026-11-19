@@ -12,6 +12,7 @@ import {
   eventIds,
   feedOf,
   historyOf,
+  movedIn,
   recordBegan,
   spellDate,
   statusLine,
@@ -412,4 +413,41 @@ test("the feed has an entry for each event, newest recording first, and none for
   // what an event says is text, and is escaped
   assert.match(feed, /A &lt;b&gt; &amp; c\./);
   assert.ok(!feed.includes("<b>"));
+});
+
+test("what moved in a year is what changed where a document is, and what was marked notable", () => {
+  const log = [
+    event({
+      kind: "publication",
+      date: "2026-08",
+      recorded: "2026-11-09",
+      summary: "Published.",
+    }),
+    event({
+      kind: "process",
+      date: "2026-10-28",
+      recorded: "2026-11-11",
+      summary: "A step.",
+    }),
+    event({
+      kind: "call",
+      date: "2026-11-13",
+      recorded: "2026-11-19",
+      summary: "Ended.",
+      notable: true,
+    }),
+    event({
+      kind: "adoption",
+      date: "2025-12-01",
+      recorded: "2026-11-19",
+      summary: "Last year.",
+    }),
+    base,
+  ];
+  assert.deepEqual(
+    movedIn(log, "2026").map(
+      (g) => `${g.key}: ${g.events.map((e) => e.summary).join(" ")}`,
+    ),
+    ["2026-08: Published.", "2026-11: Ended."],
+  );
 });

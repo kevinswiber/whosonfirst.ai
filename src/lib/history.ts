@@ -492,6 +492,32 @@ export const changelog = (events: HistoryEvent[]): EventGroup[] => {
     .map(([key, list]) => ({ key, events: list }));
 };
 
+/** The kinds of event that change where a document is, and so are on any list of what moved. */
+const MOVES: HistoryKind[] = [
+  "adoption",
+  "approval",
+  "publication",
+  "succession",
+];
+
+/**
+ * What moved in a year, oldest first, a group for each month: the events that
+ * changed where a document is, and any other marked `notable`.
+ */
+export const movedIn = (events: HistoryEvent[], year: string): EventGroup[] => {
+  const groups = new Map<string, NamedEvent[]>();
+  for (const event of inOrder(happenings(events), (e) => e.date)) {
+    if (!event.date.startsWith(`${year}-`)) continue;
+    if (!event.notable && !MOVES.includes(event.kind)) continue;
+    const month = event.date.slice(0, 7);
+    groups.set(month, [...(groups.get(month) ?? []), event]);
+  }
+  return [...groups].map(([key, list]) => ({ key, events: list }));
+};
+
+/** A date's month alone: "November". */
+export const monthName = (date: string) => MONTHS[Number(date.slice(5, 7)) - 1];
+
 /** The day the record began: the earliest baseline. */
 export const recordBegan = (events: HistoryEvent[]) =>
   events

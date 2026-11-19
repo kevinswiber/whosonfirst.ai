@@ -17,6 +17,246 @@ const archive = (name: string) => `https://www.ietf.org/archive/id/${name}.txt`;
 const BASELINE = "2026-11-19";
 
 export const events: HistoryEvent[] = [
+  /* ───────────── What the tracker's list of the year already said ───────────── */
+  // The tracker opened on 9 November 2026 with a list, written by hand, of
+  // what had moved in 2026. These are its items, each read again at its
+  // source on 19 November, under the day the site first reported it.
+  {
+    entry: "authzen",
+    kind: "publication",
+    date: "2026-01-11",
+    recorded: "2026-11-09",
+    summary:
+      "Published as a final specification: a standard interface to policy engines.",
+    standing: "Final specification, published January 11, 2026.",
+    status: "final",
+    source: "https://openid.net/specs/authorization-api-1_0-final.html",
+    version: {
+      label: "1.0",
+      url: "https://openid.net/specs/authorization-api-1_0-final.html",
+    },
+  },
+  {
+    entry: "a2a",
+    kind: "version",
+    date: "2026-03-12",
+    recorded: "2026-11-09",
+    summary: "Version 1.0.0 released.",
+    standing: "Version 1.0.0 released March 12, 2026.",
+    source: "https://github.com/a2aproject/A2A/releases/tag/v1.0.0",
+    version: {
+      label: "v1.0.0",
+      url: "https://github.com/a2aproject/A2A/releases/tag/v1.0.0",
+    },
+    notable: true,
+  },
+  {
+    entry: "ap2",
+    kind: "version",
+    date: "2026-04-28",
+    recorded: "2026-11-09",
+    summary:
+      "Version 0.2.0 released. The project announced it together with the protocol’s donation to the FIDO Alliance.",
+    standing: "Version 0.2.0, April 2026.",
+    source: "https://github.com/google-agentic-commerce/AP2/releases",
+    version: {
+      label: "v0.2.0",
+      url: "https://github.com/google-agentic-commerce/AP2/releases",
+    },
+    notable: true,
+  },
+  {
+    entry: "mcp-authorization",
+    kind: "version",
+    date: "2026-07-28",
+    recorded: "2026-11-09",
+    summary:
+      "Revision 2026-07-28 of the MCP specification. It makes the protocol stateless and deprecates Dynamic Client Registration.",
+    standing: "Current revision 2026-07-28.",
+    source:
+      "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+    version: {
+      label: "2026-07-28",
+      url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    },
+    changes: [
+      "Makes the protocol stateless: the `initialize` handshake is removed, and every request carries its protocol version and the client’s capabilities.",
+      "Deprecates Dynamic Client Registration (RFC 7591) as a way to register a client, in favor of Client ID Metadata Documents.",
+      "Requires a client to check a returned `iss` against the issuer it recorded before it redeems the authorization code.",
+    ],
+    changesSource:
+      "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+    notable: true,
+  },
+  {
+    entry: "rfc10017",
+    kind: "publication",
+    date: "2026-08",
+    recorded: "2026-11-09",
+    summary:
+      "Published as RFC 10017, a Best Current Practice, from draft-ietf-oauth-browser-based-apps-27.",
+    status: "rfc",
+    source: "https://www.rfc-editor.org/rfc/rfc10017.json",
+    version: {
+      label: "RFC 10017",
+      url: "https://www.rfc-editor.org/rfc/rfc10017",
+    },
+  },
+  {
+    entry: "cross-device-bcp",
+    kind: "publication",
+    date: "2026-08",
+    recorded: "2026-11-09",
+    summary:
+      "Published as RFC 10027, a Best Current Practice, from draft-ietf-oauth-cross-device-security-16.",
+    status: "rfc",
+    source: "https://www.rfc-editor.org/rfc/rfc10027.json",
+    version: {
+      label: "RFC 10027",
+      url: "https://www.rfc-editor.org/rfc/rfc10027",
+    },
+  },
+  {
+    entry: "k8s-pod-certificates",
+    kind: "publication",
+    date: "2026-08-26",
+    recorded: "2026-11-09",
+    summary:
+      "Generally available in Kubernetes v1.37.0: the `PodCertificateRequest` feature gate is stable from 1.37.",
+    status: "final",
+    source:
+      "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/",
+  },
+  {
+    entry: "k8s-clustertrustbundle",
+    kind: "publication",
+    date: "2026-08-26",
+    recorded: "2026-11-09",
+    summary:
+      "Generally available in Kubernetes v1.37.0: the `ClusterTrustBundle` feature gate is stable from 1.37.",
+    status: "final",
+    source:
+      "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/",
+  },
+  {
+    entry: "web-bot-auth",
+    kind: "adoption",
+    date: "2026-09-01",
+    recorded: "2026-11-09",
+    summary:
+      "Revision -00, its first as a document of the Web Bot Auth working group.",
+    status: "wg-draft",
+    source: history("draft-ietf-webbotauth-httpsig-protocol"),
+    version: {
+      label: "-00",
+      name: "draft-ietf-webbotauth-httpsig-protocol-00",
+      url: archive("draft-ietf-webbotauth-httpsig-protocol-00"),
+    },
+  },
+  {
+    entry: "wimse-aims",
+    kind: "adoption",
+    date: "2026-09-15",
+    recorded: "2026-11-09",
+    summary:
+      "Revision -00, its first as a document of the WIMSE working group.",
+    status: "wg-draft",
+    source: history("draft-ietf-wimse-aims"),
+    version: {
+      label: "-00",
+      name: "draft-ietf-wimse-aims-00",
+      url: archive("draft-ietf-wimse-aims-00"),
+    },
+  },
+  {
+    entry: "deferred-token-response",
+    kind: "adoption",
+    date: "2026-09-16",
+    recorded: "2026-11-09",
+    summary:
+      "Revision -00, its first as a document of the OAuth working group.",
+    status: "wg-draft",
+    source: history("draft-ietf-oauth-deferred-token-response"),
+    version: {
+      label: "-00",
+      name: "draft-ietf-oauth-deferred-token-response-00",
+      url: archive("draft-ietf-oauth-deferred-token-response-00"),
+    },
+  },
+  {
+    subject: "The agentproto working group",
+    kind: "adoption",
+    date: "2026-10-08",
+    recorded: "2026-11-09",
+    summary:
+      "The IETF approved the charter of agentproto, a working group on how agents communicate.",
+    source: "https://datatracker.ietf.org/group/agentproto/history/",
+  },
+  {
+    subject: "The DAWN working group",
+    kind: "adoption",
+    date: "2026-10-22",
+    recorded: "2026-11-09",
+    summary:
+      "The IETF approved the charter of DAWN, a working group on how agents are discovered.",
+    source: "https://datatracker.ietf.org/group/dawn/history/",
+  },
+  {
+    entry: "id-jag",
+    kind: "version",
+    date: "2026-10-31",
+    recorded: "2026-11-09",
+    summary: "Revision -06, a day after revision -05.",
+    source: history("draft-ietf-oauth-identity-assertion-authz-grant"),
+    version: {
+      label: "-06",
+      name: "draft-ietf-oauth-identity-assertion-authz-grant-06",
+      url: archive("draft-ietf-oauth-identity-assertion-authz-grant-06"),
+    },
+    notable: true,
+  },
+  {
+    entry: "rfc10070",
+    kind: "publication",
+    date: "2026-11",
+    recorded: "2026-11-09",
+    summary:
+      "Published as RFC 10070, a Proposed Standard, from draft-ietf-oauth-rfc7523bis-11. It updates RFC 7521, RFC 7522, RFC 7523 and RFC 9126.",
+    status: "rfc",
+    source: "https://www.rfc-editor.org/rfc/rfc10070.json",
+    version: {
+      label: "RFC 10070",
+      url: "https://www.rfc-editor.org/rfc/rfc10070",
+    },
+  },
+  {
+    entry: "cimd",
+    kind: "version",
+    date: "2026-11-02",
+    recorded: "2026-11-09",
+    summary: "Revision -03.",
+    source: history("draft-ietf-oauth-client-id-metadata-document"),
+    version: {
+      label: "-03",
+      name: "draft-ietf-oauth-client-id-metadata-document-03",
+      url: archive("draft-ietf-oauth-client-id-metadata-document-03"),
+    },
+    notable: true,
+  },
+  {
+    entry: "spire",
+    kind: "version",
+    date: "2026-11-05",
+    recorded: "2026-11-09",
+    summary: "Version 1.16.0 released.",
+    standing: "Version 1.16.0, November 2026.",
+    source: "https://github.com/spiffe/spire/releases/tag/v1.16.0",
+    version: {
+      label: "v1.16.0",
+      url: "https://github.com/spiffe/spire/releases/tag/v1.16.0",
+    },
+    notable: true,
+  },
   {
     entry: "wimse-httpsig",
     kind: "process",
@@ -33,6 +273,17 @@ export const events: HistoryEvent[] = [
     recorded: "2026-11-11",
     summary: "Its IETF Last Call opened, to end on November 13, 2026.",
     source: history("draft-ietf-wimse-workload-identity-practices"),
+  },
+  {
+    entry: "mcp-client-credentials",
+    kind: "publication",
+    date: "2026-10-23",
+    recorded: "2026-11-11",
+    summary:
+      "The extension’s specification moved to the stable directory of MCP’s authorization extensions.",
+    status: "final",
+    source:
+      "https://github.com/modelcontextprotocol/ext-auth/commits/main/specification/stable",
   },
   {
     entry: "identity-chaining",
@@ -90,6 +341,7 @@ export const events: HistoryEvent[] = [
     recorded: "2026-11-19",
     summary:
       "Its IETF Last Call ended, and its IESG state became “Waiting for AD Go-Ahead”.",
+    notable: true,
     source: history("draft-ietf-wimse-workload-identity-practices"),
   },
   {
@@ -120,6 +372,15 @@ export const events: HistoryEvent[] = [
     summary:
       "MCP announced a release cycle of two releases a year, with the next on March 30, 2027.",
     source: "https://blog.modelcontextprotocol.io/posts/mcp-release-cycle/",
+  },
+  {
+    subject: "IETF 127",
+    kind: "discussion",
+    date: "2026-11-14",
+    recorded: "2026-11-19",
+    summary: "The meeting began in San Francisco, to run seven days.",
+    source: "https://datatracker.ietf.org/meeting/127/",
+    notable: true,
   },
 
   /* ───────────── Baselines ───────────── */
