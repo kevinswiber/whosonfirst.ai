@@ -1,4 +1,4 @@
-import type { HistoryEvent } from "./model.ts";
+import type { HistoryEvent } from "../../lib/history.ts";
 
 /**
  * Events recorded in November 2026, in the order the site reported them.
@@ -1262,7 +1262,7 @@ export const events: HistoryEvent[] = [
     standing:
       "Working group draft. The Draft 1 document is dated February 13, 2026.",
     version: {
-      label: "Draft 1",
+      label: "1.0, Draft 1",
       url: "https://openid.github.io/authzen/authzen-coaz-framework-1_0",
       date: "2026-02-13",
     },
@@ -1290,7 +1290,7 @@ export const events: HistoryEvent[] = [
     standing:
       "Working group draft. The Draft 1 document is dated November 6, 2026.",
     version: {
-      label: "Draft 1",
+      label: "1.0, Draft 1",
       url: "https://openid.github.io/authzen/authzen-access-request-approval-profile-1_0.html",
       date: "2026-11-06",
     },
@@ -1304,7 +1304,7 @@ export const events: HistoryEvent[] = [
     standing:
       "Working group draft. The Draft 1 document is dated July 3, 2026.",
     version: {
-      label: "Draft 1",
+      label: "1.0, Draft 1",
       url: "https://openid.github.io/authzen/authzen-obligations-profile-1_0.html",
       date: "2026-07-03",
     },

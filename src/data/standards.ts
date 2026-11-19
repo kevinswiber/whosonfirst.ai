@@ -1,5 +1,5 @@
+import { currentOf, statusLine } from "../lib/history.ts";
 import { history } from "./history/index.ts";
-import { currentOf, statusLine } from "./history/model.ts";
 import type { Standard, StandardEntry } from "./types";
 
 /**
