@@ -1316,13 +1316,19 @@ export const standards: Standard[] = [
     body: "Microsoft",
     status: "project",
     detail:
-      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards.",
+      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly, case included; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards. For GitHub it must also match the repository’s ID or its owner’s ID.",
     related: [
+      {
+        name: "Create a trust relationship with an external identity provider",
+        url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-create-trust",
+        kind: "source",
+        note: "Wildcards are not supported in any property.",
+      },
       {
         name: "Flexible federated identity credentials",
         url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials",
         kind: "source",
-        note: "The exception, in preview.",
+        note: "The exception, in preview, and the claims it must also match.",
       },
     ],
     topics: ["workload"],
@@ -1339,9 +1345,17 @@ export const standards: Standard[] = [
     body: "Microsoft",
     status: "project",
     detail: "Platform documentation.",
+    related: [
+      {
+        name: "How managed identities work on Azure virtual machines",
+        url: "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-managed-identities-work-vm",
+        kind: "source",
+        note: "The local endpoint a virtual machine’s code asks for tokens.",
+      },
+    ],
     topics: ["workload"],
     summary:
-      "An identity in Microsoft Entra that Azure creates for a resource, or that you create and assign to one. Code on the resource asks a local endpoint for Microsoft Entra tokens. Azure manages the underlying credentials, which you never handle.",
+      "An identity in Microsoft Entra that Azure creates for a resource, or that you create and assign to one. Code on the resource gets Microsoft Entra tokens through MSAL or the Azure Identity library, with no secret. On a virtual machine they come from a local endpoint. Azure manages the underlying credentials, which you never handle.",
     agents:
       "Native workload identity on Azure. A user-assigned managed identity can also be what federation from outside maps onto.",
     url: "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",

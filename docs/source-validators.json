@@ -573,6 +573,10 @@
     "etag": "\"2ERJFsm6pRmXMTrIX0vDotMEDpM=\"",
     "lastModified": "Fri, 28 Aug 2026 07:32:51 GMT"
   },
+  "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-managed-identities-work-vm": {
+    "etag": "\"WtTmoCsBogiol4iUOFoeaFl6EJs=\"",
+    "lastModified": "Mon, 24 Aug 2026 12:32:46 GMT"
+  },
   "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview": {
     "etag": "\"eUSfNWFhp4PFzagTO9w6zSo2wbM=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:49 GMT"
@@ -595,6 +599,10 @@
   },
   "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation": {
     "etag": "\"5HYue5c2JaJIA+9zEQGZIjsulEE=\"",
+    "lastModified": "Mon, 24 Aug 2026 12:32:47 GMT"
+  },
+  "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-create-trust": {
+    "etag": "\"bpF3kqbTYxJ4BG3vJTFcYpWJJfY=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:47 GMT"
   },
   "https://learn.microsoft.com/en-us/graph/auth-v2-service": {
