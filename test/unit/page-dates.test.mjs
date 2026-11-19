@@ -1,9 +1,9 @@
 // The dates a page gives are read from the repository's history. This checks
 // the reading: which commit is a file's first and which its last, and that a
 // commit that only reformats is not counted as a change.
-import { strict as assert } from "node:assert";
+
 import { readFileSync } from "node:fs";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import {
   ENTRIES,
   entriesOf,
@@ -75,7 +75,7 @@ test("a build that is not the deployed one never fetches: a shallow clone is rep
     new URL("../../", import.meta.url).pathname,
     {},
   );
-  assert.doesNotMatch(found, /fetch/);
+  assert.equal(found.match(/fetch/), null);
 });
 
 // A page that shows a few entries of a long list is dated by those entries.
@@ -165,41 +165,41 @@ test("an entry that was only laid out again keeps its date", () => {
   assert.deepEqual(entryDates(versions, "id"), { a: "2026-11-10" });
 });
 
-test("every file read entry by entry is a list this reading can take apart", () => {
-  for (const { file, key } of ENTRIES) {
+for (const { file, key } of ENTRIES) {
+  test(`${file}, read entry by entry, is a list this reading can take apart`, () => {
     const text = readFileSync(
       new URL(`../../${file}`, import.meta.url),
       "utf8",
     );
     const entries = entriesOf(text, key);
     // every object of the outermost array has a name, and no two share one
-    assert.equal(entries.size, text.match(/^ {2}\{\s*$/gm).length, file);
-    assert.ok(entries.size > 0, file);
-  }
-});
+    assert.equal(entries.size, text.match(/^ {2}\{\s*$/gm).length);
+    assert(entries.size > 0);
+  });
+}
 
 // Layout is everything between the strings. What is inside one is what a page
 // says, so nothing inside one is layout.
 test("code that was only laid out again reads as the same, and a change inside a string does not", () => {
   const same = (a, b) => withoutLayout(a) === withoutLayout(b);
   // spacing, line breaks, a trailing comma, a comment and the kind of quote mark
-  assert.ok(
+  assert(
     same(
       `{ id: "a", scopes: ["read", "write"] }`,
       `{\n  // which scopes\n  id: 'a',\n  scopes: [\n    "read",\n    "write",\n  ],\n}`,
     ),
   );
-  assert.ok(same(`{ note: "it's" }`, `{ note: 'it\\'s' }`));
+  assert(same(`{ note: "it's" }`, `{ note: 'it\\'s' }`));
   // a space put into a quoted word
-  assert.ok(!same(`{ scope: "readwrite" }`, `{ scope: "read write" }`));
+  assert(!same(`{ scope: "readwrite" }`, `{ scope: "read write" }`));
   // a line break taken out of a template, where a blank line is a paragraph
-  assert.ok(!same("{ body: `One.\n\nTwo.` }", "{ body: `One. Two.` }"));
+  assert(!same("{ body: `One.\n\nTwo.` }", "{ body: `One. Two.` }"));
   // two slashes in an address are not a comment, and what follows them counts
-  assert.ok(
+  assert(
     !same(`{ url: "https://a.example/x" }`, `{ url: "https://a.example/y" }`),
   );
   // a comma before a bracket inside a string is the string's own
-  assert.ok(!same(`{ code: "[1,]" }`, `{ code: "[1]" }`));
+  assert(!same(`{ code: "[1,]" }`, `{ code: "[1]" }`));
 });
 
 test("an entry's date moves when only the inside of one of its strings changes", () => {

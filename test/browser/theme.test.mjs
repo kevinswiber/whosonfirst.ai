@@ -1,17 +1,15 @@
 // The color theme follows the system setting, live, and a theme picked with
 // the header button lasts only until the system setting next changes.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 
 const site = useBrowser();
 
-test("theme follows the system setting, and a picked theme ends when it changes", async (t) => {
+test("theme follows the system setting, and a picked theme ends when it changes", async () => {
   const ctx = await site.context({
     viewport: { width: 1280, height: 900 },
     colorScheme: "light",
   });
-  t.after(() => ctx.close());
   const page = await ctx.newPage();
   await open(page, site.url("/"));
   const steps = [];

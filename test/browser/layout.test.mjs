@@ -1,8 +1,7 @@
 // A flow page between a phone and a desk: the comparison as a table or as
 // blocks, the stacked tablet layout as the narrative advances, and the selected
 // step kept through expanding, collapsing and a change of width.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, cleanup, describe, test } from "ubqtest";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 import { FLOW } from "../support/site.mjs";
 
@@ -17,9 +16,9 @@ describe("comparison on /flows/workload-identity-federation/", () => {
     [375, ".compare-narrow", ".compare-wide"],
     [1280, ".compare-wide", ".compare-narrow"],
   ]) {
-    test(`${width}px: one presentation shown and exposed, each value under its label`, async (t) => {
+    test(`${width}px: one presentation shown and exposed, each value under its label`, async () => {
       const ctx = await site.context({ viewport: { width, height: 800 } });
-      t.after(() => ctx.close());
+      cleanup(() => ctx.close());
       const page = await ctx.newPage();
       await open(page, site.url("/flows/workload-identity-federation/"));
       const seen = await page.evaluate(
@@ -83,13 +82,19 @@ for (const width of [768, 900, 1087]) {
   for (const path of FLOWS) {
     describe(`tablet ${width}px ${path}`, () => {
       let page;
-      before(async () => {
-        const ctx = await site.context({ viewport: { width, height: 900 } });
-        page = await ctx.newPage();
+      let ready;
+      // each test from the page as it arrives
+      const setup = async () => {
+        ready ??= (async () => {
+          const ctx = await site.context({ viewport: { width, height: 900 } });
+          page = await ctx.newPage();
+        })();
+        await ready;
+        await page.goto("about:blank");
         await open(page, site.url(path));
-      });
-      after(() => page.context().close());
+      };
       test("Next reaches the last step without scrolling controls off the page", async () => {
+        await setup();
         await page.evaluate(() => {
           const panel = document.querySelector(".flow-panel");
           window.scrollBy(0, panel.getBoundingClientRect().top - 120);
@@ -118,19 +123,22 @@ for (const width of [768, 900, 1087]) {
             ),
           };
         });
-        assert.ok(
-          Math.abs(seen.y - initialY) <= 1 &&
-            seen.scrolled &&
-            seen.bounded &&
-            seen.controlsVisible &&
-            seen.headingVisible &&
-            seen.readable,
-          JSON.stringify({ initialY, ...seen }),
+        assert.match(
+          { initialY, ...seen },
+          {
+            y: (y) => Math.abs(y - initialY) <= 1,
+            scrolled: true,
+            bounded: true,
+            controlsVisible: true,
+            headingVisible: true,
+            readable: true,
+          },
         );
       });
       // The panel fills the window. Scrolling on past its last step reaches
       // the rest of the page, or a reader takes the end of the steps for its end.
       test("scrolling past the last step carries on down the page", async () => {
+        await setup();
         await page.evaluate(() => {
           const panel = document.querySelector(".flow-panel");
           window.scrollBy(0, panel.getBoundingClientRect().top - 120);
@@ -141,9 +149,11 @@ for (const width of [768, 900, 1087]) {
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.mouse.wheel(0, 400);
         await page.waitForFunction((y) => scrollY > y, before);
+        assert.greaterThan(await page.evaluate(() => scrollY), before);
       });
       // A diagram selection uses the same bounded narrative panel.
       test("diagram selection aligns its explanation inside the scrolling panel", async () => {
+        await setup();
         await page.locator('svg .step[data-step="1"]').first().click();
         const selected = await page.evaluate(() => {
           const panel = document.querySelector(".flow-panel");
@@ -180,18 +190,25 @@ for (const width of [900, 1280]) {
       let page;
       let count;
       let step;
-      before(async () => {
-        const ctx = await site.context({ viewport: { width, height: 900 } });
-        page = await ctx.newPage();
-        await open(page, site.url(path));
-        count = await page.locator(".flow-step").count();
-        step = count - 1;
+      let ready;
+      // each test from the page as it arrives at its next to last step, at this width
+      const setup = async () => {
+        ready ??= (async () => {
+          const ctx = await site.context({ viewport: { width, height: 900 } });
+          page = await ctx.newPage();
+          await open(page, site.url(path));
+          count = await page.locator(".flow-step").count();
+          step = count - 1;
+        })();
+        await ready;
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto("about:blank");
         await open(page, site.url(`${path}#step-${step}`));
-      });
-      after(() => page.context().close());
+      };
       const toggle = () => page.locator('[data-act="all"]');
       for (const interaction of ["pointer", "keyboard", "reflow"]) {
         test(`collapsing expanded steps (${interaction}) restores the selected explanation without changing selection`, async () => {
+          await setup();
           await toggle().click();
           // Let the expanded layout paint before collapsing, as a reader sees it.
           await frames(page);
@@ -251,6 +268,7 @@ for (const width of [900, 1280]) {
       }
       // Returning from a phone also changes line wrapping and the step’s offset.
       test("returning from phone layout restores the selected explanation", async () => {
+        await setup();
         await page.setViewportSize({ width: 390, height: 844 });
         await frames(page);
         await page.setViewportSize({ width, height: 900 });

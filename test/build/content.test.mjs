@@ -1,9 +1,9 @@
 // What the built pages say, read as text: words that run together, lesson
 // questions that can be passed by habit, and a figure choice that must not be
 // built but is not marked as such everywhere.
-import { strict as assert } from "node:assert";
+
 import { readFileSync } from "node:fs";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import {
   built,
   FLOWS,
@@ -59,19 +59,21 @@ for (const p of built.filter((b) => LESSONS.includes(b.path))) {
 }
 
 test("the right answer to a question cannot be guessed from its place in the list", () => {
-  assert.ok(total > 0, "no lesson has a question with three or more answers");
-  const most = Math.max(0, ...place.filter(Boolean));
-  assert.ok(
-    most <= total / 2,
-    `of ${total} questions, the right answer is ${[...place].map((n, i) => `${n ?? 0} times in place ${i + 1}`).join(", ")}`,
+  assert(total > 0); // no lesson has a question with three or more answers
+  // Each place where the right answer sits more than half the time.
+  assert.deepEqual(
+    place.filter((n) => n > total / 2),
+    [],
   );
 });
 
 test("the right answer to a question cannot be guessed from its length", () => {
-  assert.ok(total > 0, "no lesson has a question with three or more answers");
-  assert.ok(
-    longest <= total / 2 && shortest <= total / 2,
-    `of ${total} questions, the right answer is the longest in ${longest} and the shortest in ${shortest}`,
+  assert(total > 0); // no lesson has a question with three or more answers
+  // How often the right answer is the longest, and the shortest, when either
+  // is more than half the time.
+  assert.deepEqual(
+    [longest, shortest].filter((n) => n > total / 2),
+    [],
   );
 });
 
@@ -96,7 +98,7 @@ test("a figure choice that must not be built is marked on its button, in its pan
       table: /class="[^"]*\bsc-glance\b/.test(p.html),
     }))
     .filter((p) => p.panels > 0);
-  assert.ok(flagged.length > 0, "no figure marks a choice at all");
+  assert(flagged.length > 0); // no figure marks a choice at all
   assert.deepEqual(
     flagged
       .filter((p) => p.buttons !== p.panels || (p.table && p.rows !== p.panels))
@@ -117,12 +119,8 @@ test("the style guide's second-level headings are its sections and nothing else"
   const headings = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) =>
     words(m[1]),
   );
-  assert.ok(sections.length > 1, "the style guide has no sections");
-  assert.equal(
-    headings.length,
-    sections.length,
-    `${sections.length} sections, but these headings: ${headings.join(", ")}`,
-  );
+  assert(sections.length > 1); // the style guide has no sections
+  assert.equal(headings.length, sections.length); // headings, sections
 });
 
 // A flow's implementation record is read entry by entry: a reader often
@@ -172,7 +170,7 @@ test("implementation records mark each specification in every entry, and a gener
           wrong.push(`${p.path}#${id} leaves RFC ${n} unmarked`);
     }
   }
-  assert.ok(marks > 0, "no implementation record marks anything");
+  assert(marks > 0); // no implementation record marks anything
   assert.deepEqual(some(wrong), []);
   const summaries = [pageAt("/implementations/"), ...FLOWS.map(pageAt)].flatMap(
     (p) =>
@@ -194,7 +192,7 @@ const listings = (markdown) =>
   );
 test("every listing in a comparison's figure is one of its two flows' own, and both flows link to the comparison", () => {
   const pairs = built.filter((p) => /^\/compare\/[^/]+\/$/.test(p.path));
-  assert.ok(pairs.length > 0, "no comparison was built");
+  assert(pairs.length > 0); // no comparison was built
   const wrong = [];
   for (const p of pairs) {
     const flows = p.path
@@ -239,12 +237,11 @@ test("no page marks the OAuth client inside “client certificate”", () => {
       marked.push(`${p.path} “${m[0].replace(/<[^>]+>/g, "")}”`);
   assert.deepEqual(some(marked), []);
   // and the term is still marked where it stands for itself
-  assert.ok(
+  assert(
     built.some((p) =>
       /<a class="term" href="\/glossary\/#client"/.test(p.html),
     ),
-    "the client is no longer marked anywhere",
-  );
+  ); // the client is no longer marked anywhere
 });
 
 // The comparisons are a section of the site, and a reader on any page can

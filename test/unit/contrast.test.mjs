@@ -5,9 +5,9 @@
  * text-on-surface pair the site actually uses against 4.5:1. The rendered
  * checks then measure what is actually drawn.
  */
-import { strict as assert } from "node:assert";
+
 import { readFileSync } from "node:fs";
-import { describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 
 const AA = 4.5;
 const css = readFileSync(
@@ -60,18 +60,17 @@ test("every token a pair names is declared, with a light and a dark value", () =
   assert.deepEqual(
     [...new Set(PAIRS.flat())].filter((k) => !tokens[k]),
     [],
-    "missing from the first rule block of src/styles/tokens.css",
-  );
+  ); // missing from the first rule block of src/styles/tokens.css
 });
 
 for (const theme of ["light", "dark"]) {
   describe(`${theme} theme: text at least ${AA}:1 on its ground`, () => {
     for (const [fg, bg] of PAIRS) {
-      test(`${fg} on ${bg}`, (t) => {
-        assert.ok(tokens[fg] && tokens[bg], "a token is missing");
+      test(`${fg} on ${bg}`, () => {
+        assert(tokens[fg] && tokens[bg]); // a token is missing
         const r = ratio(tokens[fg][theme], tokens[bg][theme]);
-        t.diagnostic(`${r.toFixed(2)}:1`);
-        assert.ok(r >= AA, `${r.toFixed(2)}:1`);
+        console.log(`${r.toFixed(2)}:1`);
+        assert(r >= AA);
       });
     }
   });
@@ -95,11 +94,11 @@ const MARK_PAIRS = [
 for (const theme of ["light", "dark"]) {
   describe(`${theme} theme: the mark's parts at least ${GRAPHIC}:1 against what is behind them`, () => {
     for (const [fg, bg] of MARK_PAIRS) {
-      test(`${fg} on ${bg}`, (t) => {
-        assert.ok(tokens[fg] && tokens[bg], "a token is missing");
+      test(`${fg} on ${bg}`, () => {
+        assert(tokens[fg] && tokens[bg]); // a token is missing
         const r = ratio(tokens[fg][theme], tokens[bg][theme]);
-        t.diagnostic(`${r.toFixed(2)}:1`);
-        assert.ok(r >= GRAPHIC, `${r.toFixed(2)}:1`);
+        console.log(`${r.toFixed(2)}:1`);
+        assert(r >= GRAPHIC);
       });
     }
   });
@@ -126,6 +125,6 @@ test("the icon is drawn in the mark's colors, in both themes", () => {
         tokens[`--mark-${part}`]?.[theme],
       ]),
     );
-  assert.deepEqual(fills(light), want("light"), "the light colors differ");
-  assert.deepEqual(fills(dark), want("dark"), "the dark colors differ");
+  assert.deepEqual(fills(light), want("light")); // the light colors differ
+  assert.deepEqual(fills(dark), want("dark")); // the dark colors differ
 });

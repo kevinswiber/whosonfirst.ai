@@ -3,8 +3,7 @@
 // would lower the rating if it turned out to be required.
 //
 // Node strips the types from rating.ts as it loads it; the module imports types only.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import { levelOf, rate } from "../../src/data/rating.ts";
 
 const ref = (id, role, status, level) => ({

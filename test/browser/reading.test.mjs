@@ -4,32 +4,28 @@
 // DOM, so selection must never remove the narrative with hidden, aria-hidden
 // or display: none. This is a content-availability contract, not an emulation
 // of any browser's Reader.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, cleanup, describe, test } from "ubqtest";
 import { open, useBrowser } from "../support/browser.mjs";
 import { FLOWS } from "../support/site.mjs";
 
 const site = useBrowser();
 
-// With and without scripts, each has a context of its own, and nothing here
-// waits on a clock, so the two run side by side.
-describe("every flow read in place", { concurrency: true }, () => {
+describe("every flow read in place", () => {
   for (const javaScriptEnabled of [false, true]) {
-    describe(`reader content ${javaScriptEnabled ? "after stepping" : "without JavaScript"}`, {
-      concurrency: 1,
-    }, () => {
-      let page;
-      before(async () => {
-        const ctx = await site.context({
-          javaScriptEnabled,
-          viewport: { width: 1280, height: 900 },
-        });
-        page = await ctx.newPage();
-      });
-      after(() => page.context().close());
+    describe(`reader content ${javaScriptEnabled ? "after stepping" : "without JavaScript"}`, () => {
+      let ready;
+      const setup = () =>
+        (ready ??= (async () => {
+          const ctx = await site.context({
+            javaScriptEnabled,
+            viewport: { width: 1280, height: 900 },
+          });
+          return ctx.newPage();
+        })());
 
       for (const path of FLOWS) {
         test(`${path}: all step headings, messages, examples and holdings remain available in order`, async () => {
+          const page = await setup();
           await open(page, site.url(path));
           if (javaScriptEnabled) await page.click('[data-act="next"]');
           const seen = await page.evaluate(() => {
@@ -83,11 +79,7 @@ describe("every flow read in place", { concurrency: true }, () => {
               problems,
             };
           });
-          assert.equal(
-            seen.steps,
-            seen.count,
-            "steps listed against the count",
-          );
+          assert.equal(seen.steps, seen.count); // steps listed against the count
           assert.deepEqual(seen.problems, []);
         });
       }
@@ -99,20 +91,22 @@ describe("every flow read in place", { concurrency: true }, () => {
 for (const javaScriptEnabled of [false, true]) {
   describe(`comparisons ${javaScriptEnabled ? "with" : "without"} JavaScript`, () => {
     let page;
-    before(async () => {
-      const ctx = await site.context({
-        javaScriptEnabled,
-        reducedMotion: "reduce",
-      });
-      page = await ctx.newPage();
-    });
-    after(() => page.context().close());
+    let ready;
+    const setup = () =>
+      (ready ??= (async () => {
+        const ctx = await site.context({
+          javaScriptEnabled,
+          reducedMotion: "reduce",
+        });
+        page = await ctx.newPage();
+      })());
 
     for (const [path, selector] of [
       ["/concepts/", ".ti-panel"],
       ["/deployments/kubernetes/", ".km-panel"],
     ]) {
       test(`${path}: every comparison alternative remains readable without selection`, async () => {
+        await setup();
         await open(page, site.url(path));
         const seen = await page.locator(selector).evaluateAll((panels) => ({
           total: panels.length,
@@ -122,47 +116,54 @@ for (const javaScriptEnabled of [false, true]) {
               p.checkVisibility({ visibilityProperty: true }),
           ).length,
         }));
-        assert.ok(
-          seen.total > 1 && seen.readable === seen.total,
-          JSON.stringify(seen),
-        );
+        assert.match(seen, {
+          total: (n) => n > 1,
+          readable: seen.total,
+        });
       });
     }
 
     describe("/concepts/", () => {
-      before(() => open(page, site.url("/concepts/")));
+      // the page at /concepts/, opened again if a test elsewhere left it
+      const at = async () => {
+        await setup();
+        if (!page.url().startsWith(site.url("/concepts/")))
+          await open(page, site.url("/concepts/"));
+      };
       let read;
       const structure = () =>
-        (read ??= page.evaluate(() => {
-          const article = document.querySelector("main > article");
-          const heading = article?.querySelector("h1");
-          const intro = article?.querySelector(".page-head .lede");
-          const facts = article?.querySelector(".page-facts");
-          const comparisons = [...document.querySelectorAll(".lh-panel")];
-          const modes = [...document.querySelectorAll("#human .modes .card")];
-          return {
-            opening:
-              !!heading &&
-              !!intro &&
-              !!facts &&
-              !!(
-                intro.compareDocumentPosition(facts) &
-                Node.DOCUMENT_POSITION_FOLLOWING
-              ),
-            comparisons: comparisons.length,
-            modes: modes.length,
-            complete: [...comparisons, ...modes].every(
-              (p) =>
-                p.querySelector("h3")?.textContent.trim() &&
-                p.checkVisibility({ visibilityProperty: true }) &&
-                [...p.querySelectorAll("h3, p, table")].every((el) =>
-                  el.checkVisibility({ visibilityProperty: true }),
+        (read ??= at().then(() =>
+          page.evaluate(() => {
+            const article = document.querySelector("main > article");
+            const heading = article?.querySelector("h1");
+            const intro = article?.querySelector(".page-head .lede");
+            const facts = article?.querySelector(".page-facts");
+            const comparisons = [...document.querySelectorAll(".lh-panel")];
+            const modes = [...document.querySelectorAll("#human .modes .card")];
+            return {
+              opening:
+                !!heading &&
+                !!intro &&
+                !!facts &&
+                !!(
+                  intro.compareDocumentPosition(facts) &
+                  Node.DOCUMENT_POSITION_FOLLOWING
                 ),
-            ),
-          };
-        }));
+              comparisons: comparisons.length,
+              modes: modes.length,
+              complete: [...comparisons, ...modes].every(
+                (p) =>
+                  p.querySelector("h3")?.textContent.trim() &&
+                  p.checkVisibility({ visibilityProperty: true }) &&
+                  [...p.querySelectorAll("h3, p, table")].every((el) =>
+                    el.checkVisibility({ visibilityProperty: true }),
+                  ),
+              ),
+            };
+          }),
+        ));
       test("the article opens with its heading and introduction before review facts", async () => {
-        assert.ok((await structure()).opening);
+        assert((await structure()).opening);
       });
       test("all five delegation and three human-involvement comparisons have readable headings and explanations", async () => {
         const s = await structure();
@@ -176,6 +177,7 @@ for (const javaScriptEnabled of [false, true]) {
         );
       });
       test("each chain exposes all three ordered hops with both endpoints and the credential", async () => {
+        await at();
         const chains = await page.locator(".lh-panel").evaluateAll((panels) =>
           panels.map((panel) => {
             const nodes = [...panel.querySelectorAll(".lh-node")].map(
@@ -199,37 +201,39 @@ for (const javaScriptEnabled of [false, true]) {
           }),
         );
         const chainText = await page.locator(".lh").ariaSnapshot();
-        assert.equal(chains.length, 5, "chains drawn");
+        assert.equal(chains.length, 5); // chains drawn
         for (const { expected, actual, visible } of chains) {
-          assert.ok(visible, "a hop is not visible");
-          assert.equal(expected.length, 3, "hops in a chain");
+          assert(visible); // a hop is not visible
+          assert.equal(expected.length, 3); // hops in a chain
           assert.deepEqual(actual, expected);
           for (const text of expected)
-            assert.ok(chainText.includes(text), `not exposed: ${text}`);
+            assert(chainText.includes(text), `not exposed: ${text}`);
         }
       });
       test("decorative chain boxes do not duplicate the accessible hop narrative", async () => {
+        await at();
         const diagrams = await Promise.all(
           (await page.locator(".lh-chain").all()).map((el) =>
             el.ariaSnapshot(),
           ),
         );
-        assert.equal(diagrams.length, 5, "chains drawn");
+        assert.equal(diagrams.length, 5); // chains drawn
         assert.deepEqual(
           diagrams.filter((text) => text.trim()),
           [],
         );
       });
       test("a delegation navigation link reaches its visible section heading", async () => {
+        await at();
         await page.locator('.lh-modes a[href="#lh-bound"]').click();
         const target = await page.locator("#lh-bound h3").boundingBox();
         assert.equal(new URL(page.url()).hash, "#lh-bound");
-        assert.ok(
-          !!target && target.y >= 90 && target.y + target.height < 720,
-          JSON.stringify(target),
-        );
+        assert.match(target, {
+          y: (y) => y >= 90 && y + target.height < 720,
+        });
       });
       test("every claim explanation is visible and exposed without opening a disclosure", async () => {
+        await at();
         const notes = page.locator(".claim-note");
         const visible = await notes.evaluateAll((items) =>
           items.every(
@@ -241,12 +245,9 @@ for (const javaScriptEnabled of [false, true]) {
         const snapshots = await Promise.all(
           (await notes.all()).map((n) => n.ariaSnapshot()),
         );
-        assert.ok(snapshots.length > 0, "no claim explanation");
-        assert.ok(visible, "a claim explanation is hidden");
-        assert.ok(
-          snapshots.every((s) => s.trim().length > 0),
-          "a claim explanation is not exposed",
-        );
+        assert(snapshots.length > 0); // no claim explanation
+        assert(visible); // a claim explanation is hidden
+        assert(snapshots.every((s) => s.trim().length > 0)); // a claim explanation is not exposed
       });
     });
   });
@@ -259,9 +260,9 @@ describe("adjacent metadata and source references have literal separators", () =
     ["/standards/", ".sx-item > .chips"],
     ["/concepts/", ".ti-sources .chips"],
   ]) {
-    test(path, async (t) => {
+    test(path, async () => {
       const ctx = await site.context();
-      t.after(() => ctx.close());
+      cleanup(() => ctx.close());
       const page = await ctx.newPage();
       await open(page, site.url(path));
       const rows = await page.locator(selector).evaluateAll((items) =>
@@ -270,7 +271,7 @@ describe("adjacent metadata and source references have literal separators", () =
           separators: row.textContent.match(/ · /g)?.length ?? 0,
         })),
       );
-      assert.ok(rows.length > 0, "no such row");
+      assert(rows.length > 0); // no such row
       assert.deepEqual(
         rows.filter((r) => r.separators !== Math.max(0, r.fields - 1)),
         [],

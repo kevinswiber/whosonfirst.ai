@@ -2,11 +2,11 @@
 // in Markdown, and what it tells a search engine about itself. Each is made
 // from the page when the site is built (src/integrations/), and each is named
 // in the page's own head, so the head is where this starts.
-import { strict as assert } from "node:assert";
+
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { assert, test } from "ubqtest";
 import { faults, kind } from "../support/mermaid.mjs";
 import {
   attr,
@@ -26,7 +26,7 @@ import {
 
 // A card: a PNG of the size every service expects, at the address the page gives.
 test("every page has a card: a 1200 × 630 PNG under 300 kB, at the address its head gives", () => {
-  assert.ok(indexed.length > 0, "no page may be listed by a search engine");
+  assert(indexed.length > 0); // no page may be listed by a search engine
   const cards = [];
   for (const p of indexed) {
     const src = attr(p, /property="og:image"/, "content");
@@ -69,7 +69,7 @@ test("every icon a page names is in the build, and /favicon.ico with it", () => 
 
 // Markdown: the page's own title and sections, and none of its markup.
 test("every page's Markdown copy opens with its title, has each of its sections, carries no markup and gives its address", () => {
-  assert.ok(withCopy.length > 0, "no page names a copy of itself");
+  assert(withCopy.length > 0); // no page names a copy of itself
   const copies = [];
   for (const p of withCopy) {
     const href = copyOf(p);
@@ -231,7 +231,7 @@ test("every sequence diagram is in its page's Markdown copy as Mermaid that pars
         );
     }
   }
-  assert.ok(seen > 0, "no page with a copy draws a sequence diagram");
+  assert(seen > 0); // no page with a copy draws a sequence diagram
   assert.deepEqual(some(wrong), []);
 });
 
@@ -252,7 +252,7 @@ test("standard status and reference have a literal separator in HTML and Markdow
         wrong.push(`${p.path}: ${row}`);
     }
   }
-  assert.ok(cards > 0, "no page shows a standard's card");
+  assert(cards > 0); // no page shows a standard's card
   assert.deepEqual(some(wrong), []);
 });
 
@@ -290,7 +290,7 @@ test("a credential flagged new or used up on a flow's page has the same flag in 
       if (!md.replaceAll("~~", "").includes(`${c.name} (${c.flag})`))
         wrong.push(`${p.path} (${c.name} is not “${c.flag}” in the copy)`);
   }
-  assert.ok(seen > 0, "no flow flags a credential new or used up");
+  assert(seen > 0); // no flow flags a credential new or used up
   assert.deepEqual(some([...new Set(wrong)]), []);
 });
 
@@ -318,8 +318,8 @@ test("PKCE's authorization code is new when issued and used up once exchanged, i
 
 test("llms.txt lists every page's Markdown copy, and every link in it leads to a file", () => {
   const llms = file("llms.txt");
-  assert.ok(llms.startsWith("# "), "llms.txt does not open with a title");
-  assert.ok(exists("llms-full.txt"), "there is no llms-full.txt");
+  assert(llms.startsWith("# ")); // llms.txt does not open with a title
+  assert(exists("llms-full.txt")); // there is no llms-full.txt
   const listed = [
     ...llms.matchAll(/\]\(https:\/\/whosonfirst\.ai(\/[^)]*)\)/g),
   ].map((m) => m[1]);
@@ -337,7 +337,7 @@ test("llms.txt lists every page's Markdown copy, and every link in it leads to a
 
 // What a page tells a search engine: data that parses, about this page.
 test("every page gives its own address as canonical and describes itself in structured data that parses", () => {
-  assert.ok(indexed.length > 0, "no page may be listed by a search engine");
+  assert(indexed.length > 0); // no page may be listed by a search engine
   const data = [];
   for (const p of indexed) {
     const m = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
@@ -361,16 +361,20 @@ test("every page gives its own address as canonical and describes itself in stru
 
 // Implementation records have their own review scope/date; generic page metadata must not
 // attribute that limited review to the site author or the standards review date.
+const reviewed = built.filter(
+  (p) =>
+    p.path.startsWith("/implementations/") ||
+    p.html.includes("data-implementation-reviewed"),
+);
+
 test("pages with implementation evidence make no whole-page reviewer claim", () => {
-  const pages = built.filter(
-    (p) =>
-      p.path.startsWith("/implementations/") ||
-      p.html.includes("data-implementation-reviewed"),
-  );
-  assert.ok(pages.some((p) => p.path === "/implementations/"));
-  assert.ok(pages.some((p) => p.path === "/implementations/dpop/"));
-  assert.ok(pages.some((p) => p.path === "/flows/dpop/"));
-  for (const page of pages) {
+  assert(reviewed.some((p) => p.path === "/implementations/"));
+  assert(reviewed.some((p) => p.path === "/implementations/dpop/"));
+  assert(reviewed.some((p) => p.path === "/flows/dpop/"));
+});
+
+for (const page of reviewed) {
+  test(`${page.path} has implementation evidence and makes no whole-page reviewer claim`, () => {
     const scripts = [
       ...head(page).matchAll(
         /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
@@ -380,17 +384,16 @@ test("pages with implementation evidence make no whole-page reviewer claim", () 
       (match) => JSON.parse(match[1])["@graph"] ?? [],
     );
     const webpage = graph.find((node) => node["@type"] === "WebPage");
-    assert.ok(webpage, page.path);
-    assert.equal(webpage.reviewedBy, undefined, page.path);
-    assert.equal(webpage.lastReviewed, undefined, page.path);
-  }
-});
+    assert(webpage);
+    assert.equal(webpage.reviewedBy, undefined);
+    assert.equal(webpage.lastReviewed, undefined);
+  });
+}
 
-test("Implementations uses its published name and URLs in page metadata and Markdown navigation", () => {
-  const records = built.filter((p) => p.path.startsWith("/implementations/"));
-  assert.ok(records.length > 1);
-  assert.ok(!built.some((p) => p.path.startsWith("/field/")));
-  for (const page of records) {
+const records = built.filter((p) => p.path.startsWith("/implementations/"));
+
+for (const page of records) {
+  test(`${page.path} uses the published name of Implementations and its URLs`, () => {
     const title = plain(
       /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(main(page))?.[1] ?? "",
     );
@@ -404,15 +407,20 @@ test("Implementations uses its published name and URLs in page metadata and Mark
       head(page),
       /Implementations|implementations and deployment reports/,
     );
-    assert.ok(file(copyOf(page)).startsWith(`# ${title}\n`), page.path);
-    assert.ok(!page.html.includes('href="/field/'), page.path);
-  }
+    assert(file(copyOf(page)).startsWith(`# ${title}\n`));
+    assert(!page.html.includes('href="/field/'));
+  });
+}
+
+test("Implementations uses its published name and URLs in page metadata and Markdown navigation", () => {
+  assert(records.length > 1);
+  assert(!built.some((p) => p.path.startsWith("/field/")));
   const navigation = file("llms.txt");
   assert.match(navigation, /^## Implementations$/m);
-  assert.ok(
+  assert(
     navigation.includes("https://whosonfirst.ai/implementations/dpop/index.md"),
   );
-  assert.doesNotMatch(navigation, /https:\/\/whosonfirst\.ai\/field\//);
+  assert(!/https:\/\/whosonfirst\.ai\/field\//.test(navigation));
 });
 
 // Parameterized pages are not discovered by the sitemap’s filesystem glob.
@@ -420,7 +428,7 @@ test("the sitemap includes every indexable page, including implementation record
   const urls = [...file("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
     (match) => match[1],
   );
-  assert.equal(new Set(urls).size, urls.length, "duplicate sitemap addresses");
+  assert.equal(new Set(urls).size, urls.length); // duplicate sitemap addresses
   const missing = indexed.filter(
     (page) => !urls.includes(`${ORIGIN}${page.path}`),
   );
@@ -496,7 +504,7 @@ test("where pages are dated, a record's page says when it last changed as well a
   const records = indexed.filter((p) =>
     /^\/implementations\/[^/]+\/$/.test(p.path),
   );
-  assert.ok(records.length > 1);
+  assert(records.length > 1);
   if (!indexed.some(changedOn)) return; // a build without the history dates nothing
   const wrong = [];
   for (const p of records) {
@@ -577,10 +585,7 @@ test("every page with a Markdown copy links to it in its footer, and every page'
       wrong.push(`${p.path} (no speculation rules, or not the ones expected)`);
     }
   }
-  assert.ok(
-    built.every((p) => !p.path.includes(".")),
-    "a page has a dot in its address, which the speculation rules take for a file",
-  );
+  assert(built.every((p) => !p.path.includes("."))); // a page has a dot in its address, which the speculation rules take for a file
   assert.deepEqual(some(wrong), []);
 });
 
@@ -590,6 +595,6 @@ test("the IndexNow key is served from the site's root and holds its own name", (
   const keys = readdirSync(root).filter((name) =>
     /^[0-9a-f]{8,128}\.txt$/.test(name),
   );
-  assert.equal(keys.length, 1, `${keys.length} key files in the build`);
+  assert.equal(keys.length, 1); // the count of key files in the build
   assert.equal(file(keys[0]).trim(), keys[0].slice(0, -4));
 });

@@ -3,8 +3,7 @@
 // A drawing is not split between pages, and a browser cuts off what does not
 // fit. Printed from a desktop, the page has been stepping through; printed from
 // a phone, it reads as a narrative with the diagram closed.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 import { device, open, useBrowser, VIEWPORTS } from "../support/browser.mjs";
 import { FLOWS } from "../support/site.mjs";
 
@@ -53,22 +52,21 @@ const look = () => {
 
 const site = useBrowser();
 
-// The desktop and the phone each have a context of its own, and nothing here
-// waits on a clock, so the two run side by side.
-describe("every flow on paper", { concurrency: true }, () => {
+describe("every flow on paper", () => {
   for (const vp of VIEWPORTS) {
-    describe(`print from ${vp.name}`, { concurrency: 1 }, () => {
-      let page;
-      before(async () => {
-        const ctx = await site.context(
-          device(vp, { colorScheme: "dark", reducedMotion: "reduce" }),
-        );
-        page = await ctx.newPage();
-      });
-      after(() => page.context().close());
+    describe(`print from ${vp.name}`, () => {
+      let ready;
+      const setup = () =>
+        (ready ??= (async () => {
+          const ctx = await site.context(
+            device(vp, { colorScheme: "dark", reducedMotion: "reduce" }),
+          );
+          return ctx.newPage();
+        })());
 
       for (const path of FLOWS) {
         test(`${path}: every step in order with its text, no controls, light, the diagram on one sheet`, async () => {
+          const page = await setup();
           await page.emulateMedia({ media: "screen", colorScheme: "dark" });
           await page.setViewportSize({ width: vp.width, height: vp.height });
           await open(page, site.url(path));
@@ -118,7 +116,7 @@ describe("every flow on paper", { concurrency: true }, () => {
 // A comparison of two flows, on paper. Nothing scrolls on a sheet, so every
 // point has to be inside it with both flows' sides: a table wider than the
 // sheet would print its first flow and cut off the second.
-describe("a comparison on paper", { concurrency: 1 }, () => {
+describe("a comparison on paper", () => {
   const PAIR = "/compare/dpop-vs-oauth-mtls/";
   const facts = () => {
     const shown = (e) => e.checkVisibility({ visibilityProperty: true });

@@ -2,8 +2,7 @@
 // followed, with or without scripts, and the words that mean something else in
 // ordinary speech are linked only where an author meant the technical sense.
 // An RFC number is a link of the same kind, to its entry in the standards tracker.
-import { strict as assert } from "node:assert";
-import { describe, test } from "node:test";
+import { assert, cleanup, describe, test } from "ubqtest";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 import { FLOW } from "../support/site.mjs";
 
@@ -13,27 +12,24 @@ const isOpen = (tip) => tip.evaluate((el) => el.matches(":popover-open"));
 // Reader may activate the original page's link. No activation path should be
 // intercepted to open a preview that is invisible in the extracted article.
 describe("a term in a flow's introduction", () => {
+  const load = async (options = {}) => {
+    const ctx = await site.context({ reducedMotion: "reduce", ...options });
+    cleanup(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url(FLOW));
+    return { page, term: page.locator(".intro a.term").first() };
+  };
+  test("a hover preview stays available while the pointer moves onto it", async () => {
+    const { page, term } = await load();
+    await term.hover();
+    const tip = page.locator("#term-tip");
+    await tip.hover();
+    assert(await isOpen(tip));
+  });
   for (const activation of ["click", "Enter", "touch", "programmatic click"]) {
-    test(`${activation} follows a term to its glossary definition`, async (t) => {
-      const ctx = await site.context({
-        hasTouch: activation === "touch",
-        reducedMotion: "reduce",
-      });
-      t.after(() => ctx.close());
-      const page = await ctx.newPage();
-      await open(page, site.url(FLOW));
-      const term = page.locator(".intro a.term").first();
+    test(`${activation} follows a term to its glossary definition`, async () => {
+      const { page, term } = await load({ hasTouch: activation === "touch" });
       const href = await term.getAttribute("href");
-      if (activation === "click")
-        await t.test(
-          "a hover preview stays available while the pointer moves onto it",
-          async () => {
-            await term.hover();
-            const tip = page.locator("#term-tip");
-            await tip.hover();
-            assert.ok(await isOpen(tip));
-          },
-        );
       await Promise.all([
         page.waitForURL(site.url(href)),
         activation === "Enter"
@@ -46,14 +42,15 @@ describe("a term in a flow's introduction", () => {
                 })
               : term.click(),
       ]);
-      assert.ok(
-        await page.evaluate(
-          () =>
-            !!document.getElementById(
-              decodeURIComponent(location.hash.slice(1)),
-            ),
-        ),
-        `${href} names nothing on the glossary`,
+      // the address it reached, and whether the glossary has that entry
+      assert.match(
+        await page.evaluate(() => ({
+          hash: location.hash,
+          found: !!document.getElementById(
+            decodeURIComponent(location.hash.slice(1)),
+          ),
+        })),
+        { found: true },
       );
     });
   }
@@ -67,67 +64,64 @@ for (const javaScriptEnabled of [false, true]) {
     ["/deployments/local/", 'main p a[href="/glossary/#claim"]'],
   ]) {
     describe(`${path} ${javaScriptEnabled ? "with" : "without"} JavaScript`, () => {
-      test("explicit claims links retain their label and glossary treatment with or without scripts", async (t) => {
+      const load = async () => {
         const ctx = await site.context({
           javaScriptEnabled,
           reducedMotion: "reduce",
         });
-        t.after(() => ctx.close());
+        cleanup(() => ctx.close());
         const page = await ctx.newPage();
         await open(page, site.url(path));
         const term = page.locator(selector).first();
         const definition = await term.getAttribute("data-def");
+        return { page, term, definition, tip: page.locator("#term-tip") };
+      };
+      test("explicit claims links retain their label and glossary treatment with or without scripts", async () => {
+        const { term, definition } = await load();
         assert.equal(await term.textContent(), "claims");
         assert.equal(await term.getAttribute("data-term"), "Claim");
-        assert.ok(
-          definition?.startsWith("One named statement inside a token"),
+        assert.match(
           definition ?? "no definition",
+          /^One named statement inside a token/,
         );
-        assert.ok(
-          await term.evaluate((el) => el.classList.contains("term")),
-          "not marked as a term",
-        );
-        if (javaScriptEnabled) {
-          const tip = page.locator("#term-tip");
-          await t.test(
-            "hovering an explicit glossary link previews its definition",
-            async () => {
-              // Scrolling intentionally dismisses a preview. Bring this deep link into
-              // view and let scroll events finish before testing a pointer entering it.
-              await term.scrollIntoViewIfNeeded();
-              await page.mouse.move(0, 0);
-              await frames(page);
-              await term.hover();
-              assert.ok(await isOpen(tip), "no preview");
-              assert.equal(
-                await tip.locator(".term-tip-def").textContent(),
-                definition,
-              );
-            },
+        assert(await term.evaluate((el) => el.classList.contains("term"))); // not marked as a term
+      });
+      if (javaScriptEnabled) {
+        test("hovering an explicit glossary link previews its definition", async () => {
+          const { page, term, definition, tip } = await load();
+          // Scrolling intentionally dismisses a preview. Bring this deep link into
+          // view and let scroll events finish before testing a pointer entering it.
+          await term.scrollIntoViewIfNeeded();
+          await page.mouse.move(0, 0);
+          await frames(page);
+          await term.hover();
+          assert(await isOpen(tip)); // no preview
+          assert.equal(
+            await tip.locator(".term-tip-def").textContent(),
+            definition,
           );
-          await t.test(
-            "focusing an explicit glossary link previews its definition",
-            async () => {
-              await page.keyboard.press("Escape");
-              await term.focus();
-              assert.ok(await isOpen(tip), "no preview");
-              assert.equal(
-                await tip.locator(".term-tip-def").textContent(),
-                definition,
-              );
-            },
+        });
+        test("focusing an explicit glossary link previews its definition", async () => {
+          const { page, term, definition, tip } = await load();
+          // as after the hover above: the link in view, the scroll settled
+          await term.scrollIntoViewIfNeeded();
+          await frames(page);
+          await page.keyboard.press("Escape");
+          await term.focus();
+          assert(await isOpen(tip)); // no preview
+          assert.equal(
+            await tip.locator(".term-tip-def").textContent(),
+            definition,
           );
-        }
-        await t.test(
-          "activating an explicit glossary term reaches its definition with or without scripts",
-          async () => {
-            await Promise.all([
-              page.waitForURL(site.url("/glossary/#claim")),
-              term.press("Enter"),
-            ]);
-            assert.equal(await page.locator("#claim").count(), 1);
-          },
-        );
+        });
+      }
+      test("activating an explicit glossary term reaches its definition with or without scripts", async () => {
+        const { page, term } = await load();
+        await Promise.all([
+          page.waitForURL(site.url("/glossary/#claim")),
+          term.press("Enter"),
+        ]);
+        assert.equal(await page.locator("#claim").count(), 1);
       });
     });
   }
@@ -151,9 +145,9 @@ describe("claim and state links refer to their technical meanings", () => {
       true,
     ],
   ]) {
-    test(`${path}: ${expected ? "linked" : "not linked"} where ${selector}`, async (t) => {
+    test(`${path}: ${expected ? "linked" : "not linked"} where ${selector}`, async () => {
       const ctx = await site.context();
-      t.after(() => ctx.close());
+      cleanup(() => ctx.close());
       const page = await ctx.newPage();
       await open(page, site.url(path));
       assert.equal((await page.locator(selector).count()) > 0, expected);
@@ -185,25 +179,31 @@ for (const javaScriptEnabled of [false, true]) {
         "wag",
       ],
     ]) {
-      test(`${name} previews its tracker entry and leads to it`, async (t) => {
-        const ctx = await site.context({
-          javaScriptEnabled,
-          reducedMotion: "reduce",
+      describe(name, () => {
+        const load = async () => {
+          const ctx = await site.context({
+            javaScriptEnabled,
+            reducedMotion: "reduce",
+          });
+          cleanup(() => ctx.close());
+          const page = await ctx.newPage();
+          await open(page, site.url("/flows/workload-identity-federation/"));
+          return { page, link: page.locator(selector).first() };
+        };
+        test(`${name} previews its tracker entry and leads to it`, async () => {
+          const { link } = await load();
+          assert.equal(await link.count(), 1); // nothing matches the selector
+          assert.equal(await link.getAttribute("data-term"), name);
         });
-        t.after(() => ctx.close());
-        const page = await ctx.newPage();
-        await open(page, site.url("/flows/workload-identity-federation/"));
-        const link = page.locator(selector).first();
-        assert.equal(await link.count(), 1, `nothing matches ${selector}`);
-        assert.equal(await link.getAttribute("data-term"), name);
         if (javaScriptEnabled)
-          await t.test("hovering it shows the document in place", async () => {
+          test("hovering it shows the document in place", async () => {
+            const { page, link } = await load();
             await link.scrollIntoViewIfNeeded();
             await page.mouse.move(0, 0);
             await frames(page);
             await link.hover();
             const tip = page.locator("#term-tip");
-            assert.ok(await isOpen(tip), "no preview");
+            assert(await isOpen(tip)); // no preview
             assert.equal(
               await tip.locator(".term-tip-name").textContent(),
               name,
@@ -218,17 +218,17 @@ for (const javaScriptEnabled of [false, true]) {
                 : null,
               ref,
             );
-            assert.ok(
+            assert(
               ((await tip.locator(".term-tip-def").textContent()) ?? "")
                 .length > 20,
-              "the preview does not say what the document defines",
-            );
+            ); // the preview does not say what the document defines
             assert.equal(
               await tip.locator(".term-tip-more").getAttribute("href"),
               `/standards/#${id}`,
             );
           });
-        await t.test("activating it reaches the tracker entry", async () => {
+        test("activating it reaches the tracker entry", async () => {
+          const { page, link } = await load();
           await Promise.all([
             page.waitForURL(site.url(`/standards/#${id}`)),
             link.press("Enter"),
@@ -244,9 +244,9 @@ for (const javaScriptEnabled of [false, true]) {
 // still the glossary's: one preview for one word. That preview says which
 // document defines it and how settled the document is, and leads to both.
 describe("a term that names a specification", () => {
-  test("its preview shows the document's status and links to the glossary and the tracker", async (t) => {
+  test("its preview shows the document's status and links to the glossary and the tracker", async () => {
     const ctx = await site.context({ reducedMotion: "reduce" });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url("/flows/workload-identity-federation/"));
     const term = page
@@ -257,7 +257,7 @@ describe("a term that names a specification", () => {
     await frames(page);
     await term.hover();
     const tip = page.locator("#term-tip");
-    assert.ok(await isOpen(tip), "no preview");
+    assert(await isOpen(tip)); // no preview
     assert.equal(
       await tip.locator(".term-tip-meta .chip").textContent(),
       "RFC",
@@ -271,9 +271,9 @@ describe("a term that names a specification", () => {
     );
   });
 
-  test("the glossary shows the document's status and links to it, without scripts", async (t) => {
+  test("the glossary shows the document's status and links to it, without scripts", async () => {
     const ctx = await site.context({ javaScriptEnabled: false });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url("/glossary/"));
     const std = page.locator("#dpop .std");
@@ -292,9 +292,9 @@ describe("a term that names a specification", () => {
 // document when it is written as the tracker writes it, and its number, if it
 // follows, is not marked a second time.
 describe("a document named in words", () => {
-  test("HTTP Message Signatures previews RFC 9421, once", async (t) => {
+  test("HTTP Message Signatures previews RFC 9421, once", async () => {
     const ctx = await site.context({ reducedMotion: "reduce" });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url("/flows/dpop/"));
     const named = page.locator('main a.spec[href="/standards/#rfc9421"]');
@@ -305,7 +305,7 @@ describe("a document named in words", () => {
     await frames(page);
     await named.hover();
     const tip = page.locator("#term-tip");
-    assert.ok(await isOpen(tip), "no preview");
+    assert(await isOpen(tip)); // no preview
     assert.equal(await tip.locator(".term-tip-ref").textContent(), "RFC 9421");
   });
 });
@@ -313,9 +313,9 @@ describe("a document named in words", () => {
 // The specification a flow is based on is named by its number at the top of the
 // page. That number previews its tracker entry as it does in the text.
 describe("the specification a flow is based on", () => {
-  test("“Based on: RFC 8693” previews Token Exchange and leads to its entry", async (t) => {
+  test("“Based on: RFC 8693” previews Token Exchange and leads to its entry", async () => {
     const ctx = await site.context({ reducedMotion: "reduce" });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url("/flows/token-exchange/"));
     const based = page.locator('.doc-line a.spec[href="/standards/#rfc8693"]');
@@ -325,7 +325,7 @@ describe("the specification a flow is based on", () => {
     await frames(page);
     await based.hover();
     const tip = page.locator("#term-tip");
-    assert.ok(await isOpen(tip), "no preview");
+    assert(await isOpen(tip)); // no preview
     assert.equal(
       await tip.locator(".term-tip-name").textContent(),
       "Token Exchange",

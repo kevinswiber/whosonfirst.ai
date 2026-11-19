@@ -10,13 +10,12 @@
  * error and for anything the site's content security policy refuses. After the
  * last test the file fails if any page had either, and names the page.
  */
-import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
-import { after, before } from "node:test";
 import { chromium } from "playwright";
+import { cleanup } from "ubqtest";
 import { root, SITE_HEADERS } from "./site.mjs";
 
 export const axePath = createRequire(import.meta.url).resolve(
@@ -81,23 +80,47 @@ export const refusal = (m) =>
   m.type() === "error" && /Content Security Policy/i.test(m.text());
 
 /**
- * Starts the server and the browser before the file's first test and stops
- * them after its last. What it returns is filled in once they have started:
+ * Starts the server and the browser when a test first asks for a context, and
+ * stops them when the file ends. What it returns:
  *
- *   site.origin           where the server listens
+ *   site.ready()          starts them, if they have not started, and waits
+ *   site.origin           where the server listens, once started
  *   site.url(path)        the address of a page on it
  *   site.context(opts)    a new browser context, watched as described above
+ *
+ * Call useBrowser() at the top level of a test file: the stop is a cleanup of
+ * the file. When the file ends, it fails if any page had a script error or a
+ * refusal, and names the page.
  */
 export function useBrowser() {
   let server;
   let browser;
+  let started;
   const contexts = new Set();
   const trouble = [];
+  const start = async () => {
+    server = await serve();
+    site.origin = `http://127.0.0.1:${server.address().port}`;
+    // Chromium on Linux takes font hinting from the system's settings, and
+    // hinted text runs a few pixels wider, so a line that just fits on one
+    // machine did not on another. No hinting is what phones and Macs draw, and
+    // it is the same here and in continuous integration.
+    browser = await chromium.launch({ args: ["--font-render-hinting=none"] });
+  };
   const site = {
     origin: "",
     url: (path) => `${site.origin}${path}`,
+    ready: () => (started ??= start()),
     async context(options = {}) {
+      await site.ready();
       const ctx = await browser.newContext(options);
+      // ubq counts each line a test runs, with a counter it writes into the
+      // test's own code, so a function handed to page.evaluate() carries it
+      // into the page. A counter that counts nothing lets it run there, as
+      // ubq's own browser() does.
+      await ctx.addInitScript(
+        "globalThis.__ubqc = new Proxy({}, { get: () => 0, set: () => true })",
+      );
       if (options.javaScriptEnabled === false) scriptless.add(ctx);
       contexts.add(ctx);
       ctx.on("close", () => contexts.delete(ctx));
@@ -111,36 +134,16 @@ export function useBrowser() {
       return ctx;
     },
   };
-  const start = async () => {
-    server = await serve();
-    site.origin = `http://127.0.0.1:${server.address().port}`;
-    // Chromium on Linux takes font hinting from the system's settings, and
-    // hinted text runs a few pixels wider, so a line that just fits on one
-    // machine did not on another. No hinting is what phones and Macs draw, and
-    // it is the same here and in continuous integration.
-    browser = await chromium.launch({ args: ["--font-render-hinting=none"] });
-  };
-  // When a name pattern leaves a file no test to run, Node runs its `after`
-  // hook without waiting for `before`. A browser started after that would keep
-  // the process open, so `after` waits for the start, and a start asked for
-  // after the end is not made.
-  let started;
-  let ended = false;
-  before(() => {
-    if (!ended) started = start();
-    return started;
-  });
-  after(async () => {
-    ended = true;
+  cleanup(async () => {
     await started?.catch(() => {});
     for (const ctx of contexts) await ctx.close();
     await browser?.close();
     await new Promise((r) => (server ? server.close(r) : r()));
-    assert.deepEqual(
-      [...new Set(trouble)],
-      [],
-      "a page threw a script error, or its content security policy refused something",
-    );
+    const pages = [...new Set(trouble)];
+    if (pages.length)
+      throw new Error(
+        `a page threw a script error, or its content security policy refused something:\n${pages.join("\n")}`,
+      );
   });
   return site;
 }

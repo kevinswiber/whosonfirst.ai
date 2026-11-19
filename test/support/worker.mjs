@@ -59,7 +59,7 @@ export async function startWorker() {
   });
   let ended = false;
   const exit = new Promise((resolve) => {
-    child.once("exit", () => {
+    child.once("close", () => {
       ended = true;
       resolve();
     });

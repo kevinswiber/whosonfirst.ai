@@ -5,11 +5,11 @@
 // record. And that a change to an entry the page does not show leaves it alone.
 //
 // Node strips the types from the file as it loads it; it imports nothing.
-import { strict as assert } from "node:assert";
+
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { assert, test } from "ubqtest";
 import {
   datesFor,
   madeFrom,
@@ -166,9 +166,9 @@ test("a page is no older for an entry it only shows", () => {
 });
 
 test("an index that lists every entry is made from the whole file", () => {
-  assert.ok(madeFrom("/standards/", site).includes("src/data/standards.ts"));
-  assert.ok(madeFrom("/glossary/", site).includes("src/data/glossary.ts"));
-  assert.ok(madeFrom("/learn/", site).includes("src/data/learn/lessons.ts"));
+  assert(madeFrom("/standards/", site).includes("src/data/standards.ts"));
+  assert(madeFrom("/glossary/", site).includes("src/data/glossary.ts"));
+  assert(madeFrom("/learn/", site).includes("src/data/learn/lessons.ts"));
 });
 
 test("a comparison is made from its own file, both flows and the standards they list, and is as old as its file", () => {
@@ -205,7 +205,7 @@ test("a comparison is made from its own file, both flows and the standards they 
 });
 
 test("the first lesson's date moves when the data its figure is drawn from does", () => {
-  assert.ok(
+  assert(
     madeFrom("/learn/what-the-api-sees/", site).includes(
       "src/data/learn/api-sees.ts",
     ),
@@ -258,7 +258,7 @@ test("every data file a page imports either dates the page or is listed, with a 
       else if (/\.(astro|mdx)$/.test(name)) pages.push(at);
     }
   })(join(root, "src/pages"));
-  assert.ok(pages.length > 20, "the pages were not found");
+  assert(pages.length > 20); // the pages were not found
 
   // One address for each page file: a page made from data stands for the rest of its kind.
   const SAMPLE = { slug: "dpop", case: "own-authority", pair: "dpop-vs-gnap" };

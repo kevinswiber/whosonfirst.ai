@@ -2,12 +2,12 @@
 // how it chooses them: by a day, or by what the commits after one changed,
 // and how it waits for the deployed site to have them. Nothing here builds the site,
 // asks the network or sends a list.
-import { strict as assert } from "node:assert";
+
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { after, before, describe, test } from "node:test";
+import { assert, cleanup, describe, test } from "ubqtest";
 import {
   changedBy,
   changedEntries,
@@ -18,6 +18,12 @@ import {
   readSitemap,
   untilLive,
 } from "../../scripts/indexnow.mjs";
+
+// the repositories the tests of commitsAfter make, removed when the file ends
+const made = [];
+cleanup(() => {
+  for (const dir of made) rmSync(dir, { recursive: true, force: true });
+});
 
 const url = (path, lastmod) =>
   `  <url><loc>https://example.test${path}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
@@ -54,7 +60,7 @@ describe("what the command line asks for", () => {
   });
 
   test("it is refused when it does not say which pages, says it twice or says something else", () => {
-    for (const args of [
+    const accepted = [
       [],
       ["--dry-run"],
       ["--all", "--since", "2026-11-14"],
@@ -68,8 +74,8 @@ describe("what the command line asks for", () => {
       ["--since", "abc"],
       ["--all", "--force"],
       ["--all", "2026-11-14"],
-    ])
-      assert.equal(readArgs(args), undefined, args.join(" "));
+    ].filter((args) => readArgs(args) !== undefined);
+    assert.deepEqual(accepted, []);
   });
 });
 
@@ -162,9 +168,7 @@ describe("which pages changed", () => {
   });
 
   test("a page with no date is never taken for changed", () => {
-    assert.ok(
-      !locs(changedSince(pages, "2000-01-01")).includes("/styleguide/"),
-    );
+    assert(!locs(changedSince(pages, "2000-01-01")).includes("/styleguide/"));
   });
 });
 
@@ -262,8 +266,12 @@ describe("what the commits after one changed", () => {
   // one, two, three and four on main; "rewritten" is a second commit on one,
   // as main would be after a forced push that replaced the rest. Two changes
   // an entry of the list, three another file, and four only the list's layout.
-  before(() => {
+  let ready = false;
+  const setup = () => {
+    if (ready) return;
+    ready = true;
     root = mkdtempSync(join(tmpdir(), "indexnow-"));
+    made.push(root);
     git(root, "init", "--quiet", "--initial-branch=main");
     const entries = [
       ["a", "A"],
@@ -290,14 +298,12 @@ describe("what the commits after one changed", () => {
     });
     git(root, "checkout", "--quiet", "main");
     shallow = mkdtempSync(join(tmpdir(), "indexnow-shallow-"));
+    made.push(shallow);
     git(shallow, "clone", "--quiet", "--depth=1", `file://${root}`, ".");
-  });
-  after(() => {
-    rmSync(root, { recursive: true, force: true });
-    rmSync(shallow, { recursive: true, force: true });
-  });
+  };
 
   test("is the files they touched, and the entries whose text they changed", () => {
+    setup();
     assert.deepEqual(changed(root, hashes.one), [
       "other.txt",
       "page.txt",
@@ -312,10 +318,12 @@ describe("what the commits after one changed", () => {
   });
 
   test("is no entry, where a commit only laid out the list again", () => {
+    setup();
     assert.deepEqual(changed(root, hashes.three), [STANDARDS]);
   });
 
   test("where history was rewritten, is what the commits here and not there changed", () => {
+    setup();
     git(root, "checkout", "--quiet", "rewritten");
     try {
       // main was at four, and is now at a commit four is not behind
@@ -326,6 +334,7 @@ describe("what the commits after one changed", () => {
   });
 
   test("leaves out what a commit that only reformats touched", () => {
+    setup();
     writeFileSync(
       join(root, ".git-blame-ignore-revs"),
       `${hashes.three}\n${hashes.four}\n`,
@@ -343,16 +352,19 @@ describe("what the commits after one changed", () => {
   });
 
   test("is everything, for the all-zero name of the commit before a first push", () => {
+    setup();
     assert.deepEqual(commitsAfter(root, "0".repeat(40)), { all: true });
   });
 
   test("is refused for a commit this clone does not have, by name", () => {
+    setup();
     const { refused, changed } = commitsAfter(root, "f".repeat(40));
     assert.equal(changed, undefined);
     assert.match(refused, /no commit f{40}/);
   });
 
   test("is refused in a shallow clone, whose history cannot say", () => {
+    setup();
     assert.match(commitsAfter(shallow, hashes.two).refused, /shallow/);
   });
 

@@ -1,15 +1,13 @@
 // The site's mark is drawn inside its box. A shape that runs past the edge is
 // cut off flat there: in the tab, on every card, and in every picture made from
 // it. Drawn large on nothing, the mark must leave the outermost pixels untouched.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import { open, useBrowser } from "../support/browser.mjs";
 
 const site = useBrowser();
 
-test("the site's mark is drawn inside its box, with nothing cut off at an edge", async (t) => {
+test("the site's mark is drawn inside its box, with nothing cut off at an edge", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
   const page = await ctx.newPage();
   await open(page, site.url("/styleguide/"));
   const edge = await page.evaluate(async () => {
@@ -34,5 +32,5 @@ test("the site's mark is drawn inside its box, with nothing cut off at an edge",
       .filter(([, count]) => count > 0)
       .map(([side]) => side);
   });
-  assert.deepEqual(edge, [], `it runs past the ${edge.join(", ")}`);
+  assert.deepEqual(edge, []); // the sides it runs past
 });

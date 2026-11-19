@@ -2,22 +2,25 @@
 // next page is loaded ahead of the press that asks for it, and the page can be
 // taken away as Markdown. Neither is needed to read the page, so each is
 // checked both ways: with the script, and without it.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 import { open, useBrowser } from "../support/browser.mjs";
 import { copyOf, FLOW, file, pageAt } from "../support/site.mjs";
 
 const site = useBrowser();
 
-describe("taking a page away as Markdown", { concurrency: 1 }, () => {
-  let ctx;
-  before(async () => {
-    ctx = await site.context({ viewport: { width: 1280, height: 900 } });
-    await ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
-  });
-  after(() => ctx.close());
+describe("taking a page away as Markdown", () => {
+  let ready;
+  const setup = () =>
+    (ready ??= (async () => {
+      const ctx = await site.context({
+        viewport: { width: 1280, height: 900 },
+      });
+      await ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
+      return ctx;
+    })());
 
   test("the footer's button copies the page's Markdown copy, word for word, and says so", async () => {
+    const ctx = await setup();
     const page = await ctx.newPage();
     await open(page, site.url(FLOW));
     const said = page.locator(".site-footer .as-text-said");
@@ -52,7 +55,7 @@ describe("taking a page away as Markdown", { concurrency: 1 }, () => {
   });
 });
 
-describe("loading the next page ahead of the press", { concurrency: 1 }, () => {
+describe("loading the next page ahead of the press", () => {
   // The rules are an inline script of a kind the content security policy could
   // refuse. Chromium reports what it made of them over its debugging protocol:
   // a rule set it could not use carries an error. It also says what a pointer
@@ -72,8 +75,8 @@ describe("loading the next page ahead of the press", { concurrency: 1 }, () => {
       cdp.on(event, (e) => started.push(new URL(e.key.url).pathname));
     await cdp.send("Preload.enable");
     await open(page, site.url(FLOW));
-    assert.equal(sets.length, 1, "the page gives one set of rules");
-    assert.equal(sets[0].errorType, undefined, sets[0].errorMessage);
+    assert.equal(sets.length, 1); // the page gives one set of rules
+    assert(sets[0].errorType === undefined, sets[0].errorMessage);
 
     const link = page.locator('main a[href^="/flows/"]').first();
     const to = await link.getAttribute("href");
@@ -82,7 +85,7 @@ describe("loading the next page ahead of the press", { concurrency: 1 }, () => {
     const deadline = Date.now() + 5000;
     while (!started.includes(to) && Date.now() < deadline)
       await new Promise((r) => setTimeout(r, 50));
-    assert.ok(started.includes(to), `nothing was started for ${to}`);
+    assert(started.includes(to), `nothing was started for ${to}`);
     await ctx.close();
   });
 });

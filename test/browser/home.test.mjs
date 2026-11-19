@@ -1,7 +1,6 @@
 // The home page, in each theme, on a desktop and on a phone: the header and its
 // menu, the hero, the question of whose authority, and the ways in.
-import { strict as assert } from "node:assert";
-import { after, before, beforeEach, describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 import {
   device,
   open,
@@ -25,17 +24,19 @@ const site = useBrowser();
 for (const theme of THEMES) {
   for (const vp of VIEWPORTS) {
     describe(`${theme} ${vp.name} home`, () => {
-      let ctx;
       let page;
-      before(async () => {
-        ctx = await site.context(
-          device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
-        );
-        page = await ctx.newPage();
-      });
-      after(() => ctx.close());
+      let ready;
       // Each test starts from the page as it arrives, and does its own steps.
-      beforeEach(() => open(page, site.url("/")));
+      const setup = async () => {
+        ready ??= (async () => {
+          const ctx = await site.context(
+            device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
+          );
+          page = await ctx.newPage();
+        })();
+        await ready;
+        await open(page, site.url("/"));
+      };
 
       const visibleLinks = () =>
         page.evaluate(() =>
@@ -54,19 +55,21 @@ for (const theme of THEMES) {
 
       if (vp.name === "phone") {
         test("header keeps the lessons in view", async () => {
+          await setup();
           const closed = await visibleLinks();
-          assert.ok(closed.includes("/learn/"), closed.join(" "));
+          assert.contains(closed, "/learn/");
         });
         test("menu opens from the keyboard and shows every destination", async () => {
+          await setup();
           await openMenu();
           const shown = await visibleLinks();
           assert.deepEqual(
             DESTINATIONS.filter((d) => !shown.includes(d)),
             [],
-            shown.join(" "),
           );
         });
         test("menu targets are at least 44px tall", async () => {
+          await setup();
           await openMenu();
           const size = await page.evaluate(() =>
             Math.min(
@@ -77,9 +80,10 @@ for (const theme of THEMES) {
               ].map((el) => el.getBoundingClientRect().height),
             ),
           );
-          assert.ok(size >= 44, `smallest ${Math.round(size)}px`);
+          assert.greaterThanOrEqual(size, 44);
         });
         test("first menu link takes focus next, with a visible ring", async () => {
+          await setup();
           await openMenu();
           await page.keyboard.press("Tab");
           const focused = await page.evaluate(() => {
@@ -94,6 +98,7 @@ for (const theme of THEMES) {
           assert.deepEqual(focused, { href: "/learn/", outline: true });
         });
         test("Escape closes the menu and returns focus to its button", async () => {
+          await setup();
           // from the first link in the open menu
           await openMenu();
           await page.keyboard.press("Tab");
@@ -109,11 +114,11 @@ for (const theme of THEMES) {
         });
       } else {
         test("every destination is in the header", async () => {
+          await setup();
           const shown = await visibleLinks();
           assert.deepEqual(
             DESTINATIONS.filter((d) => !shown.includes(d)),
             [],
-            shown.join(" "),
           );
         });
       }
@@ -145,25 +150,26 @@ for (const theme of THEMES) {
           };
         });
       test("hero has no figure and no control, and nothing in it is set as large as the question", async () => {
+        await setup();
         const h = await hero();
         assert.deepEqual(
           { extras: h.extras, louder: h.louder },
           { extras: 0, louder: 0 },
         );
-        assert.ok(!h.pageWider, "the page scrolls sideways");
+        assert(!h.pageWider); // the page scrolls sideways
       });
       if (vp.name === "desktop") {
         test("the ways in sit beside the question, starting level with it, and the hero fits the window", async () => {
+          await setup();
           const h = await hero();
-          assert.ok(
-            h.routes.left >= h.h1.right &&
-              Math.abs(h.routes.top - h.h1.top) <= 16,
-            `question at ${Math.round(h.h1.top)}px, ways in at ${Math.round(h.routes.top)}px`,
-          );
-          assert.ok(h.bottom <= vp.height, `${Math.round(h.bottom)}px`);
+          assert.greaterThanOrEqual(h.routes.left, h.h1.right);
+          // the question's top and the ways in's top, in px
+          assert.lessThanOrEqual(Math.abs(h.routes.top - h.h1.top), 16);
+          assert.lessThanOrEqual(h.bottom, vp.height);
         });
       } else {
         test("the ways in follow the question, and the first is on the first screen", async () => {
+          await setup();
           const h = await hero();
           const first = await page.evaluate(
             () =>
@@ -171,10 +177,8 @@ for (const theme of THEMES) {
                 .querySelector(".hero .routes li > a")
                 .getBoundingClientRect().bottom,
           );
-          assert.ok(
-            h.routes.top >= h.h1.bottom && first <= vp.height,
-            `first way in ends at ${Math.round(first)}px`,
-          );
+          assert.greaterThanOrEqual(h.routes.top, h.h1.bottom);
+          assert.lessThanOrEqual(first, vp.height); // where the first way in ends
         });
       }
 
@@ -198,15 +202,18 @@ for (const theme of THEMES) {
           };
         });
       test("both authority answers shown before either branch", async () => {
+        await setup();
         const au = await authority();
-        assert.ok(
-          au.n === 2 &&
-            au.lastChoiceBottom <= au.branchTop &&
-            au.lastChoiceBottom - au.firstChoiceTop <= vp.height,
-          `${Math.round(au.lastChoiceBottom - au.firstChoiceTop)}px for both`,
+        assert.equal(au.n, 2);
+        assert.lessThanOrEqual(au.lastChoiceBottom, au.branchTop);
+        // px for both answers
+        assert.lessThanOrEqual(
+          au.lastChoiceBottom - au.firstChoiceTop,
+          vp.height,
         );
       });
       test("one branch at a time, switched by the answer", async () => {
+        await setup();
         const au = await authority();
         await page.check('.au-choices input[value="agent"]', { force: true });
         const shown = await page.evaluate(() =>
@@ -221,6 +228,7 @@ for (const theme of THEMES) {
       });
 
       test("three ways in: lessons, guide, flows", async () => {
+        await setup();
         const routes = await page.evaluate(() =>
           [...document.querySelectorAll(".routes li > a")].map((a) =>
             a.getAttribute("href"),
@@ -229,16 +237,16 @@ for (const theme of THEMES) {
         assert.deepEqual(
           ["/learn/", "/guide/", "/flows/"].filter((h) => !routes.includes(h)),
           [],
-          routes.join(" "),
         );
       });
       test("every lesson is listed, in order", async () => {
+        await setup();
         const path = await page.evaluate(() =>
           [...document.querySelectorAll("ol.path a")].map((a) =>
             a.getAttribute("href"),
           ),
         );
-        assert.ok(LESSON_ORDER.length > 0, "the lessons index lists none");
+        assert(LESSON_ORDER.length > 0); // the lessons index lists none
         assert.deepEqual(path, LESSON_ORDER);
       });
     });

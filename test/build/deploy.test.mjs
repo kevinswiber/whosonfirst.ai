@@ -1,9 +1,9 @@
 // Read the Build Output that cf deploy uploads, alongside the files it serves.
-import { strict as assert } from "node:assert";
+
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { assert, test } from "ubqtest";
 import { WORKER_BUILD } from "../../scripts/built-site.mjs";
 import { exists, root } from "../support/site.mjs";
 
@@ -13,13 +13,11 @@ const config = JSON.parse(
 
 test("the deployment has the Markdown Worker and serves files through its ASSETS binding", () => {
   const bundle = join(WORKER_BUILD, "bundle", config.manifest.mainModule);
-  assert.ok(existsSync(bundle));
-  assert.ok(!bundle.startsWith(root));
+  assert(existsSync(bundle));
+  assert(!bundle.startsWith(root));
   const { sources } = JSON.parse(readFileSync(`${bundle}.map`, "utf8"));
   const worker = fileURLToPath(new URL("../../src/worker.ts", import.meta.url));
-  assert.ok(
-    sources.some((source) => resolve(dirname(bundle), source) === worker),
-  );
+  assert(sources.some((source) => resolve(dirname(bundle), source) === worker));
   assert.equal(config.env.ASSETS.type, "assets");
 });
 
@@ -29,5 +27,5 @@ test("the Worker stands in front of extensionless paths and files go straight to
 
 test("a missing address gets the site's own not found page", () => {
   assert.equal(config.assets.notFoundHandling, "404-page");
-  assert.ok(exists("404.html"));
+  assert(exists("404.html"));
 });

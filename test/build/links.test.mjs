@@ -1,8 +1,8 @@
 // Where the built site's links lead, and what lists its pages: the lessons
 // index, the README and the deployment guides' way on.
-import { strict as assert } from "node:assert";
+
 import { readFileSync } from "node:fs";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import {
   built,
   exists,
@@ -13,11 +13,7 @@ import {
 } from "../support/site.mjs";
 
 test("the lessons index lists every lesson page", () => {
-  assert.deepEqual(
-    [...LESSON_ORDER].sort(),
-    LESSONS,
-    `${LESSON_ORDER.length} listed, ${LESSONS.length} built`,
-  );
+  assert.deepEqual([...LESSON_ORDER].sort(), LESSONS);
 });
 
 test("every internal link leads to a page, and every anchor to something on it", () => {
@@ -64,7 +60,7 @@ test("README.md lists every lesson, flow and deployment guide, counts them right
       ),
     ),
   ];
-  assert.ok(given.length > 0, "the README gives no address on the site");
+  assert(given.length > 0); // the README gives no address on the site
   const wrong = [];
   for (const address of given) {
     const [path, section] = address.split("#");
@@ -96,7 +92,7 @@ test("README.md lists every lesson, flow and deployment guide, counts them right
 test("every deployment guide ends with a way on, drawn from the flows it names and the other guides", () => {
   const guides = built.filter((p) => /^\/deployments\/[^/]+\/$/.test(p.path));
   const index = pageAt("/deployments/");
-  assert.ok(guides.length > 0, "no deployment guide was built");
+  assert(guides.length > 0); // no deployment guide was built
   const wrong = [];
   for (const g of guides) {
     const m = /<nav class="way-on[^"]*"[\s\S]*?<\/nav>/.exec(g.html);

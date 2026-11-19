@@ -57,7 +57,7 @@ Biome does not handle `.mdx`, so the deployment guides and the About page are no
 
 ### Checks
 
-The checks are tests for Node's own test runner, `node:test`, in `test/`. Each file runs in a process of its own, and several run at once.
+The checks are tests for [ubq](https://ubq.dev), the `ubqtest` package, in `test/`. Each file runs in a process of its own, and several run at once. The tests of one file run one at a time, in the order of the file. `npx ubq guide` prints the API and the rules: a test with no assertion fails, and so does one that leaves work running after it ends.
 
 | Directory       | What its tests read                                                      | Run by                   |
 | --------------- | ------------------------------------------------------------------------ | ------------------------ |
@@ -71,18 +71,22 @@ What the tests share is in `test/support/`. `site.mjs` reads the built pages, an
 While working on one thing, run the test file for it. It still needs a current build:
 
 ```bash
-node --test test/browser/print.test.mjs
+npx ubq test/browser/print.test.mjs
 ```
 
-Or run the tests whose names match a pattern. The pattern goes before the files:
+Or run one test, by its line, or only the tests that failed in the last run. A failure prints the command that runs it again:
 
 ```bash
-node --test --test-name-pattern="sideways" "test/browser/*.test.mjs"
+npx ubq test/browser/print.test.mjs:68
+```
+
+```bash
+npx ubq --failed
 ```
 
 Before a pull request, run the four commands [CONTRIBUTING.md](../CONTRIBUTING.md) names. Continuous integration runs every check on every change, because a change to any file under `src/` can move what some page draws.
 
-A new check is a test in the file for what it reads. Tests in a suite run in order and may share a page, but each sets up the state it needs: it opens the page, or does the clicks and key presses itself, and does not count on a test before it. So any test passes when it runs by its name alone, as the pattern above runs it. A file can run suites side by side with `{ concurrency: true }`, as the files that measure every page do. It does that only where each suite has a page of its own and nothing waits on a clock, and each suite inside then sets `{ concurrency: 1 }`, since a suite's tests take its setting.
+A new check is a test in the file for what it reads. Tests in a group run in order and may share a page, made once by a setup function that each test awaits. Each sets up the state it needs: it opens the page, or does the clicks and key presses itself, and does not count on a test before it. So any test passes when it runs by itself, as the line above runs it. There are no hooks: setup is a function the test calls, and `cleanup()` from `ubqtest` undoes it when the test ends, or when the file ends if it is called at the top of the file.
 
 ### Continuous integration
 

@@ -1,10 +1,9 @@
-import { strict as assert } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { assert, test } from "ubqtest";
 import { plain } from "../../scripts/quote-text.mjs";
 import {
   citedSources,
@@ -18,7 +17,7 @@ import { evidenceQualification } from "../../src/lib/implementations.ts";
 const dpop = () => structuredClone(profiles.find((p) => p.slug === "dpop"));
 
 test("the reviewed evidence has sources, scope, valid dates and event links", () => {
-  assert.doesNotThrow(() => validateProfiles(profiles));
+  validateProfiles(profiles); // throws if they are not valid
   const profile = dpop();
   profile.slug = "misspelled-flow";
   assert.throws(
@@ -37,7 +36,7 @@ test("the reviewed evidence has sources, scope, valid dates and event links", ()
 test("only accepted deployments count operators, regardless of observed support or project totals", () => {
   const profile = dpop();
   const operators = deploymentOrganizations(publishProfile(dpop()));
-  assert.ok(operators >= 1);
+  assert(operators >= 1);
   const report = structuredClone(profile.deployments[0]);
   report.id = "second-account";
   report.organization = ` ${report.organization.toUpperCase()} `;
@@ -79,8 +78,8 @@ test("only accepted deployments count operators, regardless of observed support 
   assert.equal(deploymentOrganizations(published), operators);
   assert.equal(published.observations[1].unit, "projects");
   assert.equal(published.observations[1].numerator, 13000);
-  assert.ok(!published.deployments.some((p) => p.id === "pending"));
-  assert.ok(!published.events.some((p) => p.id === "pending-event"));
+  assert(!published.deployments.some((p) => p.id === "pending"));
+  assert(!published.events.some((p) => p.id === "pending-event"));
   profile.deployments.push({ ...observation, id: "misclassified-observation" });
   assert.throws(() => validateProfiles([profile]), /not deployment evidence/);
 });
@@ -175,7 +174,7 @@ test("compact qualifications retain early release wording and material limitatio
 
 test("an entry names parties its flow has, and a quote comes with its section", () => {
   const parties = { dpop: ["agent", "as", "api"] };
-  assert.doesNotThrow(() => validateProfiles([dpop()], undefined, parties));
+  validateProfiles([dpop()], undefined, parties); // throws if they are not valid
   const noParty = dpop();
   noParty.implementations[0].parties = [];
   assert.throws(() => validateProfiles([noParty]), /which parties/);
@@ -192,7 +191,7 @@ test("an entry names parties its flow has, and a quote comes with its section", 
   quoted.implementations[0].sources[0].quote = "DPoP is supported.";
   assert.throws(() => validateProfiles([quoted]), /quote is a short passage/);
   quoted.implementations[0].sources[0].section = "DPoP";
-  assert.doesNotThrow(() => validateProfiles([quoted]));
+  validateProfiles([quoted]); // throws if they are not valid
   quoted.implementations[0].sources[0].quote = "x".repeat(301);
   assert.throws(() => validateProfiles([quoted]), /quote is a short passage/);
 });
@@ -205,12 +204,20 @@ const run = (script, ...args) =>
 
 test("the coverage report names every flow and every party software can fill", () => {
   const report = run("implementation-coverage.mjs");
-  assert.equal(report.status, 0, report.stderr);
-  for (const profile of profiles) {
-    assert.ok(report.stdout.includes(`\n${profile.slug}\n`), profile.slug);
-    for (const entry of profile.implementations)
-      assert.ok(report.stdout.includes(entry.id), entry.id);
-  }
+  assert.match(report, { status: 0 });
+  assert.deepEqual(
+    profiles
+      .map((profile) => profile.slug)
+      .filter((slug) => !report.stdout.includes(`\n${slug}\n`)),
+    [],
+  ); // flows the report leaves out
+  assert.deepEqual(
+    profiles
+      .flatMap((profile) => profile.implementations)
+      .map((entry) => entry.id)
+      .filter((id) => !report.stdout.includes(id)),
+    [],
+  ); // entries the report leaves out
   assert.equal(run("implementation-coverage.mjs", "no-such-flow").status, 1);
   assert.match(
     run("implementation-coverage.mjs", "--products").stdout,
@@ -242,7 +249,7 @@ test("a worksheet is refused for a used id, an unknown party or a source with no
   };
   try {
     const ok = sheet(() => {});
-    assert.equal(ok.status, 0, ok.stderr);
+    assert.match(ok, { status: 0 });
     assert.match(ok.stdout, /id: "dpop-candidate"/);
     const used = sheet((c) => {
       c.id = entry.id;
@@ -266,27 +273,26 @@ test("a worksheet is refused for a used id, an unknown party or a source with no
 
 test("a quote copied from a page is found in the HTML or Markdown the server sends", () => {
   const quote = plain("The client uses the device code flow, by default.");
-  for (const page of [
+  const missed = [
     "<p>The client uses the <a href='/x'>device code</a> flow, by default.</p>",
     "The client uses the [device code](https://example.com/x) flow, by default.",
     "<p>The client uses the <!--[--><code>device code</code><!--]--> flow, by default.</p>",
     "The client uses the `device code` flow , by default.",
-  ])
-    assert.ok(plain(page).includes(quote), page);
-  assert.ok(
+  ].filter((page) => !plain(page).includes(quote));
+  assert.deepEqual(missed, []);
+  assert(
     plain("A value is 1 < 2 and the client uses it > once.").includes(
       plain("1 < 2 and the client uses it > once"),
     ),
-    "a < in Markdown text is text, not a tag",
-  );
-  assert.ok(plain("It’s “quoted”").includes(plain(`It's "quoted"`)));
+  ); // a < in Markdown text is text, not a tag
+  assert(plain("It’s “quoted”").includes(plain(`It's "quoted"`)));
 });
 
 test("a party called generic is one the flow has, and the coverage report does not count it", () => {
   const parties = { dpop: ["agent", "as", "api"] };
   const profile = dpop();
   profile.genericParties = ["api"];
-  assert.doesNotThrow(() => validateProfiles([profile], undefined, parties));
+  validateProfiles([profile], undefined, parties); // throws if they are not valid
   profile.genericParties = ["third"];
   assert.throws(
     () => validateProfiles([profile], undefined, parties),
@@ -332,10 +338,10 @@ test("two worksheets applied to a flow on the same day share one evidence-added 
   try {
     for (const id of ["dpop-first-candidate", "dpop-second-candidate"]) {
       const result = apply(id);
-      assert.equal(result.status, 0, result.stderr);
+      assert.match(result, { status: 0 });
     }
     const { profiles: applied } = await import(pathToFileURL(records).href);
-    assert.doesNotThrow(() => validateProfiles(applied));
+    validateProfiles(applied); // throws if they are not valid
     const events = applied
       .find((p) => p.slug === "dpop")
       .events.filter((e) => e.id === "dpop-added-2027-01-02");
@@ -370,9 +376,9 @@ test("a worksheet that only names generic parties is applied without dating a re
         env: { ...process.env, IMPLEMENTATION_RECORDS: records },
       },
     );
-    assert.equal(result.status, 0, result.stderr);
+    assert.match(result, { status: 0 });
     const { profiles: applied } = await import(pathToFileURL(records).href);
-    assert.doesNotThrow(() => validateProfiles(applied));
+    validateProfiles(applied); // throws if they are not valid
     const before = dpop();
     const after = applied.find((p) => p.slug === "dpop");
     assert.deepEqual(after.genericParties, ["api"]);
@@ -388,7 +394,7 @@ test("a page that carries several passages is cited once", () => {
   const npm = profiles
     .flatMap((profile) => profile.implementations)
     .find((entry) => entry.id === "wif-npm");
-  assert.ok(npm.sources.length > new Set(npm.sources.map((s) => s.url)).size);
+  assert(npm.sources.length > new Set(npm.sources.map((s) => s.url)).size);
   assert.deepEqual(
     citedSources(npm.sources).map((source) => source.url),
     [
@@ -396,13 +402,16 @@ test("a page that carries several passages is cited once", () => {
       "https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/",
     ],
   );
-  for (const profile of profiles)
-    for (const entry of [
+  const repeated = profiles
+    .flatMap((profile) => [
       ...profile.implementations,
       ...profile.deployments,
       ...profile.observations,
-    ]) {
+    ])
+    .filter((entry) => {
       const urls = citedSources(entry.sources).map((source) => source.url);
-      assert.equal(urls.length, new Set(urls).size, entry.id);
-    }
+      return urls.length !== new Set(urls).size;
+    })
+    .map((entry) => entry.id);
+  assert.deepEqual(repeated, []); // entries that cite one source twice
 });

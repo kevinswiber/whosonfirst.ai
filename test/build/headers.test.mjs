@@ -1,8 +1,7 @@
 // The headers every response carries: the `/*` block of the built `_headers`
 // file. The browser tests serve every page with them, and fail on a page that
 // breaks its own content security policy.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import { SITE_HEADERS } from "../support/site.mjs";
 
 test("every response carries a content security policy and the headers beside it", () => {

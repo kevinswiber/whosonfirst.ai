@@ -9,29 +9,22 @@
 // so nothing on the network shows it; only the console does, and only once
 // the script has asked. Network idle gives every page that half second.
 // useBrowser() also watches every page the other tests open.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 import { refusal, useBrowser } from "../support/browser.mjs";
 import { built } from "../support/site.mjs";
 
 const site = useBrowser();
 
-// Each page has a tab of its own, and the wait is the same half second
-// whatever else is open, so a few pages are watched at once.
-describe("no page loads or runs anything its content security policy refuses", {
-  concurrency: 4,
-}, () => {
-  let ctx;
-  before(async () => {
-    ctx = await site.context();
-  });
-  after(() => ctx.close());
+describe("no page loads or runs anything its content security policy refuses", () => {
+  let ready;
+  const setup = () => (ready ??= site.context());
 
   test("every page was built", () => {
-    assert.ok(built.length > 0, "no page was built");
+    assert(built.length > 0); // no page was built
   });
   for (const p of built) {
     test(p.path, async () => {
+      const ctx = await setup();
       const page = await ctx.newPage();
       const refused = [];
       page.on("console", (m) => {

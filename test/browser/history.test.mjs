@@ -1,8 +1,7 @@
 // Back on a flow page. On a phone, opening the diagram adds one entry and Back
 // closes it, at the step the reader reached; closing it with its own control
 // leaves no entry behind. At a desk, stepping adds none and Back leaves the page.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, cleanup, describe, test } from "ubqtest";
 import { open, useBrowser } from "../support/browser.mjs";
 import { FLOW } from "../support/site.mjs";
 
@@ -12,16 +11,17 @@ const WIDE = { width: 1280, height: 900 };
 
 describe("phone flow", () => {
   let page;
-  before(async () => {
-    const ctx = await site.context({
-      viewport: PHONE,
-      isMobile: true,
-      hasTouch: true,
-      reducedMotion: "reduce",
-    });
-    page = await ctx.newPage();
-  });
-  after(() => page.context().close());
+  let ready;
+  const setup = () =>
+    (ready ??= (async () => {
+      const ctx = await site.context({
+        viewport: PHONE,
+        isMobile: true,
+        hasTouch: true,
+        reducedMotion: "reduce",
+      });
+      page = await ctx.newPage();
+    })());
 
   const settle = () => page.waitForTimeout(150);
   const now = () =>
@@ -80,6 +80,7 @@ describe("phone flow", () => {
   };
   // each from a fresh arrival, from the home page, with the diagram opened
   const arrive = async () => {
+    await setup();
     await page.setViewportSize(PHONE);
     await open(page, site.url("/"));
     await open(page, site.url(FLOW));
@@ -92,13 +93,12 @@ describe("phone flow", () => {
     await pressStep(4);
     await back();
     const seen = await now();
-    assert.ok(
-      seen.path === FLOW &&
-        seen.open === false &&
-        seen.hash === "#step-4" &&
-        seen.stepInView,
-      JSON.stringify(seen),
-    );
+    assert.match(seen, {
+      path: FLOW,
+      open: false,
+      hash: "#step-4",
+      stepInView: true,
+    });
   });
   test("Forward after Back opens the diagram again", async () => {
     await arrive();
@@ -107,7 +107,7 @@ describe("phone flow", () => {
     await page.goForward();
     await settle();
     const seen = await now();
-    assert.ok(seen.path === FLOW && seen.open === true, JSON.stringify(seen));
+    assert.match(seen, { path: FLOW, open: true });
   });
   test("a reload with the diagram open keeps it open, and Back still closes it", async () => {
     await arrive();
@@ -117,12 +117,12 @@ describe("phone flow", () => {
     const reloaded = await now();
     await back();
     const after = await now();
-    assert.ok(
-      reloaded.open === true &&
-        after.path === FLOW &&
-        after.open === false &&
-        after.stepInView,
-      JSON.stringify({ reloaded, after }),
+    assert.match(
+      { reloaded, after },
+      {
+        reloaded: { open: true },
+        after: { path: FLOW, open: false, stepInView: true },
+      },
     );
   });
   test("closing the diagram with its own control leaves no entry: the next Back leaves the page", async () => {
@@ -132,12 +132,12 @@ describe("phone flow", () => {
     const closed = await now();
     await back();
     const left = page.url();
-    assert.ok(
-      closed.open === false &&
-        closed.onSummary &&
-        closed.summaryInView &&
-        left === site.url("/"),
-      JSON.stringify({ closed, left }),
+    assert.match(
+      { closed, left },
+      {
+        closed: { open: false, onSummary: true, summaryInView: true },
+        left: site.url("/"),
+      },
     );
   });
   // opened on a phone, then widened (a phone turned on its side, a window
@@ -148,10 +148,7 @@ describe("phone flow", () => {
     await resize(WIDE);
     await back();
     const widened = await now();
-    assert.ok(
-      widened.path === FLOW && widened.open === true,
-      JSON.stringify(widened),
-    );
+    assert.match(widened, { path: FLOW, open: true });
   });
   // a link to another step, followed with the diagram open, goes to that
   // step and is not taken for Back; Back then retraces both
@@ -163,15 +160,17 @@ describe("phone flow", () => {
     await back();
     await back();
     const retraced = await now();
-    assert.ok(
-      followed.hash === "#step-6" &&
-        followed.open === true &&
-        followed.stepInView &&
-        retraced.path === FLOW &&
-        retraced.open === false &&
-        retraced.hash === "#step-4" &&
-        retraced.stepInView,
-      JSON.stringify({ followed, retraced }),
+    assert.match(
+      { followed, retraced },
+      {
+        followed: { hash: "#step-6", open: true, stepInView: true },
+        retraced: {
+          path: FLOW,
+          open: false,
+          hash: "#step-4",
+          stepInView: true,
+        },
+      },
     );
   });
   // and closed with its own control after such a link, the diagram leaves
@@ -185,12 +184,12 @@ describe("phone flow", () => {
     const shut = await now();
     await back();
     const out = page.url();
-    assert.ok(
-      shut.open === false &&
-        shut.hash === "#step-6" &&
-        shut.onSummary &&
-        out === site.url("/"),
-      JSON.stringify({ shut, out }),
+    assert.match(
+      { shut, out },
+      {
+        shut: { open: false, hash: "#step-6", onSummary: true },
+        out: site.url("/"),
+      },
     );
   });
   // widened after a link, Back, then narrowed again: closing the diagram on
@@ -202,10 +201,7 @@ describe("phone flow", () => {
     await back();
     await narrow();
     const narrowed = await now();
-    assert.ok(
-      narrowed.path === FLOW && narrowed.open === false,
-      JSON.stringify(narrowed),
-    );
+    assert.match(narrowed, { path: FLOW, open: false });
   });
   // widened, stepped with Next, narrowed: the entry the phone added is still
   // known for what it is, and Forward opens the diagram again
@@ -218,10 +214,7 @@ describe("phone flow", () => {
     await page.goForward();
     await settle();
     const stepped = await now();
-    assert.ok(
-      stepped.path === FLOW && stepped.open === true,
-      JSON.stringify(stepped),
-    );
+    assert.match(stepped, { path: FLOW, open: true });
   });
   // widened, reloaded, narrowed: closing the diagram takes its entry, so Back leaves
   test("widened, reloaded, narrowed: the next Back leaves the page", async () => {
@@ -235,21 +228,23 @@ describe("phone flow", () => {
   });
   // a link to a step still opens on that step, with the diagram closed
   test("a link to a step opens on that step", async () => {
+    await setup();
     await open(page, site.url("/"));
     await open(page, site.url(`${FLOW}#step-6`));
     await settle();
     const linked = await now();
-    assert.ok(
-      linked.hash === "#step-6" && !linked.open && linked.stepInView,
-      JSON.stringify(linked),
-    );
+    assert.match(linked, {
+      hash: "#step-6",
+      open: (open) => !open,
+      stepInView: true,
+    });
   });
 });
 
 describe("desktop flow", () => {
-  test("stepping adds no history: Back leaves the page", async (t) => {
+  test("stepping adds no history: Back leaves the page", async () => {
     const ctx = await site.context({ viewport: WIDE, reducedMotion: "reduce" });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url("/"));
     await open(page, site.url(FLOW));

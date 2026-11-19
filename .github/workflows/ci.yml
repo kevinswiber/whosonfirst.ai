@@ -8,8 +8,8 @@
 #             test/browser/, which open it in a browser, and in test/worker/,
 #             which serve it in the Workers runtime as it is deployed
 #
-# The tests are run by Node's own test runner, a file in a process of its own
-# and several files at once. Every check runs on every change: a change to any
+# The tests are run by ubq, the ubqtest package, a file in a process of its
+# own and several files at once. Every check runs on every change: a change to any
 # file under src/ can move what some page draws.
 #
 # Nothing here deploys the site or needs a secret, so it runs the same on a

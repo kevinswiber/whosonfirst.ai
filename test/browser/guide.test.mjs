@@ -1,14 +1,13 @@
 // The decision guide's answers, recommendations and shared URLs.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, cleanup, test } from "ubqtest";
 import { open, useBrowser } from "../support/browser.mjs";
 
 const site = useBrowser();
 
 for (const url of ["/guide/", "/guide/?principal=user"]) {
-  test(`${url}: an answer can be chosen again straight after Start over`, async (t) => {
+  test(`${url}: an answer can be chosen again straight after Start over`, async () => {
     const ctx = await site.context({ viewport: { width: 1280, height: 900 } });
-    t.after(() => ctx.close());
+    cleanup(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url(url));
     const answer = page.locator(
@@ -18,13 +17,13 @@ for (const url of ["/guide/", "/guide/?principal=user"]) {
     await page.click('decision-guide button[type="reset"]');
     await answer.click({ force: true });
     await page.waitForTimeout(50);
-    assert.ok(await answer.isChecked(), "not selected after one click");
+    assert(await answer.isChecked()); // not selected after one click
   });
 }
 
-test("the same HTTP API target can be inside or outside the shared identity system", async (t) => {
+test("the same HTTP API target can be inside or outside the shared identity system", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(
     page,
@@ -34,35 +33,36 @@ test("the same HTTP API target can be inside or outside the shared identity syst
   );
 
   const result = (slug) => page.locator(`.dg-flow[href="/flows/${slug}/"]`);
-  for (const slug of [
+  const named = [
     "spiffe-workload-identity",
     "transaction-tokens",
     "gnap",
     "biscuit-delegation",
     "oauth-mtls",
     "access-revocation",
-  ]) {
-    assert.equal(await result(slug).count(), 1, slug);
-  }
+  ];
+  const counts = {};
+  for (const slug of named) counts[slug] = await result(slug).count();
+  assert.deepEqual(counts, Object.fromEntries(named.map((slug) => [slug, 1])));
 
   await page
     .getByRole("radio", { name: /It uses a separate identity system/ })
     .check({ force: true });
-  assert.ok(await page.getByRole("radio", { name: /An HTTP API/ }).isChecked());
+  assert(await page.getByRole("radio", { name: /An HTTP API/ }).isChecked());
   assert.equal(await result("spiffe-workload-identity").count(), 0);
   assert.equal(await result("transaction-tokens").count(), 0);
   assert.equal(await result("authorization-code-pkce").count(), 1);
 });
 
-test("an older internal-target link restores shared identity without guessing an interface", async (t) => {
+test("an older internal-target link restores shared identity without guessing an interface", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(
     page,
     site.url("/guide/?principal=user&target=internal&runtime=k8s"),
   );
-  assert.ok(
+  assert(
     await page
       .getByRole("radio", { name: /We run it and share an identity system/ })
       .isChecked(),
@@ -84,15 +84,15 @@ const facts = (page) =>
       ]),
     );
 
-test("the case is named once the first two questions are answered, and not before", async (t) => {
+test("the case is named once the first two questions are answered, and not before", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   const name = page.locator(".dg-answers .dg-flow strong");
 
   // one of the two answered: no name, and the answers there are, each with its word
   await open(page, site.url("/guide/?principal=user&target=api"));
-  assert.equal(await name.count(), 0, "named from one answer");
+  assert.equal(await name.count(), 0); // named from one answer
   assert.deepEqual(await facts(page), [
     ["Authority", "A person’s"],
     ["Calls", "HTTP API"],
@@ -125,11 +125,11 @@ test("the case is named once the first two questions are answered, and not befor
   assert.equal(page.url(), site.url("/guide/"));
 });
 
-test("the result’s link can be copied with every answer in it", async (t) => {
+test("the result’s link can be copied with every answer in it", async () => {
   const ctx = await site.context({
     permissions: ["clipboard-read", "clipboard-write"],
   });
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   const url = site.url(
     "/guide/?principal=self&target=api&runtime=sandbox&risk=irreversible",
@@ -140,14 +140,14 @@ test("the result’s link can be copied with every answer in it", async (t) => {
   assert.equal(await page.evaluate(() => navigator.clipboard.readText()), url);
 });
 
-test("on a phone, the results are one step from the questions and back, and an answer moves nothing", async (t) => {
+test("on a phone, the results are one step from the questions and back, and an answer moves nothing", async () => {
   const ctx = await site.context({
     viewport: { width: 390, height: 844 },
     isMobile: true,
     hasTouch: true,
     reducedMotion: "reduce",
   });
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(page, site.url("/guide/"));
   const jump = page.locator(".dg-jump");
@@ -159,11 +159,8 @@ test("on a phone, the results are one step from the questions and back, and an a
   const before = await page.evaluate(() => scrollY);
   await answer.check();
   assert.match(await jump.textContent(), /^View results · \d+ matches$/);
-  assert.equal(await page.evaluate(() => scrollY), before, "the page moved");
-  assert.ok(
-    await answer.evaluate((el) => document.activeElement === el),
-    "the focus moved",
-  );
+  assert.equal(await page.evaluate(() => scrollY), before); // the page moved
+  assert(await answer.evaluate((el) => document.activeElement === el)); // the focus moved
 
   // the way down stays on screen while the questions are
   const inView = (locator) =>
@@ -171,22 +168,16 @@ test("on a phone, the results are one step from the questions and back, and an a
       const r = el.getBoundingClientRect();
       return r.top >= 0 && r.bottom <= innerHeight;
     });
-  assert.ok(await inView(jump), "the way to the results is off screen");
+  assert(await inView(jump)); // the way to the results is off screen
   await jump.click();
-  assert.ok(
-    await inView(page.locator(".dg-kicker")),
-    "did not reach the results",
-  );
+  assert(await inView(page.locator(".dg-kicker"))); // did not reach the results
   await page.locator(".dg-edit").click();
-  assert.ok(
-    await inView(page.locator("#questions legend").first()),
-    "did not get back to the questions",
-  );
+  assert(await inView(page.locator("#questions legend").first())); // did not get back to the questions
 });
 
-test("every answered question is a fact beside the result, in a few words", async (t) => {
+test("every answered question is a fact beside the result, in a few words", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(
     page,
@@ -213,12 +204,12 @@ test("every answered question is a fact beside the result, in a few words", asyn
 
 // The strip at the foot of the window is tallest on the narrowest screen, where
 // its two controls sit on two lines.
-test("on a narrow phone, an answer reached with the keyboard is clear of the strip at the foot", async (t) => {
+test("on a narrow phone, an answer reached with the keyboard is clear of the strip at the foot", async () => {
   const ctx = await site.context({
     viewport: { width: 320, height: 568 },
     reducedMotion: "reduce",
   });
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(
     page,
@@ -245,16 +236,10 @@ test("on a narrow phone, an answer reached with the keyboard is clear of the str
         over: header.bottom - row.top,
       };
     });
-    assert.ok(at, `Tab ${i} left the answers`);
+    assert(at); // the Tab left the answers
     seen.push(at.name);
-    assert.ok(
-      at.under <= 0,
-      `${at.name}: ${at.under.toFixed(0)}px behind the strip`,
-    );
-    assert.ok(
-      at.over <= 0,
-      `${at.name}: ${at.over.toFixed(0)}px behind the header`,
-    );
+    // px behind the strip and behind the header, for the question named
+    assert.match(at, { under: (px) => px <= 0, over: (px) => px <= 0 });
     await page.keyboard.press("Tab");
   }
   assert.deepEqual(seen, [
@@ -267,9 +252,9 @@ test("on a narrow phone, an answer reached with the keyboard is clear of the str
   ]);
 });
 
-test("a case’s page says what each start and each caution applies to, without a script", async (t) => {
+test("a case’s page says what each start and each caution applies to, without a script", async () => {
   const ctx = await site.context({ javaScriptEnabled: false });
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   await open(page, site.url("/guide/"));
   const cases = await page
@@ -289,14 +274,21 @@ test("a case’s page says what each start and each caution applies to, without 
             "",
         })),
       );
-    assert.ok(entries.length > 4, path);
-    for (const e of entries)
-      assert.match(e.applies, /^Applies (when|whatever)/, `${path} ${e.flow}`);
+    assert.match({ path, entries: entries.length }, { entries: (n) => n > 4 });
+    assert.deepEqual(
+      entries
+        .filter((e) => !/^Applies (when|whatever)/.test(e.applies))
+        .map((e) => `${path} ${e.flow}`),
+      [],
+    );
     const broker = entries.find((e) => e.flow === "/flows/credential-broker/");
+    // what a sandbox needs, on each case's page
     assert.match(
-      broker?.applies ?? "",
-      /Where does the agent run\? A sandbox that runs untrusted code$/,
-      `${path}: what a sandbox needs`,
+      { path, applies: broker?.applies ?? "" },
+      {
+        applies:
+          /Where does the agent run\? A sandbox that runs untrusted code$/,
+      },
     );
   }
 
@@ -306,20 +298,16 @@ test("a case’s page says what each start and each caution applies to, without 
       '.case-flows > li:has(.case-flow[href="/flows/client-credentials/"]) .ga',
     )
     .allTextContents();
-  assert.equal(
-    own.length,
-    2,
-    "client credentials, for a server and for a local installation",
-  );
-  assert.ok(own.some((t) => /On the user’s machine/.test(t)));
+  assert.equal(own.length, 2); // client credentials, for a server and for a local installation
+  assert(own.some((t) => /On the user’s machine/.test(t)));
 });
 
 // Where the guide names two flows that people weigh against each other, it
 // says where that is done: this is the moment a reader is choosing. It says
 // nothing where it names only one of a pair.
-test("answers that bring up both flows of a comparison link to it, and answers that do not, do not", async (t) => {
+test("answers that bring up both flows of a comparison link to it, and answers that do not, do not", async () => {
   const ctx = await site.context();
-  t.after(() => ctx.close());
+  cleanup(() => ctx.close());
   const page = await ctx.newPage();
   const weigh = (pair) =>
     page.locator(`.dg-weigh .dg-flow[href="/compare/${pair}/"]`);
@@ -331,8 +319,13 @@ test("answers that bring up both flows of a comparison link to it, and answers t
       "/guide/?principal=user&human=present&target=api&boundary=same&runtime=local&risk=read",
     ),
   );
-  for (const slug of ["dpop", "oauth-mtls"])
-    assert.equal(await result(slug).count(), 1, slug);
+  assert.deepEqual(
+    {
+      dpop: await result("dpop").count(),
+      "oauth-mtls": await result("oauth-mtls").count(),
+    },
+    { dpop: 1, "oauth-mtls": 1 },
+  );
   assert.equal(await weigh("dpop-vs-oauth-mtls").count(), 1);
   assert.equal(
     (await weigh("dpop-vs-oauth-mtls").locator("strong").textContent()).trim(),
@@ -345,6 +338,6 @@ test("answers that bring up both flows of a comparison link to it, and answers t
       "/guide/?principal=user&human=present&target=web&boundary=same&runtime=local&risk=read",
     ),
   );
-  assert.ok((await page.locator(".dg-flow").count()) > 0, "no flow was named");
+  assert((await page.locator(".dg-flow").count()) > 0); // no flow was named
   assert.equal(await page.locator(".dg-weigh").count(), 0);
 });

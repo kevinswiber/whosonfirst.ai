@@ -1,8 +1,7 @@
 // Which form of a page a request gets, by its Accept header, and what the
 // Worker in front of the pages sends for each: src/lib/markdown-negotiation.ts
 // and src/worker.ts, with a store of files that is only a table here.
-import { strict as assert } from "node:assert";
-import { test } from "node:test";
+import { assert, test } from "ubqtest";
 import {
   prefersMarkdown,
   ranges,
@@ -61,20 +60,23 @@ test("the weights are the ones the RFCs' own examples give", () => {
 // "Recipients SHOULD process any parameter named 'q' as weight, regardless of
 // parameter ordering." The older grammar gave what followed the weight a
 // meaning of its own, and RFC 9110 took that away.
-test("the weight is the parameter named q, wherever it is written", () => {
-  for (const header of [
-    "text/markdown;charset=utf-8;q=0.4",
-    "text/markdown;q=0.4;charset=utf-8",
-    "text/markdown;Q=0.4;CHARSET=UTF-8",
-  ]) {
-    assert.equal(weightOf(header, "text/markdown;charset=utf-8"), 0.4, header);
+for (const header of [
+  "text/markdown;charset=utf-8;q=0.4",
+  "text/markdown;q=0.4;charset=utf-8",
+  "text/markdown;Q=0.4;CHARSET=UTF-8",
+]) {
+  test(`the weight is the parameter named q, wherever it is written: ${header}`, () => {
+    assert.equal(weightOf(header, "text/markdown;charset=utf-8"), 0.4);
     // and the other parameter is still the type's: a copy without it does not fit
-    assert.equal(weightOf(header, "text/markdown"), 0, header);
-  }
-  assert.ok(!prefersMarkdown("text/html, text/markdown;q=0;charset=utf-8"));
+    assert.equal(weightOf(header, "text/markdown"), 0);
+  });
+}
+
+test("a parameter other than q is still the type's, before the weight or after it", () => {
+  assert(!prefersMarkdown("text/html, text/markdown;q=0;charset=utf-8"));
   // a parameter the copy is not sent with, before the weight or after it
-  assert.ok(!prefersMarkdown("text/markdown;q=1;ext=1"));
-  assert.ok(!prefersMarkdown("text/markdown;ext=1;q=1"));
+  assert(!prefersMarkdown("text/markdown;q=1;ext=1"));
+  assert(!prefersMarkdown("text/markdown;ext=1;q=1"));
 });
 
 test("the agents known to ask for Markdown get it", () => {
@@ -199,9 +201,9 @@ test("a range that is not written as the grammar has it is left out", () => {
   ];
   assert.deepEqual(page.filter(prefersMarkdown), []);
   // and the ranges beside it still count, in the order they were sent
-  assert.ok(prefersMarkdown("nonsense, text/markdown"));
-  assert.ok(prefersMarkdown("text/html;q=2, text/markdown, text/html"));
-  assert.ok(!prefersMarkdown("text/markdown;q=2, text/html"));
+  assert(prefersMarkdown("nonsense, text/markdown"));
+  assert(prefersMarkdown("text/html;q=2, text/markdown, text/html"));
+  assert(!prefersMarkdown("text/markdown;q=2, text/html"));
 });
 
 test("a comma or a semicolon inside a quoted string does not end a range", () => {
@@ -275,18 +277,18 @@ test("a request that prefers Markdown gets the page's copy, at the page's addres
   assert.deepEqual(files.asked, ["GET /flows/dpop/index.md"]);
 });
 
-test("a request that prefers the page gets it, and the copy is not read", async () => {
-  for (const accept of ["text/html, text/markdown;q=0", "*/*", undefined]) {
+for (const accept of ["text/html, text/markdown;q=0", "*/*", undefined]) {
+  test(`a request that prefers the page gets it, and the copy is not read: Accept ${accept ?? "not sent"}`, async () => {
     const files = store();
     const answer = await respond(
       ask("/flows/dpop/", accept ? { Accept: accept } : {}),
       files,
     );
-    assert.equal(answer.headers.get("content-type"), "text/html", accept);
-    assert.equal(answer.headers.get("content-location"), null, accept);
-    assert.deepEqual(files.asked, ["GET /flows/dpop/"], accept);
-  }
-});
+    assert.equal(answer.headers.get("content-type"), "text/html");
+    assert.equal(answer.headers.get("content-location"), null);
+    assert.deepEqual(files.asked, ["GET /flows/dpop/"]);
+  });
+}
 
 test("a page with no copy, and an address with no page, answer as they would without the Worker", async () => {
   const files = store();
@@ -391,7 +393,7 @@ test("if choosing fails, the Worker sends what is at the address", async () => {
   } finally {
     console.error = error;
   }
-  assert.ok(failed);
+  assert(failed);
 });
 
 // The tests above are the cases someone thought of. These hold the reading
@@ -545,11 +547,8 @@ test("the answer follows from the weights", () => {
       return "the page, and Markdown weighs more";
   });
   // the generator reaches each kind of answer, so the test is not empty
-  assert.ok(
-    markdown > MADE / 20 && markdown < MADE / 2,
-    `${markdown} got Markdown`,
-  );
-  assert.ok(ties > MADE / 50, `${ties} ties`);
+  assert(markdown > MADE / 20 && markdown < MADE / 2);
+  assert(ties > MADE / 50);
 });
 
 // Between equal weights the choice is the server's, and it is made the same
@@ -576,5 +575,5 @@ test("between equal weights named as specifically, the one listed first wins", (
     if (prefersMarkdown(plainly([...header].reverse())) === first)
       return "turned around, the answer did not turn";
   });
-  assert.ok(turned > 20, `${turned} headers had such a tie`);
+  assert(turned > 20);
 });

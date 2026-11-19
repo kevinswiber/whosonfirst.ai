@@ -13,12 +13,12 @@
     "preview": "npm run build && astro preview --port 8787",
     "check": "biome check",
     "fmt": "biome check --write",
-    "test": "astro check && node --test --test-reporter=spec \"test/unit/*.test.mjs\"",
+    "test": "astro check && ubq test/unit",
     "check:types": "astro check",
-    "check:rating": "node --test --test-reporter=spec test/unit/rating.test.mjs",
-    "check:contrast": "node --test --test-reporter=spec test/unit/contrast.test.mjs",
-    "check:sources": "node --test --test-reporter=spec test/unit/sources.test.mjs",
-    "check:rendered": "node scripts/built-site.mjs && node --test --test-reporter=spec \"test/build/*.test.mjs\" \"test/browser/*.test.mjs\" \"test/worker/*.test.mjs\"",
+    "check:rating": "ubq test/unit/rating.test.mjs",
+    "check:contrast": "ubq test/unit/contrast.test.mjs",
+    "check:sources": "ubq test/unit/sources.test.mjs",
+    "check:rendered": "node scripts/built-site.mjs && ubq test/build test/browser test/worker",
     "readme:figure": "node scripts/readme-figure.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "sources:changed": "node scripts/source-changes.mjs",
@@ -52,6 +52,7 @@
     "@mmds/wasm": "2.6.1",
     "axe-core": "4.14.0",
     "cf": "^1.0.0-rc.1",
-    "playwright": "1.63.0"
+    "playwright": "1.63.0",
+    "ubqtest": "^0.0.20"
   }
 }

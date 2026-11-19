@@ -2,8 +2,7 @@
 // how it agrees with the diagram, a glossary term's definition in place, the
 // stepper beside the diagram at a desk, and the narrative with the diagram on
 // demand on a phone.
-import { strict as assert } from "node:assert";
-import { after, before, describe, test } from "node:test";
+import { assert, describe, test } from "ubqtest";
 import {
   device,
   open,
@@ -21,71 +20,71 @@ const stepText = (page) =>
 for (const theme of THEMES) {
   for (const vp of VIEWPORTS) {
     describe(`${theme} ${vp.name} flow`, () => {
-      let ctx;
       let page;
       let count;
-      before(async () => {
-        ctx = await site.context(
-          device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
-        );
-        page = await ctx.newPage();
-        await open(page, site.url(FLOW));
-        // with the supporting details open, as a reader who has read them has it
-        await page.click("main .doc-details summary");
-        count = await page.evaluate(() =>
-          Number(document.querySelector(".flow").dataset.count),
-        );
-      });
-      after(() => ctx.close());
+      let ready;
+      const setup = () =>
+        (ready ??= (async () => {
+          const ctx = await site.context(
+            device(vp, { colorScheme: theme, reducedMotion: "reduce" }),
+          );
+          page = await ctx.newPage();
+          await open(page, site.url(FLOW));
+          // with the supporting details open, as a reader who has read them has it
+          await page.click("main .doc-details summary");
+          count = await page.evaluate(() =>
+            Number(document.querySelector(".flow").dataset.count),
+          );
+        })());
 
       // The overview: the steps in a few parts that between them cover every step,
       // each party's part under its name, and both before the diagram.
       let read;
       const ov = () =>
-        (read ??= page.evaluate(() => {
-          const top = (sel) =>
-            document.querySelector(sel).getBoundingClientRect().top + scrollY;
-          const starts = [...document.querySelectorAll(".ov-phases a")].map(
-            (a) => Number(a.getAttribute("href").replace("#step-", "")),
-          );
-          const parties = [...document.querySelectorAll(".ov-parts > div")].map(
-            (d) => ({
+        (read ??= setup().then(() =>
+          page.evaluate(() => {
+            const top = (sel) =>
+              document.querySelector(sel).getBoundingClientRect().top + scrollY;
+            const starts = [...document.querySelectorAll(".ov-phases a")].map(
+              (a) => Number(a.getAttribute("href").replace("#step-", "")),
+            );
+            const parties = [
+              ...document.querySelectorAll(".ov-parts > div"),
+            ].map((d) => ({
               name: d.querySelector("dt").textContent.trim(),
               words: d.querySelector("dd > span").textContent.trim().length,
               steps: d.querySelectorAll(".ov-steps a").length,
-            }),
-          );
-          return {
-            starts,
-            parties,
-            before: top("#in-short") < top("#walkthrough"),
-            bands: [...document.querySelectorAll("svg .phase")].map((g) => [
-              Number(g.dataset.first) + 1,
-              Number(g.dataset.last) + 1,
-            ]),
-          };
-        }));
+            }));
+            return {
+              starts,
+              parties,
+              before: top("#in-short") < top("#walkthrough"),
+              bands: [...document.querySelectorAll("svg .phase")].map((g) => [
+                Number(g.dataset.first) + 1,
+                Number(g.dataset.last) + 1,
+              ]),
+            };
+          }),
+        ));
       test("overview: a few parts, in order, starting at step 1, before the diagram", async () => {
         const { before, starts } = await ov();
-        assert.ok(
-          before &&
-            starts.length >= 2 &&
-            starts[0] === 1 &&
-            starts.every((n, i) => i === 0 || n > starts[i - 1]) &&
-            starts.at(-1) <= count,
-          `parts start at steps ${starts.join(", ")} of ${count}${before ? "" : ", after the diagram"}`,
-        );
+        assert(before); // the overview is after the diagram
+        assert.greaterThanOrEqual(starts.length, 2);
+        assert.equal(starts[0], 1);
+        assert(starts.every((n, i) => i === 0 || n > starts[i - 1])); // in order
+        assert.lessThanOrEqual(starts.at(-1), count);
       });
       test("overview: each party's part is said, with the steps it takes part in", async () => {
         const { parties } = await ov();
-        assert.ok(
-          parties.length >= 2 &&
-            parties.every((p) => p.words > 20 && p.steps > 0),
-          parties.map((p) => `${p.name} (${p.steps})`).join("; "),
-        );
+        assert.greaterThanOrEqual(parties.length, 2);
+        assert.deepEqual(
+          parties.filter((p) => !(p.words > 20 && p.steps > 0)),
+          [],
+        ); // a party with too few words or no steps
       });
       test("diagram is divided into the same parts, and they cover every step", async () => {
         const { bands, starts } = await ov();
+        await setup();
         assert.deepEqual(
           bands,
           starts.map((first, i) => [first, (starts[i + 1] ?? count + 1) - 1]),
@@ -94,26 +93,26 @@ for (const theme of THEMES) {
 
       // A glossary term in the text shows its definition in place, and goes away again.
       test("enhanced glossary terms retain link semantics and definition destinations", async () => {
+        await setup();
         const terms = page.locator("main a.term");
         const n = await terms.count();
-        assert.ok(n > 0, "no glossary term is marked");
+        assert(n > 0); // no glossary term is marked
         assert.equal(
           await page.locator("main").getByRole("link").and(terms).count(),
           n,
-          "a marked term is not exposed as a link",
-        );
-        assert.ok(
+        ); // a marked term is not exposed as a link
+        assert(
           await terms.evaluateAll((links) =>
             links.every((a) =>
               a.getAttribute("href")?.startsWith("/glossary/#"),
             ),
           ),
-          "a marked term does not lead to the glossary",
-        );
+        ); // a marked term does not lead to the glossary
       });
       // Focuses the first term in the introduction, and says what its preview shows.
-      const preview = () =>
-        page.evaluate(async () => {
+      const preview = async () => {
+        await setup();
+        return page.evaluate(async () => {
           const settle = () => new Promise((r) => setTimeout(r, 60));
           const a = document.querySelector(".intro a.term");
           if (!a) return null;
@@ -137,21 +136,19 @@ for (const theme of THEMES) {
             terms: document.querySelectorAll("main a.term").length,
           };
         });
+      };
       test("focusing a glossary term previews its definition inside the window", async () => {
         const term = await preview();
-        assert.ok(term, "no term marked in the introduction");
-        assert.ok(
-          term.shown &&
-            term.says > 20 &&
-            term.expanded === "true" &&
-            term.inWindow &&
-            term.more === term.href,
-          JSON.stringify(term),
-        );
+        assert(term); // no term marked in the introduction
+        assert(term.shown); // the definition is not shown
+        assert.greaterThan(term.says, 20);
+        assert.equal(term.expanded, "true");
+        assert(term.inWindow); // the definition runs out of the window
+        assert.equal(term.more, term.href);
       });
       test("Escape dismisses the definition without moving focus", async () => {
         const term = await preview();
-        assert.ok(term?.shown, "the definition was not shown to begin with");
+        assert(term?.shown); // the definition was not shown to begin with
         await page.keyboard.press("Escape");
         await page.waitForTimeout(80);
         const dismissed = await page.evaluate(() => ({
@@ -173,39 +170,40 @@ for (const theme of THEMES) {
 
       if (vp.name === "desktop") {
         // the stepper: measure the diagram at its first, a middle and its last step
-        const at = (n) =>
-          page.evaluate((n) => {
+        const at = async (n) => {
+          await setup();
+          await page.evaluate((n) => {
             location.hash = `#step-${n}`;
           }, n);
+        };
         for (const [label, step] of [
           ["its first", () => 1],
           ["a middle", () => Math.ceil(count / 2)],
           ["its last", () => count],
         ]) {
           describe(`at ${label} step`, () => {
-            let labels;
-            before(async () => {
+            const go = async () => {
+              await setup();
               await at(step());
               await page.waitForTimeout(80);
-              labels = await page.evaluate(diagramLabels);
-            });
-            test(`every label at least ${AA}:1 as drawn`, () => {
+            };
+            let measured;
+            const measure = () =>
+              (measured ??= go().then(() => page.evaluate(diagramLabels)));
+            test(`every label at least ${AA}:1 as drawn`, async () => {
+              const labels = await measure();
               const worst = labels.reduce((a, b) =>
                 b.ratio < a.ratio ? b : a,
               );
-              assert.ok(
-                worst.ratio >= AA,
-                `step ${step()}: lowest ${worst.ratio.toFixed(2)} (“${worst.text}”, ${worst.state})`,
-              );
+              assert.deepEqual(worst.ratio >= AA ? [] : [worst], []); // the label with the lowest contrast
             });
-            test(`labels drawn at ${MIN_LABEL}px or more`, () => {
+            test(`labels drawn at ${MIN_LABEL}px or more`, async () => {
+              const labels = await measure();
               const tiny = labels.reduce((a, b) => (b.px < a.px ? b : a));
-              assert.ok(
-                tiny.px >= MIN_LABEL - 0.05,
-                `step ${step()}: smallest ${tiny.px.toFixed(1)}px (“${tiny.text}”)`,
-              );
+              assert.deepEqual(tiny.px >= MIN_LABEL - 0.05 ? [] : [tiny], []); // the smallest label
             });
             test("every step remains readable, with the selected route marked", async () => {
+              await go();
               const held = await page.evaluate(() => {
                 const li = document.querySelector(".flow-step.is-current");
                 return {
@@ -217,10 +215,8 @@ for (const theme of THEMES) {
                     .trim(),
                 };
               });
-              assert.ok(
-                held.shown === count && !!held.route,
-                `step ${step()}: ${held.shown} of ${count} shown, route “${held.route ?? ""}”`,
-              );
+              assert.equal(held.shown, count);
+              assert(held.route); // no route marked
             });
           });
         }
@@ -228,6 +224,8 @@ for (const theme of THEMES) {
         // a link to a step (from the overview, or from elsewhere) brings the diagram into view
         test("a part's link shows its first step, with the diagram in view and the part marked", async () => {
           const { starts } = await ov();
+          await at(1);
+          await page.waitForTimeout(80);
           await page.evaluate(() => scrollTo(0, 0));
           await page.click(".ov-phases li:nth-child(2) a");
           await page.waitForTimeout(150);
@@ -242,18 +240,19 @@ for (const theme of THEMES) {
               active: document.querySelectorAll("svg .phase.is-active").length,
             };
           });
-          assert.ok(
-            linked.inView &&
-              linked.count.startsWith(`Step ${starts[1]} `) &&
-              /^Part 2 of/.test(linked.phase ?? "") &&
-              linked.active === 1,
-            JSON.stringify(linked),
-          );
+          assert.match(linked, {
+            inView: true,
+            count: (c) => c.startsWith(`Step ${starts[1]} `),
+            phase: /^Part 2 of/,
+            active: 1,
+          });
         });
         // the last part starts a screen or more down the diagram: its row has to be
         // brought into view too, not only the top of the diagram
         test("a link to a late part leaves that step’s row in view in the diagram", async () => {
           const { starts } = await ov();
+          await at(1);
+          await page.waitForTimeout(80);
           await page.evaluate(() => scrollTo(0, 0));
           await page.click(".ov-phases li:last-child a");
           await page.waitForTimeout(200);
@@ -276,10 +275,10 @@ for (const theme of THEMES) {
               window: [Math.round(top), Math.round(bottom)],
             };
           });
-          assert.ok(
-            late.inView && late.count.startsWith(`Step ${starts.at(-1)} `),
-            JSON.stringify(late),
-          );
+          assert.match(late, {
+            inView: true,
+            count: (c) => c.startsWith(`Step ${starts.at(-1)} `),
+          });
         });
         // an address that names a late step is a link people paste: opened fresh,
         // it has to leave that step's row in view, as pressing the step does
@@ -306,10 +305,10 @@ for (const theme of THEMES) {
               window: [Math.round(header), innerHeight],
             };
           });
-          assert.ok(
-            addressed.inView && addressed.count.startsWith(`Step ${count} `),
-            JSON.stringify(addressed),
-          );
+          assert.match(addressed, {
+            inView: true,
+            count: (c) => c.startsWith(`Step ${count} `),
+          });
         });
         // keyboard: Left and Right step, Down is left to scrolling, and focus is never stranded
         test("arrow keys: Left steps back, Down does not change the step", async () => {
@@ -321,10 +320,8 @@ for (const theme of THEMES) {
           const afterLeft = await stepText(page);
           await page.keyboard.press("ArrowDown");
           const afterDown = await stepText(page);
-          assert.ok(
-            afterLeft.includes(`${count - 1} of`) && afterDown === afterLeft,
-            `${afterLeft} | ${afterDown}`,
-          );
+          assert.contains(afterLeft, `${count - 1} of`);
+          assert.equal(afterDown, afterLeft);
         });
         test("last step: focus moves from the disabled Next to Previous", async () => {
           await at(count - 1);
@@ -354,24 +351,28 @@ for (const theme of THEMES) {
           assert.deepEqual(focus, { step: "step-2", control: true });
         });
         test("steps say who holds which credential", async () => {
+          await setup();
           const holders = await page.evaluate(
             () => document.querySelectorAll(".flow-step .held dt").length,
           );
-          assert.ok(holders > 0, `${holders} holder entries`);
+          assert.greaterThan(holders, 0);
         });
       } else {
         // the phone: a narrative of every step, with the diagram on demand at full size
         let read;
         const state = () =>
-          (read ??= page.evaluate(() => ({
-            shown: document.querySelectorAll(".flow-step:not([hidden])").length,
-            open: document.querySelector(".flow-stage").open,
-            summary: !!document.querySelector(".flow-stage > summary")
-              ?.offsetParent,
-          })));
+          (read ??= setup().then(() =>
+            page.evaluate(() => ({
+              shown: document.querySelectorAll(".flow-step:not([hidden])")
+                .length,
+              open: document.querySelector(".flow-stage").open,
+              summary: !!document.querySelector(".flow-stage > summary")
+                ?.offsetParent,
+            })),
+          ));
         test("every step is readable as a narrative", async () => {
           const s = await state();
-          assert.equal(s.shown, count, `${s.shown} of ${count}`);
+          assert.equal(s.shown, count);
         });
         test("diagram is offered on demand, not forced", async () => {
           const s = await state();
@@ -381,36 +382,42 @@ for (const theme of THEMES) {
           );
         });
         describe("with the diagram opened", () => {
-          let labels;
-          before(async () => {
+          // the diagram open, once the closed page has been read
+          const opened = async () => {
             await state();
-            await page.click(".flow-stage > summary");
-            await page.waitForTimeout(80);
-            labels = await page.evaluate(diagramLabels);
-          });
-          test(`opened diagram keeps labels at ${MIN_LABEL}px or more`, () => {
+            if (
+              !(await page.evaluate(
+                () => document.querySelector(".flow-stage").open,
+              ))
+            ) {
+              await page.click(".flow-stage > summary");
+              await page.waitForTimeout(80);
+            }
+          };
+          let measured;
+          const measure = () =>
+            (measured ??= opened().then(() => page.evaluate(diagramLabels)));
+          test(`opened diagram keeps labels at ${MIN_LABEL}px or more`, async () => {
+            const labels = await measure();
             const tiny = Math.min(...labels.map((l) => l.px));
-            assert.ok(
-              tiny >= MIN_LABEL - 0.05,
-              `smallest ${tiny.toFixed(1)}px`,
-            );
+            assert.greaterThanOrEqual(tiny, MIN_LABEL - 0.05);
           });
-          test(`opened diagram: every label at least ${AA}:1 as drawn`, () => {
+          test(`opened diagram: every label at least ${AA}:1 as drawn`, async () => {
+            const labels = await measure();
             const worst = labels.reduce((a, b) => (b.ratio < a.ratio ? b : a));
-            assert.ok(
-              worst.ratio >= AA,
-              `lowest ${worst.ratio.toFixed(2)} (“${worst.text}”)`,
-            );
+            assert.deepEqual(worst.ratio >= AA ? [] : [worst], []); // the label with the lowest contrast
           });
           test("opened diagram scrolls inside its own frame", async () => {
+            await opened();
             const still = await page.evaluate(
               () =>
                 document.documentElement.scrollWidth -
                 document.documentElement.clientWidth,
             );
-            assert.ok(still <= 0, `${still}px`);
+            assert.lessThanOrEqual(still, 0);
           });
           test("leaving the diagram closes it and lands on its control, in view", async () => {
+            await opened();
             await page.click(".flow-back button");
             await page.waitForTimeout(80);
             const left = await page.evaluate(() => {
