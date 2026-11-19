@@ -407,6 +407,13 @@ export type RelatedDoc = ({ entry: string } | { name: string; url: string }) & {
   note?: string;
 };
 
+/**
+ * A tracker entry as src/data/standards.ts writes it. Its status, and the
+ * part of its status line that changes as the document moves, are not written
+ * there: they are read from the log in src/data/history/.
+ */
+export type StandardEntry = Omit<Standard, "status">;
+
 export interface Standard {
   id: string;
   /** Short display name, e.g. "Token Exchange". */
@@ -414,8 +421,13 @@ export interface Standard {
   /** Identifier, e.g. "RFC 8693" or "draft-ietf-oauth-transaction-tokens". */
   ref: string;
   body: string;
+  /** Read from the log: the status the latest event that sets one gives. */
   status: StdStatus;
-  /** Free-text status detail: revision, date, where it is in the process. */
+  /**
+   * The status line. An entry writes only what lasts: a note that stays true
+   * as the document moves. The tracker puts before it, from the log, the
+   * current revision with its date, and where the document stands.
+   */
   detail?: string;
   /**
    * Other documents this entry says something about, each with its link. A fact

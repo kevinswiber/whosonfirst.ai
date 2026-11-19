@@ -227,6 +227,46 @@ export const currentOf = (
   return now;
 };
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+/** A date's month and year, as the tracker writes them: "November 2026". */
+const monthAndYear = (date: string) =>
+  `${MONTHS[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`;
+
+/**
+ * What the tracker says of a version by itself, for the two kinds whose
+ * wording is always the same: an IETF draft's revision and month, and an
+ * RFC's month. Any other version is named by the entry's `standing`, in its
+ * publisher's words, so an event that publishes one states a new `standing`.
+ */
+export const versionLine = (version: KnownVersion | undefined) => {
+  if (!version) return "";
+  if (/^-\d+$/.test(version.label))
+    return `Revision ${version.label}, ${monthAndYear(version.date)}.`;
+  if (/^RFC \d+$/.test(version.label)) return `${monthAndYear(version.date)}.`;
+  return "";
+};
+
+/**
+ * An entry's status line: its version, where it stands, and the entry's own
+ * lasting note, in that order.
+ */
+export const statusLine = (now: Standing, note?: string) =>
+  [versionLine(now.version), now.standing, note].filter(Boolean).join(" ");
+
 /**
  * A name for an event that stays the same as the log grows: its entry, its
  * date and its kind, with a number where an entry has two alike on one day.

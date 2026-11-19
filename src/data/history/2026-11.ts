@@ -129,6 +129,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "OAuth working group document; submission to the IESG is targeted for December 2026. Recent revisions removed the PKCE “plain” method and require authorization servers to send the `iss` response parameter.",
     version: {
       label: "-17",
       name: "draft-ietf-oauth-v2-1-17",
@@ -202,6 +204,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "A working group last call opened in June 2026; since July the draft has working group consensus and is waiting for its write-up.",
     version: {
       label: "-04",
       name: "draft-ietf-oauth-first-party-apps-04",
@@ -323,6 +327,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing: "OAuth working group document, adopted in December 2025.",
     version: {
       label: "-03",
       name: "draft-ietf-oauth-refresh-token-expiration-03",
@@ -408,6 +413,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "Final specification, incorporating errata set 2, December 15, 2023.",
     version: {
       label: "1.0, errata set 2",
       url: "https://openid.net/specs/openid-connect-core-1_0.html",
@@ -420,6 +427,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "Final specification, incorporating errata set 2, December 15, 2023.",
     version: {
       label: "1.0, errata set 2",
       url: "https://openid.net/specs/openid-connect-discovery-1_0.html",
@@ -432,6 +441,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "OAuth working group document. The latest revision requires URL normalization and defines error handling. MCP 2026-07-28 cites -00; the MCP draft revision moves to -03.",
     version: {
       label: "-03",
       name: "draft-ietf-oauth-client-id-metadata-document-03",
@@ -457,6 +468,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "A working group last call opened in September 2026; since October the draft has working group consensus and is waiting for its write-up. Revision -12 defines its header fields as Structured Fields in place of the token68 syntax.",
     version: {
       label: "-12",
       name: "draft-ietf-oauth-attestation-based-client-auth-12",
@@ -470,6 +483,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "OAuth working group document, reported as waiting on a WIMSE dependency.",
     version: {
       label: "-03",
       name: "draft-ietf-oauth-spiffe-client-auth-03",
@@ -519,6 +534,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "OAuth working group document. Revision -05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. Revision -06 changed the error returned for a subject token that fails validation. The MCP extension pins -04.",
     version: {
       label: "-06",
       name: "draft-ietf-oauth-identity-assertion-authz-grant-06",
@@ -532,6 +549,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Approved by the IESG and in the RFC Editor queue since June 2026, where its status became “Final Approval Pending” in November 2026; no RFC number yet.",
     version: {
       label: "-17",
       name: "draft-ietf-oauth-identity-chaining-17",
@@ -545,6 +564,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "A third working group last call ended in August 2026; the draft has working group consensus and is waiting for its write-up.",
     version: {
       label: "-11",
       name: "draft-ietf-oauth-transaction-tokens-11",
@@ -558,6 +579,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft, renamed during 2026; its claim design changed to an `agentic_ctx` claim.",
     version: {
       label: "-03",
       name: "draft-araut-oauth-transaction-tokens-for-agents-03",
@@ -571,6 +594,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual drafts, both revised in fall 2026. Neither is adopted.",
   },
   {
     entry: "delegate-sd-jwt",
@@ -578,6 +603,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing: "Newly adopted by the OAuth working group.",
     version: {
       label: "-00",
       name: "draft-ietf-oauth-delegate-sd-jwt-00",
@@ -591,6 +617,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft; the subject of an OAuth interim meeting in October 2026.",
     version: {
       label: "-02",
       name: "draft-mcguinness-oauth-mission-02",
@@ -628,6 +656,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final since September 2021.",
     version: {
       label: "1.0",
       url: "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html",
@@ -664,6 +693,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing: "Adopted by the OAuth working group in 2026.",
     version: {
       label: "-01",
       name: "draft-ietf-oauth-deferred-token-response-01",
@@ -677,6 +707,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing: "Individual draft.",
     version: {
       label: "-02",
       name: "draft-rosenberg-oauth-aauth-02",
@@ -690,6 +721,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft. That revision added the person token and arranged resource access into five modes.",
     version: {
       label: "-11",
       name: "draft-hardt-oauth-aauth-protocol-11",
@@ -799,6 +832,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft. A call for adoption in the HTTP working group ended in September 2026 with no consensus to adopt it at this time.",
     version: {
       label: "-09",
       name: "draft-hardt-httpbis-signature-key-09",
@@ -812,6 +847,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID, plus a Broker API and a filesystem delivery specification. All three are incubating.",
   },
   {
     entry: "spire",
@@ -819,6 +856,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing:
+      "Version 1.16.0, November 2026, adds experimental WIT-SVID support.",
     version: {
       label: "v1.16.0",
       url: "https://github.com/spiffe/spire",
@@ -831,6 +870,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing: "WIMSE working group document. No WIMSE document is an RFC yet.",
     version: {
       label: "-09",
       name: "draft-ietf-wimse-arch-09",
@@ -844,6 +884,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing: "Informational. Adopted by WIMSE in September 2026.",
     version: {
       label: "-01",
       name: "draft-ietf-wimse-aims-01",
@@ -857,6 +898,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "One of four documents that replaced the earlier service-to-service protocol draft.",
     version: {
       label: "-03",
       name: "draft-ietf-wimse-workload-creds-03",
@@ -896,6 +939,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Submitted to the IESG for publication in October 2026, and in its area director’s evaluation since November.",
     version: {
       label: "-08",
       name: "draft-ietf-wimse-http-signature-08",
@@ -922,6 +967,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Informational. Its IETF Last Call ended on November 13, 2026, and it now waits for its area director to put it before the IESG.",
     version: {
       label: "-08",
       name: "draft-ietf-wimse-workload-identity-practices-08",
@@ -935,6 +982,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft, intended as Informational. Not adopted by a working group. Its authors call it early and exploratory, and say any part of it may change, including whether it should be a document of its own.",
     version: {
       label: "-02",
       name: "draft-carleton-workload-authz-grant-02",
@@ -948,6 +997,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "TokenRequest and projected tokens: GA since v1.20. Token ID and pod/node claims: GA in v1.32. OIDC issuer discovery: GA since v1.21. External token signing: GA in v1.36.",
   },
   {
     entry: "k8s-pod-certificates",
@@ -955,6 +1006,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "GA in v1.37 (August 2026) in `certificates.k8s.io/v1`. No signer ships with Kubernetes; you install one.",
   },
   {
     entry: "k8s-clustertrustbundle",
@@ -962,6 +1015,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "GA in v1.37 (August 2026).",
   },
   {
     entry: "k8s-structured-authn",
@@ -969,6 +1023,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "GA in v1.34.",
   },
   {
     entry: "k8s-agent-sandbox",
@@ -976,6 +1031,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing:
+      "Project version 1.0 since August 2026; the API is still `v1beta1` in the `agents.x-k8s.io` group. No built-in credential broker.",
   },
   {
     entry: "kube-agentic-networking",
@@ -983,6 +1040,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing: "Early releases (v0.x) during 2026. A SIG Network subproject.",
   },
   {
     entry: "agentgateway",
@@ -990,6 +1048,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing:
+      "Version 1.7 in October 2026. A Linux Foundation project, reported to have joined the Agentic AI Foundation in June 2026.",
     version: {
       label: "1.7",
       url: "https://github.com/agentgateway/agentgateway",
@@ -1072,6 +1132,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
     version: {
       label: "2026-07-28",
       url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
@@ -1084,6 +1146,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Official extension, stable at revision 2026-07-28.",
   },
   {
     entry: "mcp-client-credentials",
@@ -1091,6 +1154,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Official extension, stable at revision 2026-07-28.",
   },
   {
     entry: "mcp-elicitation",
@@ -1098,6 +1162,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "Introduced in 2025-11-25 and reworked in 2026-07-28. Still marked as subject to change.",
     version: {
       label: "2026-07-28",
       url: "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation",
@@ -1110,6 +1176,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Proposal in draft since December 2025, not merged and in no released revision of MCP.",
   },
   {
     entry: "a2a",
@@ -1117,6 +1185,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing:
+      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A 1.1.0 release candidate was tagged on October 29, 2026; the published specification is still 1.0.1. A Linux Foundation project, and part of the Agentic AI Foundation.",
     version: {
       label: "v1.0.1",
       url: "https://a2a-protocol.org/v1.0.1/specification/",
@@ -1129,6 +1199,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "The working group’s only adopted document; it merges the earlier architecture and key directory drafts.",
     version: {
       label: "-01",
       name: "draft-ietf-webbotauth-httpsig-protocol-01",
@@ -1142,6 +1214,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Individual draft that consolidates two earlier vendor proposals. Not adopted.",
     version: {
       label: "-00",
       name: "draft-wzdk-scim-agent-resource-00",
@@ -1155,6 +1229,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing: "Linux Foundation project; APIs are alpha.",
   },
   {
     entry: "biscuit",
@@ -1162,6 +1237,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing:
+      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README says it is seeking an audit of token design, cryptographic primitives and implementations, and lists varying support for 3.3 across libraries. The project is incubating at the Eclipse Foundation; the level here follows the specification’s own stability statement.",
   },
   {
     entry: "authzen",
@@ -1169,6 +1246,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final specification, approved January 2026.",
     version: {
       label: "1.0",
       url: "https://openid.net/specs/authorization-api-1_0-final.html",
@@ -1181,6 +1259,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     version: {
       label: "Draft 1",
       url: "https://openid.github.io/authzen/authzen-coaz-framework-1_0",
@@ -1193,6 +1273,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     version: {
       label: "Draft 1",
       url: "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0",
@@ -1205,6 +1287,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Working group draft. The Draft 1 document is dated November 6, 2026.",
     version: {
       label: "Draft 1",
       url: "https://openid.github.io/authzen/authzen-access-request-approval-profile-1_0.html",
@@ -1217,6 +1301,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Working group draft. The Draft 1 document is dated July 3, 2026.",
     version: {
       label: "Draft 1",
       url: "https://openid.github.io/authzen/authzen-obligations-profile-1_0.html",
@@ -1229,6 +1315,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final specification published in August 2025.",
     version: {
       label: "1.0",
       url: "https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html",
@@ -1241,6 +1328,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final specification published in August 2025.",
     version: {
       label: "1.0",
       url: "https://openid.net/specs/openid-caep-1_0-final.html",
@@ -1289,6 +1377,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "wg-draft",
+    standing:
+      "Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
     version: {
       label: "-21",
       name: "draft-ietf-oauth-status-list-21",
@@ -1314,6 +1404,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final, published 9 July 2025.",
     version: {
       label: "1.0",
       url: "https://openid.net/specs/openid-4-verifiable-presentations-1_0.html",
@@ -1326,6 +1417,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "W3C Recommendation, May 2025.",
     version: {
       label: "2.0",
       url: "https://www.w3.org/TR/vc-data-model-2.0/",
@@ -1338,6 +1430,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Version 0.2.0, April 2026. Created by Google and donated to the FIDO Alliance the same month; no FIDO-published draft yet.",
     version: {
       label: "v0.2.0",
       url: "https://ap2-protocol.org",
@@ -1350,6 +1444,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Draft 0.1, maintained by Mastercard and contributed to the FIDO Alliance alongside AP2.",
   },
   {
     entry: "acp-commerce",
@@ -1357,6 +1453,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Beta, date-versioned; latest stable 2026-04-17. Maintained by OpenAI and Stripe.",
     version: {
       label: "2026-04-17",
       url: "https://agenticcommerce.dev",
@@ -1369,6 +1467,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "draft",
+    standing:
+      "Published by Visa with a sample implementation. Not under a standards body.",
   },
   {
     entry: "x402",
@@ -1376,6 +1476,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "project",
+    standing:
+      "Protocol version 2. Moved to an x402 Foundation under the Linux Foundation in 2026.",
   },
   {
     entry: "fapi-2",
@@ -1383,6 +1485,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "final",
+    standing: "Final. Published on 22 February 2025.",
     version: {
       label: "2.0",
       url: "https://openid.net/specs/fapi-security-profile-2_0-final.html",
@@ -1395,6 +1498,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "guidance",
+    standing: "October 2025, from the AI Identity Management Community Group.",
   },
   {
     entry: "nist-agent-identity",
@@ -1402,6 +1506,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "guidance",
+    standing:
+      "Draft concept paper, February 2026. NIST announced an AI Agent Standards Initiative the same month, which its site now titles the SI Agent Standards Initiative.",
   },
   {
     entry: "owasp-agentic",
@@ -1409,6 +1515,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "guidance",
+    standing: "Released December 2025. An OWASP MCP Top 10 is in beta.",
   },
   {
     entry: "owasp-nhi",
@@ -1416,6 +1523,7 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "guidance",
+    standing: "2025.",
   },
   {
     entry: "cosai-agentic-iam",
@@ -1423,6 +1531,8 @@ export const events: HistoryEvent[] = [
     date: BASELINE,
     recorded: BASELINE,
     status: "guidance",
+    standing:
+      "Version 1.0, approved on March 20, 2026, by the Coalition for Secure AI.",
     version: {
       label: "1.0",
       url: "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems",

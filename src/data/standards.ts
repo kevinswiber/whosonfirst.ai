@@ -1,7 +1,14 @@
-import type { Standard } from "./types";
+import { history } from "./history/index.ts";
+import { currentOf, statusLine } from "./history/model.ts";
+import type { Standard, StandardEntry } from "./types";
 
 /**
  * The standards tracker.
+ *
+ * An entry here says what a standard is. Where it stands is in the log in
+ * data/history/: its status, its current revision and date, and the sentence
+ * on where it is in its body's process. `standards`, at the end of this file,
+ * puts the two together. An entry's `detail` holds only a note that lasts.
  *
  * Status and revision details were checked in November 2026 (see data/site.ts).
  * IETF revision numbers, dates and process states ("in last call", "with the
@@ -13,16 +20,13 @@ import type { Standard } from "./types";
 const rfc = (n: number) => `https://www.rfc-editor.org/rfc/rfc${n}`;
 const draft = (name: string) => `https://datatracker.ietf.org/doc/${name}/`;
 
-export const standards: Standard[] = [
+const entries: StandardEntry[] = [
   /* ───────────── Core OAuth ───────────── */
   {
     id: "oauth-2-1",
     name: "OAuth 2.1",
     ref: "draft-ietf-oauth-v2-1",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -17, October 2026. OAuth working group document; submission to the IESG is targeted for December 2026. Recent revisions removed the PKCE “plain” method and require authorization servers to send the `iss` response parameter.",
     topics: ["core"],
     summary:
       "Consolidates OAuth 2.0, bearer tokens, PKCE and the security best current practice into one framework. No implicit grant, no password grant, PKCE everywhere, exact redirect matching.",
@@ -35,9 +39,7 @@ export const standards: Standard[] = [
     name: "OAuth 2.0 Authorization Framework",
     ref: "RFC 6749",
     body: "IETF",
-    status: "rfc",
-    detail:
-      "October 2012. Still the current standard until OAuth 2.1 is published.",
+    detail: "Still the current standard until OAuth 2.1 is published.",
     related: [
       { entry: "rfc8252", kind: "updated-by" },
       {
@@ -59,8 +61,6 @@ export const standards: Standard[] = [
     name: "Bearer Token Usage",
     ref: "RFC 6750",
     body: "IETF",
-    status: "rfc",
-    detail: "October 2012.",
     related: [
       {
         name: "RFC 8996, Deprecating TLS 1.0 and TLS 1.1",
@@ -81,8 +81,6 @@ export const standards: Standard[] = [
     name: "PKCE",
     ref: "RFC 7636",
     body: "IETF",
-    status: "rfc",
-    detail: "September 2015.",
     topics: ["core"],
     summary:
       "Proof Key for Code Exchange. Binds an authorization code to the client instance that requested it.",
@@ -95,8 +93,7 @@ export const standards: Standard[] = [
     name: "OAuth for Native Apps",
     ref: "RFC 8252",
     body: "IETF",
-    status: "rfc",
-    detail: "October 2017. BCP 212.",
+    detail: "BCP 212.",
     topics: ["core"],
     summary:
       "How desktop and mobile apps should run OAuth: the system browser and loopback or app-claimed redirect URIs.",
@@ -109,8 +106,7 @@ export const standards: Standard[] = [
     name: "OAuth for Browser-Based Applications",
     ref: "RFC 10017",
     body: "IETF",
-    status: "rfc",
-    detail: "August 2026. BCP 212.",
+    detail: "BCP 212.",
     topics: ["core"],
     summary:
       "Threats and architecture patterns for apps that run in a browser: backend-for-frontend, token-mediating backend, and browser-only.",
@@ -123,9 +119,6 @@ export const standards: Standard[] = [
     name: "OAuth for First-Party Applications",
     ref: "draft-ietf-oauth-first-party-apps",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -04, July 2026. A working group last call opened in June 2026; since July the draft has working group consensus and is waiting for its write-up.",
     topics: ["core"],
     summary:
       "An Authorization Challenge Endpoint, so that an app can sign a user in without a browser. The app collects what the user enters, such as a username, a one-time code or a passkey response, and posts it to the authorization server until it gets an authorization code. The server can send the user to a browser at any step.",
@@ -138,8 +131,7 @@ export const standards: Standard[] = [
     name: "OAuth 2.0 Security Best Current Practice",
     ref: "RFC 9700",
     body: "IETF",
-    status: "rfc",
-    detail: "January 2025. BCP 240. An update draft is in progress.",
+    detail: "BCP 240. An update draft is in progress.",
     topics: ["core", "guidance"],
     summary:
       "The consolidated list of OAuth attacks and required defenses. Deprecates the implicit and password grants.",
@@ -151,8 +143,6 @@ export const standards: Standard[] = [
     name: "Resource Indicators",
     ref: "RFC 8707",
     body: "IETF",
-    status: "rfc",
-    detail: "February 2020.",
     topics: ["core", "delegation"],
     summary:
       "The `resource` request parameter, which tells the authorization server which API a token is for so it can restrict the audience.",
@@ -165,8 +155,6 @@ export const standards: Standard[] = [
     name: "Authorization Server Issuer Identification",
     ref: "RFC 9207",
     body: "IETF",
-    status: "rfc",
-    detail: "March 2022.",
     topics: ["core"],
     summary:
       "Adds an `iss` parameter to the authorization response so a client can tell which server answered.",
@@ -179,8 +167,6 @@ export const standards: Standard[] = [
     name: "JSON Web Token (JWT)",
     ref: "RFC 7519",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2015.",
     related: [
       {
         name: "RFC 7797, JSON Web Signature (JWS) Unencoded Payload Option",
@@ -211,8 +197,7 @@ export const standards: Standard[] = [
     name: "JSON Web Signature (JWS)",
     ref: "RFC 7515",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2015. Proposed Standard.",
+    detail: "Proposed Standard.",
     topics: ["core"],
     summary:
       "A signature or message authentication code over any content, with a header that names the algorithm and the key. It has a compact form, used by JWTs, and a JSON form with `protected`, `header` and `signature` members.",
@@ -225,10 +210,9 @@ export const standards: Standard[] = [
     name: "JSON Canonicalization Scheme (JCS)",
     ref: "RFC 8785",
     body: "RFC Editor",
-    status: "rfc",
     // The RFC's first page reads "Independent Submission" and "Category: Informational".
     detail:
-      "June 2020. Informational, published as an independent submission: an RFC, but not a product of an IETF working group.",
+      "Informational, published as an independent submission: an RFC, but not a product of an IETF working group.",
     topics: ["core"],
     summary:
       "One byte-for-byte representation of a JSON value: properties sorted, numbers and strings serialized as ECMAScript does, no insignificant whitespace. Two parties that canonicalize the same data sign and verify the same bytes.",
@@ -241,8 +225,6 @@ export const standards: Standard[] = [
     name: "JWT Profile for Access Tokens",
     ref: "RFC 9068",
     body: "IETF",
-    status: "rfc",
-    detail: "October 2021.",
     topics: ["core"],
     summary:
       "A standard set of claims for JWT-formatted access tokens (`at+jwt`).",
@@ -254,8 +236,6 @@ export const standards: Standard[] = [
     name: "Token Introspection",
     ref: "RFC 7662",
     body: "IETF",
-    status: "rfc",
-    detail: "October 2015.",
     topics: ["core"],
     summary:
       "An endpoint where a resource server asks the authorization server whether a token is active and what it stands for. Only `active` is required in the answer; `sub`, `client_id` and `scope` are optional.",
@@ -268,8 +248,6 @@ export const standards: Standard[] = [
     name: "Token Revocation",
     ref: "RFC 7009",
     body: "IETF",
-    status: "rfc",
-    detail: "August 2013.",
     topics: ["core"],
     summary:
       "An endpoint where a client asks the authorization server to revoke a token. Servers must support revoking refresh tokens and should support revoking access tokens.",
@@ -282,9 +260,6 @@ export const standards: Standard[] = [
     name: "Refresh Token and Authorization Expiration",
     ref: "draft-ietf-oauth-refresh-token-expiration",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -03, July 2026. OAuth working group document, adopted in December 2025.",
     topics: ["core"],
     summary:
       "Two fields in the token response: `refresh_token_timeout`, how long the client may hold a refresh token without using it, and `authorization_expires_in`, when the user’s approval for those scopes ends. A refresh token must not outlive the approval behind it.",
@@ -297,8 +272,6 @@ export const standards: Standard[] = [
     name: "Pushed Authorization Requests",
     ref: "RFC 9126",
     body: "IETF",
-    status: "rfc",
-    detail: "September 2021.",
     related: [{ entry: "rfc10070", kind: "updated-by" }],
     topics: ["core"],
     otherNames: ["PAR"],
@@ -313,8 +286,6 @@ export const standards: Standard[] = [
     name: "JWT-Secured Authorization Request",
     ref: "RFC 9101",
     body: "IETF",
-    status: "rfc",
-    detail: "August 2021.",
     topics: ["core"],
     otherNames: ["JAR"],
     summary:
@@ -328,8 +299,6 @@ export const standards: Standard[] = [
     name: "GNAP",
     ref: "RFC 9635",
     body: "IETF",
-    status: "rfc",
-    detail: "October 2024.",
     related: [
       {
         entry: "rfc9767",
@@ -348,8 +317,6 @@ export const standards: Standard[] = [
     name: "GNAP Resource Server Connections",
     ref: "RFC 9767",
     body: "IETF",
-    status: "rfc",
-    detail: "April 2025.",
     topics: ["core", "delegation"],
     summary:
       "How resource servers connect to a GNAP authorization server for token introspection and other services.",
@@ -364,8 +331,6 @@ export const standards: Standard[] = [
     name: "Protected Resource Metadata",
     ref: "RFC 9728",
     body: "IETF",
-    status: "rfc",
-    detail: "April 2025.",
     topics: ["discovery"],
     otherNames: ["PRM"],
     summary:
@@ -379,8 +344,6 @@ export const standards: Standard[] = [
     name: "Authorization Server Metadata",
     ref: "RFC 8414",
     body: "IETF",
-    status: "rfc",
-    detail: "June 2018.",
     topics: ["discovery"],
     summary:
       "A well-known document listing an authorization server’s endpoints and capabilities.",
@@ -393,10 +356,7 @@ export const standards: Standard[] = [
     name: "OpenID Connect Core",
     ref: "OpenID Connect Core 1.0",
     body: "OpenID Foundation",
-    status: "final",
     // The published page titles itself "Final: OpenID Connect Core 1.0 incorporating errata set 2".
-    detail:
-      "Final specification, incorporating errata set 2, December 15, 2023.",
     topics: ["core"],
     summary:
       "Sign-in on top of OAuth 2.0: the ID token, a signed JWT that tells a client who the user is and how they were authenticated.",
@@ -409,10 +369,7 @@ export const standards: Standard[] = [
     name: "OpenID Connect Discovery",
     ref: "OpenID Connect Discovery 1.0",
     body: "OpenID Foundation",
-    status: "final",
     // The published page titles itself "Final: OpenID Connect Discovery 1.0 incorporating errata set 2".
-    detail:
-      "Final specification, incorporating errata set 2, December 15, 2023.",
     topics: ["discovery"],
     summary:
       "The `/.well-known/openid-configuration` document and its JWKS pointer.",
@@ -425,9 +382,6 @@ export const standards: Standard[] = [
     name: "Client ID Metadata Documents",
     ref: "draft-ietf-oauth-client-id-metadata-document",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -03, November 2026. OAuth working group document. The latest revision requires URL normalization and defines error handling. MCP 2026-07-28 cites -00; the MCP draft revision moves to -03.",
     topics: ["registration", "discovery"],
     summary:
       "The `client_id` is an HTTPS URL. The authorization server fetches client metadata from it, so no prior registration is needed.",
@@ -440,9 +394,8 @@ export const standards: Standard[] = [
     name: "Dynamic Client Registration",
     ref: "RFC 7591",
     body: "IETF",
-    status: "rfc",
     detail:
-      "July 2015. Deprecated within MCP as of 2026-07-28. It may be removed in the first MCP revision released on or after July 28, 2027.",
+      "Deprecated within MCP as of 2026-07-28. It may be removed in the first MCP revision released on or after July 28, 2027.",
     related: [
       {
         name: "MCP deprecated features",
@@ -464,9 +417,6 @@ export const standards: Standard[] = [
     name: "Attestation-Based Client Authentication",
     ref: "draft-ietf-oauth-attestation-based-client-auth",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -12, October 2026. A working group last call opened in September 2026; since October the draft has working group consensus and is waiting for its write-up. Revision -12 defines its header fields as Structured Fields in place of the token68 syntax.",
     topics: ["registration", "proof-of-possession"],
     summary:
       "A client instance presents an attestation from its platform or backend, plus proof of possession of a key, to authenticate.",
@@ -479,9 +429,6 @@ export const standards: Standard[] = [
     name: "SPIFFE Client Authentication",
     ref: "draft-ietf-oauth-spiffe-client-auth",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -03, November 2026. OAuth working group document, reported as waiting on a WIMSE dependency.",
     topics: ["registration", "workload"],
     summary:
       "A workload authenticates to an authorization server with its SPIFFE credential in place of a client secret.",
@@ -494,8 +441,6 @@ export const standards: Standard[] = [
     name: "JWT Client Authentication and Grants",
     ref: "RFC 7523",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2015.",
     related: [{ entry: "rfc10070", kind: "updated-by" }],
     topics: ["core", "registration", "delegation"],
     summary:
@@ -509,8 +454,7 @@ export const standards: Standard[] = [
     name: "Updates to JWT Client Authentication",
     ref: "RFC 10070",
     body: "IETF",
-    status: "rfc",
-    detail: "November 2026. Updates RFCs 7521, 7522, 7523 and 9126.",
+    detail: "Updates RFCs 7521, 7522, 7523 and 9126.",
     topics: ["core", "registration"],
     summary:
       "Fixes an audience-confusion weakness in client assertions: the audience must be the authorization server’s issuer identifier.",
@@ -525,9 +469,8 @@ export const standards: Standard[] = [
     name: "Token Exchange",
     ref: "RFC 8693",
     body: "IETF",
-    status: "rfc",
     detail:
-      "January 2020. No revision is in progress; all work on richer actor chains is in individual drafts.",
+      "No revision is in progress; all work on richer actor chains is in individual drafts.",
     topics: ["delegation"],
     summary:
       "A token endpoint grant that trades one token for another, and the `act` and `may_act` claims for expressing delegation.",
@@ -540,9 +483,6 @@ export const standards: Standard[] = [
     name: "Identity Assertion JWT Authorization Grant (ID-JAG)",
     ref: "draft-ietf-oauth-identity-assertion-authz-grant",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -06, October 2026. OAuth working group document. Revision -05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. Revision -06 changed the error returned for a subject token that fails validation. The MCP extension pins -04.",
     topics: ["delegation"],
     summary:
       "An enterprise identity provider issues a short-lived grant that another application’s authorization server exchanges for an access token, with no user redirect. Also called Cross-App Access.",
@@ -555,9 +495,6 @@ export const standards: Standard[] = [
     name: "Identity and Authorization Chaining Across Domains",
     ref: "draft-ietf-oauth-identity-chaining",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -17, July 2026. Approved by the IESG and in the RFC Editor queue since June 2026, where its status became “Final Approval Pending” in November 2026; no RFC number yet.",
     topics: ["delegation"],
     summary:
       "Token exchange in one domain yields a JWT grant that is redeemed at another domain’s authorization server.",
@@ -570,9 +507,6 @@ export const standards: Standard[] = [
     name: "Transaction Tokens",
     ref: "draft-ietf-oauth-transaction-tokens",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -11, July 2026. A third working group last call ended in August 2026; the draft has working group consensus and is waiting for its write-up.",
     topics: ["delegation", "workload"],
     summary:
       "A short-lived, signed token that carries user identity and immutable request context through a call chain inside one trust domain.",
@@ -585,9 +519,6 @@ export const standards: Standard[] = [
     name: "Transaction Tokens for Agents",
     ref: "draft-araut-oauth-transaction-tokens-for-agents",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -03, October 2026. Individual draft, renamed during 2026; its claim design changed to an `agentic_ctx` claim.",
     topics: ["delegation"],
     summary:
       "Extends transaction tokens with agent context, re-issued at each agent hop.",
@@ -599,8 +530,6 @@ export const standards: Standard[] = [
     name: "OAuth Actor Profile and Actor Chain",
     ref: "draft-mcguinness-oauth-actor-profile · draft-mw-oauth-actor-chain",
     body: "IETF",
-    status: "draft",
-    detail: "Individual drafts, both revised in fall 2026. Neither is adopted.",
     topics: ["delegation"],
     summary:
       "Two proposals to make the `act` claim interoperable: one classifies actor types, the other defines a cryptographically verifiable ordered chain.",
@@ -613,9 +542,6 @@ export const standards: Standard[] = [
     name: "Delegate SD-JWT",
     ref: "draft-ietf-oauth-delegate-sd-jwt",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -00, October 2026. Newly adopted by the OAuth working group.",
     topics: ["delegation", "credentials"],
     summary:
       "Lets the holder of an SD-JWT credential delegate it to another holder by making the key-binding JWT itself an SD-JWT.",
@@ -628,9 +554,6 @@ export const standards: Standard[] = [
     name: "Mission-Bound Authorization",
     ref: "draft-mcguinness-oauth-mission",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -02, November 2026. Individual draft; the subject of an OAuth interim meeting in October 2026.",
     topics: ["delegation", "human-in-the-loop", "authorization"],
     summary:
       "The client submits a description of a task. The server derives detailed permissions from it, binds them to an approver’s consent, and ties tokens to the task’s lifecycle.",
@@ -645,8 +568,6 @@ export const standards: Standard[] = [
     name: "Device Authorization Grant",
     ref: "RFC 8628",
     body: "IETF",
-    status: "rfc",
-    detail: "August 2019.",
     topics: ["human-in-the-loop", "core"],
     otherNames: ["device flow"],
     summary:
@@ -660,8 +581,7 @@ export const standards: Standard[] = [
     name: "Security of Cross-Device Flows",
     ref: "RFC 10027",
     body: "IETF",
-    status: "rfc",
-    detail: "August 2026. BCP 247.",
+    detail: "BCP 247.",
     topics: ["human-in-the-loop", "guidance"],
     summary:
       "Threats and mitigations for flows where approval happens on a different device from the one being authorized.",
@@ -674,8 +594,6 @@ export const standards: Standard[] = [
     name: "CIBA",
     ref: "OpenID Connect CIBA Core 1.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final since September 2021.",
     topics: ["human-in-the-loop"],
     summary:
       "Client-Initiated Backchannel Authentication. The client asks the server to obtain a named user’s approval on their own device, then polls or is called back.",
@@ -688,8 +606,6 @@ export const standards: Standard[] = [
     name: "Step-Up Authentication Challenge",
     ref: "RFC 9470",
     body: "IETF",
-    status: "rfc",
-    detail: "September 2023.",
     topics: ["human-in-the-loop"],
     summary:
       "A resource server signals that the user must authenticate more strongly or more recently, with `acr_values` and `max_age`.",
@@ -702,8 +618,6 @@ export const standards: Standard[] = [
     name: "Rich Authorization Requests",
     ref: "RFC 9396",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2023.",
     related: [
       {
         name: "OAuth 2.0 RAR Metadata and Error Remediation",
@@ -724,9 +638,6 @@ export const standards: Standard[] = [
     name: "Deferred Token Response",
     ref: "draft-ietf-oauth-deferred-token-response",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -01, October 2026. Adopted by the OAuth working group in 2026.",
     topics: ["human-in-the-loop"],
     summary:
       "The token endpoint for any grant may answer “not yet” with a deferral code. The client polls or receives a callback once a decision is made.",
@@ -739,8 +650,6 @@ export const standards: Standard[] = [
     name: "AAuth: Agentic Authorization OAuth 2.1 Extension",
     ref: "draft-rosenberg-oauth-aauth",
     body: "IETF",
-    status: "draft",
-    detail: "Revision -02, November 2026. Individual draft.",
     topics: ["human-in-the-loop"],
     summary:
       "A new OAuth 2.1 grant by which an agent obtains a token at the moment of access through a human-in-the-loop approval.",
@@ -753,9 +662,6 @@ export const standards: Standard[] = [
     name: "AAuth Protocol",
     ref: "draft-hardt-oauth-aauth-protocol",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -11, September 2026. Individual draft. That revision added the person token and arranged resource access into five modes.",
     topics: ["proof-of-possession", "delegation", "agent-protocol"],
     summary:
       "Not an OAuth extension. Agents sign requests with their own keys and use key-bound tokens, without client registration at each resource.",
@@ -778,8 +684,6 @@ export const standards: Standard[] = [
     name: "DPoP",
     ref: "RFC 9449",
     body: "IETF",
-    status: "rfc",
-    detail: "September 2023.",
     topics: ["proof-of-possession"],
     summary:
       "Demonstrating Proof of Possession. Tokens are bound to a client key, and each request carries a signed proof.",
@@ -792,8 +696,6 @@ export const standards: Standard[] = [
     name: "Mutual TLS and Certificate-Bound Tokens",
     ref: "RFC 8705",
     body: "IETF",
-    status: "rfc",
-    detail: "February 2020.",
     topics: ["proof-of-possession", "workload"],
     otherNames: ["mTLS"],
     summary:
@@ -807,8 +709,7 @@ export const standards: Standard[] = [
     name: "Client-Cert HTTP Header Field",
     ref: "RFC 9440",
     body: "IETF",
-    status: "rfc",
-    detail: "July 2023. Informational.",
+    detail: "Informational.",
     topics: ["proof-of-possession"],
     summary:
       "How a trusted proxy forwards a client certificate from mutual TLS to a backend server.",
@@ -821,8 +722,6 @@ export const standards: Standard[] = [
     name: "JSON Web Key",
     ref: "RFC 7517",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2015.",
     topics: ["proof-of-possession"],
     summary: "A JSON representation of a cryptographic key and its properties.",
     agents: "One way an agent can send a public key when it requests access.",
@@ -833,8 +732,6 @@ export const standards: Standard[] = [
     name: "JSON Web Algorithms",
     ref: "RFC 7518",
     body: "IETF",
-    status: "rfc",
-    detail: "May 2015.",
     topics: ["proof-of-possession"],
     summary:
       "Defines algorithms and identifiers used by JSON Web Signatures, Encryption and Keys.",
@@ -847,8 +744,6 @@ export const standards: Standard[] = [
     name: "HTTP Message Signatures",
     ref: "RFC 9421",
     body: "IETF",
-    status: "rfc",
-    detail: "February 2024.",
     topics: ["proof-of-possession"],
     summary:
       "A general way to sign selected parts of an HTTP request or response.",
@@ -861,8 +756,6 @@ export const standards: Standard[] = [
     name: "Digest Fields",
     ref: "RFC 9530",
     body: "IETF",
-    status: "rfc",
-    detail: "February 2024.",
     topics: ["proof-of-possession"],
     summary:
       "Defines HTTP fields for carrying a digest of message content or a representation.",
@@ -875,8 +768,6 @@ export const standards: Standard[] = [
     name: "JWK Thumbprint",
     ref: "RFC 7638",
     body: "IETF",
-    status: "rfc",
-    detail: "September 2015.",
     topics: ["proof-of-possession"],
     summary: "A canonical hash of a JSON Web Key.",
     agents:
@@ -888,9 +779,6 @@ export const standards: Standard[] = [
     name: "HTTP Signature Keys",
     ref: "draft-hardt-httpbis-signature-key",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -09, September 2026. Individual draft. A call for adoption in the HTTP working group ended in September 2026 with no consensus to adopt it at this time.",
     topics: ["proof-of-possession"],
     summary:
       "A header for conveying or referencing the public key that verifies an HTTP message signature.",
@@ -905,9 +793,6 @@ export const standards: Standard[] = [
     name: "SPIFFE",
     ref: "SPIFFE specifications",
     body: "CNCF",
-    status: "final",
-    detail:
-      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID, plus a Broker API and a filesystem delivery specification. All three are incubating.",
     related: [
       {
         name: "SPIFFE Broker API",
@@ -934,12 +819,9 @@ export const standards: Standard[] = [
     name: "SPIRE",
     ref: "SPIRE 1.16",
     body: "CNCF",
-    status: "project",
     // Evidence for the level: the project's README says "SPIRE is a graduated project of the Cloud
     // Native Computing Foundation". This is the project as a whole, not each plugin or flagged feature.
     level: "stable",
-    detail:
-      "Version 1.16.0, November 2026, adds experimental WIT-SVID support.",
     topics: ["workload", "kubernetes"],
     summary:
       "The reference implementation of SPIFFE: a server and per-node agents that attest workloads and issue identities.",
@@ -951,9 +833,6 @@ export const standards: Standard[] = [
     name: "WIMSE Architecture",
     ref: "draft-ietf-wimse-arch",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -09, November 2026. WIMSE working group document. No WIMSE document is an RFC yet.",
     topics: ["workload"],
     summary:
       "Architecture and terminology for workload identity and for propagating security context between workloads.",
@@ -966,9 +845,6 @@ export const standards: Standard[] = [
     name: "AI Identity Management System (AIMS)",
     ref: "draft-ietf-wimse-aims",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -01, November 2026. Informational. Adopted by WIMSE in September 2026.",
     related: [
       {
         name: "draft-klrc-aiagent-auth",
@@ -989,9 +865,6 @@ export const standards: Standard[] = [
     name: "WIMSE Workload Credentials",
     ref: "draft-ietf-wimse-workload-creds",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -03, October 2026. One of four documents that replaced the earlier service-to-service protocol draft.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "Defines the Workload Identity Token (a key-bound JWT) and the Workload Identity Certificate.",
@@ -1004,8 +877,6 @@ export const standards: Standard[] = [
     name: "WIMSE Workload Identifier",
     ref: "draft-ietf-wimse-identifier",
     body: "IETF",
-    status: "wg-draft",
-    detail: "Revision -04, October 2026.",
     topics: ["workload"],
     summary:
       "Defines the identifier a workload credential carries: an absolute URI whose authority names a trust domain and whose path names the workload within it. Allows more than one scheme, `spiffe` among them, and defines a `wimse` scheme.",
@@ -1018,8 +889,6 @@ export const standards: Standard[] = [
     name: "Workload Proof Token",
     ref: "draft-ietf-wimse-wpt",
     body: "IETF",
-    status: "wg-draft",
-    detail: "Revision -02, August 2026.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "A short-lived signed JWT that proves possession of the key in a Workload Identity Token and binds to one request.",
@@ -1031,9 +900,6 @@ export const standards: Standard[] = [
     name: "WIMSE HTTP Signatures",
     ref: "draft-ietf-wimse-http-signature",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -08, October 2026. Submitted to the IESG for publication in October 2026, and in its area director’s evaluation since November.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "Workload-to-workload authentication using HTTP Message Signatures with the Workload Identity Token key. Responses can be signed too.",
@@ -1046,8 +912,6 @@ export const standards: Standard[] = [
     name: "WIMSE Mutual TLS",
     ref: "draft-ietf-wimse-mutual-tls",
     body: "IETF",
-    status: "wg-draft",
-    detail: "Revision -03, October 2026.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "Workload-to-workload authentication at the transport layer: mutual TLS with the X.509 Workload Identity Certificate.",
@@ -1060,9 +924,7 @@ export const standards: Standard[] = [
     name: "Workload Identity Practices",
     ref: "draft-ietf-wimse-workload-identity-practices",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -08, October 2026. Informational. Its IETF Last Call ended on November 13, 2026, and it now waits for its area director to put it before the IESG. It would be the first WIMSE RFC.",
+    detail: "It would be the first WIMSE RFC.",
     topics: ["workload", "guidance", "kubernetes"],
     summary:
       "A survey of how credentials reach workloads today without long-lived secrets: Kubernetes projected tokens, cloud metadata services, SPIFFE, CI/CD OIDC.",
@@ -1075,9 +937,6 @@ export const standards: Standard[] = [
     name: "Workload Authorization Grant",
     ref: "draft-carleton-workload-authz-grant",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -02, November 2026. Individual draft, intended as Informational. Not adopted by a working group. Its authors call it early and exploratory, and say any part of it may change, including whether it should be a document of its own.",
     related: [
       {
         entry: "rfc7523",
@@ -1123,9 +982,6 @@ export const standards: Standard[] = [
     name: "Bound ServiceAccount Tokens",
     ref: "Kubernetes TokenRequest API",
     body: "Kubernetes",
-    status: "final",
-    detail:
-      "TokenRequest and projected tokens: GA since v1.20. Token ID and pod/node claims: GA in v1.32. OIDC issuer discovery: GA since v1.21. External token signing: GA in v1.36.",
     related: [
       {
         name: "Removed feature gates",
@@ -1146,9 +1002,6 @@ export const standards: Standard[] = [
     name: "Pod Certificates",
     ref: "Kubernetes KEP-4317",
     body: "Kubernetes",
-    status: "final",
-    detail:
-      "GA in v1.37 (August 2026) in `certificates.k8s.io/v1`. No signer ships with Kubernetes; you install one.",
     topics: ["kubernetes", "workload", "proof-of-possession"],
     otherNames: ["mTLS"],
     summary:
@@ -1162,8 +1015,6 @@ export const standards: Standard[] = [
     name: "ClusterTrustBundle",
     ref: "Kubernetes KEP-3257",
     body: "Kubernetes",
-    status: "final",
-    detail: "GA in v1.37 (August 2026).",
     topics: ["kubernetes", "workload"],
     summary:
       "A cluster-scoped object holding X.509 trust anchors, mountable into pods through a projected volume.",
@@ -1175,8 +1026,6 @@ export const standards: Standard[] = [
     name: "Structured Authentication Configuration",
     ref: "Kubernetes KEP-3331",
     body: "Kubernetes",
-    status: "final",
-    detail: "GA in v1.34.",
     related: [
       {
         name: "KEP-3221, Structured Authorization Configuration",
@@ -1197,9 +1046,6 @@ export const standards: Standard[] = [
     name: "Agent Sandbox",
     ref: "kubernetes-sigs/agent-sandbox",
     body: "Kubernetes",
-    status: "project",
-    detail:
-      "Project version 1.0 since August 2026; the API is still `v1beta1` in the `agents.x-k8s.io` group. No built-in credential broker.",
     topics: ["kubernetes"],
     summary:
       "A SIG Apps project: a `Sandbox` resource for isolated, stateful, single-pod agent runtimes, with templates, claims and warm pools.",
@@ -1212,8 +1058,6 @@ export const standards: Standard[] = [
     name: "Kube Agentic Networking",
     ref: "kubernetes-sigs/kube-agentic-networking",
     body: "Kubernetes",
-    status: "project",
-    detail: "Early releases (v0.x) during 2026. A SIG Network subproject.",
     topics: ["kubernetes", "authorization"],
     summary:
       "APIs for agent-to-tool and agent-to-agent traffic policy, with a reference implementation supporting tool-level MCP authorization and SPIFFE-based agent identity.",
@@ -1226,9 +1070,6 @@ export const standards: Standard[] = [
     name: "agentgateway",
     ref: "agentgateway 1.x",
     body: "Linux Foundation",
-    status: "project",
-    detail:
-      "Version 1.7 in October 2026. A Linux Foundation project, reported to have joined the Agentic AI Foundation in June 2026.",
     topics: ["kubernetes", "authorization", "agent-protocol"],
     summary:
       "An open-source proxy for model, MCP and A2A traffic. It can act as an MCP resource server, call an external policy engine per tool call, perform token exchange and ID-JAG, and run as an egress proxy.",
@@ -1243,7 +1084,6 @@ export const standards: Standard[] = [
     name: "AWS IAM Roles",
     ref: "IAM User Guide",
     body: "AWS",
-    status: "project",
     detail:
       "Platform documentation. Each compute service documents how it delivers a role’s credentials to code.",
     topics: ["workload"],
@@ -1258,7 +1098,6 @@ export const standards: Standard[] = [
     name: "AWS OIDC Federation",
     ref: "IAM OIDC identity providers",
     body: "AWS",
-    status: "project",
     detail:
       "Platform documentation. The role’s trust policy decides which tokens from the issuer are accepted.",
     topics: ["workload"],
@@ -1273,7 +1112,6 @@ export const standards: Standard[] = [
     name: "AWS Web Identity Exchange",
     ref: "STS AssumeRoleWithWebIdentity",
     body: "AWS",
-    status: "project",
     detail:
       "API reference. Sessions last one hour by default, and from 15 minutes up to the maximum set on the role.",
     topics: ["workload"],
@@ -1288,7 +1126,6 @@ export const standards: Standard[] = [
     name: "AWS Outbound Identity Federation",
     ref: "STS GetWebIdentityToken",
     body: "AWS",
-    status: "project",
     detail:
       "Has to be enabled for the account before a token can be requested. Not available on the STS global endpoint.",
     related: [
@@ -1311,7 +1148,6 @@ export const standards: Standard[] = [
     name: "Google Cloud Workload Identity Federation",
     ref: "Google Cloud IAM",
     body: "Google Cloud",
-    status: "project",
     detail: "Platform documentation.",
     related: [
       { entry: "rfc8693", kind: "builds-on", note: "For the token exchange." },
@@ -1328,7 +1164,6 @@ export const standards: Standard[] = [
     name: "Google Cloud Federation with X.509 Certificates",
     ref: "Google Cloud IAM",
     body: "Google Cloud",
-    status: "project",
     detail:
       "Platform documentation. The workload authenticates over mutual TLS with a certificate that chains to a registered trust anchor.",
     topics: ["workload"],
@@ -1344,7 +1179,6 @@ export const standards: Standard[] = [
     name: "Authentication on Google Cloud",
     ref: "Google Cloud authentication",
     body: "Google Cloud",
-    status: "project",
     detail: "Platform documentation.",
     related: [
       {
@@ -1366,7 +1200,6 @@ export const standards: Standard[] = [
     name: "Microsoft Entra Workload Identity Federation",
     ref: "Microsoft Entra Workload ID",
     body: "Microsoft",
-    status: "project",
     detail:
       "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly, case included; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards. For GitHub it must also match the repository’s ID or its owner’s ID.",
     related: [
@@ -1395,7 +1228,6 @@ export const standards: Standard[] = [
     name: "Azure Managed Identities",
     ref: "Managed identities for Azure resources",
     body: "Microsoft",
-    status: "project",
     detail: "Platform documentation.",
     related: [
       {
@@ -1417,7 +1249,6 @@ export const standards: Standard[] = [
     name: "OpenID Connect in GitHub Actions",
     ref: "GitHub Actions OIDC",
     body: "GitHub",
-    status: "project",
     detail:
       "Platform documentation. A job needs the `id-token: write` permission to request its token.",
     related: [
@@ -1442,9 +1273,6 @@ export const standards: Standard[] = [
     name: "MCP Authorization",
     ref: "MCP specification 2026-07-28",
     body: "MCP",
-    status: "final",
-    detail:
-      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
     related: [
       {
         name: "A More Predictable Release Cycle for MCP",
@@ -1465,8 +1293,6 @@ export const standards: Standard[] = [
     name: "MCP Enterprise-Managed Authorization",
     ref: "io.modelcontextprotocol/enterprise-managed-authorization",
     body: "MCP",
-    status: "final",
-    detail: "Official extension, stable at revision 2026-07-28.",
     related: [
       {
         entry: "id-jag",
@@ -1486,8 +1312,6 @@ export const standards: Standard[] = [
     name: "MCP OAuth Client Credentials",
     ref: "io.modelcontextprotocol/oauth-client-credentials",
     body: "MCP",
-    status: "final",
-    detail: "Official extension, stable at revision 2026-07-28.",
     topics: ["agent-protocol", "workload"],
     summary:
       "Machine-to-machine access to MCP servers with pre-registered clients. A signed JWT assertion is the recommended way to authenticate.",
@@ -1499,13 +1323,10 @@ export const standards: Standard[] = [
     name: "MCP URL-Mode Elicitation",
     ref: "MCP specification 2026-07-28, Elicitation",
     body: "MCP",
-    status: "final",
     // Evidence for the level: the 2026-07-28 Elicitation page says of URL mode, "Its design and
     // implementation may change in future protocol revisions". The revision is final; this feature
     // of it is not yet settled by its maintainers' own statement.
     level: "emerging",
-    detail:
-      "Introduced in 2025-11-25 and reworked in 2026-07-28. Still marked as subject to change.",
     related: [
       {
         name: "MCP specification 2026-07-28, Multi Round-Trip Requests",
@@ -1529,9 +1350,6 @@ export const standards: Standard[] = [
     name: "MCP DPoP Profile",
     ref: "SEP-1932",
     body: "MCP",
-    status: "draft",
-    detail:
-      "Proposal in draft since December 2025, not merged and in no released revision of MCP.",
     related: [
       {
         entry: "rfc9449",
@@ -1559,9 +1377,6 @@ export const standards: Standard[] = [
     name: "Agent2Agent (A2A) Protocol",
     ref: "A2A 1.0",
     body: "Linux Foundation",
-    status: "final",
-    detail:
-      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A 1.1.0 release candidate was tagged on October 29, 2026; the published specification is still 1.0.1. A Linux Foundation project, and part of the Agentic AI Foundation.",
     related: [
       {
         name: "A2A repository README",
@@ -1588,9 +1403,6 @@ export const standards: Standard[] = [
     name: "Web Bot Auth",
     ref: "draft-ietf-webbotauth-httpsig-protocol",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -01, October 2026. The working group’s only adopted document; it merges the earlier architecture and key directory drafts.",
     topics: ["agent-protocol", "proof-of-possession"],
     summary:
       "Automated clients sign requests with HTTP Message Signatures and point to a published key directory with a `Signature-Agent` header.",
@@ -1603,9 +1415,6 @@ export const standards: Standard[] = [
     name: "SCIM Agent Resource",
     ref: "draft-wzdk-scim-agent-resource",
     body: "IETF",
-    status: "draft",
-    detail:
-      "Revision -00, June 2026. Individual draft that consolidates two earlier vendor proposals. Not adopted.",
     topics: ["agent-protocol", "guidance"],
     summary:
       "A SCIM resource type for agents, so identity systems can create, update and remove agent identities across applications.",
@@ -1618,8 +1427,6 @@ export const standards: Standard[] = [
     name: "AGNTCY Identity",
     ref: "AGNTCY Identity",
     body: "Linux Foundation",
-    status: "project",
-    detail: "Linux Foundation project; APIs are alpha.",
     topics: ["agent-protocol", "credentials"],
     summary:
       "Identities for agents and MCP servers backed by verifiable credentials, with a resolver for verification.",
@@ -1634,14 +1441,11 @@ export const standards: Standard[] = [
     name: "Biscuit",
     ref: "Biscuit 3.x · Datalog 3.3",
     body: "Eclipse Foundation",
-    status: "project",
     // Evidence for the level: the README at b3d3fe2 says
     // "The stable version of the specification is at SPECIFICATIONS.md".
     // Eclipse lists the project as Incubating; that process stage is distinct
     // from the stability of this pinned specification.
     level: "stable",
-    detail:
-      "The project marks this specification as stable. Biscuit’s 3.x format supports Datalog versions 3.0 through 3.3. At source revision b3d3fe2, the project README says it is seeking an audit of token design, cryptographic primitives and implementations, and lists varying support for 3.3 across libraries. The project is incubating at the Eclipse Foundation; the level here follows the specification’s own stability statement.",
     related: [
       {
         name: "Biscuit project status and implementation support",
@@ -1683,8 +1487,6 @@ export const standards: Standard[] = [
     name: "AuthZEN Authorization API",
     ref: "OpenID AuthZEN Authorization API 1.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final specification, approved January 2026.",
     topics: ["authorization"],
     summary:
       "A standard interface between a policy enforcement point and a policy decision point: subject, action, resource, context in; decision out.",
@@ -1697,9 +1499,6 @@ export const standards: Standard[] = [
     name: "COAZ Framework",
     ref: "OpenID AuthZEN COAZ Framework 1.0",
     body: "OpenID Foundation",
-    status: "wg-draft",
-    detail:
-      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     topics: ["authorization"],
     summary:
       "Defines how mappings turn an operation’s inputs into AuthZEN authorization requests, using fixed values or expressions.",
@@ -1721,9 +1520,6 @@ export const standards: Standard[] = [
     name: "COAZ Binding for MCP",
     ref: "OpenID AuthZEN COAZ-MCP",
     body: "OpenID Foundation",
-    status: "wg-draft",
-    detail:
-      "Working group draft. The Draft 1 document is dated February 13, 2026.",
     topics: ["authorization", "agent-protocol"],
     summary:
       "Maps MCP messages to AuthZEN authorization requests. Defines default mappings and lets servers declare per-tool mappings that include arguments.",
@@ -1737,9 +1533,6 @@ export const standards: Standard[] = [
     name: "AuthZEN Access Request and Approval Profile",
     ref: "OpenID AuthZEN Access Request and Approval Profile 1.0",
     body: "OpenID Foundation",
-    status: "wg-draft",
-    detail:
-      "Working group draft. The Draft 1 document is dated November 6, 2026.",
     topics: ["authorization", "human-in-the-loop"],
     summary:
       "Lets an enforcement point submit an access request after a denial the decision point marks requestable. A task handle tracks the approval workflow, and the request is evaluated again after approval. Until then the denial stays a denial.",
@@ -1760,8 +1553,6 @@ export const standards: Standard[] = [
     name: "AuthZEN Obligations Profile",
     ref: "OpenID AuthZEN Profile for Obligations 1.0",
     body: "OpenID Foundation",
-    status: "wg-draft",
-    detail: "Working group draft. The Draft 1 document is dated July 3, 2026.",
     topics: ["authorization"],
     summary:
       "Lets a decision point attach mandatory actions to a decision, which the enforcement point must perform to honor it. Defines step-up, notification and session-termination obligations, and how the two sides agree on the ones they support.",
@@ -1784,8 +1575,6 @@ export const standards: Standard[] = [
     name: "Shared Signals Framework",
     ref: "OpenID SSF 1.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final specification published in August 2025.",
     related: [
       { entry: "caep", kind: "companion" },
       {
@@ -1807,8 +1596,6 @@ export const standards: Standard[] = [
     name: "Continuous Access Evaluation Profile",
     ref: "OpenID CAEP 1.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final specification published in August 2025.",
     related: [{ entry: "shared-signals", kind: "builds-on" }],
     topics: ["signals"],
     summary:
@@ -1822,8 +1609,6 @@ export const standards: Standard[] = [
     name: "Security Event Token",
     ref: "RFC 8417",
     body: "IETF",
-    status: "rfc",
-    detail: "July 2018.",
     topics: ["signals"],
     summary:
       "A JWT that carries an issuer’s statements about a security event.",
@@ -1836,8 +1621,6 @@ export const standards: Standard[] = [
     name: "Subject Identifiers for Security Event Tokens",
     ref: "RFC 9493",
     body: "IETF",
-    status: "rfc",
-    detail: "December 2023.",
     topics: ["signals"],
     summary:
       "Defines structured formats for identifying subjects in security events, including opaque IDs and issuer-and-subject pairs.",
@@ -1850,8 +1633,6 @@ export const standards: Standard[] = [
     name: "Push-Based Security Event Token Delivery",
     ref: "RFC 8935",
     body: "IETF",
-    status: "rfc",
-    detail: "November 2020.",
     topics: ["signals"],
     summary:
       "Defines delivery of a Security Event Token by HTTP POST over TLS, with a response reporting acceptance or an error.",
@@ -1864,9 +1645,6 @@ export const standards: Standard[] = [
     name: "Token Status List",
     ref: "draft-ietf-oauth-status-list",
     body: "IETF",
-    status: "wg-draft",
-    detail:
-      "Revision -21, June 2026. Approved by the IESG and in the RFC Editor queue since June 2026; no RFC number yet.",
     topics: ["signals", "credentials"],
     summary:
       "A signed, compressed list of statuses, one for each token, published by or for the token’s issuer. A token names its place in a list, and whoever relies on it fetches the list to see whether the token is valid, revoked or suspended. Defined for JWT, SD-JWT, CWT and ISO mdoc, among others; the draft names access tokens and verifiable credentials as uses.",
@@ -1881,8 +1659,6 @@ export const standards: Standard[] = [
     name: "SD-JWT",
     ref: "RFC 9901",
     body: "IETF",
-    status: "rfc",
-    detail: "November 2025.",
     related: [
       {
         name: "SD-JWT-based Verifiable Digital Credentials (SD-JWT VC)",
@@ -1903,8 +1679,6 @@ export const standards: Standard[] = [
     name: "OpenID for Verifiable Presentations",
     ref: "OpenID4VP 1.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final, published 9 July 2025.",
     related: [
       {
         name: "OpenID for Verifiable Credential Issuance 1.0",
@@ -1924,8 +1698,6 @@ export const standards: Standard[] = [
     name: "Verifiable Credentials Data Model",
     ref: "W3C VC Data Model 2.0",
     body: "W3C",
-    status: "final",
-    detail: "W3C Recommendation, May 2025.",
     related: [
       {
         name: "Verifiable Credentials Data Model 2.1",
@@ -1954,9 +1726,6 @@ export const standards: Standard[] = [
     name: "Agent Payments Protocol (AP2)",
     ref: "AP2 v0.2",
     body: "FIDO Alliance",
-    status: "draft",
-    detail:
-      "Version 0.2.0, April 2026. Created by Google and donated to the FIDO Alliance the same month; no FIDO-published draft yet.",
     topics: ["commerce", "credentials"],
     summary:
       "Signed mandates express what a user has authorized an agent to buy. Checkout and payment mandates, each open (constraints for autonomous use) or closed (one purchase), as SD-JWTs.",
@@ -1969,9 +1738,6 @@ export const standards: Standard[] = [
     name: "Verifiable Intent",
     ref: "Verifiable Intent draft v0.1",
     body: "FIDO Alliance",
-    status: "draft",
-    detail:
-      "Draft 0.1, maintained by Mastercard and contributed to the FIDO Alliance alongside AP2.",
     topics: ["commerce", "credentials"],
     summary:
       "A layered SD-JWT delegation chain from credential provider to user to agent, with constraints on amount, payee and items.",
@@ -1984,9 +1750,6 @@ export const standards: Standard[] = [
     name: "Agentic Commerce Protocol",
     ref: "ACP 2026-04-17",
     body: "Vendor-led",
-    status: "draft",
-    detail:
-      "Beta, date-versioned; latest stable 2026-04-17. Maintained by OpenAI and Stripe.",
     topics: ["commerce"],
     summary:
       "A checkout protocol between agents and merchants. A delegated payment token lets the merchant’s processor charge within explicit allowance limits.",
@@ -1998,9 +1761,6 @@ export const standards: Standard[] = [
     name: "Trusted Agent Protocol",
     ref: "Visa Trusted Agent Protocol",
     body: "Vendor-led",
-    status: "draft",
-    detail:
-      "Published by Visa with a sample implementation. Not under a standards body.",
     topics: ["commerce", "proof-of-possession"],
     summary:
       "Agents sign each request with HTTP Message Signatures, bound to the merchant and to whether they are browsing or paying.",
@@ -2012,9 +1772,6 @@ export const standards: Standard[] = [
     name: "x402",
     ref: "x402 protocol version 2",
     body: "Linux Foundation",
-    status: "project",
-    detail:
-      "Protocol version 2. Moved to an x402 Foundation under the Linux Foundation in 2026.",
     topics: ["commerce"],
     summary:
       "Revives HTTP status 402: a server states its price, and the client retries with a signed payment.",
@@ -2029,8 +1786,6 @@ export const standards: Standard[] = [
     name: "FAPI 2.0 Security Profile",
     ref: "OpenID FAPI 2.0",
     body: "OpenID Foundation",
-    status: "final",
-    detail: "Final. Published on 22 February 2025.",
     topics: ["guidance", "core"],
     summary:
       "A high-security OAuth profile: pushed authorization requests, sender-constrained tokens, strong client authentication.",
@@ -2043,8 +1798,6 @@ export const standards: Standard[] = [
     name: "Identity Management for Agentic AI",
     ref: "OpenID Foundation whitepaper",
     body: "OpenID Foundation",
-    status: "guidance",
-    detail: "October 2025, from the AI Identity Management Community Group.",
     topics: ["guidance"],
     summary:
       "A survey of how current identity standards apply to agents and where they fall short.",
@@ -2057,9 +1810,6 @@ export const standards: Standard[] = [
     name: "Software and AI Agent Identity and Authorization",
     ref: "NIST NCCoE concept paper",
     body: "NIST",
-    status: "guidance",
-    detail:
-      "Draft concept paper, February 2026. NIST announced an AI Agent Standards Initiative the same month, which its site now titles the SI Agent Standards Initiative.",
     related: [
       {
         name: "SI Agent Standards Initiative",
@@ -2080,8 +1830,6 @@ export const standards: Standard[] = [
     name: "OWASP Top 10 for Agentic Applications",
     ref: "OWASP Agentic Top 10 (2026)",
     body: "OWASP",
-    status: "guidance",
-    detail: "Released December 2025. An OWASP MCP Top 10 is in beta.",
     related: [
       {
         name: "OWASP MCP Top 10",
@@ -2101,8 +1849,6 @@ export const standards: Standard[] = [
     name: "OWASP Non-Human Identities Top 10",
     ref: "OWASP NHI Top 10 (2025)",
     body: "OWASP",
-    status: "guidance",
-    detail: "2025.",
     topics: ["guidance", "workload"],
     summary:
       "The common failures with service accounts, keys and tokens: long-lived secrets, over-privilege, improper offboarding, reuse.",
@@ -2115,9 +1861,6 @@ export const standards: Standard[] = [
     name: "Agentic Identity and Access Management",
     ref: "CoSAI workstream 4 paper",
     body: "OASIS",
-    status: "guidance",
-    detail:
-      "Version 1.0, approved on March 20, 2026, by the Coalition for Secure AI.",
     related: [
       {
         name: "Agentic Identity and Access Management",
@@ -2134,6 +1877,17 @@ export const standards: Standard[] = [
     url: "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems",
   },
 ];
+
+/** Each entry with its status and its status line, as the log has them now. */
+export const standards: Standard[] = entries.map((entry) => {
+  const now = currentOf(history, entry.id);
+  if (!now)
+    throw new Error(
+      `"${entry.id}" has no baseline in src/data/history/, so it has no status`,
+    );
+  const detail = statusLine(now, entry.detail);
+  return { ...entry, status: now.status, ...(detail ? { detail } : {}) };
+});
 
 const byId = new Map(standards.map((s) => [s.id, s]));
 if (byId.size !== standards.length) {
