@@ -6704,7 +6704,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "agent-payments",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "AP2 v0.2 autonomous payments using linked open and closed Checkout and Payment Mandates and signed receipts. Generic agent checkout, AP2 v0.1 and implementation intent are separate.",
     searchNote:
@@ -6741,6 +6741,9 @@ export const profiles: ImplementationProfile[] = [
             url: "https://github.com/google-agentic-commerce/AP2/releases/tag/v0.2.0",
             publisher: "AP2 project",
             publishedOn: "2026-04-28",
+            section: "v0.2.0",
+            quote:
+              "This is the second release of AP2. It focuses on providing Human Not Present flows.",
           },
           {
             title: "Google donates Agent Payments Protocol to FIDO Alliance",
@@ -6755,7 +6758,7 @@ export const profiles: ImplementationProfile[] = [
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -7605,11 +7608,14 @@ export const profiles: ImplementationProfile[] = [
             title: "biscuit-auth 6.0.0 release",
             url: "https://github.com/eclipse-biscuit/biscuit-rust/releases/tag/biscuit-auth-6.0.0",
             publisher: "Eclipse Biscuit project",
+            section: "biscuit-auth-6.0.0",
+            quote:
+              "For clarity, beta releases items from the changelogs have been merged into a single entry",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The Rust project’s example shows both the appended block and request-time authorization.",
         },
@@ -8058,11 +8064,13 @@ export const profiles: ImplementationProfile[] = [
             title: "Rafiki releases",
             url: "https://github.com/interledger/rafiki/releases",
             publisher: "Interledger Foundation",
+            section: "Releases",
+            quote: "v2.4.2-beta",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The auth service guide names grants, continuation and the library used by the resource-server side. Release tags provide the beta wording.",
         },
