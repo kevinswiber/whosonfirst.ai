@@ -189,6 +189,7 @@ test("an entry names parties its flow has, and a quote comes with its section", 
     /dpop has no party mcp/,
   );
   const quoted = dpop();
+  delete quoted.implementations[0].sources[0].section;
   quoted.implementations[0].sources[0].quote = "DPoP is supported.";
   assert.throws(() => validateProfiles([quoted]), /quote is a short passage/);
   quoted.implementations[0].sources[0].section = "DPoP";
@@ -225,6 +226,7 @@ test("a worksheet is refused for a used id, an unknown party or a source with no
   const sheet = (change) => {
     const candidate = structuredClone(entry);
     candidate.id = "dpop-candidate";
+    candidate.review.checkedOn = "2026-11-14";
     for (const source of candidate.sources) {
       source.section = "DPoP";
       source.quote = "DPoP is supported.";
