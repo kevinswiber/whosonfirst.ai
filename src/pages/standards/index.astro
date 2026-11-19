@@ -3,7 +3,9 @@ import Base from "../../layouts/Base.astro";
 import DocMeta from "../../components/DocMeta.astro";
 import { standards, std } from "../../data/standards";
 import { flows } from "../../data/flows";
-import { REVIEWED } from "../../data/site";
+import { REVIEWED, REVIEWED_ISO } from "../../data/site";
+import { history } from "../../data/history";
+import { monthName, movedIn } from "../../lib/history";
 import {
   RELATED_LABEL,
   STATUS_LABEL,
@@ -62,40 +64,10 @@ const details = [
   },
 ];
 
-const moved = [
-  {
-    when: "January",
-    what: "The OpenID Foundation approves the **AuthZEN Authorization API 1.0** as a final specification: a standard interface to policy engines.",
-  },
-  {
-    when: "March",
-    what: "**A2A 1.0** is released, with signed Agent Cards and a defined task state for in-task authorization.",
-  },
-  {
-    when: "April",
-    what: "**AP2 v0.2** redesigns payment mandates and is donated to the **FIDO Alliance**, which forms working groups on agentic authentication and payments.",
-  },
-  {
-    when: "July",
-    what: "**MCP 2026-07-28**: the protocol becomes stateless, Dynamic Client Registration is deprecated and issuer validation is required.",
-  },
-  {
-    when: "August",
-    what: "Two OAuth best-practice documents are published: **RFC 10017** (browser-based apps) and **RFC 10027** (cross-device flows). **Kubernetes 1.37** ships Pod Certificates and ClusterTrustBundle as GA.",
-  },
-  {
-    when: "September",
-    what: "The WIMSE working group adopts **AIMS**, the agent identity architecture. The OAuth working group adopts **Deferred Token Response**. The Web Bot Auth working group adopts its first document.",
-  },
-  {
-    when: "October",
-    what: "The IETF charters two agent-related working groups, **agentproto** (agent communication) and **DAWN** (agent discovery). Neither is chartered to define a new authentication or authorization mechanism: agentproto’s charter says it will reuse existing ones, and DAWN’s puts identity management out of scope. **ID-JAG** reaches revision -06. The MCP **OAuth Client Credentials** extension moves to stable, as **Enterprise-Managed Authorization** did in June.",
-  },
-  {
-    when: "November",
-    what: "**RFC 10070** updates JWT client authentication. **CIMD** reaches -03. **SPIRE 1.16** adds experimental WIT-SVID support. IETF 127 meets mid-month, and the WIMSE **workload identity practices** document finishes its IETF Last Call.",
-  },
-];
+// What moved this year is read from the log: the events that changed where a
+// document is, and those a review marked as worth a line here.
+const YEAR = REVIEWED_ISO.slice(0, 4);
+const moved = movedIn(history, YEAR);
 ---
 
 <Base
@@ -111,7 +83,7 @@ const moved = [
       </p>
       <DocMeta lead={`${standards.length} entries`} reviewed={REVIEWED} details={details} />
       <p class="also">
-        Also on this page: <a href="#moved">what moved in 2026</a> · <a href="#reading-status">how to read status</a>.
+        Also on this page: <a href="#moved">what moved in {YEAR}</a> · <a href="#reading-status">how to read status</a>.
         Elsewhere: <a href="/standards/timeline/">the timeline</a> of what has happened to these documents ·{" "}
         <a href="/standards/changes/">the changelog</a> of this tracker’s reporting
       </p>
@@ -290,19 +262,36 @@ const moved = [
   <section class="section" id="moved">
     <div class="wrap">
       <div class="section-head">
-        <h2>What moved in 2026</h2>
+        <h2>What moved in {YEAR}</h2>
         <p>The year so far, as of {REVIEWED}.</p>
       </div>
       <ol class="moved">
         {
           moved.map((m) => (
             <li>
-              <span class="when">{m.when}</span>
-              <p set:html={inline(m.what)} />
+              <span class="when">{monthName(m.key)}</span>
+              <div>
+                {m.events.map((e) => (
+                  <p>
+                    {e.entry ? (
+                      <a href={`#${e.entry}`}>
+                        <strong>{std(e.entry).name}</strong>
+                      </a>
+                    ) : (
+                      <strong>{e.subject}</strong>
+                    )}
+                    {". "}
+                    <Fragment set:html={inline(e.summary ?? "")} />
+                  </p>
+                ))}
+              </div>
             </li>
           ))
         }
       </ol>
+      <p class="moved-more">
+        Each of these, with its date and its source, is on <a href="/standards/timeline/">the timeline</a>.
+      </p>
       <div class="callout" id="reading-status">
         <p class="callout-title">Reading status correctly</p>
         <p>
@@ -435,7 +424,7 @@ const moved = [
 <style>
   .moved {
     list-style: none;
-    margin: 0 0 1.5rem;
+    margin: 0 0 0.75rem;
     padding: 0;
     border-top: 1.5px solid var(--fg);
   }
@@ -458,8 +447,15 @@ const moved = [
     padding-top: 0.25rem;
   }
   .moved p {
-    margin: 0;
+    margin: 0 0 0.4rem;
     max-width: 52rem;
+  }
+  .moved p:last-child {
+    margin-bottom: 0;
+  }
+  .moved-more {
+    margin: 0 0 1.5rem;
+    color: var(--fg-muted);
   }
   @media (max-width: 34rem) {
     .moved li {

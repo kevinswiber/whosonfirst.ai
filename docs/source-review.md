@@ -255,7 +255,7 @@ For the person, or the session, that makes the changes. One fact is often stated
    - the lessons in `src/pages/learn/`, each of which names in a comment the flow or data file it must not contradict. The ones that restate protocol facts: lesson 3 (authorization code with PKCE, and what MCP adds to it), lesson 4 (client credentials and workload identity), lesson 5 (token exchange, and that MCP forbids token passthrough) and lesson 6 (DPoP, step-up and the credential broker)
    - the definitions in `src/data/glossary.ts`, which flow pages now show in place beside the terms they use. A term with a `standard` shows that tracker entry's status and identifier, so a change to the entry reaches it without an edit; check that the definition still agrees
 5. **Ratings.** A status change can move a flow's rating. Flows with `roles` are checked by the build against their declared `maturity`; flows without `roles` are not, so read their `maturity` yourself. `about.mdx` states how many flows have been reviewed and that none is provisional.
-6. **The home page and the timeline.** `news` in `src/pages/index.astro`, and `moved` in `src/pages/standards/index.astro`, whose heading names the year.
+6. **The home page.** `news` in `src/pages/index.astro`. “What moved” on the tracker is read from the log: it lists the year’s adoptions, approvals, publications and successions, and any other event marked `notable`. Mark one `notable` when it is worth a line there.
 7. **This document.** Remove settled rows from the watch list and the citations table, and add new ones.
 8. **The review date**, once every section of a run has been applied or deliberately left:
    - `REVIEWED` and `REVIEWED_ISO` in `src/data/site.ts`
