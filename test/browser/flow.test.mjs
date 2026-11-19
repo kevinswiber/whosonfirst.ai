@@ -114,13 +114,30 @@ for (const theme of THEMES) {
       // Focuses the first term in the introduction, and says what its preview shows.
       const preview = () =>
         page.evaluate(async () => {
-          const settle = () => new Promise((r) => setTimeout(r, 60));
+          // A scroll closes a preview, and the page scrolls smoothly, so the
+          // term is brought into view at once and focused only when the page
+          // has stopped: a scroll event still on its way would close what the
+          // focus opened. A frame's scroll events are sent before its
+          // callbacks run, so three frames at one position is none to come.
+          const still = () =>
+            new Promise((done) => {
+              let at = Number.NaN;
+              let frames = 0;
+              const frame = () => {
+                if (scrollY === at) frames++;
+                else frames = 0;
+                at = scrollY;
+                if (frames >= 3) done();
+                else requestAnimationFrame(frame);
+              };
+              requestAnimationFrame(frame);
+            });
           const a = document.querySelector(".intro a.term");
           if (!a) return null;
-          a.scrollIntoView({ block: "center" });
-          await settle();
+          a.scrollIntoView({ block: "center", behavior: "instant" });
+          await still();
           a.focus({ preventScroll: true });
-          await settle();
+          await still();
           const tip = document.querySelector("#term-tip");
           const r = tip.getBoundingClientRect();
           return {
