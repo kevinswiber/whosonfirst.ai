@@ -47,6 +47,8 @@ interface Props {
   reviewMetadata?: boolean;
   /** Further schema.org nodes about this page, added to the ones every page carries. */
   schema?: Record<string, unknown>[];
+  /** A feed of what this page lists, at this origin, for a reader that follows one. */
+  feed?: { href: string; title: string };
 }
 
 // The publication's name is "Who’s on First". whosonfirst.ai is its address, and
@@ -60,6 +62,7 @@ const {
   noindex = false,
   markdown = !noindex,
   schema = [],
+  feed,
   reviewMetadata = true,
   description = `${DESCRIPTOR}: the flows, the deployments and the standards, with and without a human in the loop.`,
 } = Astro.props;
@@ -235,6 +238,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     {!noindex && <meta name="robots" content="max-image-preview:large" />}
     {markdown && <link rel="alternate" type="text/markdown" href={markdownHref} title="This page as Markdown" />}
+    {feed && <link rel="alternate" type="application/atom+xml" href={feed.href} title={feed.title} />}
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

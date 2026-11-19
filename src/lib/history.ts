@@ -498,3 +498,87 @@ export const recordBegan = (events: HistoryEvent[]) =>
     .filter((event) => event.kind === "baseline")
     .map((event) => event.recorded)
     .sort()[0];
+
+/* ───────────── The changelog as a feed ───────────── */
+
+/** Where the feed is, and what it is called wherever it is linked. */
+export const FEED = {
+  href: "/standards/changes.xml",
+  title: "Changelog of the standards tracker",
+};
+
+const xml = (text: string) =>
+  text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
+/** An event's place on the timeline, which is where a feed entry leads. */
+export const eventAnchor = (id: string) => id.replaceAll("/", "-");
+
+/**
+ * The changelog as an Atom feed (RFC 4287): an entry for each event, newest
+ * recording first. An entry's `updated` is the day the site recorded the event,
+ * or corrected it, and `published` the day it happened where that is a day.
+ * Its id is made from the event's name, so it stays the same as the log grows.
+ *
+ * `origin` is the site's address with no slash at its end, and `names` gives
+ * the name of the document an entry is about.
+ */
+export const feedOf = (
+  events: HistoryEvent[],
+  origin: string,
+  names: (entry: string) => string,
+): string => {
+  const at = (day: string) => `${day}T00:00:00Z`;
+  const changed = (e: NamedEvent) => e.corrected?.on ?? e.recorded;
+  const entries = happenings(events)
+    .map((event, order) => ({ event, order }))
+    .sort(
+      (a, b) =>
+        changed(b.event).localeCompare(changed(a.event)) || b.order - a.order,
+    )
+    .map(({ event }) => event);
+  const host = new URL(origin).host;
+  const entry = (e: NamedEvent) => {
+    const about = e.entry ? names(e.entry) : (e.subject ?? "");
+    const label = KIND_LABEL[e.kind as keyof typeof KIND_LABEL];
+    const text = [
+      `${spellDate(e.date)}. ${e.summary ?? ""}`,
+      ...(e.changes ?? []).map((change) => `- ${change}`),
+      ...(e.corrected ? [`Corrected: ${e.corrected.note}`] : []),
+      `Source: ${e.source ?? ""}`,
+    ].join("\n");
+    return [
+      "  <entry>",
+      `    <id>tag:${host},2026:standards/${xml(e.id)}</id>`,
+      `    <title>${xml(`${label}: ${about}`)}</title>`,
+      `    <updated>${at(changed(e))}</updated>`,
+      ...(e.date.length === 10
+        ? [`    <published>${at(e.date)}</published>`]
+        : []),
+      `    <link rel="alternate" type="text/html" href="${xml(`${origin}/standards/timeline/#${eventAnchor(e.id)}`)}"/>`,
+      ...(e.source
+        ? [`    <link rel="related" href="${xml(e.source)}"/>`]
+        : []),
+      `    <summary>${xml(text)}</summary>`,
+      "  </entry>",
+    ].join("\n");
+  };
+  const updated = entries.length ? changed(entries[0]) : recordBegan(events);
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<feed xmlns="http://www.w3.org/2005/Atom">',
+    `  <id>${xml(`${origin}${FEED.href}`)}</id>`,
+    `  <title>${xml(`${FEED.title}: Who’s on First`)}</title>`,
+    "  <subtitle>What has happened to the standards for agent authentication and authorization, as this site records it.</subtitle>",
+    `  <updated>${at(updated)}</updated>`,
+    "  <author><name>Who’s on First</name></author>",
+    `  <link rel="self" type="application/atom+xml" href="${xml(`${origin}${FEED.href}`)}"/>`,
+    `  <link rel="alternate" type="text/html" href="${xml(`${origin}/standards/changes/`)}"/>`,
+    ...entries.map(entry),
+    "</feed>",
+    "",
+  ].join("\n");
+};
