@@ -23,6 +23,20 @@ export const sourceOf = (url) => {
   return url.split("#")[0];
 };
 
+/**
+ * Asks a source for its page, as a source review does. It names HTML among the
+ * types it accepts, as a browser does: some servers refuse a request that
+ * names none, as Uber's engineering blog does with HTTP 406. It does not name
+ * Markdown: a site that serves both would answer with the Markdown, whose value
+ * is not the one recorded for its HTML.
+ */
+export const ask = (url, headers = {}) =>
+  fetch(url, {
+    headers: { accept: "text/html,*/*", ...headers },
+    redirect: "follow",
+    signal: AbortSignal.timeout(30000),
+  });
+
 /** Every flow, read file by file: flows/index.ts imports more than Node can load. */
 export const flows = async () => {
   const dir = new URL("../src/data/flows/", import.meta.url);
