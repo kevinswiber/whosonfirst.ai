@@ -64,7 +64,12 @@ const read = (url) => {
     pages.set(
       at,
       fetch(at, {
-        headers: { accept: "text/html,text/markdown,text/plain,*/*" },
+        // A page served in the reader's language: some sites translate one
+        // that asks for none, and an English quote is then not found.
+        headers: {
+          accept: "text/html,text/markdown,text/plain,*/*",
+          "accept-language": "en",
+        },
         redirect: "follow",
         signal: AbortSignal.timeout(30000),
       }).then(async (res) =>

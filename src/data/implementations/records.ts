@@ -4,7 +4,7 @@ import type { ImplementationProfile } from "./model.ts";
 export const profiles: ImplementationProfile[] = [
   {
     slug: "authorization-code-pkce",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Authorization code with PKCE, including S256 for the illustrated client. Client libraries and authorization servers supply different parts of this flow.",
     genericParties: ["api"],
@@ -33,11 +33,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Using PKCE in authorization code grants",
             url: "https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html",
             publisher: "Amazon Web Services",
+            section: "Using PKCE in authorization code grants",
+            quote:
+              "Amazon Cognito supports Proof Key for Code Exchange (PKCE) authentication in authorization code grants.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -64,11 +67,14 @@ export const profiles: ImplementationProfile[] = [
             title: "oauth4webapi: features and supported versions",
             url: "https://github.com/panva/oauth4webapi/blob/main/README.md#features",
             publisher: "oauth4webapi project",
+            section: "Features",
+            quote:
+              "Authorization Code Flow (profiled under OpenID Connect 1.0, OAuth 2.0, OAuth 2.1, and FAPI 2.0), with PKCE",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -97,11 +103,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://github.blog/changelog/2025-07-14-pkce-support-for-oauth-and-github-app-authentication/",
             publisher: "GitHub",
             publishedOn: "2025-07-14",
+            section: "PKCE support for OAuth and GitHub App authentication",
+            quote:
+              "PKCE (Proof Key for Code Exchange) is now supported and recommended for user authentication in OAuth and GitHub Apps.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -358,7 +367,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "dpop",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "OAuth DPoP at the application layer. Proof generation, token binding and resource-server enforcement are separate roles; mTLS and JWT client authentication are outside this record.",
     searchNote:
@@ -387,11 +396,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.keycloak.org/2025/09/keycloak-2640-released",
             publisher: "Keycloak",
             publishedOn: "2025-09-30",
+            section: "DPoP (supported)",
+            quote:
+              "Keycloak has support for OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP), which was a preview feature since Keycloak 23.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -418,16 +430,22 @@ export const profiles: ImplementationProfile[] = [
             title: "oauth4webapi API: DPoP",
             url: "https://github.com/panva/oauth4webapi/blob/main/docs/README.md#dpop",
             publisher: "oauth4webapi project",
+            section: "DPoP",
+            quote:
+              "Creates a DPoP handle that signs sender-constraining proofs with a CryptoKeyPair and tracks server-issued nonces.",
           },
           {
             title: "oauth4webapi: features and supported versions",
             url: "https://github.com/panva/oauth4webapi/blob/main/README.md#features",
             publisher: "oauth4webapi project",
+            section: "Features",
+            quote:
+              "Demonstrating Proof-of-Possession at the Application Layer (DPoP)",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -454,16 +472,22 @@ export const profiles: ImplementationProfile[] = [
             title: "DPoPAuthenticationProvider",
             url: "https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/server/resource/authentication/DPoPAuthenticationProvider.html",
             publisher: "Spring Security",
+            section: "Class DPoPAuthenticationProvider",
+            quote:
+              "An AuthenticationProvider implementation that is responsible for authenticating a DPoP-bound access token for a protected resource request.",
           },
           {
             title: "OAuth 2.0 DPoP-bound Access Tokens",
             url: "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/dpop-tokens.html",
             publisher: "Spring Security",
+            section: "DPoP Protected Resource Request",
+            quote:
+              "The resource server will calculate the hash of the received access token and verify that it is the same as the ath claim in the DPoP proof.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -493,11 +517,15 @@ export const profiles: ImplementationProfile[] = [
             url: "https://auth0.com/changelog",
             publisher: "Auth0",
             publishedOn: "2026-03-11",
+            section:
+              "Sender constrained tokens using DPoP is now Generally Available on Enterprise plans.",
+            quote:
+              "Support for sender constraining tokens using Demonstrating Proof of Possession (DPoP) is now generally available on Enterprise plans.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -525,16 +553,22 @@ export const profiles: ImplementationProfile[] = [
             url: "https://curity.io/blog/curity-identity-server-11-4/",
             publisher: "Curity",
             publishedOn: "2026-08-11",
+            section: "DPoP binding across the OAuth endpoints",
+            quote:
+              "The server now issues DPoP-bound access tokens for all client types and can bind the authorization code itself to the client's proof-of-possession key.",
           },
           {
             title: "DPoP (Demonstrating Proof of Possession)",
             url: "https://curity.io/docs/identity-server/profiles/token-profile/clients/client-config/dpop/",
             publisher: "Curity",
+            section: "DPoP (Demonstrating Proof of Possession)",
+            quote:
+              "Since version 11.4, the Curity Identity Server implements the RFC 9449, OAuth 2.0 Demonstrating Proof of Possession (DPoP) specification for all client types.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -799,11 +833,14 @@ export const profiles: ImplementationProfile[] = [
             title: "HelseID: planned and completed changes",
             url: "https://utviklerportal.nhn.no/informasjonstjenester/helseid/planlagde-endringar/vegkart/docs/planlagde_endringar_enmd",
             publisher: "Norsk helsenett",
+            section: "Planned changes",
+            quote:
+              "Please note that HelseID already uses DPoP in the production environment; you don't need to wait until June 1st.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own deployed service or production arrangement. No independent operational test or prevalence estimate.",
         },
@@ -896,7 +933,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "mcp-authorization",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Remote HTTP MCP authorization, with the site’s 28 July 2026 revision as context. Each entry covers the named role and features; it is not a claim of complete revision conformance.",
     searchNote:
@@ -918,17 +955,20 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "Documents protected-resource metadata discovery and Client ID Metadata Documents, alongside preconfigured client credentials and dynamic-registration compatibility.",
         limits:
-          "The cited sections do not name a target MCP revision. This claim does not cover other Claude products or every requirement of the illustrated revision.",
+          "The authentication sections name no MCP revision. The page says Claude Code’s v2 client runtime adds revision 2026-07-28, used from v2.1.232 in sessions that fetch feature flags and by default from v2.1.274 in others. This claim does not cover other Claude products or every requirement of the illustrated revision.",
         sources: [
           {
             title: "Connect Claude Code to tools via MCP",
             url: "https://code.claude.com/docs/en/mcp",
             publisher: "Anthropic",
+            section: "Use pre-configured OAuth credentials",
+            quote:
+              "Claude Code also supports servers that use a Client ID Metadata Document (CIMD) instead of Dynamic Client Registration, and discovers these automatically.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -955,11 +995,14 @@ export const profiles: ImplementationProfile[] = [
             title: "OAuth 2.1 Provider Framework for Cloudflare Workers",
             url: "https://github.com/cloudflare/workers-oauth-provider",
             publisher: "Cloudflare",
+            section: "Quick start",
+            quote:
+              "The resource server publishes its RFC 9728 metadata, answers unauthenticated requests with a challenge pointing at it, and accepts only tokens issued for its own resource.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -986,11 +1029,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Integrating with Model Context Protocol",
             url: "https://www.keycloak.org/securing-apps/mcp-authz-server",
             publisher: "Keycloak",
+            section: "Integrating with Model Context Protocol (MCP)",
+            quote:
+              "Using Keycloak as an authorization server for Model Context Protocol (MCP) servers.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -1159,6 +1205,7 @@ export const profiles: ImplementationProfile[] = [
         id: "mcp-stripe",
         summary:
           "Stripe documents OAuth consent for access to live-mode Stripe accounts and sandboxes through its hosted MCP server.",
+        qualification: "Stripe labels its MCP server a public preview.",
         limits:
           "An operator-documented service. This review did not test the OAuth exchange, verify every specification requirement, or establish a launch date or customer count.",
         sources: [
@@ -1166,11 +1213,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Model Context Protocol",
             url: "https://docs.stripe.com/mcp",
             publisher: "Stripe",
+            section: "Manage MCP access and sessions",
+            quote:
+              "When you connect an MCP client with OAuth, the client opens Stripe’s OAuth consent page.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own deployed service or production arrangement. No independent operational test or prevalence estimate.",
         },
@@ -1273,7 +1323,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "workload-identity-federation",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "A workload presents a runtime-established identity across a trust boundary to obtain short-lived access. Issuer, receiving token service and broker roles are distinct.",
     searchNote:
@@ -1301,11 +1351,14 @@ export const profiles: ImplementationProfile[] = [
             title: "OpenID Connect in GitHub Actions",
             url: "https://docs.github.com/en/actions/concepts/security/openid-connect#understanding-the-oidc-token",
             publisher: "GitHub",
+            section: "Understanding the OIDC token",
+            quote:
+              "Each job requests an OIDC token from GitHub's OIDC provider, which responds with an automatically generated JSON web token (JWT) that is unique for each workflow job where it is generated.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -1332,11 +1385,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Workload Identity Federation",
             url: "https://docs.cloud.google.com/iam/docs/workload-identity-federation",
             publisher: "Google Cloud",
+            section: "Workload identity pool providers",
+            quote:
+              "Workload Identity Federation follows the OAuth 2.0 token exchange specification. You provide a credential from your IdP to the Security Token Service, which verifies the identity on the credential, and then returns a federated token in exchange.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -1659,11 +1715,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.pulumi.com/blog/eliminating-ci-secrets-with-pulumi-esc/",
             publisher: "Pulumi Engineering",
             publishedOn: "2026-03-31",
+            section: "Our approach: zero static secrets",
+            quote:
+              "We replaced every static GitHub Secret across our CI pipelines with short-lived, dynamically fetched credentials using Pulumi ESC and OpenID Connect (OIDC).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own deployed service or production arrangement. No independent operational test or prevalence estimate.",
         },
@@ -1736,7 +1795,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "spiffe-workload-identity",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "SPIFFE X.509-SVID issuance, delivery and use for workload mutual TLS. JWT-SVID use alone and generic mTLS do not establish this illustrated path.",
     searchNote:
@@ -1764,11 +1823,14 @@ export const profiles: ImplementationProfile[] = [
             title: "SPIRE concepts",
             url: "https://spiffe.io/docs/latest/spire-about/spire-concepts/",
             publisher: "SPIFFE project",
+            section: "SPIRE Concepts",
+            quote:
+              "SPIRE is a production-ready implementation of the SPIFFE APIs that performs node and workload attestation in order to securely issue SVIDs to workloads, and verify the SVIDs of other workloads, based on a predefined set of conditions.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -1795,11 +1857,14 @@ export const profiles: ImplementationProfile[] = [
             title: "SPIRE integration",
             url: "https://istio.io/latest/docs/ops/integrations/spire/",
             publisher: "Istio project",
+            section: "SPIRE",
+            quote:
+              "Istio can detect the existence of a UNIX Domain Socket that implements the Envoy SDS API on a defined socket path, allowing Envoy to communicate and fetch identities directly from it.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation read for this product, role and mechanism. Release wording is limited to what the cited source states.",
         },
@@ -1940,11 +2005,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://engineering.indeedblog.com/blog/2024/07/workload-identity-with-spire-oidc-for-k8s-istio/",
             publisher: "Indeed Engineering",
             publishedOn: "2024-07-03",
+            section: "SPIRE",
+            quote:
+              "SPIRE can be deployed in a scalable and resilient manner and has been operating reliably at scale in production at Indeed for over a year now.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own deployed service or production arrangement. No independent operational test or prevalence estimate.",
         },
@@ -2043,7 +2111,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "device-authorization",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "RFC 8628 device authorization for input-constrained clients. The client requests a code and polls while the user approves in a browser. Support for resource indicators and specific phishing mitigations is a separate question.",
     genericParties: ["api"],
@@ -2067,6 +2135,9 @@ export const profiles: ImplementationProfile[] = [
             title: "OAuth 2.0 Device Authorization Flow now GA",
             url: "https://github.blog/changelog/2020-12-04-oauth-2-0-device-authorization-flow-now-ga/",
             publishedOn: "2020-12-04",
+            section: "OAuth 2.0 Device Authorization Flow now GA",
+            quote:
+              "GitHub Apps and OAuth Apps now feature GA support for the OAuth 2.0 Device Authorization Grant, in addition to the existing Web Application Flow.",
           },
         ],
         release: {
@@ -2077,7 +2148,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2098,11 +2169,16 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Keycloak",
             title: "Specifications implemented",
             url: "https://www.keycloak.org/securing-apps/specifications",
+            section: "OAuth",
+            quote: "OAuth 2.0 Device Authorization Grant (RFC 8628) Supported",
           },
           {
             publisher: "Keycloak",
             title: "Server Administration Guide",
             url: "https://www.keycloak.org/docs/latest/server_admin/",
+            section: "Capability Config",
+            quote:
+              "If enabled, this client can use the OIDC Device Authorization Grant.",
           },
         ],
         release: {
@@ -2113,7 +2189,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2135,6 +2211,9 @@ export const profiles: ImplementationProfile[] = [
             title:
               "Configuring IAM Identity Center authentication with the AWS CLI",
             url: "https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html",
+            section: "Device authorization",
+            quote:
+              "The OAuth 2.0 device authorization is used by the AWS CLI for versions older than 2.22.0. You can enable this method on newer versions by using the `--use-device-code` option.",
           },
         ],
         release: {
@@ -2145,7 +2224,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2166,6 +2245,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "GitHub",
             title: "cli/oauth README",
             url: "https://github.com/cli/oauth#readme",
+            section: "oauth",
+            quote:
+              "To accommodate client apps, this library implements the OAuth Device Authorization Grant which GitHub.com now supports.",
           },
         ],
         release: {
@@ -2176,7 +2258,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2283,12 +2365,15 @@ export const profiles: ImplementationProfile[] = [
             title: "OAuth 2.0 Device Authorization Flow now GA",
             url: "https://github.blog/changelog/2020-12-04-oauth-2-0-device-authorization-flow-now-ga/",
             publishedOn: "2020-12-04",
+            section: "OAuth 2.0 Device Authorization Flow now GA",
+            quote:
+              "GitHub CLI uses this authentication method on the login command.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator documents the mechanism for its own service. Usage and interoperability were not independently tested.",
         },
@@ -2308,12 +2393,15 @@ export const profiles: ImplementationProfile[] = [
             title: "New Vercel CLI login flow",
             url: "https://vercel.com/changelog/new-vercel-cli-login-flow",
             publishedOn: "2025-09-12",
+            section: "New Vercel CLI login flow",
+            quote:
+              "The vercel login command now uses the industry-standard OAuth 2.0 Device Flow, making authentication more secure and intuitive.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator documents the mechanism for its own service. Usage and interoperability were not independently tested.",
         },
@@ -2412,7 +2500,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "client-credentials",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "OAuth client credentials for access on an application’s own authority. Separate the grant from client authentication. The illustrated flow uses a signed JWT assertion and a resource indicator.",
     searchNote:
@@ -2437,6 +2525,9 @@ export const profiles: ImplementationProfile[] = [
             title:
               "OAuth 2.0 client credentials flow on the Microsoft identity platform",
             url: "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow#second-case-access-token-request-with-a-certificate",
+            section: "Second case: Access token request with a certificate",
+            quote:
+              "An assertion (a JSON web token) that you need to create and sign with the certificate you registered as credentials for your application.",
           },
         ],
         release: {
@@ -2447,7 +2538,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2468,6 +2559,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Okta",
             title: "Implement OAuth for Okta with a service app",
             url: "https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/",
+            section: "Generate the JWK using the API",
+            quote:
+              "The private_key_jwt client authentication method is the only supported method for OAuth service apps that want to get access tokens with Okta scopes.",
           },
         ],
         release: {
@@ -2478,7 +2572,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2499,6 +2593,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Spring Authorization Server",
             title: "Overview",
             url: "https://docs.spring.io/spring-authorization-server/reference/overview.html#feature-list",
+            section: "Feature List",
+            quote:
+              "Spring Authorization Server supports the following features:",
           },
         ],
         release: {
@@ -2509,7 +2606,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2530,11 +2627,17 @@ export const profiles: ImplementationProfile[] = [
             publisher: "oauth4webapi project",
             title: "oauth4webapi API reference",
             url: "https://github.com/panva/oauth4webapi/blob/main/docs/README.md#client-credentials-grant",
+            section: "Client Authentication",
+            quote:
+              "private_key_jwt authenticates the client with a digitally signed JWT assertion sent in the form-encoded request body.",
           },
           {
             publisher: "oauth4webapi project",
             title: "oauth4webapi features and supported versions",
             url: "https://github.com/panva/oauth4webapi/blob/main/README.md#features",
+            section: "Features",
+            quote:
+              "Refresh Token, Device Authorization, Client-Initiated Backchannel Authentication (CIBA), and Client Credentials Grants",
           },
         ],
         release: {
@@ -2545,7 +2648,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2798,17 +2901,23 @@ export const profiles: ImplementationProfile[] = [
             publisher: "eBay",
             title: "Authorization",
             url: "https://developer.ebay.com/develop/guides/sell/authorization",
+            section: "Minting access tokens",
+            quote:
+              "Client credentials grant flow mints a new Application access token that you can use to access the resources owned by the application.",
           },
           {
             publisher: "eBay",
             title: "Browse API",
             url: "https://developer.ebay.com/develop/api/buy/browse_api",
+            section: "Browse API",
+            quote:
+              "All methods in the Browse API require an Application access token, which is obtained using the client credentials grant flow.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator documents the mechanism for its own service. Usage and interoperability were not independently tested.",
         },
@@ -2886,7 +2995,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "token-exchange",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "RFC 8693 exchanges of an incoming subject token for downstream access. Keep issuer and client roles separate, and distinguish the base grant, actor delegation, and explicitly documented service-specific variants.",
     genericParties: ["agent"],
@@ -2910,12 +3019,18 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Keycloak",
             title: "Configuring and using token exchange",
             url: "https://www.keycloak.org/securing-apps/token-exchange",
+            section: "Standard token exchange",
+            quote:
+              "Standard token exchange in Keycloak implements the Token exchange specification. It allows client application to exchange an existing Keycloak token created for a specific client for a new token issued to the client that triggered the token exchange request.",
           },
           {
             publisher: "Keycloak",
             title: "Keycloak 26.2.0 released",
             url: "https://www.keycloak.org/2025/04/keycloak-2620-released",
             publishedOn: "2025-04-11",
+            section: "Supported Standard Token Exchange",
+            quote:
+              "In this release, we added support for the Standard token exchange!",
           },
         ],
         release: {
@@ -2926,7 +3041,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2942,17 +3057,22 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "Exchanges an upstream user access token for a new scoped downstream token within one custom authorization server or across trusted custom servers in the same tenant.",
         limits:
-          "The example uses audience and scope. It does not show an actor token or establish the illustrated act claim. The release notes mark GA in Production without giving a production rollout day.",
+          "The example uses audience and scope and sends no actor token. The guide documents the act claim the issued token carries, naming the service app that requested the exchange, with an earlier actor nested under act.act, up to five. The release notes mark GA in Production without giving a production rollout day.",
         sources: [
           {
             publisher: "Okta",
             title: "Set up OAuth 2.0 On-Behalf-Of Token Exchange",
             url: "https://developer.okta.com/docs/guides/set-up-token-exchange/main/",
+            section: "Machine-to-machine requests",
+            quote:
+              "It provides a protocol approach to support scenarios where a client can exchange an access token received from an upstream client for a new token by interacting with the authorization server.",
           },
           {
             publisher: "Okta",
             title: "Okta Classic Engine API release notes (2023)",
             url: "https://developer.okta.com/docs/release-notes/2023/",
+            section: "Monthly release 2023.05.0",
+            quote: "OAuth 2.0 On-Behalf-Of Token Exchange is GA in Production",
           },
         ],
         release: {
@@ -2963,7 +3083,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -2984,6 +3104,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Spring Security",
             title: "Authorization Grant Support",
             url: "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html",
+            section: "Token Exchange, Using the Access Token",
+            quote:
+              "If you need to resolve an actor token, you can provide TokenExchangeOAuth2AuthorizedClientProvider.setActorTokenResolver() with a custom Function<OAuth2AuthorizationContext, OAuth2Token>.",
           },
         ],
         release: {
@@ -2994,7 +3117,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -3015,6 +3138,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Amazon Web Services",
             title: "On-behalf-of token exchange with AgentCore Identity",
             url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html",
+            section: "grant_type = TOKEN_EXCHANGE",
+            quote:
+              "With this grant type, AgentCore Identity sends the inbound JWT as the subject token to obtain an access token.",
           },
           {
             publisher: "Amazon Web Services",
@@ -3022,6 +3148,10 @@ export const profiles: ImplementationProfile[] = [
               "Amazon Bedrock AgentCore Identity now supports On-Behalf-Of (OBO) token exchange",
             url: "https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-agentcore/",
             publishedOn: "2026-04-30",
+            section:
+              "Amazon Bedrock AgentCore Identity now supports On-Behalf-Of (OBO) token exchange",
+            quote:
+              "Amazon Bedrock AgentCore Identity OBO token exchange is now generally available in 14 AWS Regions",
           },
         ],
         release: {
@@ -3032,7 +3162,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The publisher documents this role and mechanism. Availability is stated only within the cited release conditions.",
         },
@@ -3193,12 +3323,15 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Snowflake",
             title: "OAuth token exchange for agent delegation",
             url: "https://docs.snowflake.com/en/user-guide/oauth-token-exchange",
+            section: "OAuth token exchange for agent delegation",
+            quote:
+              "OAuth token exchange lets an application trade a user’s credential for a short-lived Snowflake access token.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator documents the mechanism for its own service. Usage and interoperability were not independently tested.",
         },
@@ -3289,7 +3422,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "ciba",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "OpenID Connect CIBA, including the backchannel request and the token delivery mode the source describes. User notification, Rich Authorization Requests and API enforcement each need their own evidence.",
     searchNote:
@@ -3317,11 +3450,14 @@ export const profiles: ImplementationProfile[] = [
             title: "openid-client README",
             url: "https://github.com/panva/openid-client#client-initiated-backchannel-authentication-ciba",
             publisher: "openid-client project",
+            section: "Client-Initiated Backchannel Authentication (CIBA)",
+            quote:
+              "This will poll in a regular interval and only resolve with tokens once the end-user authenticates.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3350,11 +3486,15 @@ export const profiles: ImplementationProfile[] = [
             url: "https://auth0.com/changelog",
             publisher: "Auth0",
             publishedOn: "2025-05-21",
+            section:
+              "Client-Initiated Backchannel Authentication (CIBA) flow is now Generally Available",
+            quote:
+              "Asynchronous authentication and authorisation using the Client-Initiated Backchannel Authentication (CIBA) flow is now Generally Available for our Enterprise plan customers.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3383,11 +3523,14 @@ export const profiles: ImplementationProfile[] = [
               "Implementing Client-Initiated Backchannel Authentication (CIBA)",
             url: "https://docs.duendesoftware.com/identityserver/ui/ciba/",
             publisher: "Duende Software",
+            section: "How To Configure A CIBA Client",
+            quote:
+              "The client authenticates at the backchannel authentication endpoint, receives an auth_req_id, and polls the token endpoint until the user approves or denies the request.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3414,11 +3557,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Merchant-initiated login",
             url: "https://developer.vippsmobilepay.com/docs/APIs/login-api/api-guide/merchant-initiated-login-integration",
             publisher: "Vipps MobilePay",
+            section: "Complete login in the Vipps or MobilePay app",
+            quote:
+              "The Client will receive the ID Token and Access Token by polling the token endpoint to get a response with the tokens.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3614,11 +3760,15 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.icabanken.se/open-banking/latest-news-open-banking/",
             publisher: "ICA Banken Open Banking Team",
             publishedOn: "2024-05-31",
+            section:
+              "Client initiated backchannel authentication flow (Decoupled) available from 2024-05-30",
+            quote:
+              "ICA Banken would like to inform that from the 2024-05-30 PSU authentication using SCA method decoupled will be available in our PSD2 APIs.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own arrangement. The account was not tested independently.",
         },
@@ -3672,7 +3822,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "agent-to-agent",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Agent2Agent protocol discovery, card signing and verification, request authentication and task authorization. Scope support to the documented role, transport and revision. Label older deployment accounts with their reported revision.",
     searchNote:
@@ -3700,16 +3850,22 @@ export const profiles: ImplementationProfile[] = [
             title: "A2A Python SDK · Compatibility",
             url: "https://github.com/a2aproject/a2a-python#-compatibility",
             publisher: "A2A Python SDK project",
+            section: "Compatibility",
+            quote:
+              "This SDK implements the A2A Protocol Specification 1.0, with compatibility mode for 0.3.",
           },
           {
             title: "A2A Python SDK — Samples",
             url: "https://a2aproject.github.io/a2a-python/samples/",
             publisher: "A2A Python SDK project",
+            section: "agent_card_signing.py — Agent Card Signing",
+            quote:
+              "This sample signs a card on the server and verifies it on the client.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3737,16 +3893,22 @@ export const profiles: ImplementationProfile[] = [
             title: "Deploy A2A servers in AgentCore Runtime",
             url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a.html",
             publisher: "Amazon Web Services",
+            section: "How Amazon Bedrock AgentCore supports A2A",
+            quote:
+              "This architecture preserves the standard A2A protocol features like built-in agent discovery through Agent Cards at /.well-known/agent-card.json and JSON-RPC communication, while adding authentication (SigV4/OAuth 2.0) and scalability.",
           },
           {
             title: "A2A protocol contract",
             url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a-protocol-contract.html",
             publisher: "Amazon Web Services",
+            section: "OAuth authentication responses",
+            quote:
+              "When authentication is missing, the service returns a 401 Unauthorized response with a WWW-Authenticate header",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3774,16 +3936,22 @@ export const profiles: ImplementationProfile[] = [
             url: "https://a2aproject.github.io/a2a-java/posts/a2a-java-sdk-1-0-0-final-released/",
             publisher: "A2A Java SDK project",
             publishedOn: "2026-06-10",
+            section: "A2A Java SDK 1.0.0.Final Released",
+            quote:
+              "I am pleased to announce the release of A2A Java SDK 1.0.0.Final -- our first GA release.",
           },
           {
             title: "Task Authorization · A2A Java SDK 1.5.0.Final",
             url: "https://a2aproject.github.io/a2a-java/1_5_0_Final/authorization/",
             publisher: "A2A Java SDK project",
+            section: "Implementing TaskAuthorizationProvider",
+            quote:
+              "Implement TaskAuthorizationProvider to control per-user access:",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3810,11 +3978,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Quickstart: Consuming a remote agent via A2A",
             url: "https://adk.dev/a2a/quickstart-consuming/",
             publisher: "Google Agent Development Kit",
+            section: "How it works",
+            quote:
+              "The main agent uses the RemoteA2aAgent class to consume the remote agent (prime_agent in our example).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary product or project documentation establishes the named role and mechanism. Release wording follows the source.",
         },
@@ -3932,11 +4103,14 @@ export const profiles: ImplementationProfile[] = [
             publisher:
               "Agentic AI Foundation · account by Rachel Neriya Schifter",
             publishedOn: "2026-08-26",
+            section: "TLDR",
+            quote:
+              "When three of its specialists had to move out of the process, we put them behind A2A rather than writing our own RPC contract for each.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own arrangement. The account was not tested independently.",
         },
@@ -3985,7 +4159,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "step-up-authorization",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "RFC 9470 step-up challenges and the authorization-server response. A stronger or fresher login, transaction-specific consent under RFC 9396, and API enforcement each require their own evidence.",
     searchNote:
@@ -4008,6 +4182,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Ping Identity",
             title: "Step-up authentication for APIs",
             url: "https://docs.pingidentity.com/pingone/authentication/p1_stepup_authentication_for_apis.html",
+            section: "How it works",
+            quote:
+              "When you use PingOne for step-up authentication, PingOne SSO acts as the authorization server. PingOne API Access Management acts on behalf of the resource server to enforce authentication requirements and issue challenge responses when requirements aren't met.",
           },
         ],
         release: {
@@ -4018,7 +4195,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4040,6 +4217,9 @@ export const profiles: ImplementationProfile[] = [
             title:
               "RFC 9470 OAuth 2.0 Step Up Authentication Challenge Protocol",
             url: "https://developers.authlete.com/protocols-and-flows/advanced-flows/oauth-2-0-step-up-authentication-challenge-protocol-rfc-9470",
+            section: "Authlete’s Implementation",
+            quote:
+              "Authlete supports the OAuth 2.0 Step Up Authentication Challenge Protocol specification since version 2.3.",
           },
         ],
         release: {
@@ -4050,7 +4230,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4072,6 +4252,9 @@ export const profiles: ImplementationProfile[] = [
             title: "Release 2026.10.25",
             url: "https://github.com/sergiodxa/monorepo/releases/tag/v2026.10.25",
             publishedOn: "2026-10-25",
+            section: "@sdxc/auth",
+            quote:
+              "A resource server can now refuse a token whose user authentication is too weak or too old with RFC 9470's insufficient_user_authentication challenge, and a client can read that challenge back and re-authorize the person at the level it names.",
           },
         ],
         release: {
@@ -4082,7 +4265,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4179,12 +4362,15 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Mozilla",
             title: "Step-up authentication",
             url: "https://raw.githubusercontent.com/mozilla/ecosystem-platform/master/docs/relying-parties/how-tos/step-up-authentication.md",
+            section: "Step-up authentication",
+            quote:
+              "Mozilla accounts implements the authorization-server half of RFC 9470",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
         },
@@ -4224,7 +4410,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "cross-app-access",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "ID-JAG issuance, exchange and redemption for enterprise-managed authorization, including implementations of the MCP extension. General workforce SSO and generic cross-domain JWT support do not establish ID-JAG.",
     genericParties: ["mcp"],
@@ -4249,6 +4435,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Okta",
             title: "Cross App Access (XAA)",
             url: "https://developer.okta.com/docs/concepts/xaa/",
+            section: "XAA roles",
+            quote:
+              "With Okta as the IdP, the admin manages this connection in Okta. The Okta authorization server issues the ID-JAG only for scoped access allowed in that connection.",
           },
           {
             publisher: "Okta",
@@ -4256,6 +4445,9 @@ export const profiles: ImplementationProfile[] = [
               "Okta Identity Engine Production release notes, version 2026.09.0",
             url: "https://help.okta.com/oie/en-us/content/topics/releasenotes/versions/release-prod-2026-09-0.htm",
             publishedOn: "2026-09-15",
+            section: "Generally Available",
+            quote:
+              "Use XAA to secure access between custom SSO-agentic requesting apps and SSO resource apps.",
           },
         ],
         release: {
@@ -4266,7 +4458,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4289,6 +4481,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Anthropic",
             title: "Enterprise Managed Auth for connectors",
             url: "https://claude.com/docs/connectors/building/enterprise-managed-auth",
+            section: "Enterprise Managed Auth for connectors",
+            quote:
+              "Claude presents your authorization server with an identity assertion instead: a signed JSON Web Token (JWT) issued by the customer’s identity provider or by Claude.",
           },
         ],
         release: {
@@ -4299,7 +4494,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4320,6 +4515,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Ping Identity",
             title: "PingFederate 13.1 (June 2026)",
             url: "https://docs.pingidentity.com/pingfederate/13.1/release_notes/pf_release_notes_131.html",
+            section: "Identity Assertion JWT Authorization Grant (ID-JAG)",
+            quote:
+              "PingFederate can now issue ID-JAG tokens through OAuth token exchange and accept ID-JAG tokens in OAuth JWT-bearer grant requests.",
           },
         ],
         release: {
@@ -4330,7 +4528,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4352,6 +4550,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Keycloak",
             title: "Identity Assertion JWT Authorization Grant",
             url: "https://www.keycloak.org/securing-apps/identity-assertion-jwt-authorization-grant",
+            section: "Overview and Context",
+            quote:
+              "Keycloak can currently act as the Receiver (Domain B), successfully accepting an ID-JAG Identity Assertion from an external Issuer and granting a local access token.",
           },
         ],
         release: {
@@ -4362,7 +4563,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4520,17 +4721,23 @@ export const profiles: ImplementationProfile[] = [
             publisher: "PostHog",
             title: "ID-JAG (XAA) authentication",
             url: "https://posthog.com/docs/settings/authentication/id-jag",
+            section: "How it works",
+            quote:
+              "PostHog checks the ID-JAG against your XAA configuration and gives the client a short-lived access token that acts as that user.",
           },
           {
             publisher: "PostHog",
             title: "Connect Claude with enterprise-managed authorization",
             url: "https://posthog.com/docs/model-context-protocol/claude-managed-authorization",
+            section: "Connect Claude with enterprise-managed authorization",
+            quote:
+              "An admin connects PostHog once, and members can use the PostHog MCP server in Claude without signing in to PostHog themselves.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
         },
@@ -4654,7 +4861,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "identity-chaining",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Cross-domain chaining with an RFC 8693 exchange for an assertion targeted at a second authorization server, then RFC 7523 redemption for that server’s access token. Support for the separate ID-JAG profile does not by itself establish this chain.",
     genericParties: ["api"],
@@ -4677,12 +4884,18 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Keycloak",
             title: "OAuth Identity and Authorization Chaining Across Domains",
             url: "https://www.keycloak.org/securing-apps/oauth-identity-authorization-chaining-across-domains",
+            section: "OAuth Identity and Authorization Chaining Across Domains",
+            quote:
+              "Keycloak can implement OAuth Identity and Authorization Chaining Across Domains between two different realms or servers by combining the following supported features",
           },
           {
             publisher: "Keycloak",
             title: "Keycloak 26.6.0 released",
             url: "https://www.keycloak.org/2026/04/keycloak-2660-released",
             publishedOn: "2026-04-08",
+            section: "JWT Authorization Grant (supported)",
+            quote:
+              "In this release, JWT Authorization Grant is promoted from preview to supported.",
           },
         ],
         release: {
@@ -4693,7 +4906,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4726,6 +4939,9 @@ export const profiles: ImplementationProfile[] = [
               "Implementation Status of OAuth Identity Chaining and Transaction Tokens",
             url: "https://datatracker.ietf.org/doc/html/draft-agnihotri-oauth-agent-impl-status-02",
             publishedOn: "2026-06-23",
+            section: "4. Implementation: authgent",
+            quote:
+              "An open-source OAuth 2.1 authorisation server implemented in Python, with both cross-domain identity chaining (per the first reported draft) and transaction-token issuance (per the second reported draft) as first-class flows on the token endpoint.",
           },
         ],
         release: {
@@ -4764,7 +4980,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "transaction-tokens",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Implementations of the IETF OAuth Transaction Tokens draft for signed transaction context carried across calls within a trust domain. A generic JWT, RFC 8693 exchange, or the separate agent-context draft does not establish this capability.",
     searchNote:
@@ -4786,11 +5002,16 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Tokenetes project",
             title: "Introduction to Tokenetes",
             url: "https://tokenetes.io/docs/",
+            section: "Tokenetes Architecture",
+            quote:
+              "It involves the Tokenetes Service for issuing TraTs, the Tokenetes Agent sidecar for verifying TraTs, and Tokenetes Kubernetes resources for specifying generation and verification rules for TraTs.",
           },
           {
             publisher: "Tokenetes project",
             title: "Tokenetes releases",
             url: "https://github.com/tokenetes/tokenetes/releases",
+            section: "Release 1.0.1",
+            quote: "ghcr.io/tokenetes/tokenetes:1.0.1",
           },
         ],
         release: {
@@ -4801,7 +5022,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4823,6 +5044,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "kontxt project",
             title: "kontxt README",
             url: "https://github.com/aramase/kontxt",
+            section: "kontxt",
+            quote:
+              "kontxt implements IETF Transaction Tokens (draft-ietf-oauth-transaction-tokens-08) for Kubernetes, providing short-lived, immutable, cryptographically signed tokens that propagate user identity and authorization context through service call chains.",
           },
         ],
         release: {
@@ -4833,7 +5057,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4865,6 +5089,9 @@ export const profiles: ImplementationProfile[] = [
               "Implementation Status of OAuth Identity Chaining and Transaction Tokens",
             url: "https://datatracker.ietf.org/doc/html/draft-agnihotri-oauth-agent-impl-status-02",
             publishedOn: "2026-06-23",
+            section: "4. Implementation: authgent",
+            quote:
+              "An open-source OAuth 2.1 authorisation server implemented in Python, with both cross-domain identity chaining (per the first reported draft) and transaction-token issuance (per the second reported draft) as first-class flows on the token endpoint.",
           },
         ],
         release: {
@@ -4945,7 +5172,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "oauth-mtls",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "RFC 8705 certificate-bound OAuth access tokens. Issuer binding, presentation of the same client certificate and enforcement by the protected resource are distinct from mTLS client authentication at the token endpoint.",
     searchNote:
@@ -4967,6 +5194,9 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Authlete",
             title: "Issuing mutual-TLS certificate-bound access tokens",
             url: "https://developers.authlete.com/configuration-reference/tokens-and-claims/issuing-mutual-tls-certificate-bound-access-tokens",
+            section: "How it works",
+            quote:
+              "It receives a client certificate (clientCertificate) as a request parameter and binds it with an access token to be issued.",
           },
         ],
         release: {
@@ -4977,7 +5207,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -4991,18 +5221,26 @@ export const profiles: ImplementationProfile[] = [
         role: "Authorization server",
         summary:
           "Documents binding an access token to the TLS client certificate and putting its SHA-256 thumbprint into the confirmation claim.",
+        qualification:
+          "Part of the Enterprise (legacy), Standard, Advanced and Custom editions.",
         limits:
-          "An API still has to enforce the binding. The setup guide shows the client presenting the certificate to the token endpoint and to the API. It does not establish a deployment or release stage.",
+          "An API still has to enforce the binding: the client calls it with the same certificate, and the API compares the certificate’s thumbprint with the cnf claim. The setup guide shows the certificate presented to IdentityServer and links a sample for the API call. It does not establish a deployment or release stage.",
         sources: [
           {
             publisher: "Duende Software",
             title: "Proof-of-Possession Access Tokens",
             url: "https://docs.duendesoftware.com/identityserver/tokens/pop/",
+            section: "Mutual TLS",
+            quote:
+              "With this method your IdentityServer will embed the SHA-256 thumbprint of the X.509 client certificate into the access token via the cnf claim",
           },
           {
             publisher: "Duende Software",
             title: "mTLS Setup Guide",
             url: "https://docs.duendesoftware.com/identityserver/tokens/mtls-setup/",
+            section: "mTLS Setup Guide",
+            quote:
+              "Access tokens are cryptographically bound to the client’s certificate, preventing token theft and replay",
           },
         ],
         release: {
@@ -5013,7 +5251,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -5035,6 +5273,10 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Kong",
             title: "OpenID Connect plugin",
             url: "https://developer.konghq.com/plugins/openid-connect/",
+            section:
+              "Mutual TLS (mTLS) client authentication with certificate-bound access tokens",
+            quote:
+              "If the authorization server is configured to bind the client certificate with the issued access token, Kong Gateway can validate the access token using mTLS proof of possession.",
           },
         ],
         release: {
@@ -5045,7 +5287,7 @@ export const profiles: ImplementationProfile[] = [
         },
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Primary documentation identifies the product, role and mechanism. Support is scoped to the behavior and conditions described by the publisher.",
         },
@@ -5234,12 +5476,15 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Cielo",
             title: "API PIX",
             url: "https://developercielo.github.io/manual/apipix",
+            section: "Comunicação e autenticação",
+            quote:
+              "A Cielo utiliza Client Certificate-Bound Access Tokens, vinculando o certificado do cliente ao access token emitido, conforme seção 3 da RFC 8705.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes this mechanism for its own service. The checked source does not establish traffic or independent interoperability.",
         },
@@ -5276,7 +5521,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "url-elicitation",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "MCP URL-mode elicitation for a tool call that needs an out-of-band user interaction. The flow illustrates 2026-07-28 multi-round-trip requests. Earlier server-initiated URL requests are labeled separately.",
     genericParties: ["third"],
@@ -5305,11 +5550,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Multi-round-trip requests",
             url: "https://py.sdk.modelcontextprotocol.io/handlers/multi-round-trip/",
             publisher: "MCP Python SDK project",
+            section: "A 2026-07-28 result",
+            quote:
+              "URL-mode elicitation rides this exact mechanism on a 2026 connection.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5336,11 +5584,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Connect Claude Code to tools via MCP",
             url: "https://code.claude.com/docs/en/mcp",
             publisher: "Anthropic",
+            section: "Respond to MCP elicitation requests",
+            quote:
+              "Claude Code asks whether to open a link in your browser. Servers use this mode for a flow that finishes outside the terminal, such as sign-in.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5367,11 +5618,15 @@ export const profiles: ImplementationProfile[] = [
             title: "Use elicitation with your AgentCore gateway",
             url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-mcp-elicitation.html",
             publisher: "Amazon Web Services",
+            section:
+              "Securing the request state (version 2026-07-28 and later)",
+            quote:
+              "Securing that value is a shared responsibility: the gateway authorizes and forwards it without storing it, while your MCP server target must validate it and prevent one user from replaying another user’s request state.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5400,11 +5655,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://developers.cloudflare.com/changelog/post/2026-07-13-mcp-client-elicitation/",
             publisher: "Cloudflare",
             publishedOn: "2026-07-13",
+            section: "Agents can respond to MCP elicitation requests",
+            quote:
+              "Connections advertise only the modes with configured handlers. An Agent without handlers advertises no elicitation capability, which lets the server use its fallback.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5528,7 +5786,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "aauth",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "AAuth Internet-Draft -11 Person Server authorization. Record demonstrable parts of the signed request, person-token, resource-token and auth-token path. Separate adjacent access modes and generic HTTP message signatures.",
     searchNote:
@@ -5556,17 +5814,23 @@ export const profiles: ImplementationProfile[] = [
             title: "AAuth SDK for .NET",
             url: "https://github.com/aauth-dev/dotnet-samples",
             publisher: "AAuth .NET SDK project",
+            section: "Three-Party Flow (Agent → Resource → Person Server)",
+            quote:
+              "The resource first asks for a person token, then issues a resource token bound to that presented person token, and the agent exchanges both at the Person Server",
           },
           {
             title: "AAuth Protocol -11, section 16",
             url: "https://www.ietf.org/archive/id/draft-hardt-oauth-aauth-protocol-11.html#section-16",
             publisher: "Dick Hardt, IETF Internet-Draft",
             publishedOn: "2026-09-25",
+            section: "16. Implementation Status",
+            quote:
+              "Coverage: SDK spanning the access modes, the three-party challenge/exchange flow (autonomous and deferred consent), signature verification middleware, resource and auth token builders, and JWKS/metadata discovery, plus Blazor sample apps. Level of maturity: exploratory.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5593,17 +5857,23 @@ export const profiles: ImplementationProfile[] = [
             title: "@aauth/resource token verifier at 9002b28",
             url: "https://raw.githubusercontent.com/aauth-dev/packages-js/9002b289db6fe9614831fe734d142c119139463b/resource/src/verify-token.ts",
             publisher: "Hellō",
+            section: "verifyToken (Main function)",
+            quote:
+              "3. Key binding: cnf.jwk MUST be the key that signed the HTTP request.",
           },
           {
             title: "AAuth Protocol -11, section 16",
             url: "https://www.ietf.org/archive/id/draft-hardt-oauth-aauth-protocol-11.html#section-16",
             publisher: "Dick Hardt, IETF Internet-Draft",
             publishedOn: "2026-09-25",
+            section: "16. Implementation Status",
+            quote:
+              "Organization: Hellō. Coverage: agent token issuance, HTTP Message Signatures, resource token exchange, PS token endpoint. Level of maturity: exploratory.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5787,7 +6057,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "wimse-workload-tokens",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Workload Identity Token (workload credentials draft -03) with a Workload Proof Token (draft -02). Issuance and propagation are recorded as separate components from proof generation and verification.",
     searchNote:
@@ -5815,16 +6085,22 @@ export const profiles: ImplementationProfile[] = [
             title: "wimsey README",
             url: "https://github.com/kanywst/wimsey",
             publisher: "wimsey project",
+            section: "Quick start",
+            quote:
+              "Prove possession with a WPT, then verify the WIT and proof together.",
           },
           {
             title: "wimsey spec map",
             url: "https://github.com/kanywst/wimsey/blob/main/SPEC-MAP.md",
             publisher: "wimsey project",
+            section: "Pinned revisions",
+            quote:
+              "`draft-ietf-wimse-wpt` | -02 | `wimsey-wpt` | Workload Proof Token (DPoP-style PoP)",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5853,16 +6129,22 @@ export const profiles: ImplementationProfile[] = [
             url: "https://raw.githubusercontent.com/spiffe/spire/v1.16.0/CHANGELOG.md",
             publisher: "SPIFFE project",
             publishedOn: "2026-11-05",
+            section: "[1.16.0] - 2026-11-05 › Added",
+            quote:
+              "Experimental WIT-SVID support, enabled with the `enable_wit_svids` server and agent options, including Workload API methods, a `spire-agent api fetch wit` CLI command, an agent-side WIT-SVID cache, per-entry and default (`default_wit_svid_ttl`) WIT-SVID TTLs",
           },
           {
             title: "SPIFFE Workload API, WIT-SVID profile",
             url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_workload_api/#7-wit-svid-profile",
             publisher: "SPIFFE project",
+            section: "7. WIT-SVID Profile",
+            quote:
+              "The WIT-SVID Profile of the SPIFFE Workload API provides a set of gRPC methods which can be used by workloads to retrieve WIT-SVIDs and their related trust bundles.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -5890,11 +6172,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Workload identity tokens (WIMSE)",
             url: "https://docs.solo.io/istio/1.30.x/ambient/security/wimse/",
             publisher: "Solo.io",
+            section: "Workload identity tokens (WIMSE)",
+            quote:
+              "When Solo Enterprise for agentgateway is deployed as a waypoint, it can extract workload identity claims from the mTLS peer certificate SAN, expose those claims in CEL policy expressions, and forward or exchange the WIT for outbound requests to external services.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -6062,7 +6347,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "web-bot-auth",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Web Bot Auth signing, key discovery and verification. The site illustrates IETF working-group draft -01, which uses a labeled Signature-Agent member with a direct key-set URL. Older profiles are identified by their documented wire form.",
     searchNote:
@@ -6091,11 +6376,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Web Bot Auth",
             url: "https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/",
             publisher: "Cloudflare",
+            section: "Web Bot Auth",
+            quote:
+              "Web Bot Auth is an authentication method that leverages cryptographic signatures in HTTP messages to verify that a request comes from an automated bot. Web Bot Auth is used as a verification method for verified bots and agents.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -6124,11 +6412,14 @@ export const profiles: ImplementationProfile[] = [
               "Google’s Guide to Authenticating Requests with Web Bot Auth (Experimental)",
             url: "https://developers.google.com/crawling/docs/crawlers-fetchers/web-bot-auth",
             publisher: "Google",
+            section: "Use a product or service that supports Web Both Auth",
+            quote:
+              "A subset of requests made by the Google-Agent are signed with Web Bot Auth; in these cases, they are authenticated as https://agent.bot.goog.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -6159,11 +6450,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://aws.amazon.com/blogs/security/authenticate-legitimate-ai-agent-traffic-with-aws-waf-bot-control/",
             publisher: "Amazon Web Services",
             publishedOn: "2026-07-14",
+            section: "Cryptographic bot verification",
+            quote:
+              "When a bot sends a request, it includes HTTP message signatures that AWS WAF validates at the edge using the AWS WAF Bot Control rule group (version 4.0 and later).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -6378,12 +6672,15 @@ export const profiles: ImplementationProfile[] = [
             title: "ChatGPT Work’s Cloud browser allowlisting",
             url: "https://help.openai.com/en/articles/11845367-chatgpt-works-cloud-browser-allowlisting",
             publisher: "OpenAI",
+            section: "Overview",
+            quote:
+              "ChatGPT Work's Cloud browser uses Web Bot Auth to sign outbound HTTP requests, allowing website operators to verify that requests genuinely originate from ChatGPT.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes how its own service signs requests.",
         },
@@ -6420,7 +6717,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "agent-payments",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "AP2 v0.2 autonomous payments using linked open and closed Checkout and Payment Mandates and signed receipts. Generic agent checkout, AP2 v0.1 and implementation intent are separate.",
     searchNote:
@@ -6448,23 +6745,33 @@ export const profiles: ImplementationProfile[] = [
             title: "AP2 Python SDK README at v0.2.0",
             url: "https://github.com/google-agentic-commerce/AP2/blob/v0.2.0/code/sdk/python/ap2/sdk/README.md",
             publisher: "AP2 project",
+            section: "AP2 Python SDK",
+            quote:
+              "Runtime for the Agent Payments Protocol: mandate issuance, presentation, verification, and receipts.",
           },
           {
             title: "AP2 v0.2.0 release",
             url: "https://github.com/google-agentic-commerce/AP2/releases/tag/v0.2.0",
             publisher: "AP2 project",
             publishedOn: "2026-04-28",
+            section: "v0.2.0",
+            quote:
+              "This is the second release of AP2. It focuses on providing Human Not Present flows.",
           },
           {
             title: "Google donates Agent Payments Protocol to FIDO Alliance",
             url: "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/",
             publisher: "Google",
             publishedOn: "2026-04-28",
+            section:
+              "We’re donating Agent Payments Protocol to the FIDO Alliance to support the future of secure, agentic payments.",
+            quote:
+              "Today on GitHub, we’re also releasing AP2 v.0.2, which introduces critical updates for autonomous transactions",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project or vendor documents this mechanism in the named role and scope.",
         },
@@ -6556,7 +6863,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "tool-call-authorization",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "AuthZEN evaluations for individual requests. A policy enforcement point maps the request and enforces the response. A policy decision point evaluates it. The draft COAZ mapping for MCP is a separate part of the flow.",
     genericParties: ["agent"],
@@ -6586,22 +6893,31 @@ export const profiles: ImplementationProfile[] = [
             title: "AuthZEN for MCP Gateway",
             url: "https://doc.traefik.io/traefik-hub/mcp-gateway/guides/authzen-mcp",
             publisher: "Traefik Labs",
+            section: "AuthZEN for MCP Gateway",
+            quote:
+              "The AuthZEN MCP middleware sends MCP requests to an external Policy Decision Point (PDP) over the AuthZEN protocol, and enforces its decision.",
           },
           {
             title: "AuthZEN for API Gateway",
             url: "https://doc.traefik.io/traefik-hub/api-gateway/reference/routing/http/middlewares/ref-authzen",
             publisher: "Traefik Labs",
+            section: "AuthZEN",
+            quote:
+              "The AuthZEN middleware sends each request to an external Policy Decision Point (PDP) over the AuthZEN protocol, and enforces its decision.",
           },
           {
             title: "Traefik Hub Gateway v3.21.0 release notes",
             url: "https://doc.traefik.io/traefik-hub/api-gateway/release-notes#gateway-v3210",
             publisher: "Traefik Labs",
             publishedOn: "2026-09-30",
+            section: "Gateway v3.21.0 › Graduated to GA",
+            quote:
+              "AuthZEN Authorization: Delegate access decisions to an external policy decision point, such as OpenFGA.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The MCP reference maps a transfer destination to the resource identifier. The HTTP reference maps a refund request. The release notes group both middleware surfaces under AuthZEN authorization.",
         },
@@ -6628,11 +6944,14 @@ export const profiles: ImplementationProfile[] = [
             title: "AuthZEN API (Experimental)",
             url: "https://openfga.dev/docs/interacting/authzen",
             publisher: "OpenFGA project",
+            section: "AuthZEN API (Experimental)",
+            quote:
+              "OpenFGA implements the AuthZEN specification, a standard API for authorization interoperability defined by the OpenID AuthZEN working group. This allows you to use OpenFGA as an AuthZEN-compliant Policy Decision Point (PDP).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project’s documentation links the final AuthZEN specification and explains how to enable its decision endpoints.",
         },
@@ -6660,11 +6979,15 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.keycloak.org/2026/07/keycloak-2670-released",
             publisher: "Keycloak project",
             publishedOn: "2026-07-09",
+            section:
+              "Standardized authorization decisions with AuthZen (experimental)",
+            quote:
+              "Keycloak now implements the AuthZEN Evaluation API as a PDP. Applications send evaluation requests describing a subject, resource, and action, and Keycloak returns a permit or deny decision based on its configured authorization policies.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The shipped release confirms the experimental policy decision role described in the earlier announcement.",
         },
@@ -6678,7 +7001,7 @@ export const profiles: ImplementationProfile[] = [
           stage: "unspecified",
           label: "Released image documented",
           detail:
-            "The setup reference uses image 0.4.2. It leaves the support stage unspecified.",
+            "The project names 0.4.1 as its current release. Its reference examples use 0.4.2 candidates, which it says behave as 0.4.1. It names no support stage.",
         },
         id: "authzen-id-partners",
         parties: ["tool"],
@@ -6691,16 +7014,22 @@ export const profiles: ImplementationProfile[] = [
             title: "Federated Enforcement: AuthZEN for AI agents",
             url: "https://federated-enforcement.idpartners.global/",
             publisher: "ID Partners",
+            section: "Authorise individual tool calls",
+            quote:
+              "The engine reads MCP requests and evaluates tool calls using their declared mappings.",
           },
           {
             title: "coaz-pep reference",
             url: "https://federated-enforcement.idpartners.global/docs/coaz-pep.html",
             publisher: "ID Partners",
+            section: "coaz-pep",
+            quote:
+              "coaz-pep is a Policy Enforcement Point (PEP): it requests access decisions from a Policy Decision Point (PDP).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project documents released artifacts, individual tool-call mappings and the limits of its demo setup.",
         },
@@ -6960,7 +7289,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "access-revocation",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Session Revoked events sent over Shared Signals Framework (SSF) using the Continuous Access Evaluation Profile (CAEP). Signal transmission, reception and enforcement are separate roles. OAuth token revocation at the issuer is covered separately in the guide.",
     genericParties: ["agent"],
@@ -6989,11 +7318,14 @@ export const profiles: ImplementationProfile[] = [
             title: "SSF Transmitter API",
             url: "https://developer.okta.com/docs/api/openapi/okta-management/management/tags/ssftransmitter",
             publisher: "Okta",
+            section: "SSF Transmitter",
+            quote:
+              "Okta's SSF Transmitter currently supports two types of CAEP events: Session Revoked and Credential Change.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The API reference names the Session Revoked event and the originating Okta event.",
         },
@@ -7021,11 +7353,15 @@ export const profiles: ImplementationProfile[] = [
               "Google Workspace Shared Signals Framework Integration Guide",
             url: "https://developers.google.com/workspace/shared-signals/api/ssf-api",
             publisher: "Google",
+            section:
+              "Google Workspace Shared Signals Framework (SSF) Integration Guide",
+            quote:
+              "Our initial release, now available in Closed Beta, supports the Session Revocation event signal.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The integration guide specifies the receiver’s initial event, sample payload and enrollment stage.",
         },
@@ -7052,11 +7388,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Shared Signals Framework",
             url: "https://documentation.sailpoint.com/saas/help/shared_signals/index.html",
             publisher: "SailPoint",
+            section: "Transmitter Streams Supported Events",
+            quote:
+              "SailPoint Shared Signals Framework Transmitters Streams support the following event types.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The supported-event lists include Session Revoked in both roles and the workflow section explains how receivers handle events.",
         },
@@ -7084,11 +7423,15 @@ export const profiles: ImplementationProfile[] = [
               "Configuring Omnissa Access as an Identity Provider for Apple Business Manager or Apple School Manager",
             url: "https://docs.omnissa.com/AccessABM/ConfigureAccessABMintegration/",
             publisher: "Omnissa",
+            section:
+              "Step 3: Configure the Omnissa Security Events Service to transmit security events to Apple",
+            quote:
+              "These events correspond to the CAEP Session Revoked and Credential Change events respectively in the OpenID Shared Signals and Events Framework (SSF) standard.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The operator setup guide names the source events and their CAEP mapping and identifies Apple as the receiver.",
         },
@@ -7202,11 +7545,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://openid.net/top-firms-test-interoperability-of-final-ssf-and-caep/",
             publisher: "OpenID Foundation",
             publishedOn: "2025-10-30",
+            section: "Interoperability results",
+            quote:
+              "A green check indicates that an implementation successfully passed the test criteria for that function (Transmitter or Receiver).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The event organizer’s table reports role-specific test outcomes. The count uses implementation rows and the underlying exercise spans three days.",
         },
@@ -7239,7 +7585,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "biscuit-delegation",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "Biscuit authorization tokens that holders can narrow offline by appending checks, with the receiving service verifying the token and applying those checks.",
     searchNote:
@@ -7267,16 +7613,22 @@ export const profiles: ImplementationProfile[] = [
             title: "biscuit-auth 6.0.0 crate documentation",
             url: "https://docs.rs/crate/biscuit-auth/6.0.0",
             publisher: "Eclipse Biscuit project",
+            section: "Usage",
+            quote:
+              "In this example we will see how we can create a token, add some checks, serialize and deserialize a token, append more checks, and validate those checks in the context of a request:",
           },
           {
             title: "biscuit-auth 6.0.0 release",
             url: "https://github.com/eclipse-biscuit/biscuit-rust/releases/tag/biscuit-auth-6.0.0",
             publisher: "Eclipse Biscuit project",
+            section: "biscuit-auth-6.0.0",
+            quote:
+              "For clarity, beta releases items from the changelogs have been merged into a single entry",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The Rust project’s example shows both the appended block and request-time authorization.",
         },
@@ -7305,21 +7657,28 @@ export const profiles: ImplementationProfile[] = [
             title: "Agent Mesh architecture and delegation examples",
             url: "https://google.github.io/agentmesh/",
             publisher: "Agent Mesh project",
+            section: "Identity & Policy",
+            quote:
+              "Verifies OIDC or bootstrap tokens, compiles Datalog policies, and signs short-lived Biscuit credentials.",
           },
           {
             title: "Agent Mesh repository README",
             url: "https://raw.githubusercontent.com/google/agentmesh/main/README.md",
             publisher: "Agent Mesh project",
+            section: "Status",
+            quote: "Agent Mesh is pre-1.0.",
           },
           {
             title: "Agent Mesh Go dependencies",
             url: "https://raw.githubusercontent.com/google/agentmesh/main/go.mod",
             publisher: "Agent Mesh project",
+            section: "require",
+            quote: "github.com/eclipse-biscuit/biscuit-go/v2 v2.2.2",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project documents offline attenuation for sub-agents, verification at the node and a Biscuit Go dependency.",
         },
@@ -7540,11 +7899,14 @@ export const profiles: ImplementationProfile[] = [
             url: "https://clever-cloud.com/blog/engineering/2021/04/12/introduction-to-biscuit/",
             publisher: "Clever Cloud",
             publishedOn: "2021-04-12",
+            section: "Example",
+            quote:
+              "Each new instance of the agent gets a new token derived from the original one, restricted to listening on its own topic (the topic name is a UUID).",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The operator describes actual internal use, including how it attenuated a token and how the Pulsar plugin checks the request.",
         },
@@ -7565,16 +7927,22 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.spaceandtime.io/blog/biscuit-authorization",
             publisher: "Space and Time",
             publishedOn: "2025-03-26",
+            section: "Biscuit Authorization Part I",
+            quote:
+              "On the Space and Time platform, Biscuits are used to authorize access to resources (e.g. tables).",
           },
           {
             title: "About Biscuit Authorization",
             url: "https://docs.spaceandtime.io/docs/biscuit-authorization",
             publisher: "Space and Time",
+            section: "Background",
+            quote:
+              "Public keys are provided when the user creates a resource (such as a table) and are used to validate biscuit signatures during authorization for requests against that resource.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The operator states that it uses Biscuit for resource authorization. Its guide describes signature verification and attenuation separately from that report.",
         },
@@ -7628,7 +7996,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "gnap",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "GNAP grant requests and continuation, plus the resource server’s token checks. Implementations may cover a particular profile or part of RFC 9635. RFC 9767 resource-server capabilities need separate evidence.",
     searchNote:
@@ -7658,11 +8026,14 @@ export const profiles: ImplementationProfile[] = [
             title: "SUNET Auth Server README",
             url: "https://raw.githubusercontent.com/SUNET/sunet-auth-server/main/README.md",
             publisher: "SUNET",
+            section: "Overview",
+            quote:
+              "SUNET Auth Server is an authentication server that implements the GNAP protocol (RFC 9635), allowing users to request JWT access tokens using various authentication methods including mutual TLS, JWKs, and SAML2.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The project documents the endpoints and known limitations of the server. Repository readiness wording alone does not establish a live deployment.",
         },
@@ -7690,21 +8061,29 @@ export const profiles: ImplementationProfile[] = [
             title: "Open Payments in Rafiki",
             url: "https://rafiki.dev/overview/concepts/open-payments/",
             publisher: "Interledger Foundation",
+            section: "Rafiki’s auth service",
+            quote:
+              "Rafiki’s auth service is a reference implementation of an opinionated Open Payments authorization server.",
           },
           {
             title: "Rafiki auth service",
             url: "https://rafiki.dev/integration/deployment/services/auth-service/",
             publisher: "Interledger Foundation",
+            section: "Token introspection",
+            quote:
+              "The token-introspection package is a client library for making GNAP token introspection requests to an authorization server.",
           },
           {
             title: "Rafiki releases",
             url: "https://github.com/interledger/rafiki/releases",
             publisher: "Interledger Foundation",
+            section: "Releases",
+            quote: "v2.4.2-beta",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The auth service guide names grants, continuation and the library used by the resource-server side. Release tags provide the beta wording.",
         },
@@ -7731,16 +8110,22 @@ export const profiles: ImplementationProfile[] = [
             title: "Grant negotiation and authorization",
             url: "https://openpayments.dev/identity/grants/",
             publisher: "Open Payments project",
+            section: "Grant negotiation and authorization",
+            quote:
+              "Open Payments leverages the Grant Negotiation and Authorization Protocol (GNAP) as the mechanism by which the piece of software, known as a client instance (or client for short), is delegated authorization to use the Open Payments APIs to interface with supported accounts.",
           },
           {
             title: "Continue a grant request",
             url: "https://openpayments.dev/sdk/grant-continue/",
             publisher: "Open Payments project",
+            section: "Continue a grant request",
+            quote:
+              "The client must send a continuation request containing the reference back to the auth server to obtain an access token.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The Open Payments grant documentation names GNAP. The SDK guide shows the actual JavaScript continuation call and its arguments.",
         },
@@ -7863,21 +8248,29 @@ export const profiles: ImplementationProfile[] = [
             url: "https://community.interledger.org/chiara/community-call-explained-3oh5",
             publisher: "Interledger Foundation",
             publishedOn: "2024-05-21",
+            section: "Next, we had the latest on GateHub:",
+            quote:
+              "Enej announced that they successfully launched open payments for the general public.",
           },
           {
             title: "Open Payments Availability Report",
             url: "https://interledger.github.io/reports/availability",
             publisher: "Interledger Foundation",
+            section: "Financial Service Providers",
+            quote: "GateHub Ltd 🇪🇺 EU active wallet provider EUR, USD",
           },
           {
             title: "Grant negotiation and authorization",
             url: "https://openpayments.dev/identity/grants/",
             publisher: "Open Payments project",
+            section: "Grant negotiation and authorization",
+            quote:
+              "Open Payments uses the Grant Negotiation and Authorization Protocol (GNAP) to facilitate this process, allowing clients to securely interact with the API.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The Foundation relays the operator’s public launch statement and tracks current service availability. The profile documentation establishes Open Payments’ GNAP basis.",
         },
@@ -7918,7 +8311,7 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "credential-broker",
-    reviewedOn: "2026-11-14",
+    reviewedOn: "2026-11-19",
     scope:
       "An intermediary holds the upstream secret outside the agent’s execution environment and attaches it only to selected outbound requests. The intermediary can be a sandbox egress proxy or a service that brokers a specific API.",
     genericParties: ["agent", "api"],
@@ -7947,11 +8340,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Authenticate with vaults",
             url: "https://platform.claude.com/docs/en/managed-agents/vaults",
             publisher: "Anthropic",
+            section: "Add a credential",
+            quote:
+              "When the agent initiates an outbound request, the opaque placeholder is substituted with the real secret at egress.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The beta reference documents placeholders, outbound host restrictions, injection locations and unsupported cases.",
         },
@@ -7972,17 +8368,20 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "The host-side proxy finds the credential for a matching service and overwrites the outbound authentication header. The agent sees a sentinel or placeholder.",
         limits:
-          "This entry covers proxy-managed local credentials. A kit can opt into OAuth token passthrough. Custom placeholder replacement applies to headers.",
+          "This entry covers proxy-managed local credentials. A kit can opt into OAuth token passthrough. Custom placeholder replacement applies to headers, and Docker marks custom secrets experimental.",
         sources: [
           {
             title: "Manage credentials in local Docker Sandboxes",
             url: "https://docs.docker.com/ai/sandboxes/configuration/credentials/",
             publisher: "Docker",
+            section: "Manage credentials",
+            quote:
+              "An HTTP/HTTPS proxy on your host intercepts outbound requests from the sandbox, looks up the matching credential on the host, and overwrites the auth header before forwarding.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The local credential guide specifies host-side interception and which modes can pass a real credential through.",
         },
@@ -8009,11 +8408,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Sandbox firewall",
             url: "https://vercel.com/docs/sandbox/concepts/firewall",
             publisher: "Vercel",
+            section: "Credentials brokering",
+            quote:
+              "Credentials brokering injects credentials into egressing traffic. The secrets never enter the sandbox, so code running inside it cannot exfiltrate them.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The firewall reference documents header transformation, request matchers and traffic that bypasses credential injection.",
         },
@@ -8040,11 +8442,14 @@ export const profiles: ImplementationProfile[] = [
             title: "Call an authenticated API from a sandbox",
             url: "https://developers.cloudflare.com/sandbox/network/call-an-authenticated-api/",
             publisher: "Cloudflare",
+            section: "Call the API from a Container",
+            quote:
+              "The Durable Object intercepts HTTPS requests to that hostname and delivers them to an entrypoint in your Worker, which adds the token.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The current integration guide gives separate Container and Dynamic Worker paths, both with the credential held by the host Worker.",
         },
@@ -8172,11 +8577,14 @@ export const profiles: ImplementationProfile[] = [
             title: "We Lied to Our Claude Code Agent (to Make it Safe)",
             url: "https://listenlabs.ai/blog/we-lied-to-our-claude-code-agent",
             publisher: "Listen Labs",
+            section: "Step 2: The API Key Illusion",
+            quote:
+              "We solve this by offloading the API key storage to a proxy.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The engineering account describes its deployed architecture, the restricted network path and the upstream key swap.",
         },
@@ -8197,17 +8605,24 @@ export const profiles: ImplementationProfile[] = [
             title: "Postman Passport Case Study",
             url: "https://www.postman.com/customer-stories/postman-passport/",
             publisher: "Postman",
+            section: "Passport",
+            quote:
+              "A lightweight Passport daemon on the developers' laptop forwards calls to the Passport proxy.",
           },
           {
-            title: "How Postman Ended Credential Sprawl with Passport",
+            title:
+              "Enterprises: Stop Handing Out API Keys! (How Postman Ended Credential Sprawl with Passport)",
             url: "https://blog.postman.com/credential-sprawl/",
             publisher: "Postman",
             publishedOn: "2026-10-06",
+            section: "Transformational Advancements",
+            quote:
+              "By deploying Passport internally, we’ve been able to move secrets sprawl from a detective control to a preventative while reducing the blast radius of humans and agents by controlling API access per credential.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "Postman’s account describes its own rollout, including actual daemon deployment and call-time credentials kept on the proxy side.",
         },
