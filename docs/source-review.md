@@ -85,7 +85,7 @@ Also report:
 
 ### Other drafts and versioned specifications
 
-Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `mcp-dpop`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage. For `mcp-dpop`, whether SEP-1932 or ext-auth pull request 38 has merged, and whether the MCP TypeScript SDK's server package now checks proofs: the DPoP page's note says it does not.
+Entries that are neither IETF documents nor finished: `coaz-framework`, `coaz-mcp`, `authzen-access-request`, `authzen-obligations`, `mcp-dpop`, `ap2`, `verifiable-intent`, `acp-commerce`, `visa-tap`. Check the linked `url` for a new version, a change of maintainer or standards body, and a change of stage. For `mcp-dpop`, whether SEP-1932 or ext-auth pull request 38 has merged, and whether the MCP TypeScript SDK's server package now checks proofs: the DPoP page's note says it does not.
 
 And the specifications that publish dated or numbered revisions:
 
@@ -153,6 +153,8 @@ Statements about the future, or about a process that was unfinished at the last 
 | MCP: the next release is targeted for March 30, 2027                                                                                      | `standards.ts` (`mcp-authorization`)                                                  |
 | MCP: Dynamic Client Registration may be removed in the first revision released on or after July 28, 2027                                  | `standards.ts` (`rfc7591`)                                                            |
 | MCP elicitation is still marked as subject to change                                                                                      | `standards.ts` (`mcp-elicitation`); `flows/url-elicitation.ts` (cautions)             |
+| JWT best-practices update (rfc8725bis): approved, in the RFC Editor queue; no RFC number yet                                              | `standards.ts` (`rfc7519`)                                                            |
+| A2A: a 1.1.0 release candidate is tagged; the published specification is 1.0.1                                                            | `standards.ts` (`a2a`)                                                                |
 | Kubernetes v1.38 is planned for December; v1.37 is the current stable release; v1.35 to v1.37 are the maintained releases                 | `deployments/kubernetes.mdx`                                                          |
 | WIT-SVID is incubating; SPIRE's support is experimental, behind a flag                                                                    | `standards.ts` (`spiffe`, `spire`); `flows/wimse-workload-tokens.ts` (notes)          |
 | Agent Sandbox is at version 1.0 with a `v1beta1` API                                                                                      | `standards.ts` (`k8s-agent-sandbox`); `deployments/kubernetes.mdx`                    |
