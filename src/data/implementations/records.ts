@@ -2901,17 +2901,23 @@ export const profiles: ImplementationProfile[] = [
             publisher: "eBay",
             title: "Authorization",
             url: "https://developer.ebay.com/develop/guides/sell/authorization",
+            section: "Minting access tokens",
+            quote:
+              "Client credentials grant flow mints a new Application access token that you can use to access the resources owned by the application.",
           },
           {
             publisher: "eBay",
             title: "Browse API",
             url: "https://developer.ebay.com/develop/api/buy/browse_api",
+            section: "Browse API",
+            quote:
+              "All methods in the Browse API require an Application access token, which is obtained using the client credentials grant flow.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator documents the mechanism for its own service. Usage and interoperability were not independently tested.",
         },
@@ -3754,11 +3760,15 @@ export const profiles: ImplementationProfile[] = [
             url: "https://www.icabanken.se/open-banking/latest-news-open-banking/",
             publisher: "ICA Banken Open Banking Team",
             publishedOn: "2024-05-31",
+            section:
+              "Client initiated backchannel authentication flow (Decoupled) available from 2024-05-30",
+            quote:
+              "ICA Banken would like to inform that from the 2024-05-30 PSU authentication using SCA method decoupled will be available in our PSD2 APIs.",
           },
         ],
         review: {
           state: "accepted",
-          checkedOn: "2026-11-12",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes its own arrangement. The account was not tested independently.",
         },
@@ -6662,12 +6672,15 @@ export const profiles: ImplementationProfile[] = [
             title: "ChatGPT Work’s Cloud browser allowlisting",
             url: "https://help.openai.com/en/articles/11845367-chatgpt-works-cloud-browser-allowlisting",
             publisher: "OpenAI",
+            section: "Overview",
+            quote:
+              "ChatGPT Work's Cloud browser uses Web Bot Auth to sign outbound HTTP requests, allowing website operators to verify that requests genuinely originate from ChatGPT.",
           },
         ],
         attribution: "operator-report",
         review: {
           state: "accepted",
-          checkedOn: "2026-11-13",
+          checkedOn: "2026-11-19",
           rationale:
             "The named operator describes how its own service signs requests.",
         },
