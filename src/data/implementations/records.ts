@@ -918,7 +918,7 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "Documents protected-resource metadata discovery and Client ID Metadata Documents, alongside preconfigured client credentials and dynamic-registration compatibility.",
         limits:
-          "The cited sections do not name a target MCP revision. This claim does not cover other Claude products or every requirement of the illustrated revision.",
+          "The authentication sections name no MCP revision. The page says Claude Code’s v2 client runtime adds revision 2026-07-28, used from v2.1.232 in sessions that fetch feature flags and by default from v2.1.274 in others. This claim does not cover other Claude products or every requirement of the illustrated revision.",
         sources: [
           {
             title: "Connect Claude Code to tools via MCP",
@@ -1159,6 +1159,7 @@ export const profiles: ImplementationProfile[] = [
         id: "mcp-stripe",
         summary:
           "Stripe documents OAuth consent for access to live-mode Stripe accounts and sandboxes through its hosted MCP server.",
+        qualification: "Stripe labels its MCP server a public preview.",
         limits:
           "An operator-documented service. This review did not test the OAuth exchange, verify every specification requirement, or establish a launch date or customer count.",
         sources: [
@@ -2942,7 +2943,7 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "Exchanges an upstream user access token for a new scoped downstream token within one custom authorization server or across trusted custom servers in the same tenant.",
         limits:
-          "The example uses audience and scope. It does not show an actor token or establish the illustrated act claim. The release notes mark GA in Production without giving a production rollout day.",
+          "The example uses audience and scope and sends no actor token. The guide documents the act claim the issued token carries, naming the service app that requested the exchange, with an earlier actor nested under act.act, up to five. The release notes mark GA in Production without giving a production rollout day.",
         sources: [
           {
             publisher: "Okta",
@@ -4991,8 +4992,10 @@ export const profiles: ImplementationProfile[] = [
         role: "Authorization server",
         summary:
           "Documents binding an access token to the TLS client certificate and putting its SHA-256 thumbprint into the confirmation claim.",
+        qualification:
+          "Part of the Enterprise (legacy), Standard, Advanced and Custom editions.",
         limits:
-          "An API still has to enforce the binding. The setup guide shows the client presenting the certificate to the token endpoint and to the API. It does not establish a deployment or release stage.",
+          "An API still has to enforce the binding: the client calls it with the same certificate, and the API compares the certificate’s thumbprint with the cnf claim. The setup guide shows the certificate presented to IdentityServer and links a sample for the API call. It does not establish a deployment or release stage.",
         sources: [
           {
             publisher: "Duende Software",
@@ -6678,7 +6681,7 @@ export const profiles: ImplementationProfile[] = [
           stage: "unspecified",
           label: "Released image documented",
           detail:
-            "The setup reference uses image 0.4.2. It leaves the support stage unspecified.",
+            "The project names 0.4.1 as its current release. Its reference examples use 0.4.2 candidates, which it says behave as 0.4.1. It names no support stage.",
         },
         id: "authzen-id-partners",
         parties: ["tool"],
@@ -7972,7 +7975,7 @@ export const profiles: ImplementationProfile[] = [
         summary:
           "The host-side proxy finds the credential for a matching service and overwrites the outbound authentication header. The agent sees a sentinel or placeholder.",
         limits:
-          "This entry covers proxy-managed local credentials. A kit can opt into OAuth token passthrough. Custom placeholder replacement applies to headers.",
+          "This entry covers proxy-managed local credentials. A kit can opt into OAuth token passthrough. Custom placeholder replacement applies to headers, and Docker marks custom secrets experimental.",
         sources: [
           {
             title: "Manage credentials in local Docker Sandboxes",
@@ -8199,7 +8202,8 @@ export const profiles: ImplementationProfile[] = [
             publisher: "Postman",
           },
           {
-            title: "How Postman Ended Credential Sprawl with Passport",
+            title:
+              "Enterprises: Stop Handing Out API Keys! (How Postman Ended Credential Sprawl with Passport)",
             url: "https://blog.postman.com/credential-sprawl/",
             publisher: "Postman",
             publishedOn: "2026-10-06",
