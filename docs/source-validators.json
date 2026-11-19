@@ -51,6 +51,10 @@
     "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
   },
   "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/": {},
+  "https://blog.modelcontextprotocol.io/posts/mcp-release-cycle/": {
+    "etag": "W/\"6afbac13-8fb5\"",
+    "lastModified": "Tue, 17 Nov 2026 01:21:23 GMT"
+  },
   "https://blog.postman.com/credential-sprawl/": {},
   "https://blog.pypi.org/posts/2023-04-20-introducing-trusted-publishers/": {
     "etag": "\"fb7c29b8bdc5b2e4d9fa05b4b75f3968\"",
@@ -485,6 +489,7 @@
   "https://github.com/cloud-apim/otoroshi-biscuit-studio/blob/main/build.sbt": {},
   "https://github.com/cloudflare/workers-oauth-provider": {},
   "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems": {},
+  "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems/blob/main/whitepapers/agentic-identity-and-access-control.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/README.md": {},
   "https://github.com/dickhardt/AAuth/blob/e287b1e5d4616b61e5fcda1ac56b1be14f9d8d06/draft-hardt-oauth-aauth-protocol.md": {},
   "https://github.com/docker/cli/blob/master/internal/oauth/api/api.go": {},
@@ -632,6 +637,7 @@
   "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
     "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
   },
+  "https://modelcontextprotocol.io/specification/2026-07-28/deprecated": {},
   "https://openfga.dev/docs/interacting/authzen": {
     "lastModified": "Fri, 13 Nov 2026 04:57:40 GMT"
   },
@@ -760,6 +766,12 @@
   },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
     "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
+  },
+  "https://spiffe.io/docs/latest/spiffe-specs/spiffe_broker_api/": {
+    "etag": "W/\"3feaf01d53e603141fc91c48c08a9ede-ssl\""
+  },
+  "https://spiffe.io/docs/latest/spiffe-specs/spiffe_filesystem_delivery/": {
+    "etag": "W/\"aaaf33f61a05ce0fd5d1742e6e5aee98-ssl\""
   },
   "https://spiffe.io/docs/latest/spiffe-specs/spiffe_workload_api/": {
     "etag": "W/\"a5247b8f57a3aba440f010ab83f1b799-ssl\""

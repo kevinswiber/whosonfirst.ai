@@ -436,7 +436,15 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "rfc",
     detail:
-      "July 2015. Deprecated within MCP as of 2026-07-28, with removal possible from July 2027.",
+      "July 2015. Deprecated within MCP as of 2026-07-28. It may be removed in the first MCP revision released on or after July 28, 2027.",
+    related: [
+      {
+        name: "MCP deprecated features",
+        url: "https://modelcontextprotocol.io/specification/2026-07-28/deprecated",
+        kind: "source",
+        note: "The earliest removal of Dynamic Client Registration.",
+      },
+    ],
     topics: ["registration"],
     otherNames: ["DCR"],
     summary:
@@ -893,7 +901,21 @@ export const standards: Standard[] = [
     body: "CNCF",
     status: "final",
     detail:
-      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID (incubating), plus a Broker API and a filesystem delivery specification.",
+      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID, plus a Broker API and a filesystem delivery specification. All three are incubating.",
+    related: [
+      {
+        name: "SPIFFE Broker API",
+        url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_broker_api/",
+        kind: "source",
+        note: "Incubating.",
+      },
+      {
+        name: "SPIFFE Filesystem Delivery",
+        url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_filesystem_delivery/",
+        kind: "source",
+        note: "Incubating.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "Secure Production Identity Framework for Everyone: a URI naming scheme for workloads, short-lived identity documents, and a local API for obtaining them without a bootstrap secret.",
@@ -1416,7 +1438,15 @@ export const standards: Standard[] = [
     body: "MCP",
     status: "final",
     detail:
-      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is planned for March 2027. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
+      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
+    related: [
+      {
+        name: "A More Predictable Release Cycle for MCP",
+        url: "https://blog.modelcontextprotocol.io/posts/mcp-release-cycle/",
+        kind: "source",
+        note: "The next release date, published November 11, 2026.",
+      },
+    ],
     topics: ["agent-protocol", "discovery", "core"],
     summary:
       "A profile of OAuth 2.1 for HTTP transports. The MCP server is a resource server, discovered through protected resource metadata; clients identify themselves with Client ID Metadata Documents; tokens are bound to one server.",
@@ -2029,7 +2059,16 @@ export const standards: Standard[] = [
     ref: "CoSAI workstream 4 paper",
     body: "OASIS",
     status: "guidance",
-    detail: "Version 1.0, spring 2026, from the Coalition for Secure AI.",
+    detail:
+      "Version 1.0, approved on March 20, 2026, by the Coalition for Secure AI.",
+    related: [
+      {
+        name: "Agentic Identity and Access Management",
+        url: "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems/blob/main/whitepapers/agentic-identity-and-access-control.md",
+        kind: "source",
+        note: "The paper itself, with its approval date.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "Treats agents as a distinct identity class and recommends zero standing privilege and delegation tokens with explicit actor and subject.",

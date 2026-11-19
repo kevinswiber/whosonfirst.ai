@@ -150,8 +150,8 @@ Statements about the future, or about a process that was unfinished at the last 
 | Workload Authorization Grant: individual, not adopted; presented to WIMSE at IETF 127, no adoption decision recorded                      | `standards.ts` (`wag`); `flows/workload-identity-federation.ts` (notes)               |
 | RFC 9700: an update draft is in progress                                                                                                  | `standards.ts` (`rfc9700`)                                                            |
 | RFC 8693: no revision is in progress                                                                                                      | `standards.ts` (`rfc8693`)                                                            |
-| MCP: the next release is planned for March 2027                                                                                           | `standards.ts` (`mcp-authorization`)                                                  |
-| MCP: Dynamic Client Registration may be removed from July 2027                                                                            | `standards.ts` (`rfc7591`)                                                            |
+| MCP: the next release is targeted for March 30, 2027                                                                                      | `standards.ts` (`mcp-authorization`)                                                  |
+| MCP: Dynamic Client Registration may be removed in the first revision released on or after July 28, 2027                                  | `standards.ts` (`rfc7591`)                                                            |
 | MCP elicitation is still marked as subject to change                                                                                      | `standards.ts` (`mcp-elicitation`); `flows/url-elicitation.ts` (cautions)             |
 | Kubernetes v1.38 is planned for December; v1.37 is the current stable release; v1.35 to v1.37 are the maintained releases                 | `deployments/kubernetes.mdx`                                                          |
 | WIT-SVID is incubating; SPIRE's support is experimental, behind a flag                                                                    | `standards.ts` (`spiffe`, `spire`); `flows/wimse-workload-tokens.ts` (notes)          |
@@ -296,6 +296,7 @@ openid.net
 openid.github.io
 www.w3.org
 modelcontextprotocol.io
+blog.modelcontextprotocol.io
 a2a-protocol.org
 spiffe.io
 kubernetes.io
