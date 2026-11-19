@@ -925,12 +925,12 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, July 2026. WIMSE working group document. No WIMSE document is an RFC yet.",
+      "Revision -09, November 2026. WIMSE working group document. No WIMSE document is an RFC yet.",
     topics: ["workload"],
     summary:
       "Architecture and terminology for workload identity and for propagating security context between workloads.",
     agents:
-      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context.",
+      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context. Revision -09 adds that agents to be audited, revoked or governed separately should not share a workload identity.",
     url: draft("draft-ietf-wimse-arch"),
   },
   {
@@ -1005,7 +1005,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, October 2026. Submitted to the IESG for publication in October 2026.",
+      "Revision -08, October 2026. Submitted to the IESG for publication in October 2026, and in its area director’s evaluation since November.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "Workload-to-workload authentication using HTTP Message Signatures with the Workload Identity Token key. Responses can be signed too.",
@@ -1034,7 +1034,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, October 2026. Informational. Its IETF Last Call ends on November 13, 2026. It would be the first WIMSE RFC.",
+      "Revision -08, October 2026. Informational. Its IETF Last Call ended on November 13, 2026, and it now waits for its area director to put it before the IESG. It would be the first WIMSE RFC.",
     topics: ["workload", "guidance", "kubernetes"],
     summary:
       "A survey of how credentials reach workloads today without long-lived secrets: Kubernetes projected tokens, cloud metadata services, SPIFFE, CI/CD OIDC.",
