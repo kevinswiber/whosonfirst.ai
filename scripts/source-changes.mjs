@@ -15,7 +15,11 @@
 //
 // Node strips the types from standards.ts as it loads it.
 import { readFileSync, writeFileSync } from "node:fs";
-import { RECORDED as FILE, sources as readSources } from "./sources.mjs";
+import {
+  RECORDED as FILE,
+  ask as get,
+  sources as readSources,
+} from "./sources.mjs";
 
 const record = process.argv.includes("--record");
 // `--add` records only the sources the file does not have yet: for a link
@@ -37,12 +41,6 @@ const known = (() => {
 // its releases, as the review says.
 const NEVER_THE_SAME = new Set(["github.com"]);
 
-const get = (url, headers = {}) =>
-  fetch(url, {
-    headers,
-    redirect: "follow",
-    signal: AbortSignal.timeout(30000),
-  });
 const conditions = (v) => ({
   ...(v.etag ? { "if-none-match": v.etag } : {}),
   ...(v.lastModified ? { "if-modified-since": v.lastModified } : {}),

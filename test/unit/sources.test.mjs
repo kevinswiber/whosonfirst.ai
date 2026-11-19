@@ -1,11 +1,17 @@
 // Checks, without the network, that three lists of the site's sources agree:
 // the links in the data, the values recorded for them in
-// docs/source-validators.json, and what docs/source-review.md names.
+// docs/source-validators.json, and what docs/source-review.md names. And how a
+// source is asked for its page, against a server on this machine.
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
+import { createServer } from "node:http";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { RECORDED, sources as readSources } from "../../scripts/sources.mjs";
+import {
+  ask,
+  RECORDED,
+  sources as readSources,
+} from "../../scripts/sources.mjs";
 import { standards } from "../../src/data/standards.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
@@ -85,4 +91,27 @@ test("every file docs/source-review.md names exists", () => {
     [],
     "Correct the path, or remove the row if the file is gone",
   );
+});
+
+test("a source is asked for HTML, so a server that refuses a request naming no type still answers", async () => {
+  // Refuses, as Uber's blog does, a request that does not accept HTML, and
+  // answers 304 to one that names the value it gave.
+  const server = createServer((req, res) => {
+    if (!/text\/html/.test(req.headers.accept ?? ""))
+      return res.writeHead(406).end();
+    if (req.headers["if-none-match"] === '"v1"')
+      return res.writeHead(304).end();
+    res.writeHead(200, { etag: '"v1"' }).end("page");
+  });
+  await new Promise((done) => server.listen(0, "127.0.0.1", done));
+  try {
+    const page = `http://127.0.0.1:${server.address().port}/`;
+    const first = await ask(page);
+    assert.equal(first.status, 200);
+    assert.equal(first.headers.get("etag"), '"v1"');
+    const again = await ask(page, { "if-none-match": '"v1"' });
+    assert.equal(again.status, 304, "the value is asked with, Accept and all");
+  } finally {
+    server.close();
+  }
 });
