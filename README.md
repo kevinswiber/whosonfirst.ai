@@ -174,7 +174,7 @@ A reference is only worth having if it is right. In the tracker, IETF revision n
 
 ## About
 
-Written and maintained by [Kevin Swiber](https://www.linkedin.com/in/kevinswiber). The name is from Abbott and Costello’s routine, in which a man asks who is playing first base and never gets an answer he can use. Ask a production system which person an API call was made for, and which software made it, when an agent sat in between, and the conversation is often the same.
+The name is from Abbott and Costello’s routine, in which a man asks who is playing first base and never gets an answer he can use. Ask a production system which person an API call was made for, and which software made it, when an agent sat in between, and the conversation is often the same.
 
 The site is static. It sets no cookies and loads nothing from another origin, and every page reads correctly with JavaScript off.
 
