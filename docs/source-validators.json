@@ -88,9 +88,6 @@
     "lastModified": "Thu, 12 Nov 2026 08:08:03 GMT"
   },
   "https://d.spirl.com/mint/configuration/svid-issuance/wit-svid": {},
-  "https://datatracker.ietf.org/doc/agenda-127-wimse-sessa/doc.json": {
-    "etag": "W/\"bc9783c7c14e9c986dfa9c2eff63db3f\""
-  },
   "https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/doc.json": {
     "etag": "W/\"ee61fffff3b11b238faf42befba1ae03\""
   },
@@ -188,6 +185,9 @@
     "etag": "W/\"9eb9d93985fbb20a9d845f560dbfa336\""
   },
   "https://datatracker.ietf.org/doc/html/draft-agnihotri-oauth-agent-impl-status-02": {},
+  "https://datatracker.ietf.org/doc/minutes-127-wimse-202611182200/doc.json": {
+    "etag": "W/\"f98750ae7e91887a79796e354bef7974\""
+  },
   "https://datatracker.ietf.org/doc/minutes-interim-2026-wimse-02-202610071600/doc.json": {
     "etag": "W/\"968abf23aae52de43a61f742860de587\""
   },
