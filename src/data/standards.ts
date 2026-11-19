@@ -192,6 +192,12 @@ export const standards: Standard[] = [
         url: rfc(8725),
         kind: "updated-by",
       },
+      {
+        name: "JSON Web Token Best Current Practices, the update to RFC 8725",
+        url: draft("draft-ietf-oauth-rfc8725bis"),
+        kind: "updated-by",
+        note: "Approved, and in the RFC Editor queue at revision -10 since August 2026, with no RFC number yet. It updates RFC 7519 and obsoletes RFC 8725.",
+      },
     ],
     topics: ["core"],
     summary:
@@ -1555,13 +1561,19 @@ export const standards: Standard[] = [
     body: "Linux Foundation",
     status: "final",
     detail:
-      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A Linux Foundation project, and part of the Agentic AI Foundation.",
+      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A 1.1.0 release candidate was tagged on October 29, 2026; the published specification is still 1.0.1. A Linux Foundation project, and part of the Agentic AI Foundation.",
     related: [
       {
         name: "A2A repository README",
         url: "https://github.com/a2aproject/A2A/blob/main/README.md",
         kind: "source",
         note: "Names the project part of the Agentic AI Foundation.",
+      },
+      {
+        name: "A2A v1.1.0-rc",
+        url: "https://github.com/a2aproject/A2A/releases/tag/v1.1.0-rc",
+        kind: "source",
+        note: "The release candidate's tag, of October 29, 2026.",
       },
     ],
     topics: ["agent-protocol", "discovery"],
@@ -1719,6 +1731,51 @@ export const standards: Standard[] = [
       "Addresses the gap MCP itself leaves open: there is no per-tool permission model in the core specification.",
     url: "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0",
     related: [{ kind: "builds-on", entry: "coaz-framework" }],
+  },
+  {
+    id: "authzen-access-request",
+    name: "AuthZEN Access Request and Approval Profile",
+    ref: "OpenID AuthZEN Access Request and Approval Profile 1.0",
+    body: "OpenID Foundation",
+    status: "wg-draft",
+    detail:
+      "Working group draft. The Draft 1 document is dated November 6, 2026.",
+    topics: ["authorization", "human-in-the-loop"],
+    summary:
+      "Lets an enforcement point submit an access request after a denial the decision point marks requestable. A task handle tracks the approval workflow, and the request is evaluated again after approval. Until then the denial stays a denial.",
+    agents:
+      "Covers an agent denied a tool it has just found: it asks for access, keeps working, and is evaluated again once the request is approved.",
+    url: "https://openid.github.io/authzen/authzen-access-request-approval-profile-1_0.html",
+    related: [
+      { kind: "builds-on", entry: "authzen" },
+      {
+        kind: "source",
+        name: "AuthZEN working group specifications",
+        url: "https://openid.net/wg/authzen/specifications/",
+      },
+    ],
+  },
+  {
+    id: "authzen-obligations",
+    name: "AuthZEN Obligations Profile",
+    ref: "OpenID AuthZEN Profile for Obligations 1.0",
+    body: "OpenID Foundation",
+    status: "wg-draft",
+    detail: "Working group draft. The Draft 1 document is dated July 3, 2026.",
+    topics: ["authorization"],
+    summary:
+      "Lets a decision point attach mandatory actions to a decision, which the enforcement point must perform to honor it. Defines step-up, notification and session-termination obligations, and how the two sides agree on the ones they support.",
+    agents:
+      "A way for a policy decision to require more than yes or no, such as a step-up before an agent’s action goes ahead.",
+    url: "https://openid.github.io/authzen/authzen-obligations-profile-1_0.html",
+    related: [
+      { kind: "builds-on", entry: "authzen" },
+      {
+        kind: "source",
+        name: "AuthZEN working group specifications",
+        url: "https://openid.net/wg/authzen/specifications/",
+      },
+    ],
   },
 
   /* ───────────── Signals ───────────── */

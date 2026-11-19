@@ -5554,6 +5554,14 @@ export const profiles: ImplementationProfile[] = [
             quote:
               "URL-mode elicitation rides this exact mechanism on a 2026 connection.",
           },
+          {
+            title: "Elicitation",
+            url: "https://py.sdk.modelcontextprotocol.io/handlers/elicitation/",
+            publisher: "MCP Python SDK project",
+            section: "Send the user to a URL",
+            quote:
+              "means the user agreed to open the URL, not that they finished what's on the other side.",
+          },
         ],
         review: {
           state: "accepted",

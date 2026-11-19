@@ -1,7 +1,7 @@
 {
   "https://a2a-protocol.org/v1.0.1/specification/": {
-    "etag": "W/\"6af433d9-936ef\"",
-    "lastModified": "Wed, 11 Nov 2026 09:22:33 GMT"
+    "etag": "W/\"6afd7fd3-936ef\"",
+    "lastModified": "Wed, 18 Nov 2026 10:37:07 GMT"
   },
   "https://a2aproject.github.io/a2a-java/1_5_0_Final/authorization/": {
     "etag": "W/\"6af1e219-858a\"",
@@ -12,43 +12,44 @@
     "lastModified": "Mon, 09 Nov 2026 15:09:13 GMT"
   },
   "https://a2aproject.github.io/a2a-python/samples/": {
-    "etag": "W/\"6af5cc0a-2796\"",
-    "lastModified": "Thu, 12 Nov 2026 14:24:10 GMT"
+    "etag": "W/\"6afeca9c-2796\"",
+    "lastModified": "Thu, 19 Nov 2026 10:08:28 GMT"
   },
   "https://aaif.io/blog/what-we-learned-putting-a2a-into-production": {},
   "https://adk.dev/a2a/quickstart-consuming/": {
-    "etag": "W/\"6af60b1a-2806f\"",
-    "lastModified": "Thu, 12 Nov 2026 18:53:14 GMT"
+    "etag": "W/\"6aff50e3-2806f\""
   },
   "https://agenticcommerce.dev": {},
   "https://ap2-protocol.org": {
     "lastModified": "Tue, 28 Apr 2026 12:33:34 GMT"
   },
   "https://auth0.com/blog/auth0-auth-for-mcp-servers-generally-available/": {
-    "etag": "W/\"jfot1kxqxj5hrv\""
+    "etag": "W/\"5g5jmtsjk45cvc\""
   },
   "https://auth0.com/changelog": {
-    "etag": "W/\"15xl5t2tho12nv9t\""
+    "etag": "W/\"iqcbmbk56r2ods6\""
   },
   "https://auth0.com/docs/ai-agents-mcp/cross-app-access": {},
   "https://auth0.com/docs/get-started/auth0-overview/create-applications/register-applications-with-cimd": {},
   "https://auth0.com/docs/secure/sender-constraining/mtls-sender-constraining": {},
   "https://authdog.com/docs/authzen": {},
-  "https://aws.amazon.com/about-aws/whats-new/2024/11/aws-command-line-interface-pkce-single-sign-on": {},
+  "https://aws.amazon.com/about-aws/whats-new/2024/11/aws-command-line-interface-pkce-single-sign-on": {
+    "lastModified": "Wed, 18 Nov 2026 03:19:50 GMT"
+  },
   "https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-bedrock-agentcore-browser-web-bot-auth-preview": {
-    "lastModified": "Fri, 13 Nov 2026 04:13:33 GMT"
+    "lastModified": "Wed, 18 Nov 2026 03:19:50 GMT"
   },
   "https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-agentcore/": {
-    "lastModified": "Fri, 13 Nov 2026 04:13:34 GMT"
+    "lastModified": "Wed, 18 Nov 2026 03:19:50 GMT"
   },
   "https://aws.amazon.com/blogs/aws/simplify-access-to-external-services-using-aws-iam-outbound-identity-federation/": {
-    "lastModified": "Wed, 11 Nov 2026 02:27:31 GMT"
+    "lastModified": "Thu, 19 Nov 2026 04:45:07 GMT"
   },
   "https://aws.amazon.com/blogs/developer/aws-cli-adds-pkce-based-authorization-for-sso": {
-    "lastModified": "Wed, 11 Nov 2026 02:14:19 GMT"
+    "lastModified": "Thu, 19 Nov 2026 04:32:10 GMT"
   },
   "https://aws.amazon.com/blogs/security/authenticate-legitimate-ai-agent-traffic-with-aws-waf-bot-control/": {
-    "lastModified": "Wed, 11 Nov 2026 01:50:28 GMT"
+    "lastModified": "Thu, 19 Nov 2026 04:06:47 GMT"
   },
   "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/": {},
   "https://blog.modelcontextprotocol.io/posts/mcp-release-cycle/": {
@@ -57,39 +58,35 @@
   },
   "https://blog.postman.com/credential-sprawl/": {},
   "https://blog.pypi.org/posts/2023-04-20-introducing-trusted-publishers/": {
-    "etag": "\"fb7c29b8bdc5b2e4d9fa05b4b75f3968\"",
-    "lastModified": "Fri, 13 Nov 2026 16:18:23 GMT"
+    "etag": "\"8759bec41d652d5334dc85ccabb43d2e\"",
+    "lastModified": "Thu, 19 Nov 2026 16:55:28 GMT"
   },
   "https://chainguard.dev/unchained/the-end-of-github-pats-you-cant-leak-what-you-dont-have": {
-    "etag": "W/\"aa478657569c99a90735f24d8ea6145d\""
+    "etag": "W/\"173392eb57e58adac396703f1248cea1\""
   },
-  "https://claude.com/docs/connectors/building/enterprise-managed-auth": {
-    "lastModified": "Fri, 13 Nov 2026 02:34:04 GMT"
-  },
+  "https://claude.com/docs/connectors/building/enterprise-managed-auth": {},
   "https://clever-cloud.com/blog/engineering/2021/04/12/introduction-to-biscuit/": {},
   "https://cloud-apim.github.io/otoroshi-biscuit-studio/docs/overview": {
     "etag": "W/\"6adb3540-5fd4\"",
     "lastModified": "Fri, 23 Oct 2026 10:21:52 GMT"
   },
-  "https://code.claude.com/docs/en/mcp": {
-    "lastModified": "Fri, 13 Nov 2026 06:15:46 GMT"
-  },
+  "https://code.claude.com/docs/en/mcp": {},
   "https://code.visualstudio.com/api/extension-guides/ai/mcp": {},
   "https://community.atlassian.com/forums/Atlassian-Remote-MCP-Server/Now-GA-Connect-any-third-party-AI-agent-to-Rovo-with-A2A/ba-p/3274964": {},
   "https://community.interledger.org/chiara/community-call-explained-3oh5": {
-    "etag": "W/\"1daab4f9bac2a725a9d5afb5ed23d5cb\""
+    "etag": "W/\"bf7c8d293644eda06df8c8b71e7d14e3\""
   },
   "https://connect2id.com/products/nimbus-oauth-openid-connect-sdk/examples/oauth/dpop": {
-    "lastModified": "Thu, 12 Nov 2026 16:57:13 GMT"
+    "lastModified": "Mon, 16 Nov 2026 16:14:18 GMT"
   },
   "https://connect2id.com/products/nimbus-oauth-openid-connect-sdk/examples/openid-connect/ciba": {
-    "lastModified": "Thu, 12 Nov 2026 16:41:43 GMT"
+    "lastModified": "Mon, 16 Nov 2026 17:02:36 GMT"
   },
   "https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd": {},
   "https://curity.io/blog/curity-identity-server-11-4/": {},
   "https://curity.io/docs/identity-server/profiles/token-profile/clients/client-config/dpop/": {
-    "etag": "W/\"6af573e3-1291d6\"",
-    "lastModified": "Thu, 12 Nov 2026 08:08:03 GMT"
+    "etag": "W/\"6af7463a-1291d6\"",
+    "lastModified": "Fri, 13 Nov 2026 17:17:46 GMT"
   },
   "https://d.spirl.com/mint/configuration/svid-issuance/wit-svid": {},
   "https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/doc.json": {
@@ -131,14 +128,17 @@
   "https://datatracker.ietf.org/doc/draft-ietf-oauth-refresh-token-expiration/doc.json": {
     "etag": "W/\"41c5c8554750daf82ad0f52d68b9c389\""
   },
+  "https://datatracker.ietf.org/doc/draft-ietf-oauth-rfc8725bis/doc.json": {
+    "etag": "W/\"663963b6f00bc58aff97f9a720ef83cd\""
+  },
   "https://datatracker.ietf.org/doc/draft-ietf-oauth-sd-jwt-vc/doc.json": {
-    "etag": "W/\"66a77a9ca89391d407f07d2919b80d7a\""
+    "etag": "W/\"6d10c1e186c1c4027404b683ccd73887\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-oauth-spiffe-client-auth/doc.json": {
     "etag": "W/\"8e4bf150339eb030676f80bb9e6a9a26\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/doc.json": {
-    "etag": "W/\"199299e7c1ff21da3db31cf7e5b1970a\""
+    "etag": "W/\"16d366977204539cdfe07c8deaf404ee\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/doc.json": {
     "etag": "W/\"3fcf30b1843c5af96b1d53c828919df7\""
@@ -153,10 +153,10 @@
     "etag": "W/\"3cd299a0614dc6b1e0c959d6ce39554c\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-arch/doc.json": {
-    "etag": "W/\"6c92d9c3ffc9df83c244420c6fedff91\""
+    "etag": "W/\"46380f5d1c9afea8eb14dd187ecd1a06\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-http-signature/doc.json": {
-    "etag": "W/\"93c99516011fbd7657aa16c8e857b8cf\""
+    "etag": "W/\"e89f2c98b4776573439abd73336af796\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-identifier/doc.json": {
     "etag": "W/\"5a3fee4a423e0980d6be2eac0cf89d9a\""
@@ -168,7 +168,7 @@
     "etag": "W/\"e7fdb594baae693c1b0d2728b0fd2988\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-workload-identity-practices/doc.json": {
-    "etag": "W/\"ba5323ba6c2bde68a8348f2dfb658b90\""
+    "etag": "W/\"0985670efe817898a3f73936937cad14\""
   },
   "https://datatracker.ietf.org/doc/draft-ietf-wimse-wpt/doc.json": {
     "etag": "W/\"9f74feae3eb59962e04957e5f4bac99d\""
@@ -201,53 +201,55 @@
   "https://developer.atlassian.com/cloud/rovo-a2a/": {},
   "https://developer.atlassian.com/cloud/rovo-a2a/authentication/": {},
   "https://developer.bankid.no/bankid-with-biometrics/flows/ciba": {
-    "etag": "W/\"811668f5f7d06b4ff90d82301d11c4db\""
+    "etag": "W/\"a579e0bc761f9fe1314cef42925929a8\""
   },
   "https://developer.ebay.com/develop/api/buy/browse_api": {},
   "https://developer.ebay.com/develop/guides/sell/authorization": {},
   "https://developer.konghq.com/plugins/openid-connect/": {
-    "etag": "W/\"5306d2d88e9970f2f6bc46b44c4bedec-ssl\""
+    "etag": "W/\"54f9b76946704a7676d957264a13ab49-ssl\""
   },
   "https://developer.okta.com/docs/api/openapi/okta-management/management/tags/ssftransmitter": {},
   "https://developer.okta.com/docs/concepts/xaa/": {
-    "etag": "\"494dcdbaf641e52ffd1c9baf2cea872e\"",
-    "lastModified": "Fri, 13 Nov 2026 00:56:59 GMT"
+    "etag": "\"be817615f6742c054936fc8e0050f927\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:35 GMT"
   },
   "https://developer.okta.com/docs/guides/dpop/oktaresourceserver/main/": {
-    "etag": "\"4b61adf16a417420aad2003a699b47e2\"",
-    "lastModified": "Fri, 13 Nov 2026 16:52:57 GMT"
+    "etag": "\"72d58cb1cb8327ad686b5e546ca1f5ad\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:39 GMT"
   },
   "https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/": {
-    "etag": "\"ca1946b319ed83b103b7056e22beb435\"",
-    "lastModified": "Fri, 13 Nov 2026 00:57:03 GMT"
+    "etag": "\"a5ad13f43477d859d8a82210e72ded9d\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:40 GMT"
   },
   "https://developer.okta.com/docs/guides/set-up-token-exchange/main/": {
-    "etag": "\"583f61698c00175ee51833f42abdeaba\"",
-    "lastModified": "Fri, 13 Nov 2026 00:57:07 GMT"
+    "etag": "\"2375b8aad94d50c8d8eb95d2102af62f\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:44 GMT"
   },
   "https://developer.okta.com/docs/release-notes/2023/": {
-    "etag": "\"537d374cc7319db77ead5da9891d2901\"",
-    "lastModified": "Fri, 13 Nov 2026 00:57:09 GMT"
+    "etag": "\"4cff863b079d376c99a56307efeb136d\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:47 GMT"
   },
   "https://developer.okta.com/docs/release-notes/2024/": {
-    "etag": "\"cb53eb19a19d0ea567114c2be9f49800\"",
-    "lastModified": "Fri, 13 Nov 2026 16:53:05 GMT"
+    "etag": "\"15ccd7f4c49ed5c8a0bb1dfe8eda6df8\"",
+    "lastModified": "Thu, 19 Nov 2026 17:16:47 GMT"
   },
   "https://developer.squareup.com/blog/providing-mtls-identities-to-lambdas/": {
     "lastModified": "Wed, 28 May 2025 18:55:50 GMT"
   },
   "https://developer.vippsmobilepay.com/docs/APIs/login-api/api-guide/merchant-initiated-login-integration": {
-    "etag": "W/\"0x8DF4105D8745794\"",
-    "lastModified": "Thu, 12 Nov 2026 21:42:27 GMT"
+    "etag": "W/\"0x8DF4647C2211C5A\"",
+    "lastModified": "Thu, 19 Nov 2026 14:16:52 GMT"
   },
   "https://developercielo.github.io/manual/apipix": {
-    "etag": "W/\"6ae9f27b-17d5e\"",
-    "lastModified": "Tue, 03 Nov 2026 14:40:59 GMT"
+    "etag": "W/\"6ae9f27c-17d5e\"",
+    "lastModified": "Tue, 03 Nov 2026 14:41:00 GMT"
   },
   "https://developers.authlete.com/configuration-reference/tokens-and-claims/issuing-mutual-tls-certificate-bound-access-tokens": {
-    "lastModified": "Fri, 13 Nov 2026 02:10:42 GMT"
+    "lastModified": "Thu, 19 Nov 2026 15:28:14 GMT"
   },
-  "https://developers.authlete.com/protocols-and-flows/advanced-flows/oauth-2-0-step-up-authentication-challenge-protocol-rfc-9470": {},
+  "https://developers.authlete.com/protocols-and-flows/advanced-flows/oauth-2-0-step-up-authentication-challenge-protocol-rfc-9470": {
+    "lastModified": "Thu, 19 Nov 2026 15:28:14 GMT"
+  },
   "https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/": {},
   "https://developers.cloudflare.com/changelog/post/2026-07-13-mcp-client-elicitation/": {},
   "https://developers.cloudflare.com/sandbox/network/call-an-authenticated-api/": {},
@@ -262,21 +264,21 @@
     "etag": "W/\"4e836aae9fb7fc02f18463580b4d3831-ssl\""
   },
   "https://doc.traefik.io/traefik-hub/api-gateway/reference/routing/http/middlewares/ref-authzen": {
-    "lastModified": "Fri, 13 Nov 2026 03:08:34 GMT"
+    "lastModified": "Thu, 19 Nov 2026 16:37:10 GMT"
   },
   "https://doc.traefik.io/traefik-hub/api-gateway/release-notes": {
-    "lastModified": "Fri, 13 Nov 2026 03:08:34 GMT"
+    "lastModified": "Thu, 19 Nov 2026 16:37:10 GMT"
   },
   "https://doc.traefik.io/traefik-hub/mcp-gateway/guides/authzen-mcp": {
-    "lastModified": "Fri, 13 Nov 2026 03:08:34 GMT"
+    "lastModified": "Thu, 19 Nov 2026 16:37:09 GMT"
   },
   "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html": {
-    "etag": "\"gdo/i4b8FYBLQHovrSM016/ILfg=-gzip\"",
-    "lastModified": "Wed, 11 Nov 2026 23:44:14 GMT"
+    "etag": "\"+3FLjwyOuO82S1SKghjMg2KAA/g=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 17:57:13 GMT"
   },
   "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html": {
-    "etag": "\"9s+1ZRSiNIqLC/OImudbsRdvmaw=-gzip\"",
-    "lastModified": "Wed, 11 Nov 2026 23:44:13 GMT"
+    "etag": "\"PxRTcOkwMwNugaL9Fj5JDvRdjv0=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 17:57:14 GMT"
   },
   "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_outbound.html": {
     "etag": "\"6IH5jXDoUofmnonO3kBjSXAITM0=-gzip\"",
@@ -287,50 +289,45 @@
     "lastModified": "Thu, 19 Nov 2026 10:33:08 GMT"
   },
   "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html": {
-    "etag": "\"TEtdXWBsgrNeH7N/goRFY6WFAWw=-gzip\"",
-    "lastModified": "Wed, 11 Nov 2026 10:48:04 GMT"
+    "etag": "\"y195oeU5deK+95IYs4s1YDK0Ops=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 10:33:45 GMT"
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-web-bot-auth.html": {
-    "etag": "\"9Xrc062jPxzOchP31z0v6cL+50I=-gzip\"",
-    "lastModified": "Sat, 14 Nov 2026 01:15:01 GMT"
+    "etag": "\"lE/xGxw6/0FZm3axRrqa4RetANE=-gzip\""
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html": {
-    "etag": "\"d8UgoCG0aBGUTSOLU727QmtxRNA=-gzip\"",
-    "lastModified": "Sat, 14 Nov 2026 01:14:58 GMT"
+    "etag": "\"CABtV0xkd4UFQ7zMMd1GhJu7j8A=-gzip\""
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-mcp-elicitation.html": {
-    "etag": "\"CvXGFo1cgpqeR8DmFeNp/CkEgbE=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 05:01:15 GMT"
+    "etag": "\"yeYFUDoqgpD4bufmtJ6ckJ4wxgc=-gzip\""
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/on-behalf-of-token-exchange.html": {
     "etag": "\"eOgr3dEtZJqw9t6Il/18hlhhxZo=-gzip\"",
     "lastModified": "Fri, 13 Nov 2026 05:01:08 GMT"
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a-protocol-contract.html": {
-    "etag": "\"DlLfpdGCqniE6QYQi+qzMBUix7g=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 05:01:10 GMT"
+    "etag": "\"MtQzbZu6x/bC23MQMxANoS2BGug=-gzip\""
   },
   "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a.html": {
-    "etag": "\"Jc2lchANHUzVv2qOyUmQE99Zp4I=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 05:01:07 GMT"
+    "etag": "\"qM5b5AtFO63LvtI4SMyHGvpOkDA=-gzip\""
   },
   "https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html": {
-    "etag": "\"D8C8TP3M5YO0BJ/rNJzt82Mm5UQ=-gzip\"",
-    "lastModified": "Thu, 12 Nov 2026 21:49:14 GMT"
+    "etag": "\"z2bCpMIQ/MEKxWd94Jfz/EnVE+s=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 10:34:09 GMT"
   },
   "https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html": {
-    "etag": "\"5WRCLs1BKVSz1pUO/Cnov3rp7W4=-gzip\"",
-    "lastModified": "Fri, 13 Nov 2026 05:23:09 GMT"
+    "etag": "\"HVR7niJk6x9YPYPIsYAPjrXIASA=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 10:32:58 GMT"
   },
   "https://docs.aws.amazon.com/sdkref/latest/guide/feature-assume-role-credentials.html": {
-    "etag": "\"NI/dWztimiWvlea96kG8sgzj4nU=-gzip\"",
-    "lastModified": "Sat, 14 Nov 2026 01:15:50 GMT"
+    "etag": "\"81hqI71Q3I7YPIYzXgsRCaB+PuQ=-gzip\"",
+    "lastModified": "Thu, 19 Nov 2026 10:34:33 GMT"
   },
   "https://docs.cerbos.dev/cerbos/latest/api/index.html": {
-    "etag": "W/\"d772bf2f44279571c4cfb9df758f44b2-ssl\""
+    "etag": "W/\"4a6bae8df7f80a45608a62589b2baa5b-ssl\""
   },
   "https://docs.cerbos.dev/cerbos/latest/releases/v0.48.0": {
-    "etag": "W/\"b7b68b5486538c4bbc6f3027e6bcbffd-ssl\""
+    "etag": "W/\"0a7c76c911b9f96f2484a837646d103f-ssl\""
   },
   "https://docs.cloud.google.com/docs/authentication": {},
   "https://docs.cloud.google.com/docs/authentication/application-default-credentials": {},
@@ -339,19 +336,17 @@
   "https://docs.cloud.google.com/iam/docs/workload-identity-federation": {},
   "https://docs.cloud.google.com/iam/docs/workload-identity-federation-with-x509-certificates": {},
   "https://docs.digdir.no/docs/idporten/oidc/oidc_func_dpop": {
-    "etag": "W/\"6af71b38-946c\"",
-    "lastModified": "Fri, 13 Nov 2026 14:14:16 GMT"
+    "etag": "W/\"6afdc6d8-946c\"",
+    "lastModified": "Wed, 18 Nov 2026 15:40:08 GMT"
   },
   "https://docs.docker.com/ai/sandboxes/configuration/credentials/": {
-    "etag": "W/\"07ed8f67abb915827c3ae7489acb1eb4\"",
-    "lastModified": "Thu, 12 Nov 2026 18:57:47 GMT"
+    "etag": "W/\"ccccb4136384250045323e2efcc4e00f\""
   },
   "https://docs.docker.com/engine/release-notes/27/": {
-    "etag": "W/\"fcfb2b53286691cbd96cbb51296bb8a0\"",
-    "lastModified": "Fri, 13 Nov 2026 17:08:48 GMT"
+    "etag": "W/\"4f32873124c14aa8955f9b45834edfe6\""
   },
   "https://docs.docker.com/reference/cli/docker/login/": {
-    "etag": "W/\"f580b4849b26916fb23f7ed4af2ba35b\""
+    "etag": "W/\"0e2fd0c3eddc611c98d20cb5f526032a\""
   },
   "https://docs.duendesoftware.com/identityserver/apis/aspnetcore/confirmation/": {},
   "https://docs.duendesoftware.com/identityserver/overview/specs/": {},
@@ -362,15 +357,16 @@
   "https://docs.github.com/en/actions/concepts/security/openid-connect": {},
   "https://docs.github.com/en/actions/reference/security/oidc": {},
   "https://docs.jans.io/stable/janssen-server/auth-server/tokens/oauth-tx-tokens/": {
-    "etag": "W/\"6af7db0e-12c9a\""
+    "etag": "W/\"6aff0e96-131bd\"",
+    "lastModified": "Thu, 19 Nov 2026 14:58:30 GMT"
   },
   "https://docs.keycard.ai/sdk/agent-to-agent/": {
     "etag": "W/\"45510898f8adb951d71c23d45c158df3\"",
     "lastModified": "Fri, 13 Nov 2026 21:37:19 GMT"
   },
   "https://docs.npmjs.com/trusted-publishers": {
-    "etag": "W/\"6af523cd-976dd\"",
-    "lastModified": "Thu, 12 Nov 2026 02:26:21 GMT"
+    "etag": "W/\"6afe5e50-976dd\"",
+    "lastModified": "Thu, 19 Nov 2026 02:26:24 GMT"
   },
   "https://docs.omnissa.com/AccessABM/ConfigureAccessABMintegration/": {},
   "https://docs.pingidentity.com/pingauthorize/11.1/pingauthorize_policy_administration_guide/paz_step_up_auth.html": {
@@ -382,20 +378,19 @@
     "lastModified": "Tue, 10 Nov 2026 22:32:17 GMT"
   },
   "https://docs.pingidentity.com/pingone/authentication/p1_stepup_authentication_for_apis.html": {
-    "etag": "\"a462df18ebf05ee4c213e7a02c17bc8b\"",
-    "lastModified": "Thu, 12 Nov 2026 07:59:16 GMT"
+    "etag": "\"f6a76f06c3dfca559be81541054b244c\"",
+    "lastModified": "Thu, 19 Nov 2026 15:36:11 GMT"
   },
   "https://docs.pypi.org/trusted-publishers/": {
-    "etag": "\"3173f9a11f6177ff85322b227a0898aa\"",
-    "lastModified": "Fri, 13 Nov 2026 16:18:12 GMT"
+    "etag": "\"fd041917eaeff1e79522ceb44d92dfcc\"",
+    "lastModified": "Thu, 19 Nov 2026 16:55:25 GMT"
   },
   "https://docs.rs/crate/biscuit-auth/6.0.0": {},
   "https://docs.snowflake.com/en/user-guide/oauth-token-exchange": {
-    "etag": "\"7y36ip9wgr49ue\""
+    "etag": "\"1phv7gfr6849ue\""
   },
   "https://docs.solo.io/istio/1.30.x/ambient/security/wimse/": {
-    "etag": "\"8016c7ffb924d6b78c2779142e02a5ea813dba7bcf91db4fdb8c78114a24889e-br\"",
-    "lastModified": "Thu, 12 Nov 2026 21:53:40 GMT"
+    "etag": "\"54c9483b11ce35418d7df77fb5d7312fd26036b811a194a6e1e163dd82a27ed7\""
   },
   "https://docs.spaceandtime.io/docs/biscuit-authorization": {},
   "https://docs.spring.io/spring-authorization-server/reference/overview.html": {
@@ -405,30 +400,32 @@
     "lastModified": "Tue, 09 Jun 2026 17:20:11 GMT"
   },
   "https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/server/resource/authentication/DPoPAuthenticationProvider.html": {
-    "lastModified": "Thu, 12 Nov 2026 15:54:16 GMT"
+    "lastModified": "Wed, 18 Nov 2026 18:00:32 GMT"
   },
   "https://docs.spring.io/spring-security/reference/servlet/oauth2/authorization-server/protocol-endpoints.html": {
-    "lastModified": "Fri, 13 Nov 2026 13:31:23 GMT"
+    "lastModified": "Wed, 18 Nov 2026 18:00:29 GMT"
   },
   "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html": {
-    "lastModified": "Thu, 12 Nov 2026 15:54:10 GMT"
+    "lastModified": "Wed, 18 Nov 2026 18:00:29 GMT"
   },
   "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/client-authentication.html": {
-    "lastModified": "Fri, 13 Nov 2026 13:31:23 GMT"
+    "lastModified": "Wed, 18 Nov 2026 18:00:29 GMT"
   },
   "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/dpop-tokens.html": {
-    "lastModified": "Thu, 12 Nov 2026 15:54:10 GMT"
+    "lastModified": "Wed, 18 Nov 2026 18:00:29 GMT"
   },
   "https://docs.sprites.dev/concepts/connectors/": {},
   "https://docs.stacklok.com/toolhive/concepts/backend-auth": {
-    "etag": "W/\"addaa08e04997fcc9d0ba5aa1c8e0742\""
+    "etag": "W/\"756b715395739f96c2bcf9d0243db673\"",
+    "lastModified": "Thu, 19 Nov 2026 09:10:17 GMT"
   },
   "https://docs.stacklok.com/toolhive/concepts/embedded-auth-server": {
-    "etag": "W/\"bea1e242f34c695e463f15359d784ce3\""
+    "etag": "W/\"44d63d9c6a6b84ad44a09f31bc6eec2e\"",
+    "lastModified": "Thu, 19 Nov 2026 11:34:56 GMT"
   },
   "https://docs.stripe.com/mcp": {},
   "https://documentation.gravitee.io/apim/secure-and-expose-apis/plans/jwt": {
-    "etag": "W/\"1g6xhaf1hnfxoe\""
+    "etag": "W/\"al0exkfy5jg8rb\""
   },
   "https://documentation.gravitee.io/authorization-management/evaluate/ask-for-a-decision.md": {},
   "https://documentation.gravitee.io/authorization-management/evaluate/ask-for-a-decision/authzen-endpoint.md": {},
@@ -446,18 +443,18 @@
   "https://everruns.com/docs/changelog/2026-11-04-web-bot-auth-signing/": {},
   "https://everruns.com/docs/features/request-signing/": {},
   "https://federated-enforcement.idpartners.global/": {
-    "etag": "W/\"6af647b0-9fba\"",
-    "lastModified": "Thu, 12 Nov 2026 23:11:44 GMT"
+    "etag": "W/\"6af94f0b-a6ac\"",
+    "lastModified": "Sun, 15 Nov 2026 06:19:55 GMT"
   },
   "https://federated-enforcement.idpartners.global/docs/coaz-pep.html": {
-    "etag": "W/\"6af647bf-d6f4\"",
-    "lastModified": "Thu, 12 Nov 2026 23:11:59 GMT"
+    "etag": "W/\"6af9585b-de4c\"",
+    "lastModified": "Sun, 15 Nov 2026 06:59:39 GMT"
   },
   "https://fhir.epic.com/Documentation?docId=epic_as_client_oauth": {},
   "https://fhir.epic.com/Documentation?docId=oauth2&section=BackendOAuth2Guide": {},
   "https://fly.io/blog/tokenized-tokens/": {
-    "etag": "\"6af791b9-239c3\"",
-    "lastModified": "Fri, 13 Nov 2026 22:39:53 GMT"
+    "etag": "\"6afe6189-239c3\"",
+    "lastModified": "Thu, 19 Nov 2026 02:40:09 GMT"
   },
   "https://fly.io/connectors": {},
   "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/": {},
@@ -468,6 +465,7 @@
   "https://github.com/Infisical/agent-vault/blob/main/README.md": {},
   "https://github.com/TwigBush/TwigBush/blob/main/README.md": {},
   "https://github.com/a2aproject/A2A/blob/main/README.md": {},
+  "https://github.com/a2aproject/A2A/releases/tag/v1.1.0-rc": {},
   "https://github.com/a2aproject/a2a-python": {},
   "https://github.com/aauth-dev/aauth-go/blob/main/CHANGELOG.md": {},
   "https://github.com/aauth-dev/aauth-go/blob/main/README.md": {},
@@ -529,14 +527,13 @@
   "https://github.com/visa/trusted-agent-protocol": {},
   "https://github.com/x402-foundation/x402": {},
   "https://google.github.io/agentmesh/": {
-    "etag": "W/\"6ae9b476-57c6\"",
-    "lastModified": "Tue, 03 Nov 2026 10:16:22 GMT"
+    "etag": "W/\"6afc7a26-57c6\"",
+    "lastModified": "Tue, 17 Nov 2026 16:00:38 GMT"
   },
-  "https://goteleport.com/docs/machine-workload-identity/workload-identity/introduction/": {
-    "lastModified": "Fri, 13 Nov 2026 23:21:32 GMT"
-  },
+  "https://goteleport.com/docs/machine-workload-identity/workload-identity/introduction/": {},
   "https://help.okta.com/oie/en-us/content/topics/releasenotes/versions/release-prod-2026-09-0.htm": {
-    "etag": "W/\"9dddc3d4dccf1930f672335689633638\""
+    "etag": "W/\"c708d49f87399d3fcc0f9f115d0acf00\"",
+    "lastModified": "Thu, 19 Nov 2026 15:26:06 GMT"
   },
   "https://help.openai.com/en/articles/11845367-chatgpt-works-cloud-browser-allowlisting": {},
   "https://infisical.com/docs/documentation/platform/agent-vault/how-it-works": {},
@@ -546,45 +543,44 @@
     "lastModified": "Fri, 21 Aug 2026 19:33:07 GMT"
   },
   "https://istio.io/latest/docs/ops/integrations/spire/": {
-    "etag": "W/\"f9a76cb0f2f08595155cf1c9cd63347d-ssl\""
+    "etag": "W/\"6531ad65e25572879c73f350bed726a5-ssl\""
   },
   "https://kubernetes.io/docs/reference/access-authn-authz/authentication/": {
-    "etag": "W/\"e0b8312102c3511c6e3b8a7ab7138b96-ssl\""
+    "etag": "W/\"e997b66c3f21b24854017375c07c1f60-ssl\""
   },
   "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/": {
-    "etag": "W/\"3cab452dc184ccc32d8d5a5400dc203c-ssl\""
+    "etag": "W/\"82dd57d365b1c3e1de1b84a8a6139ad6-ssl\""
   },
   "https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/": {
-    "etag": "W/\"5461c606919461f81c038afe2586fb8c-ssl\""
+    "etag": "W/\"c779020dfaa60daf16356393f4fa6a3c-ssl\""
   },
   "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates-removed/": {
     "etag": "W/\"38ae15f69a6af1cbffd2e296d4ee4441-ssl\""
   },
   "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/": {
-    "etag": "W/\"c384019b7b35c6693499986ce179afe2-ssl\""
+    "etag": "W/\"421fe5eb4d571fa52563ab4aa51267cd-ssl\""
   },
   "https://learn.chatgpt.com/docs/extend/mcp": {
-    "etag": "W/\"b19aacfb842a5c6d525ddb753e10b68c\"",
-    "lastModified": "Sat, 14 Nov 2026 03:14:50 GMT"
+    "etag": "W/\"c32cd66f4ce0270de72253ecccbd0bab\""
   },
   "https://learn.microsoft.com/en-us/entra/architecture/authorize-applications-resources-workloads": {
-    "etag": "\"OaQhBND+P5wJ+GSy9dMBrhwQ9Kg=\"",
+    "etag": "\"MCPa6pHZxqROAhlMmNVQGkykLdA=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:48 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity-platform/scenario-daemon-acquire-token": {
-    "etag": "\"8rirkoGBWWjsJ0swSWX8BeVpm6M=\"",
+    "etag": "\"QvUW+2G+Th1L9QdVjbgHmjmDod8=\"",
     "lastModified": "Tue, 06 Oct 2026 17:43:44 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity-platform/scenario-protected-web-api-verification-scope-app-roles": {
-    "etag": "\"WNcT24UJPNzz96obArabiKrEL8o=\"",
+    "etag": "\"reB0lrm4zj2ibovut0trHSY+mI0=\"",
     "lastModified": "Fri, 28 Aug 2026 07:32:51 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow": {
-    "etag": "\"+xIqC+auV7rAMFCJx/srNTlLCZU=\"",
+    "etag": "\"PMy6oldDxM2FEwfJQEL83KikgS0=\"",
     "lastModified": "Tue, 10 Nov 2026 23:39:56 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-device-code": {
-    "etag": "\"2ERJFsm6pRmXMTrIX0vDotMEDpM=\"",
+    "etag": "\"vgEbZxmXHR6o/qr7AtlZ6JXIQ08=\"",
     "lastModified": "Fri, 28 Aug 2026 07:32:51 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-managed-identities-work-vm": {
@@ -592,27 +588,27 @@
     "lastModified": "Mon, 24 Aug 2026 12:32:46 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview": {
-    "etag": "\"eUSfNWFhp4PFzagTO9w6zSo2wbM=\"",
+    "etag": "\"d3S1NMIwz3nHHa1MXXfdmbwp54k=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:49 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/device-code-flow": {
-    "etag": "\"MMIBcpPRjfhnED8EBEiJ7EAzQgI=\"",
+    "etag": "\"XTwRB6FydGB8jgAxXPsKGIoRDb8=\"",
     "lastModified": "Mon, 02 Nov 2026 18:26:42 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/msal/python/advanced/client-credentials": {
-    "etag": "\"QY2mTn4IIAcTbIXbC4rQIs17SEQ=\"",
+    "etag": "\"xfRun8OlaZ5Cws36k3pNirvdqN4=\"",
     "lastModified": "Thu, 17 Sep 2026 09:44:36 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/msidweb/call-downstream-apis/token-binding": {
-    "etag": "\"uZtfw7YoDUT/T/2E358XQfnALNs=\"",
+    "etag": "\"Dac15nxuLBgM221MS/fk5Ia5YP0=\"",
     "lastModified": "Wed, 23 Sep 2026 14:42:58 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials": {
-    "etag": "\"XkC4aPvvkF+KrX4SkE9Iyx6MHGo=\"",
+    "etag": "\"ZnDZnaHOvVNHl8BVySEGrP1XgTs=\"",
     "lastModified": "Wed, 30 Sep 2026 17:44:00 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation": {
-    "etag": "\"5HYue5c2JaJIA+9zEQGZIjsulEE=\"",
+    "etag": "\"nBKdSvQ81lY71GxlndHh5ldv5e8=\"",
     "lastModified": "Mon, 24 Aug 2026 12:32:47 GMT"
   },
   "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-create-trust": {
@@ -620,26 +616,22 @@
     "lastModified": "Mon, 24 Aug 2026 12:32:47 GMT"
   },
   "https://learn.microsoft.com/en-us/graph/auth-v2-service": {
-    "etag": "\"2BXCEgduLjrBpCLvo6l9fps+xpQ=\"",
+    "etag": "\"yw8BIihQd8H84RwSNf/dseTlT44=\"",
     "lastModified": "Tue, 25 Aug 2026 00:34:39 GMT"
   },
   "https://linear.app/docs/mcp": {},
   "https://listenlabs.ai/blog/we-lied-to-our-claude-code-agent": {
-    "etag": "\"2e6d934edbae3f8e5b5150bd602b498d\"",
-    "lastModified": "Fri, 13 Nov 2026 01:57:10 GMT"
+    "etag": "\"404b196b05cdd94d3f60b4068c7c7de3\"",
+    "lastModified": "Thu, 19 Nov 2026 15:26:09 GMT"
   },
-  "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization": {
-    "lastModified": "Wed, 11 Nov 2026 19:31:30 GMT"
-  },
-  "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr": {
-    "lastModified": "Thu, 12 Nov 2026 19:17:11 GMT"
-  },
-  "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {
-    "lastModified": "Wed, 11 Nov 2026 19:57:10 GMT"
-  },
+  "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization": {},
+  "https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr": {},
+  "https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation": {},
   "https://modelcontextprotocol.io/specification/2026-07-28/deprecated": {},
-  "https://openfga.dev/docs/interacting/authzen": {
-    "lastModified": "Fri, 13 Nov 2026 04:57:40 GMT"
+  "https://openfga.dev/docs/interacting/authzen": {},
+  "https://openid.github.io/authzen/authzen-access-request-approval-profile-1_0.html": {
+    "etag": "W/\"6af37b29-5be7f\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
   },
   "https://openid.github.io/authzen/authzen-coaz-framework-1_0": {
     "etag": "W/\"6af37b29-1a0bf\"",
@@ -647,6 +639,10 @@
   },
   "https://openid.github.io/authzen/authzen-coaz-mcp-binding-1_0": {
     "etag": "W/\"6af37b29-204c6\"",
+    "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
+  },
+  "https://openid.github.io/authzen/authzen-obligations-profile-1_0.html": {
+    "etag": "W/\"6af37b29-192a3\"",
     "lastModified": "Tue, 10 Nov 2026 20:14:33 GMT"
   },
   "https://openid.net/specs/authorization-api-1_0-final.html": {
@@ -693,13 +689,13 @@
   "https://openid.net/wg/authzen/specifications/": {},
   "https://openid.net/wp-content/uploads/2025/10/Identity-Management-for-Agentic-AI.pdf": {},
   "https://openpayments.dev/identity/grants/": {
-    "etag": "W/\"021053b233c9f3ea668b6c7f7cae7bf8-ssl\""
+    "etag": "W/\"b70a339ea01bf79c8552f98879a14ec1-ssl\""
   },
   "https://openpayments.dev/sdk/before-you-begin/": {
-    "etag": "W/\"ac232ed221ce7dc7f13f5580b5239d12-ssl\""
+    "etag": "W/\"2f7044db6c64600350101372d7a3f670-ssl\""
   },
   "https://openpayments.dev/sdk/grant-continue/": {
-    "etag": "W/\"63b32b175bd7373e537b0724af038c68-ssl\""
+    "etag": "W/\"11e9720ad7c50c38a3b391e3d42a84a0-ssl\""
   },
   "https://owasp.org/projects/mcp-top-10": {},
   "https://owasp.org/projects/non-human-identities-top-10": {},
@@ -710,16 +706,18 @@
   "https://pkg.go.dev/golang.org/x/oauth2": {},
   "https://platform.claude.com/docs/en/managed-agents/vaults": {},
   "https://posthog.com/docs/model-context-protocol/claude-managed-authorization": {
-    "etag": "W/\"b10c2fdaca6eee6bdcb31a38ffdf18bc\""
+    "etag": "W/\"0ddb314522372f10a7c342829fcf2e4b\""
   },
   "https://posthog.com/docs/settings/authentication/id-jag": {
-    "etag": "W/\"f6133638dbbe33eccb32526066194e73\""
+    "etag": "W/\"5cebebaae1eaa5db27d94b60b311df6b\""
   },
   "https://projects.eclipse.org/projects/technology.biscuit": {
-    "etag": "\"1794545138-gzip\""
+    "etag": "\"1795036948-gzip\"",
+    "lastModified": "Wed, 18 Nov 2026 21:22:28 GMT"
   },
   "https://protobuf.dev/programming-guides/encoding/": {
-    "etag": "W/\"6af6b72f-18682\""
+    "etag": "W/\"6afe8fac-18682\"",
+    "lastModified": "Thu, 19 Nov 2026 05:57:00 GMT"
   },
   "https://py.sdk.modelcontextprotocol.io/client/identity-assertion/": {
     "etag": "W/\"6aec5f12-18b26\"",
@@ -727,6 +725,10 @@
   },
   "https://py.sdk.modelcontextprotocol.io/client/oauth-clients/": {
     "etag": "W/\"6aec5f12-14a6c\"",
+    "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
+  },
+  "https://py.sdk.modelcontextprotocol.io/handlers/elicitation/": {
+    "etag": "W/\"6aec5f12-1531a\"",
     "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
   },
   "https://py.sdk.modelcontextprotocol.io/handlers/multi-round-trip/": {
@@ -738,10 +740,10 @@
     "lastModified": "Thu, 05 Nov 2026 10:48:50 GMT"
   },
   "https://rafiki.dev/integration/deployment/services/auth-service/": {
-    "etag": "W/\"ee58515a492661aefcfc44f4b8f1644d-ssl\""
+    "etag": "W/\"de94df4372233788ab481231b7f235fe-ssl\""
   },
   "https://rafiki.dev/overview/concepts/open-payments/": {
-    "etag": "W/\"c3ca509a460bf89668cd93b43bb61919-ssl\""
+    "etag": "W/\"d44fb863c5371e9577d74f30a30f887e-ssl\""
   },
   "https://raw.githubusercontent.com/SUNET/sunet-auth-server/main/README.md": {
     "etag": "W/\"0b843b859b773e7296a2b500d1c7e00ecf838bd5a118b9a55d34c17565957ded\""
@@ -756,7 +758,7 @@
     "etag": "W/\"1a37c6ef06862b70ecd8ac8d141112e0f6ebffd6d2d4c25e50b7c85005fad3da\""
   },
   "https://raw.githubusercontent.com/google/agentmesh/main/go.mod": {
-    "etag": "W/\"bdbd0a169258d7e6e97303bbc67c50dbe1f4d5d4fcb91fcfbb56b46f94e8e627\""
+    "etag": "W/\"1d2c037ff5bf38bb0ebcad273dda4a78af5edec7c153f7808fc213042148b8c2\""
   },
   "https://raw.githubusercontent.com/mozilla/ecosystem-platform/master/docs/relying-parties/how-tos/step-up-authentication.md": {
     "etag": "W/\"610ba579677e12b56af9e47d98dcedf889620375b6d80f647f98e7430ad8575a\""
@@ -765,7 +767,7 @@
     "etag": "W/\"efd3a3fdcd67bc375024fbc244583bc4008799426cc6344050f206fd05b9964d\""
   },
   "https://spiffe.io/docs/latest/spiffe-about/overview/": {
-    "etag": "W/\"819c2a96dac1eda88c50eb2c598c330a-ssl\""
+    "etag": "W/\"6aa621076bcbaaf831b39bd45332b26e-ssl\""
   },
   "https://spiffe.io/docs/latest/spiffe-specs/spiffe_broker_api/": {
     "etag": "W/\"3feaf01d53e603141fc91c48c08a9ede-ssl\""
@@ -774,10 +776,10 @@
     "etag": "W/\"aaaf33f61a05ce0fd5d1742e6e5aee98-ssl\""
   },
   "https://spiffe.io/docs/latest/spiffe-specs/spiffe_workload_api/": {
-    "etag": "W/\"a5247b8f57a3aba440f010ab83f1b799-ssl\""
+    "etag": "W/\"f9709af74e6468660c1033df4a1fde8f-ssl\""
   },
   "https://spiffe.io/docs/latest/spire-about/spire-concepts/": {
-    "etag": "W/\"6dd9905c04c3b6e528eb5fac4f8c400f-ssl\""
+    "etag": "W/\"3032cce3cac83ac91df391c8151674a6-ssl\""
   },
   "https://spring.io/blog/2024/03/19/token-exchange-support-in-spring-security-6-3-0-m3": {},
   "https://spring.io/blog/2024/05/22/spring-authorization-server-1-3-goes-ga": {},
@@ -786,20 +788,20 @@
     "lastModified": "Mon, 15 Dec 2025 19:37:46 GMT"
   },
   "https://ts.sdk.modelcontextprotocol.io/v2/clients/machine-auth": {
-    "etag": "W/\"6af31f9b-27b10\"",
-    "lastModified": "Tue, 10 Nov 2026 13:43:55 GMT"
+    "etag": "W/\"6afde1b4-28197\"",
+    "lastModified": "Wed, 18 Nov 2026 17:34:44 GMT"
   },
   "https://ts.sdk.modelcontextprotocol.io/v2/clients/server-requests.html": {
-    "etag": "W/\"6af31f77-26bee\"",
-    "lastModified": "Tue, 10 Nov 2026 13:43:19 GMT"
+    "etag": "W/\"6afde1b4-271a2\"",
+    "lastModified": "Wed, 18 Nov 2026 17:34:44 GMT"
   },
   "https://ts.sdk.modelcontextprotocol.io/v2/servers/elicitation.html": {
-    "etag": "W/\"6af31f77-34116\"",
-    "lastModified": "Tue, 10 Nov 2026 13:43:19 GMT"
+    "etag": "W/\"6afde1b4-346ca\"",
+    "lastModified": "Wed, 18 Nov 2026 17:34:44 GMT"
   },
   "https://ts.sdk.modelcontextprotocol.io/v2/servers/input-required.html": {
-    "etag": "W/\"6af31f90-31142\"",
-    "lastModified": "Tue, 10 Nov 2026 13:43:44 GMT"
+    "etag": "W/\"6afde1b4-316f6\"",
+    "lastModified": "Wed, 18 Nov 2026 17:34:44 GMT"
   },
   "https://twigbush.github.io/docs/en/getting-started/introduction": {
     "etag": "W/\"68f9230d-12f6c\"",
@@ -808,80 +810,85 @@
   "https://utviklerportal.nhn.no/informasjonstjenester/helseid/bruksmoenstre-og-eksempelkode/bruk-av-helseid/docs/teknisk-referanse/endepunkt/token-endepunktet_enmd": {},
   "https://utviklerportal.nhn.no/informasjonstjenester/helseid/planlagde-endringar/vegkart/docs/planlagde_endringar_enmd": {},
   "https://vercel.com/changelog/new-vercel-cli-login-flow": {
-    "etag": "W/\"ytsc1fvpo3amty\""
+    "etag": "W/\"15pqvcirtaoamd7\""
   },
   "https://vercel.com/docs/sandbox/concepts/firewall": {
-    "etag": "W/\"i3hzc0kqdpq2du\""
+    "etag": "W/\"v79ff7g30vpr3r\""
   },
   "https://verifiableintent.dev": {
     "lastModified": "Mon, 20 Apr 2026 19:06:54 GMT"
   },
-  "https://workos.com/changelog/token-exchange-for-workos-connect": {
-    "lastModified": "Thu, 12 Nov 2026 15:02:01 GMT"
-  },
+  "https://workos.com/changelog/token-exchange-for-workos-connect": {},
   "https://workos.com/docs/reference/workos-connect/token": {
-    "etag": "W/\"244c710d00c80ad8b8a5eb010e08c236\"",
-    "lastModified": "Sat, 14 Nov 2026 00:24:22 GMT"
+    "etag": "W/\"92206e47cde627bd5fa79495ebb55fda\""
   },
   "https://www.atlassian.com/blog/development/enterprise-managed-authorization-rovo-mcp-xaa-id-jag": {},
   "https://www.canva.dev/docs/apps/rest-apis/authentication/": {
-    "etag": "W/\"fe07af6ab9fca323705effc311ca028b\"",
-    "lastModified": "Fri, 13 Nov 2026 03:11:25 GMT"
+    "etag": "W/\"febbdb49cc1a1685f075df9b86b4ee9a\"",
+    "lastModified": "Thu, 19 Nov 2026 07:47:18 GMT"
   },
   "https://www.dock.io/post/truvera-enables-ap2-mandate-issuance-start-building-for-agentic-commerce-today": {
-    "lastModified": "Fri, 13 Nov 2026 22:44:04 GMT"
+    "lastModified": "Thu, 19 Nov 2026 13:20:08 GMT"
   },
   "https://www.icabanken.se/open-banking/latest-news-open-banking/": {},
   "https://www.ietf.org/archive/id/draft-hardt-oauth-aauth-protocol-11.html": {
     "lastModified": "Fri, 25 Sep 2026 16:53:10 GMT"
   },
   "https://www.keycloak.org/2025/04/keycloak-2620-released": {
-    "etag": "W/\"6af6bb0f-15c15\""
+    "etag": "W/\"6afeb66e-15c15\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:22 GMT"
   },
   "https://www.keycloak.org/2025/09/keycloak-2640-released": {
-    "etag": "W/\"6af6baf4-16cad\""
+    "etag": "W/\"6afeb66e-16cad\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:22 GMT"
   },
   "https://www.keycloak.org/2026/04/keycloak-2660-released": {
-    "etag": "W/\"6af6bae5-1800d\"",
-    "lastModified": "Fri, 13 Nov 2026 07:23:17 GMT"
+    "etag": "W/\"6afeb661-1800d\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:09 GMT"
   },
   "https://www.keycloak.org/2026/07/experimental-ssf-support": {
-    "etag": "W/\"6af7de74-6722\""
+    "etag": "W/\"6afeb65e-6722\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:06 GMT"
   },
   "https://www.keycloak.org/2026/07/keycloak-2670-released": {
-    "etag": "W/\"6af6bae5-18fd3\"",
-    "lastModified": "Fri, 13 Nov 2026 07:23:17 GMT"
+    "etag": "W/\"6afeb65f-18fd3\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:07 GMT"
   },
   "https://www.keycloak.org/docs/latest/server_admin/": {
-    "etag": "W/\"6af6bb14-1faae9\""
+    "etag": "W/\"6afeb66f-1faae9\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:23 GMT"
   },
   "https://www.keycloak.org/docs/latest/server_admin/index.html": {
-    "etag": "W/\"6af7de82-1faae9\""
+    "etag": "W/\"6afeb66f-1faae9\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:23 GMT"
   },
   "https://www.keycloak.org/securing-apps/identity-assertion-jwt-authorization-grant": {
-    "etag": "W/\"6af6bb0f-662a\"",
-    "lastModified": "Fri, 13 Nov 2026 07:23:59 GMT"
+    "etag": "W/\"6afeb66a-662a\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:18 GMT"
   },
   "https://www.keycloak.org/securing-apps/mcp-authz-server": {
-    "etag": "W/\"6af6baf4-eea9\""
+    "etag": "W/\"6afeb670-eea9\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:24 GMT"
   },
   "https://www.keycloak.org/securing-apps/oauth-identity-authorization-chaining-across-domains": {
-    "etag": "W/\"6af6baf4-73a8\"",
-    "lastModified": "Fri, 13 Nov 2026 07:23:32 GMT"
+    "etag": "W/\"6afeb66e-73a8\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:22 GMT"
   },
   "https://www.keycloak.org/securing-apps/specifications": {
-    "etag": "W/\"6af6bb0f-915b\""
+    "etag": "W/\"6afeb66e-915b\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:22 GMT"
   },
   "https://www.keycloak.org/securing-apps/token-exchange": {
-    "etag": "W/\"6af6bb0f-21e4d\""
+    "etag": "W/\"6afeb66a-21e4d\"",
+    "lastModified": "Thu, 19 Nov 2026 08:42:18 GMT"
   },
   "https://www.nist.gov/super-intelligence/si-agent-standards-initiative": {},
   "https://www.postman.com/customer-stories/postman-passport/": {
-    "lastModified": "Thu, 12 Nov 2026 23:24:42 GMT"
+    "lastModified": "Wed, 18 Nov 2026 13:31:56 GMT"
   },
   "https://www.pulumi.com/blog/eliminating-ci-secrets-with-pulumi-esc/": {
-    "etag": "W/\"f22c86678abbfe3e627cf124e56bb8e9\"",
-    "lastModified": "Fri, 13 Nov 2026 07:07:42 GMT"
+    "etag": "W/\"76b8f936dd9da6bd7f97ea364517e2ce\"",
+    "lastModified": "Thu, 19 Nov 2026 18:53:30 GMT"
   },
   "https://www.rfc-editor.org/rfc/rfc10017.json": {
     "etag": "\"9480003fab1f5427f54d6874f2ddcbce\""
@@ -1012,7 +1019,9 @@
   "https://www.rfc-editor.org/rfc/rfc9901.json": {
     "etag": "\"a46da0074c30a9e371f877404b785e66\""
   },
-  "https://www.spaceandtime.io/blog/biscuit-authorization": {},
+  "https://www.spaceandtime.io/blog/biscuit-authorization": {
+    "lastModified": "Thu, 19 Nov 2026 12:30:32 GMT"
+  },
   "https://www.uber.com/en-US/blog/our-journey-adopting-spiffe-spire/": {},
   "https://www.w3.org/TR/did-1.1/": {
     "lastModified": "Thu, 05 Mar 2026 07:44:18 GMT"
@@ -1030,9 +1039,9 @@
     "etag": "W/\"a8dff722ed27b26a3c603295466fe1f2-ssl\""
   },
   "https://zuplo.com/docs/policies/authzen-inbound": {
-    "etag": "W/\"d4fbbd4ba2dc65ab28c47eb9d890ef4d\""
+    "etag": "W/\"eea289b53b7d0d446d911f4b6a44d6bc\""
   },
   "https://zuplo.com/docs/policies/web-bot-auth-inbound": {
-    "etag": "W/\"05af6c9b92124b04428af07a70c2c5f5\""
+    "etag": "W/\"18ef431ebffddddea37f6bcd619e7007\""
   }
 }
