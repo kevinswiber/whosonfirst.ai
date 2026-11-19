@@ -140,8 +140,8 @@ Statements about the future, or about a process that was unfinished at the last 
 | Attestation-based client authentication: working group consensus, waiting for its write-up                                                | `standards.ts` (`attestation-client-auth`)                                            |
 | First-party applications: working group consensus, waiting for its write-up                                                               | `standards.ts` (`first-party-apps`)                                                   |
 | SPIFFE client authentication: waiting on a WIMSE dependency                                                                               | `standards.ts` (`spiffe-client-auth`)                                                 |
-| WIMSE HTTP signatures: submitted to the IESG                                                                                              | `standards.ts` (`wimse-httpsig`)                                                      |
-| WIMSE practices: in IETF Last Call until November 13, 2026; would be the first WIMSE RFC                                                  | `standards.ts` (`wimse-practices`)                                                    |
+| WIMSE HTTP signatures: submitted to the IESG; in AD evaluation since November 2026                                                        | `standards.ts` (`wimse-httpsig`)                                                      |
+| WIMSE practices: IETF Last Call ended November 13, 2026; waiting for the AD to put it before the IESG; would be the first WIMSE RFC       | `standards.ts` (`wimse-practices`)                                                    |
 | No WIMSE document is an RFC yet                                                                                                           | `standards.ts` (`wimse-arch`)                                                         |
 | HTTP Signature-Key: an individual draft; the HTTP working group had no consensus to adopt it "at this time" (September 2026)              | `standards.ts` (`signature-key`); `flows/aauth.ts` (notes)                            |
 | AAuth (Hardt): adopted as a working group at the OpenID Foundation, by its author's account; the specification work has yet to move there | `standards.ts` (`aauth-hardt`); `flows/aauth.ts` (notes)                              |
@@ -150,8 +150,8 @@ Statements about the future, or about a process that was unfinished at the last 
 | Workload Authorization Grant: individual, not adopted; presented to WIMSE at IETF 127, no adoption decision recorded                      | `standards.ts` (`wag`); `flows/workload-identity-federation.ts` (notes)               |
 | RFC 9700: an update draft is in progress                                                                                                  | `standards.ts` (`rfc9700`)                                                            |
 | RFC 8693: no revision is in progress                                                                                                      | `standards.ts` (`rfc8693`)                                                            |
-| MCP: the next release is planned for March 2027                                                                                           | `standards.ts` (`mcp-authorization`)                                                  |
-| MCP: Dynamic Client Registration may be removed from July 2027                                                                            | `standards.ts` (`rfc7591`)                                                            |
+| MCP: the next release is targeted for March 30, 2027                                                                                      | `standards.ts` (`mcp-authorization`)                                                  |
+| MCP: Dynamic Client Registration may be removed in the first revision released on or after July 28, 2027                                  | `standards.ts` (`rfc7591`)                                                            |
 | MCP elicitation is still marked as subject to change                                                                                      | `standards.ts` (`mcp-elicitation`); `flows/url-elicitation.ts` (cautions)             |
 | Kubernetes v1.38 is planned for December; v1.37 is the current stable release; v1.35 to v1.37 are the maintained releases                 | `deployments/kubernetes.mdx`                                                          |
 | WIT-SVID is incubating; SPIRE's support is experimental, behind a flag                                                                    | `standards.ts` (`spiffe`, `spire`); `flows/wimse-workload-tokens.ts` (notes)          |
@@ -296,6 +296,7 @@ openid.net
 openid.github.io
 www.w3.org
 modelcontextprotocol.io
+blog.modelcontextprotocol.io
 a2a-protocol.org
 spiffe.io
 kubernetes.io

@@ -436,7 +436,15 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "rfc",
     detail:
-      "July 2015. Deprecated within MCP as of 2026-07-28, with removal possible from July 2027.",
+      "July 2015. Deprecated within MCP as of 2026-07-28. It may be removed in the first MCP revision released on or after July 28, 2027.",
+    related: [
+      {
+        name: "MCP deprecated features",
+        url: "https://modelcontextprotocol.io/specification/2026-07-28/deprecated",
+        kind: "source",
+        note: "The earliest removal of Dynamic Client Registration.",
+      },
+    ],
     topics: ["registration"],
     otherNames: ["DCR"],
     summary:
@@ -893,7 +901,21 @@ export const standards: Standard[] = [
     body: "CNCF",
     status: "final",
     detail:
-      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID (incubating), plus a Broker API and a filesystem delivery specification.",
+      "CNCF graduated project. X.509-SVID and JWT-SVID are stable. In 2026 the project added a third document type, the WIT-SVID, plus a Broker API and a filesystem delivery specification. All three are incubating.",
+    related: [
+      {
+        name: "SPIFFE Broker API",
+        url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_broker_api/",
+        kind: "source",
+        note: "Incubating.",
+      },
+      {
+        name: "SPIFFE Filesystem Delivery",
+        url: "https://spiffe.io/docs/latest/spiffe-specs/spiffe_filesystem_delivery/",
+        kind: "source",
+        note: "Incubating.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "Secure Production Identity Framework for Everyone: a URI naming scheme for workloads, short-lived identity documents, and a local API for obtaining them without a bootstrap secret.",
@@ -925,12 +947,12 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, July 2026. WIMSE working group document. No WIMSE document is an RFC yet.",
+      "Revision -09, November 2026. WIMSE working group document. No WIMSE document is an RFC yet.",
     topics: ["workload"],
     summary:
       "Architecture and terminology for workload identity and for propagating security context between workloads.",
     agents:
-      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context.",
+      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context. Revision -09 adds that agents to be audited, revoked or governed separately should not share a workload identity.",
     url: draft("draft-ietf-wimse-arch"),
   },
   {
@@ -1005,7 +1027,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, October 2026. Submitted to the IESG for publication in October 2026.",
+      "Revision -08, October 2026. Submitted to the IESG for publication in October 2026, and in its area director’s evaluation since November.",
     topics: ["workload", "proof-of-possession"],
     summary:
       "Workload-to-workload authentication using HTTP Message Signatures with the Workload Identity Token key. Responses can be signed too.",
@@ -1034,7 +1056,7 @@ export const standards: Standard[] = [
     body: "IETF",
     status: "wg-draft",
     detail:
-      "Revision -08, October 2026. Informational. Its IETF Last Call ends on November 13, 2026. It would be the first WIMSE RFC.",
+      "Revision -08, October 2026. Informational. Its IETF Last Call ended on November 13, 2026, and it now waits for its area director to put it before the IESG. It would be the first WIMSE RFC.",
     topics: ["workload", "guidance", "kubernetes"],
     summary:
       "A survey of how credentials reach workloads today without long-lived secrets: Kubernetes projected tokens, cloud metadata services, SPIFFE, CI/CD OIDC.",
@@ -1098,6 +1120,14 @@ export const standards: Standard[] = [
     status: "final",
     detail:
       "TokenRequest and projected tokens: GA since v1.20. Token ID and pod/node claims: GA in v1.32. OIDC issuer discovery: GA since v1.21. External token signing: GA in v1.36.",
+    related: [
+      {
+        name: "Removed feature gates",
+        url: "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates-removed/",
+        kind: "source",
+        note: "The releases in which TokenRequest, projected tokens and issuer discovery became GA.",
+      },
+    ],
     topics: ["kubernetes", "workload"],
     summary:
       "Short-lived, audience-scoped JWTs bound to a specific pod and delivered by the kubelet through a projected volume. The cluster publishes OIDC discovery metadata so outsiders can verify them.",
@@ -1255,6 +1285,14 @@ export const standards: Standard[] = [
     status: "project",
     detail:
       "Has to be enabled for the account before a token can be requested. Not available on the STS global endpoint.",
+    related: [
+      {
+        name: "Getting started with outbound identity federation",
+        url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_outbound_getting_started.html",
+        kind: "source",
+        note: "Enabling the feature, and the global endpoint.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "AWS as the identity provider. A workload that already has AWS credentials calls `GetWebIdentityToken` for a short-lived signed JWT naming its IAM principal, for an audience it specifies. Outside services verify the token against keys published under an issuer URL specific to the account.",
@@ -1302,6 +1340,14 @@ export const standards: Standard[] = [
     body: "Google Cloud",
     status: "project",
     detail: "Platform documentation.",
+    related: [
+      {
+        name: "How Application Default Credentials works",
+        url: "https://docs.cloud.google.com/docs/authentication/application-default-credentials",
+        kind: "source",
+        note: "On Google Cloud, it gets credentials from the metadata server.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "How code gets credentials on Google Cloud. A service account attached to the resource is the workload’s identity, and client libraries find its credentials through Application Default Credentials, which asks the metadata server.",
@@ -1316,13 +1362,19 @@ export const standards: Standard[] = [
     body: "Microsoft",
     status: "project",
     detail:
-      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards.",
+      "Platform documentation. The issuer, subject and audience of the incoming token must match the configured values exactly, case included; wildcards are not supported. The one exception is in preview: a flexible federated identity credential can match the subject of a GitHub, GitLab or Terraform Cloud token with wildcards. For GitHub it must also match the repository’s ID or its owner’s ID.",
     related: [
+      {
+        name: "Create a trust relationship with an external identity provider",
+        url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation-create-trust",
+        kind: "source",
+        note: "Wildcards are not supported in any property.",
+      },
       {
         name: "Flexible federated identity credentials",
         url: "https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-flexible-federated-identity-credentials",
         kind: "source",
-        note: "The exception, in preview.",
+        note: "The exception, in preview, and the claims it must also match.",
       },
     ],
     topics: ["workload"],
@@ -1339,9 +1391,17 @@ export const standards: Standard[] = [
     body: "Microsoft",
     status: "project",
     detail: "Platform documentation.",
+    related: [
+      {
+        name: "How managed identities work on Azure virtual machines",
+        url: "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/how-managed-identities-work-vm",
+        kind: "source",
+        note: "The local endpoint a virtual machine’s code asks for tokens.",
+      },
+    ],
     topics: ["workload"],
     summary:
-      "An identity in Microsoft Entra that Azure creates for a resource, or that you create and assign to one. Code on the resource asks a local endpoint for Microsoft Entra tokens. Azure manages the underlying credentials, which you never handle.",
+      "An identity in Microsoft Entra that Azure creates for a resource, or that you create and assign to one. Code on the resource gets Microsoft Entra tokens through MSAL or the Azure Identity library, with no secret. On a virtual machine they come from a local endpoint. Azure manages the underlying credentials, which you never handle.",
     agents:
       "Native workload identity on Azure. A user-assigned managed identity can also be what federation from outside maps onto.",
     url: "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",
@@ -1354,6 +1414,14 @@ export const standards: Standard[] = [
     status: "project",
     detail:
       "Platform documentation. A job needs the `id-token: write` permission to request its token.",
+    related: [
+      {
+        name: "OpenID Connect reference",
+        url: "https://docs.github.com/en/actions/reference/security/oidc",
+        kind: "source",
+        note: "The `id-token: write` permission, and the issuer every repository shares.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "GitHub’s OIDC provider issues a job a signed JWT whose claims name the repository, the branch or environment, and the workflow. A cloud or other service that trusts the issuer exchanges it for short-lived access.",
@@ -1370,7 +1438,15 @@ export const standards: Standard[] = [
     body: "MCP",
     status: "final",
     detail:
-      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is planned for March 2027. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
+      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
+    related: [
+      {
+        name: "A More Predictable Release Cycle for MCP",
+        url: "https://blog.modelcontextprotocol.io/posts/mcp-release-cycle/",
+        kind: "source",
+        note: "The next release date, published November 11, 2026.",
+      },
+    ],
     topics: ["agent-protocol", "discovery", "core"],
     summary:
       "A profile of OAuth 2.1 for HTTP transports. The MCP server is a resource server, discovered through protected resource metadata; clients identify themselves with Client ID Metadata Documents; tokens are bound to one server.",
@@ -1479,7 +1555,15 @@ export const standards: Standard[] = [
     body: "Linux Foundation",
     status: "final",
     detail:
-      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A Linux Foundation project, reported to have joined the Agentic AI Foundation in August 2026.",
+      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A Linux Foundation project, and part of the Agentic AI Foundation.",
+    related: [
+      {
+        name: "A2A repository README",
+        url: "https://github.com/a2aproject/A2A/blob/main/README.md",
+        kind: "source",
+        note: "Names the project part of the Agentic AI Foundation.",
+      },
+    ],
     topics: ["agent-protocol", "discovery"],
     summary:
       "Agents publish an Agent Card declaring their skills and security schemes (API key, HTTP, OAuth 2.0, OpenID Connect, mutual TLS). Cards can be signed. A task state signals that further authorization is needed.",
@@ -1919,6 +2003,14 @@ export const standards: Standard[] = [
     status: "guidance",
     detail:
       "Draft concept paper, February 2026. NIST announced an AI Agent Standards Initiative the same month, which its site now titles the SI Agent Standards Initiative.",
+    related: [
+      {
+        name: "SI Agent Standards Initiative",
+        url: "https://www.nist.gov/super-intelligence/si-agent-standards-initiative",
+        kind: "source",
+        note: "The initiative’s page, under its current title.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "Proposes a demonstration project applying existing identity standards to enterprise agents.",
@@ -1933,6 +2025,14 @@ export const standards: Standard[] = [
     body: "OWASP",
     status: "guidance",
     detail: "Released December 2025. An OWASP MCP Top 10 is in beta.",
+    related: [
+      {
+        name: "OWASP MCP Top 10",
+        url: "https://owasp.org/projects/mcp-top-10",
+        kind: "source",
+        note: "In beta.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "The ten most significant risks in agentic systems. Identity and privilege abuse is one of them.",
@@ -1959,7 +2059,16 @@ export const standards: Standard[] = [
     ref: "CoSAI workstream 4 paper",
     body: "OASIS",
     status: "guidance",
-    detail: "Version 1.0, spring 2026, from the Coalition for Secure AI.",
+    detail:
+      "Version 1.0, approved on March 20, 2026, by the Coalition for Secure AI.",
+    related: [
+      {
+        name: "Agentic Identity and Access Management",
+        url: "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems/blob/main/whitepapers/agentic-identity-and-access-control.md",
+        kind: "source",
+        note: "The paper itself, with its approval date.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "Treats agents as a distinct identity class and recommends zero standing privilege and delegation tokens with explicit actor and subject.",

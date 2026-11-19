@@ -440,7 +440,7 @@ may:
         {
           title: "An agent acting as itself against a custom service",
           tags: [{ text: "Google Cloud" }, { text: "Preview", tone: "amber" }],
-          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. Its subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s published discovery document and keys, then authorizes the verified identity. Google’s example checks the subject against an allowlist of agent SPIFFE IDs.
+          body: `Google Cloud’s Agent Identity issues an agent an OIDC ID token for the audience the agent asks for. Its subject is the agent’s SPIFFE ID. A custom API, a gateway or an on-premises service validates it against Google’s published discovery document and keys, then authorizes the verified identity. Google’s example checks the subject against an allowlist of agent SPIFFE IDs, or of trust domain prefixes.
 
 Nothing is exchanged: the service accepts the identity token directly, as a bearer token. By default the token is also bound to the agent’s certificate, and a receiver can enforce that binding over mutual TLS. One that ignores it is accepting a bearer token. Google marks the feature Preview, under pre-GA terms. That is the product’s stage, not the maturity of the standards underneath.`,
           sources: [
