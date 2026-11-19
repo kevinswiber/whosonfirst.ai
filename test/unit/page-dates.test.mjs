@@ -2,7 +2,7 @@
 // the reading: which commit is a file's first and which its last, and that a
 // commit that only reformats is not counted as a change.
 import { strict as assert } from "node:assert";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   ENTRIES,
@@ -11,6 +11,7 @@ import {
   entryFirsts,
   historyDates,
   ignoredRevisions,
+  LOGS,
   readLog,
   withoutLayout,
 } from "../../src/integrations/page-dates.mjs";
@@ -208,4 +209,93 @@ test("an entry's date moves when only the inside of one of its strings changes",
     { date: "2026-11-10", text: list(entry("a", 'scope: "readwrite"')) },
   ];
   assert.deepEqual(entryDates(versions, "id"), { a: "2026-11-14" });
+});
+
+// A commit that only moves text changes what a file says and not what a page
+// says. The move of each standard's status into the log was one.
+test("an entry reads the same on either side of an ignored commit, however its text differs there", () => {
+  const versions = [
+    // after the move, a real change to b
+    { date: "2026-11-21", text: list(entry("a"), entry("b", 'note: "new"')) },
+    // the move: status taken out of both
+    { date: "2026-11-20", text: list(entry("a"), entry("b")), ignored: true },
+    {
+      date: "2026-11-12",
+      text: list(entry("a", 'status: "rfc"'), entry("b", 'status: "draft"')),
+    },
+    {
+      date: "2026-11-10",
+      text: list(entry("a", 'status: "draft"'), entry("b", 'status: "draft"')),
+    },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), {
+    a: "2026-11-12",
+    b: "2026-11-21",
+  });
+  // with the move the newest commit, nothing has a new date
+  assert.deepEqual(entryDates(versions.slice(1), "id"), {
+    a: "2026-11-12",
+    b: "2026-11-10",
+  });
+});
+
+test("an entry that came in with an ignored commit has no date until a later commit changes it", () => {
+  const versions = [
+    {
+      date: "2026-11-21",
+      text: list(entry("a"), entry("b", 'note: "new"'), entry("c")),
+    },
+    { date: "2026-11-20", text: list(entry("a"), entry("b")), ignored: true },
+    { date: "2026-11-19", text: list(entry("z")), ignored: true },
+  ];
+  assert.deepEqual(entryDates(versions, "id"), {
+    b: "2026-11-21",
+    c: "2026-11-21",
+  });
+  assert.deepEqual(entryDates(versions.slice(1), "id"), {});
+  assert.deepEqual(entryFirsts(versions, "id"), {
+    a: "2026-11-21",
+    b: "2026-11-21",
+    c: "2026-11-21",
+  });
+});
+
+test("a log's entry is every event with its name, so a new event for one moves that one's date alone", () => {
+  const event = (name, what) =>
+    `  {\n    entry: "${name}",\n    summary: "${what}",\n  },`;
+  const log = (...events) =>
+    `export const events = [\n${events.join("\n")}\n];`;
+  const versions = [
+    {
+      date: "2026-12-03",
+      text: log(event("a", "One."), event("b", "One."), event("a", "Two.")),
+    },
+    { date: "2026-12-01", text: log(event("a", "One."), event("b", "One.")) },
+  ];
+  assert.deepEqual(entryDates(versions, "entry"), {
+    a: "2026-12-03",
+    b: "2026-12-01",
+  });
+});
+
+test("every month of a log is a list this reading can take apart", () => {
+  for (const { dir, key } of LOGS) {
+    const months = readdirSync(
+      new URL(`../../${dir}/`, import.meta.url),
+    ).filter((name) => /^\d{4}-\d{2}\.ts$/.test(name));
+    assert.ok(months.length > 0, dir);
+    for (const month of months) {
+      const text = readFileSync(
+        new URL(`../../${dir}/${month}`, import.meta.url),
+        "utf8",
+      );
+      const objects = text.match(/^ {2}\{\s*$/gm).length;
+      const named = text.match(new RegExp(`^ {4}${key}: "`, "gm")).length;
+      // every event that names an entry is read, under that entry
+      assert.ok(entriesOf(text, key).size > 0, month);
+      assert.ok(named <= objects, month);
+      const read = [...entriesOf(text, key).values()].join("");
+      assert.equal(read.split(`${key}:`).length - 1, named, month);
+    }
+  }
 });

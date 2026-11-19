@@ -8,7 +8,10 @@
  * - a path that ends in "/", a directory, which means every file under it;
  * - `<file>#<name>`, one entry of a file that is a list of entries. A flow
  *   shows the standards it lists and not the whole tracker, so it is dated by
- *   those entries and not by every change to the tracker.
+ *   those entries and not by every change to the tracker;
+ * - `<directory>/#<name>`, what a log kept in that directory has recorded for
+ *   one entry, in whichever of its files. A standard's status is read from
+ *   the log in src/data/history/, so a page that shows one is dated by it.
  *
  * What is followed is what a page states: a figure, a definition, a status, a
  * rating. Such a fact has to be named here, or a change that reaches the page
@@ -39,6 +42,8 @@ export interface Site {
 export type History = Record<string, { first?: string; last: string }>;
 
 const STANDARDS = "src/data/standards.ts";
+/** The log of what has happened to each standard, which gives an entry its status. */
+const HISTORY = "src/data/history/";
 const GLOSSARY = "src/data/glossary.ts";
 const LESSONS = "src/data/learn/lessons.ts";
 const RECORDS = "src/data/implementations/records.ts";
@@ -51,9 +56,12 @@ const LESSON_DATA: Record<string, string[]> = {
   "what-the-api-sees": ["src/data/learn/api-sees.ts"],
 };
 
-/** The tracker's entries for some ids, each once. */
+/**
+ * The tracker's entries for some ids, each once: what the entry says, and what
+ * the log has recorded for it, which is where its status comes from.
+ */
 const standardsFor = (ids: string[]): string[] =>
-  [...new Set(ids)].map((id) => `${STANDARDS}#${id}`);
+  [...new Set(ids)].flatMap((id) => [`${STANDARDS}#${id}`, `${HISTORY}#${id}`]);
 
 /** A flow's page: its own data, the standards it lists, and the evidence it summarizes. */
 const flowSources = (slug: string, site: Site): string[] => [
@@ -114,7 +122,10 @@ const MADE_FROM: [
   ],
   [/^\/guide\/$/, () => ["src/pages/guide/index.astro", "src/data/guide.ts"]],
   [/^\/guide\/([^/]+)\/$/, () => ["src/data/guide.ts"]],
-  [/^\/standards\/$/, () => ["src/pages/standards/index.astro", STANDARDS]],
+  [
+    /^\/standards\/$/,
+    () => ["src/pages/standards/index.astro", STANDARDS, HISTORY],
+  ],
   // A term that names a standard shows that standard's status.
   [
     /^\/glossary\/$/,
