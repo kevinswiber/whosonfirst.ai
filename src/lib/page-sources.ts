@@ -126,6 +126,12 @@ const MADE_FROM: [
     /^\/standards\/$/,
     () => ["src/pages/standards/index.astro", STANDARDS, HISTORY],
   ],
+  // The timeline and the changelog show the log, and nothing of the tracker
+  // but the names of the documents the events are about.
+  [
+    /^\/standards\/(timeline|changes)\/$/,
+    (page) => [`src/pages/standards/${page}.astro`, HISTORY],
+  ],
   // A term that names a standard shows that standard's status.
   [
     /^\/glossary\/$/,
@@ -204,6 +210,13 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/standards/index.astro": {
     "src/data/flows/index.ts": "the names of the flows that list a standard",
+  },
+  "src/pages/standards/timeline.astro": {
+    "src/data/standards.ts": "the names of the documents its events are about",
+  },
+  "src/pages/standards/changes.astro": {
+    "src/data/standards.ts":
+      "the names of the documents its events are about, and a count of the tracker's entries",
   },
   "src/pages/styleguide/index.astro": {
     "src/data/flows/index.ts": "a flow borrowed to show how one is drawn",

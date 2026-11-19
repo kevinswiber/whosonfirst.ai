@@ -652,7 +652,10 @@ const SECTIONS = [
     order: "/implementations/",
   },
   { title: "Deployments", match: /^\/deployments\//, order: "/deployments/" },
-  { title: "Reference", match: /^\/(standards|glossary)\/$/ },
+  {
+    title: "Reference",
+    match: /^\/(standards\/(timeline\/|changes\/)?|glossary\/)$/,
+  },
   { title: "Optional", match: /^\/about\/$/ },
 ];
 

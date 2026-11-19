@@ -426,3 +426,75 @@ export const validateHistory = (
   }
   return errors;
 };
+
+/* ───────────── For the pages that show the log ───────────── */
+
+/** What each kind of event is called on a page. A baseline is not shown. */
+export const KIND_LABEL: Record<Exclude<HistoryKind, "baseline">, string> = {
+  version: "New version",
+  adoption: "Adopted",
+  call: "Call",
+  process: "Process",
+  approval: "Approved",
+  publication: "Published",
+  succession: "Replaced",
+  discussion: "Discussed",
+};
+
+/** A date as a page writes it: "November 13, 2026", or "November 2026" for a month. */
+export const spellDate = (date: string) =>
+  date.length === 7
+    ? monthAndYear(date)
+    : `${MONTHS[Number(date.slice(5, 7)) - 1]} ${Number(date.slice(8, 10))}, ${date.slice(0, 4)}`;
+
+/** An event with the name that addresses it on a page. */
+export interface NamedEvent extends HistoryEvent {
+  id: string;
+}
+
+/** Everything that happened: the log without its baselines, each event with its name. */
+export const happenings = (events: HistoryEvent[]): NamedEvent[] => {
+  const ids = eventIds(events);
+  return events
+    .map((event, at) => ({ ...event, id: ids[at] }))
+    .filter((event) => event.kind !== "baseline");
+};
+
+export interface EventGroup {
+  /** A month for the timeline, a day for the changelog. */
+  key: string;
+  events: NamedEvent[];
+}
+
+/** What happened, newest first, a group for each month it happened in. */
+export const timeline = (events: HistoryEvent[]): EventGroup[] => {
+  const groups = new Map<string, NamedEvent[]>();
+  for (const event of inOrder(happenings(events), (e) => e.date).reverse()) {
+    const month = event.date.slice(0, 7);
+    groups.set(month, [...(groups.get(month) ?? []), event]);
+  }
+  return [...groups].map(([key, list]) => ({ key, events: list }));
+};
+
+/**
+ * What the site reported, newest first, a group for each day it recorded
+ * something. Within a day the latest to happen is first. An event that was
+ * corrected is also under the day of its correction.
+ */
+export const changelog = (events: HistoryEvent[]): EventGroup[] => {
+  const groups = new Map<string, NamedEvent[]>();
+  const all = inOrder(happenings(events), (e) => e.date).reverse();
+  for (const event of all)
+    for (const day of new Set([event.recorded, event.corrected?.on]))
+      if (day) groups.set(day, [...(groups.get(day) ?? []), event]);
+  return [...groups]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([key, list]) => ({ key, events: list }));
+};
+
+/** The day the record began: the earliest baseline. */
+export const recordBegan = (events: HistoryEvent[]) =>
+  events
+    .filter((event) => event.kind === "baseline")
+    .map((event) => event.recorded)
+    .sort()[0];
