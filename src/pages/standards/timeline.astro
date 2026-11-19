@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import HistoryList from "../../components/HistoryList.astro";
+import { history } from "../../data/history";
+import { recordBegan, spellDate, timeline } from "../../lib/history";
+
+const groups = timeline(history);
+const count = groups.reduce((n, g) => n + g.events.length, 0);
+const began = spellDate(recordBegan(history));
+---
+
+<Base
+  title="Timeline of standards for agent authentication and authorization"
+  description="What has happened to the specifications the tracker follows: new revisions, adoptions, last calls, approvals and publications, by date, each with its source."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Standards</p>
+      <h1>Timeline</h1>
+      <p class="lede">
+        What has happened to the specifications the tracker follows, newest first, by the date it happened.
+      </p>
+      <p class="also">
+        {count} events. The record began on {began}, so most of what came before is not here.{" "}
+        <a href="/standards/">The tracker</a> says where each specification stands now, and{" "}
+        <a href="/standards/changes/">the changelog</a> lists the same events by the day this site reported them.
+      </p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <HistoryList groups={groups} by="happened" />
+      <div class="callout">
+        <p class="callout-title">What is an event</p>
+        <p>
+          Something that happened to a document in its own body’s process: a revision or a release, an adoption, a call
+          opening or closing, a step toward publication, an approval, a publication. Each was read at the source
+          linked beside it. An event worded as reported comes from a secondary source. A change to this site’s own
+          wording is not an event and is not listed.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .also {
+    max-width: 52rem;
+    color: var(--fg-muted);
+  }
+</style>

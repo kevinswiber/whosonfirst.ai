@@ -1,0 +1,140 @@
+---
+// A list of events from the log of the standards' history, in groups: by the
+// month they happened for the timeline, by the day the site recorded them for
+// the changelog. Everything an event has is on the page: nothing waits behind
+// a click.
+import { must } from "../lib/must";
+import { inline } from "../lib/md";
+import { KIND_LABEL, spellDate } from "../lib/history";
+import type { EventGroup } from "../lib/history";
+import { standards } from "../data/standards";
+
+interface Props {
+  groups: EventGroup[];
+  /** Which date the groups are made by. The other is given with each event. */
+  by: "happened" | "recorded";
+}
+const { groups, by } = Astro.props;
+const entry = (id: string) =>
+  must(
+    standards.find((s) => s.id === id),
+    `tracker entry "${id}" (named by an event in the log)`,
+  );
+const anchor = (id: string) => id.replaceAll("/", "-");
+---
+
+{
+  groups.map((group) => (
+    <section class="hl-group" aria-labelledby={`g-${group.key}`}>
+      <h2 id={`g-${group.key}`}>{spellDate(group.key)}</h2>
+      <ol class="hl">
+        {group.events.map((e) => {
+          const s = e.entry ? entry(e.entry) : undefined;
+          const corrected = e.corrected && by === "recorded" && e.corrected.on === group.key;
+          return (
+            <li id={by === "happened" ? anchor(e.id) : undefined}>
+              <span class="hl-when">
+                {by === "happened" ? spellDate(e.date) : `Happened ${spellDate(e.date)}`}
+              </span>
+              <div class="hl-what">
+                <p class="hl-name">
+                  <span class="hl-kind">{corrected ? "Corrected" : KIND_LABEL[e.kind as keyof typeof KIND_LABEL]}:</span>{" "}
+                  {s ? <a href={`/standards/#${s.id}`}>{s.name}</a> : <span>{e.subject}</span>}
+                </p>
+                <p set:html={inline(e.summary ?? "")} />
+                {e.changes && (
+                  <ul>
+                    {e.changes.map((c) => (
+                      <li set:html={inline(c)} />
+                    ))}
+                  </ul>
+                )}
+                {corrected && <p>Corrected: {e.corrected!.note}</p>}
+                <p class="hl-meta">
+                  <a href={e.source}>{e.reported ? "Reported by this source" : "Source"}</a>
+                  {e.changesSource && e.changesSource !== e.source && (
+                    <>
+                      {" · "}
+                      <a href={e.changesSource}>What changed</a>
+                    </>
+                  )}
+                  {e.version && (
+                    <>
+                      {" · "}
+                      <a href={e.version.url}>{e.version.name ?? e.version.label}</a>
+                    </>
+                  )}
+                  {by === "happened" && <>{" · "}Recorded here {spellDate(e.recorded)}</>}
+                  {by === "happened" && e.corrected && <>{" · "}Corrected {spellDate(e.corrected.on)}</>}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  ))
+}
+
+<style>
+  .hl-group {
+    margin: 0 0 2.5rem;
+  }
+  .hl-group h2 {
+    margin: 0 0 0.75rem;
+  }
+  .hl {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1.5px solid var(--fg);
+  }
+  .hl > li {
+    display: grid;
+    grid-template-columns: 14.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.85rem 0;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .hl-when,
+  .hl-kind {
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    /* blue is for links: a label that is not a link gives it up */
+    color: var(--fg-muted);
+  }
+  .hl-when {
+    padding-top: 0.25rem;
+    white-space: nowrap;
+  }
+  .hl-kind {
+    margin-right: 0.35rem;
+  }
+  .hl-what > * {
+    margin: 0 0 0.4rem;
+    max-width: 52rem;
+  }
+  .hl-what > :last-child {
+    margin-bottom: 0;
+  }
+  .hl-name {
+    font-weight: 600;
+  }
+  .hl-what ul {
+    padding-left: 1.2rem;
+  }
+  .hl-meta {
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+  @media (max-width: 40rem) {
+    .hl > li {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+</style>

@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+import HistoryList from "../../components/HistoryList.astro";
+import { history } from "../../data/history";
+import { standards } from "../../data/standards";
+import { changelog, recordBegan, spellDate } from "../../lib/history";
+
+const groups = changelog(history);
+const began = spellDate(recordBegan(history));
+---
+
+<Base
+  title="Changelog of the standards tracker"
+  description="When this site’s reporting on each specification changed: every event the standards tracker has recorded, by the day it was recorded, each with its source."
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Standards</p>
+      <h1>Changelog</h1>
+      <p class="lede">
+        When this site’s reporting changed: what the tracker recorded, newest first, by the day it recorded it.
+      </p>
+      <p class="also">
+        An event is often recorded some days after it happens, at the next review of the sources.{" "}
+        <a href="/standards/timeline/">The timeline</a> lists the same events by the date they happened, and{" "}
+        <a href="/standards/">the tracker</a> says where each specification stands now.
+      </p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <HistoryList groups={groups} by="recorded" />
+      <div class="callout">
+        <p class="callout-title">What is listed, and what is not</p>
+        <p>
+          The record began on {began}, with where each of the tracker’s {standards.length} entries stood that day.
+          Those starting points are not listed. Events the tracker had already reported with a source, from November
+          11, 2026, are listed under the day it first reported them. A change to this site’s wording is not listed. A
+          recorded event that was wrong is corrected in place and listed again under the day it was corrected, with
+          what was wrong.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .also {
+    max-width: 52rem;
+    color: var(--fg-muted);
+  }
+</style>

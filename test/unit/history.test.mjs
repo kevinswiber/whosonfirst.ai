@@ -7,10 +7,14 @@ import { test } from "node:test";
 import { history } from "../../src/data/history/index.ts";
 import { standards } from "../../src/data/standards.ts";
 import {
+  changelog,
   currentOf,
   eventIds,
   historyOf,
+  recordBegan,
+  spellDate,
   statusLine,
+  timeline,
   validateHistory,
   versionsOf,
 } from "../../src/lib/history.ts";
@@ -317,4 +321,35 @@ test("a version the tracker does not word itself comes with where the document s
     ]),
     [],
   );
+});
+
+test("the timeline is by the month things happened, and the changelog by the day they were recorded", () => {
+  const log = [
+    event({ date: "2026-10-30", recorded: "2026-11-11", summary: "A." }),
+    event({ date: "2026-11-13", recorded: "2026-11-19", summary: "B." }),
+    event({ date: "2026-11-02", recorded: "2026-11-19", summary: "C." }),
+    base,
+    event({
+      date: "2026-11-20",
+      recorded: "2026-11-21",
+      summary: "D.",
+      corrected: { on: "2026-11-25", note: "The date." },
+    }),
+  ];
+  const shape = (groups) =>
+    groups.map((g) => `${g.key}: ${g.events.map((e) => e.summary).join(" ")}`);
+  assert.deepEqual(shape(timeline(log)), ["2026-11: D. B. C.", "2026-10: A."]);
+  assert.deepEqual(shape(changelog(log)), [
+    "2026-11-25: D.",
+    "2026-11-21: D.",
+    "2026-11-19: B. C.",
+    "2026-11-11: A.",
+  ]);
+  // a baseline is where a document stood, not something that happened
+  assert.ok(
+    timeline(log).every((g) => g.events.every((e) => e.kind !== "baseline")),
+  );
+  assert.equal(recordBegan(log), "2026-11-19");
+  assert.equal(spellDate("2026-11-02"), "November 2, 2026");
+  assert.equal(spellDate("2026-10"), "October 2026");
 });
