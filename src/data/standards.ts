@@ -1479,7 +1479,15 @@ export const standards: Standard[] = [
     body: "Linux Foundation",
     status: "final",
     detail:
-      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A Linux Foundation project, reported to have joined the Agentic AI Foundation in August 2026.",
+      "Version 1.0.0 released March 2026; 1.0.1 in May 2026. A Linux Foundation project, and part of the Agentic AI Foundation.",
+    related: [
+      {
+        name: "A2A repository README",
+        url: "https://github.com/a2aproject/A2A/blob/main/README.md",
+        kind: "source",
+        note: "Names the project part of the Agentic AI Foundation.",
+      },
+    ],
     topics: ["agent-protocol", "discovery"],
     summary:
       "Agents publish an Agent Card declaring their skills and security schemes (API key, HTTP, OAuth 2.0, OpenID Connect, mutual TLS). Cards can be signed. A task state signals that further authorization is needed.",
