@@ -1098,6 +1098,14 @@ export const standards: Standard[] = [
     status: "final",
     detail:
       "TokenRequest and projected tokens: GA since v1.20. Token ID and pod/node claims: GA in v1.32. OIDC issuer discovery: GA since v1.21. External token signing: GA in v1.36.",
+    related: [
+      {
+        name: "Removed feature gates",
+        url: "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates-removed/",
+        kind: "source",
+        note: "The releases in which TokenRequest, projected tokens and issuer discovery became GA.",
+      },
+    ],
     topics: ["kubernetes", "workload"],
     summary:
       "Short-lived, audience-scoped JWTs bound to a specific pod and delivered by the kubelet through a projected volume. The cluster publishes OIDC discovery metadata so outsiders can verify them.",
@@ -1255,6 +1263,14 @@ export const standards: Standard[] = [
     status: "project",
     detail:
       "Has to be enabled for the account before a token can be requested. Not available on the STS global endpoint.",
+    related: [
+      {
+        name: "Getting started with outbound identity federation",
+        url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_outbound_getting_started.html",
+        kind: "source",
+        note: "Enabling the feature, and the global endpoint.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "AWS as the identity provider. A workload that already has AWS credentials calls `GetWebIdentityToken` for a short-lived signed JWT naming its IAM principal, for an audience it specifies. Outside services verify the token against keys published under an issuer URL specific to the account.",
@@ -1302,6 +1318,14 @@ export const standards: Standard[] = [
     body: "Google Cloud",
     status: "project",
     detail: "Platform documentation.",
+    related: [
+      {
+        name: "How Application Default Credentials works",
+        url: "https://docs.cloud.google.com/docs/authentication/application-default-credentials",
+        kind: "source",
+        note: "On Google Cloud, it gets credentials from the metadata server.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "How code gets credentials on Google Cloud. A service account attached to the resource is the workload’s identity, and client libraries find its credentials through Application Default Credentials, which asks the metadata server.",
@@ -1368,6 +1392,14 @@ export const standards: Standard[] = [
     status: "project",
     detail:
       "Platform documentation. A job needs the `id-token: write` permission to request its token.",
+    related: [
+      {
+        name: "OpenID Connect reference",
+        url: "https://docs.github.com/en/actions/reference/security/oidc",
+        kind: "source",
+        note: "The `id-token: write` permission, and the issuer every repository shares.",
+      },
+    ],
     topics: ["workload"],
     summary:
       "GitHub’s OIDC provider issues a job a signed JWT whose claims name the repository, the branch or environment, and the workflow. A cloud or other service that trusts the issuer exchanges it for short-lived access.",
@@ -1941,6 +1973,14 @@ export const standards: Standard[] = [
     status: "guidance",
     detail:
       "Draft concept paper, February 2026. NIST announced an AI Agent Standards Initiative the same month, which its site now titles the SI Agent Standards Initiative.",
+    related: [
+      {
+        name: "SI Agent Standards Initiative",
+        url: "https://www.nist.gov/super-intelligence/si-agent-standards-initiative",
+        kind: "source",
+        note: "The initiative’s page, under its current title.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "Proposes a demonstration project applying existing identity standards to enterprise agents.",
@@ -1955,6 +1995,14 @@ export const standards: Standard[] = [
     body: "OWASP",
     status: "guidance",
     detail: "Released December 2025. An OWASP MCP Top 10 is in beta.",
+    related: [
+      {
+        name: "OWASP MCP Top 10",
+        url: "https://owasp.org/projects/mcp-top-10",
+        kind: "source",
+        note: "In beta.",
+      },
+    ],
     topics: ["guidance"],
     summary:
       "The ten most significant risks in agentic systems. Identity and privilege abuse is one of them.",
