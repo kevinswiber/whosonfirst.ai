@@ -54,12 +54,15 @@ test("a flow is made from its data, the standards it lists and its implementatio
   assert.deepEqual(madeFrom("/flows/dpop/", site), [
     "src/data/flows/dpop.ts",
     "src/data/standards.ts#rfc9449",
+    "src/data/history/#rfc9449",
     "src/data/standards.ts#rfc7519",
+    "src/data/history/#rfc7519",
     "src/data/implementations/records.ts#dpop",
   ]);
   assert.deepEqual(madeFrom("/flows/gnap/", site), [
     "src/data/flows/gnap.ts",
     "src/data/standards.ts#rfc9635",
+    "src/data/history/#rfc9635",
   ]);
 });
 
@@ -93,6 +96,29 @@ test("a flow's date moves when a standard it lists does, or its implementation r
   });
   assert.equal(evidence.modified, day(14));
   assert.equal(evidence.source, "src/data/implementations/records.ts");
+});
+
+test("a flow's date moves when the log records something for a standard it lists, and not for another", () => {
+  const flow = { "src/data/flows/dpop.ts": 12 };
+  const moved = changed("/flows/dpop/", {
+    ...flow,
+    "src/data/history/#rfc9449": 16,
+  });
+  assert.equal(moved.modified, day(16));
+  assert.equal(moved.source, "src/data/history/");
+  assert.equal(
+    changed("/flows/dpop/", { ...flow, "src/data/history/#rfc9635": 16 })
+      .modified,
+    day(12),
+  );
+  // the tracker shows every standard, so anything the log records moves it
+  assert.equal(
+    changed("/standards/", {
+      "src/pages/standards/index.astro": 10,
+      "src/data/history/2026-11.ts": 17,
+    }).modified,
+    day(17),
+  );
 });
 
 test("a change to an entry a page does not show, or to the rest of a shared file, leaves its date alone", () => {
@@ -176,9 +202,12 @@ test("a comparison is made from its own file, both flows and the standards they 
     "src/data/comparisons/dpop-vs-gnap.ts",
     "src/data/flows/dpop.ts",
     "src/data/standards.ts#rfc9449",
+    "src/data/history/#rfc9449",
     "src/data/standards.ts#rfc7519",
+    "src/data/history/#rfc7519",
     "src/data/flows/gnap.ts",
     "src/data/standards.ts#rfc9635",
+    "src/data/history/#rfc9635",
   ]);
   const dates = changed("/compare/dpop-vs-gnap/", {
     "src/data/comparisons/dpop-vs-gnap.ts": 15,

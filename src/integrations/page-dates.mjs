@@ -34,11 +34,19 @@
  * Anywhere else a shallow clone is left as it is, and a build never goes to
  * the network on a contributor's machine or in the checks.
  *
- * A commit listed in `.git-blame-ignore-revs` only reformats, so it is not a
- * change to what a page says and is passed over.
+ * A commit listed in `.git-blame-ignore-revs` only reformats, or only moves
+ * text from one file to another, so it is not a change to what a page says
+ * and is passed over. An entry reads the same on either side of one, however
+ * its text differs there, and an entry that came in with one has no date
+ * until a later commit changes it.
+ *
+ * The log of the standards' history, in `LOGS`, is read the same way, with
+ * two differences: it is a directory with a file for each month, and an entry
+ * there is every event with that entry's name. A standard's date from the log
+ * is under `<directory>/#<name>`, the latest from any month.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -58,6 +66,14 @@ export const ENTRIES = [
   { file: "src/data/learn/lessons.ts", key: "slug" },
   { file: "src/data/implementations/records.ts", key: "slug" },
 ];
+
+/**
+ * The directories that hold a log: a file for each month, named for it, each a
+ * list of events. `key` names the entry an event is about, and an entry has as
+ * many events as have been recorded for it.
+ */
+export const LOGS = [{ dir: "src/data/history", key: "entry" }];
+const MONTH_FILE = /^\d{4}-\d{2}\.ts$/;
 
 /** The commits `.git-blame-ignore-revs` names, as a set of full hashes. */
 export function ignoredRevisions(text) {
@@ -140,7 +156,8 @@ export function withoutLayout(source) {
  * The entries of a file that is a list of them: a map from each entry's name
  * to its text, without its layout. An entry is an object of the file's
  * outermost array, from a line that is "  {" to the next that is "  }," and
- * its name is its `key`.
+ * its name is its `key`. Where objects share a name, as the events of a log
+ * do, the entry is all of them, in order.
  */
 export function entriesOf(text, key) {
   const entries = new Map();
@@ -152,7 +169,8 @@ export function entriesOf(text, key) {
     else if (/^ {2}\},?\s*$/.test(line) && open !== undefined) {
       const entry = lines.slice(open, i + 1).join("\n");
       const name = named.exec(entry)?.[2];
-      if (name !== undefined) entries.set(name, withoutLayout(entry));
+      if (name !== undefined)
+        entries.set(name, (entries.get(name) ?? "") + withoutLayout(entry));
       open = undefined;
     }
   });
@@ -161,34 +179,57 @@ export function entriesOf(text, key) {
 
 /**
  * When each entry of a file last changed. `versions` is the file at each of
- * its commits, newest first, as `{ date, text }`. An entry's date is that of
- * the oldest commit since which its text has stayed as it is now.
+ * its commits, newest first, as `{ date, text }`, with `ignored: true` on a
+ * commit that changed nothing a page says. An entry's date is that of the
+ * oldest commit since which its text has stayed as it is now.
+ *
+ * An ignored commit is read past. Whatever an entry was before it is what the
+ * entry is after it, so the reading goes on from the text before. An entry
+ * that was not there before came in with the ignored commit, and has no date.
  */
 export function entryDates(versions, key) {
   const dates = {};
-  if (versions.length === 0) return dates;
-  const now = entriesOf(versions[0].text, key);
+  const newest = versions.findIndex((version) => !version.ignored);
+  if (newest < 0) return dates;
+  const now = new Map(entriesOf(versions[newest].text, key));
   const settled = new Set();
-  for (const version of versions) {
+  // Entries unchanged back to an ignored commit, to be read on from the text before it.
+  const carried = new Set();
+  for (const version of versions.slice(newest)) {
     const then = entriesOf(version.text, key);
-    for (const [name, text] of now) {
+    for (const name of now.keys()) {
       if (settled.has(name)) continue;
-      if (then.get(name) === text) dates[name] = version.date;
-      else settled.add(name);
+      if (carried.has(name)) {
+        if (!then.has(name)) {
+          // it came in with the ignored commit
+          delete dates[name];
+          settled.add(name);
+          continue;
+        }
+        now.set(name, then.get(name));
+        if (!version.ignored) carried.delete(name);
+      }
+      if (then.get(name) !== now.get(name)) settled.add(name);
+      else if (version.ignored) carried.add(name);
+      else dates[name] = version.date;
     }
   }
+  // The oldest commits were ignored ones: what is unchanged since came in with them.
+  for (const name of carried) if (!settled.has(name)) delete dates[name];
   return dates;
 }
 
 /**
  * When each entry of a file was added: the date of the oldest commit that has
- * an entry by its name. `versions` is as for `entryDates`.
+ * an entry by its name. `versions` is as for `entryDates`, and an ignored
+ * commit is not counted.
  */
 export function entryFirsts(versions, key) {
   const dates = {};
-  if (versions.length === 0) return dates;
-  const now = entriesOf(versions[0].text, key);
-  for (const version of versions) {
+  const real = versions.filter((version) => !version.ignored);
+  if (real.length === 0) return dates;
+  const now = entriesOf(real[0].text, key);
+  for (const version of real) {
     const then = entriesOf(version.text, key);
     for (const name of now.keys())
       if (then.has(name)) dates[name] = version.date;
@@ -238,24 +279,41 @@ export function historyDates(root, env = process.env) {
       ignored,
     );
     const files = Object.keys(dates).length;
-    // Each list of entries, as it stood at each commit that changed it.
-    for (const { file, key } of ENTRIES) {
-      const versions = git("log", "--format=%H %cI", "--", file)
+    // A list of entries, as it stood at each commit that changed it.
+    const versionsOf = (file) =>
+      git("log", "--format=%H %cI", "--", file)
         .split("\n")
         .filter(Boolean)
         .map((line) => line.split(" "))
-        .filter(([hash]) => !ignored.has(hash))
         .map(([hash, date]) => {
+          const ignore = ignored.has(hash) ? { ignored: true } : {};
           try {
-            return { date, text: git("show", `${hash}:${file}`) };
+            return { date, text: git("show", `${hash}:${file}`), ...ignore };
           } catch {
             // the commit that took the file away or moved it: nothing was in it
-            return { date, text: "" };
+            return { date, text: "", ...ignore };
           }
         });
+    for (const { file, key } of ENTRIES) {
+      const versions = versionsOf(file);
       const firsts = entryFirsts(versions, key);
       for (const [name, date] of Object.entries(entryDates(versions, key)))
         dates[`${file}#${name}`] = { first: firsts[name], last: date };
+    }
+    // A log: each month's file, and for each entry the latest date in any of them.
+    for (const { dir, key } of LOGS) {
+      const months = existsSync(join(root, dir))
+        ? readdirSync(join(root, dir)).filter((name) => MONTH_FILE.test(name))
+        : [];
+      for (const month of months.sort()) {
+        const versions = versionsOf(`${dir}/${month}`);
+        const firsts = entryFirsts(versions, key);
+        for (const [name, last] of Object.entries(entryDates(versions, key))) {
+          const at = `${dir}/#${name}`;
+          const first = dates[at]?.first ?? firsts[name];
+          if (!dates[at] || last > dates[at].last) dates[at] = { first, last };
+        }
+      }
     }
     return {
       dates,

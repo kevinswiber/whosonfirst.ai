@@ -65,23 +65,23 @@ Implementation evidence sources are included in `scripts/sources.mjs`. `--add` r
 
 ### IETF drafts in the tracker
 
-Every entry in `src/data/standards.ts` with `status: "wg-draft"` or `status: "draft"` and `body: "IETF"`. The list is the file; it is not repeated here.
+Every entry in `src/data/standards.ts` with `body: "IETF"` that the tracker shows as a working group draft or an individual draft. An entry’s status, its revision and the sentence on where it stands are in the log in `src/data/history/`, not in the entry: [Applying a report](#applying-a-report) says how they change.
 
 Source: `https://datatracker.ietf.org/doc/<draft-name>/doc.json`. The draft name is the entry's `ref`. The entry `actor-profile` names two drafts in `ref`; check both.
 
 | Compare                               | With                                                                                                                                      |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Revision in `detail` ("Revision -17") | `rev`                                                                                                                                     |
-| Month in `detail`                     | `published` of the last item in `rev_history`. Not `time`, which changes whenever the document's metadata does                            |
+| The revision on the tracker           | `rev`                                                                                                                                     |
+| The month beside it                   | `published` of the last item in `rev_history`. Not `time`, which changes whenever the document's metadata does                            |
 | A full date, where the site gives one | The date on the draft's first page. `published` is in UTC, and the datatracker's web pages print local dates, which can be the day before |
-| Process state in `detail`             | `iesg_state`, `rfceditor_state`, and `state` (an expired draft reads "Expired")                                                           |
-| `status`                              | `group.type`: a draft adopted by a working group gets a new name, and the old name's page says what replaced it                           |
+| Where the tracker says it stands      | `iesg_state`, `rfceditor_state`, and `state` (an expired draft reads "Expired")                                                           |
+| Its status                            | `group.type`: a draft adopted by a working group gets a new name, and the old name's page says what replaced it                           |
 
 Also report:
 
 - A draft published as an RFC. Give the RFC number and date from `https://www.rfc-editor.org/rfc/rfc<number>.json`.
 - A draft adopted, replaced, renamed or expired.
-- What changed in a new revision, when the `detail` describes the previous one ("Revision -12 defines its header fields as Structured Fields") or a flow page shows syntax the revision changed. The draft's change log or the diff linked from its datatracker page is the source.
+- What changed in a new revision, when the tracker describes the previous one ("Revision -12 defines its header fields as Structured Fields") or a flow page shows syntax the revision changed. The draft's change log or the diff linked from its datatracker page is the source.
 
 ### Other drafts and versioned specifications
 
@@ -111,7 +111,7 @@ A published specification pins the draft revision it was written against. The si
 
 ### Projects with releases
 
-`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`, `biscuit`. Check the latest release, the API version or stage the `detail` names, and the foundation the project sits under.
+`spire`, `k8s-agent-sandbox`, `kube-agentic-networking`, `agentgateway`, `agntcy-identity`, `x402`, `biscuit`. Check the latest release, the API version or stage the tracker names, and the foundation the project sits under.
 
 A project entry has a maturity level only if `level` is set on it, with its evidence in a comment. If a project's own statement of stability has changed, say so: it can change a flow's rating.
 
@@ -213,17 +213,17 @@ In January, April, July and October.
 
 ### RFCs
 
-Every entry with `status: "rfc"`. Source: `https://www.rfc-editor.org/rfc/rfc<number>.json`. Report anything in `updated_by` or `obsoleted_by` that the entry does not list in `related` or mention in `detail`, and any change of BCP number. The JSON's `see_also` is empty: read the BCP number from the first page of `https://www.rfc-editor.org/rfc/rfc<number>.txt`.
+Every entry the tracker shows as an RFC. Source: `https://www.rfc-editor.org/rfc/rfc<number>.json`. Report anything in `updated_by` or `obsoleted_by` that the entry does not list in `related` or mention in `detail`, and any change of BCP number. The JSON's `see_also` is empty: read the BCP number from the first page of `https://www.rfc-editor.org/rfc/rfc<number>.txt`.
 
 An RFC being updated does not change its status or a flow's rating. It may change what a flow page should say.
 
 ### Final specifications from other bodies
 
-Every entry with `status: "final"` not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `caep`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
+Every entry the tracker shows as a final specification and not already covered above: OpenID Foundation (`oidc-discovery`, `ciba`, `authzen`, `shared-signals`, `caep`, `openid4vp`, `fapi-2`) and W3C (`vc-data-model`). Check for a new version, new errata, or a successor.
 
 ### Guidance
 
-Every entry with `status: "guidance"`. Check for a new edition and that the `url` still resolves.
+Every entry the tracker shows as guidance. Check for a new edition and that the `url` still resolves.
 
 ### Links
 
@@ -242,16 +242,22 @@ Each run, look for documents the tracker does not have. Report them; do not assu
 
 For the person, or the session, that makes the changes. One fact is often stated in more than one place.
 
-1. **The tracker entry** in `src/data/standards.ts`: `detail`, and `status`, `ref`, `name` and `url` if the document changed kind. Its `summary`, `status` and `ref` are also shown in place wherever the text names the document, from the same entry. If its name changes, change it in `NAMED` in `src/lib/gloss.ts` too, or the name stops being marked. Keep the entry's `id` when a draft becomes an RFC or is renamed, unless every flow that names it is changed with it; the build fails on an unknown `id`.
-2. **Everywhere else the old value appears.** Search `src/` for the old revision number, version or date. The tables above name the known copies.
-3. **The plain-words copies.** A fact stated on a flow page may be restated, more simply, in three other places, none of which the build ties to it:
+1. **The log.** Add an event to this month’s file in `src/data/history/` for each thing that happened: a revision, an adoption, a call, a step in the body’s process, an approval, a publication. Give it the date it happened, today as `recorded`, a summary, and the source it was read from. The tracker takes these from the latest events, so none is written anywhere else:
+   - **the revision and its month,** from the latest `version`. For a new revision, list what it changed in `changes`, with the change log or diff as `changesSource`;
+   - **where the document stands,** from the latest `standing`. Write one when the event changes it, as a sentence that stays true until the next event;
+   - **the status,** from the latest `status`. Set it on the event that changes it, such as an adoption or a publication.
+
+   A new month gets a new file, added to `src/data/history/index.ts`. A reworded sentence is not an event: correct the event in place, and where a fact in it was wrong, add `corrected` with the day and what was wrong. `npm test` checks the log.
+2. **The tracker entry** in `src/data/standards.ts`: `ref`, `name` and `url` if the document changed kind, and `detail` if its lasting note is no longer true. Its `summary`, `status` and `ref` are also shown in place wherever the text names the document, from the same entry. If its name changes, change it in `NAMED` in `src/lib/gloss.ts` too, or the name stops being marked. Keep the entry's `id` when a draft becomes an RFC or is renamed, unless every flow that names it is changed with it; the build fails on an unknown `id`.
+3. **Everywhere else the old value appears.** Search `src/` for the old revision number, version or date. The tables above name the known copies.
+4. **The plain-words copies.** A fact stated on a flow page may be restated, more simply, in three other places, none of which the build ties to it:
    - the flow's own overview: `phases`, `parts` and `like` in its file under `src/data/flows/`
    - the lessons in `src/pages/learn/`, each of which names in a comment the flow or data file it must not contradict. The ones that restate protocol facts: lesson 3 (authorization code with PKCE, and what MCP adds to it), lesson 4 (client credentials and workload identity), lesson 5 (token exchange, and that MCP forbids token passthrough) and lesson 6 (DPoP, step-up and the credential broker)
    - the definitions in `src/data/glossary.ts`, which flow pages now show in place beside the terms they use. A term with a `standard` shows that tracker entry's status and identifier, so a change to the entry reaches it without an edit; check that the definition still agrees
-4. **Ratings.** A status change can move a flow's rating. Flows with `roles` are checked by the build against their declared `maturity`; flows without `roles` are not, so read their `maturity` yourself. `about.mdx` states how many flows have been reviewed and that none is provisional.
-5. **The home page and the timeline.** `news` in `src/pages/index.astro`, and `moved` in `src/pages/standards/index.astro`, whose heading names the year.
-6. **This document.** Remove settled rows from the watch list and the citations table, and add new ones.
-7. **The review date**, once every section of a run has been applied or deliberately left:
+5. **Ratings.** A status change can move a flow's rating. Flows with `roles` are checked by the build against their declared `maturity`; flows without `roles` are not, so read their `maturity` yourself. `about.mdx` states how many flows have been reviewed and that none is provisional.
+6. **The home page and the timeline.** `news` in `src/pages/index.astro`, and `moved` in `src/pages/standards/index.astro`, whose heading names the year.
+7. **This document.** Remove settled rows from the watch list and the citations table, and add new ones.
+8. **The review date**, once every section of a run has been applied or deliberately left:
    - `REVIEWED` and `REVIEWED_ISO` in `src/data/site.ts`
    - the comment at the top of `src/data/standards.ts`
    - "verified in November 2026" in `src/pages/about.mdx`
@@ -259,8 +265,8 @@ For the person, or the session, that makes the changes. One fact is often stated
    - "read in November 2026" in `src/data/flows/workload-identity-federation.ts`
 
    The last two are dates for those pages alone. Change them only if those pages were re-read.
-8. **How facts were checked.** `src/pages/about.mdx`, the Accuracy section of `README.md`, the comment at the top of `src/data/standards.ts`, and the page facts and "Reading status correctly" on the standards page say which facts came from primary sources and which were reported. They say IETF process states were read from the datatracker. If a run could not read them there, that description changes.
-9. Run `npm run check`, `npm test` and `npm run build`.
+9. **How facts were checked.** `src/pages/about.mdx`, the Accuracy section of `README.md`, the comment at the top of `src/data/standards.ts`, and the page facts and "Reading status correctly" on the standards page say which facts came from primary sources and which were reported. They say IETF process states were read from the datatracker. If a run could not read them there, that description changes.
+10. Run `npm run check`, `npm test` and `npm run build`.
 
 When the changes from a full review have been applied, and every source the command listed has been read, record the values the sources give now:
 

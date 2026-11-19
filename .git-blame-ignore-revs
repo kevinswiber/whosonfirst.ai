@@ -1,6 +1,19 @@
-# Commits that only reformat. `git blame` skips them when run with
+# Commits that change nothing a page says: they only reformat, or only move
+# text from one file to another. `git blame` skips them when run with
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
-# GitHub reads this file on its own.
+# GitHub reads this file on its own, and so does the build, which dates a page
+# by the last commit that changed what it is made from and passes these over.
 
 # style: format with Biome
 6c49220f8d1c01e7750b33d262b293e29835cdb4
+
+# The log of the standards' history began with a baseline for every entry,
+# which says where it stood and records nothing that happened.
+a63aa36e9713cab19170f12af5445b868307f1c7
+
+# Each standard's status and status line moved from standards.ts to the log.
+# The site built before and after is the same, byte for byte.
+6bceb6cfad8eade648fca29ab958cb9b178ace4e
+
+# The log's logic moved to src/lib, and three versions were named in full.
+50051e0acd415f682f370c295d29d47019967e54

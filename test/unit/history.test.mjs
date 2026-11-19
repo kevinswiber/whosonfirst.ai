@@ -2,16 +2,18 @@
 // well formed, that it agrees with the tracker it describes, and that the
 // functions that read it give what they say.
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { history } from "../../src/data/history/index.ts";
+import { standards } from "../../src/data/standards.ts";
 import {
   currentOf,
   eventIds,
   historyOf,
+  statusLine,
   validateHistory,
   versionsOf,
-} from "../../src/data/history/model.ts";
-import { standards } from "../../src/data/standards.ts";
+} from "../../src/lib/history.ts";
 
 const ids = standards.map((s) => s.id);
 
@@ -19,26 +21,39 @@ test("the log is well formed, and every tracker entry has a baseline", () => {
   assert.deepEqual(validateHistory(history, ids), []);
 });
 
-// Until the tracker reads its status line from the log, each states it once,
-// and the two have to agree.
-test("the log gives every entry the status the tracker shows", () => {
-  const differ = standards
-    .filter((s) => currentOf(history, s.id)?.status !== s.status)
-    .map(
-      (s) =>
-        `${s.id}: tracker ${s.status}, log ${currentOf(history, s.id)?.status}`,
-    );
-  assert.deepEqual(differ, []);
+test("every entry has its status from the log, and names none of its own", () => {
+  const source = readFileSync(
+    new URL("../../src/data/standards.ts", import.meta.url),
+    "utf8",
+  );
+  assert.equal(source.match(/^ {4}status:/gm), null);
+  for (const s of standards)
+    assert.equal(s.status, currentOf(history, s.id).status, s.id);
 });
 
-test("the log gives every draft the revision the tracker shows", () => {
+test("a draft's status line opens with its revision and month, and an RFC's with its month", () => {
+  const byId = Object.fromEntries(standards.map((s) => [s.id, s]));
+  assert.match(
+    byId["oauth-2-1"].detail,
+    /^Revision -\d+, [A-Z][a-z]+ \d{4}\. /,
+  );
+  assert.equal(byId.rfc7636.detail, "September 2015.");
+  for (const s of standards) {
+    const version = currentOf(history, s.id).version;
+    if (/^-\d+$/.test(version?.label ?? ""))
+      assert.ok(s.detail.startsWith(`Revision ${version.label}, `), s.id);
+  }
+});
+
+// "SPIRE 1.16" and "A2A 1.0" put a version in an entry's name, by hand. It is
+// the one the log calls current, or the start of it.
+test("a version in an entry's name is the one the log calls current", () => {
   const differ = [];
   for (const s of standards) {
-    const said = /^Revision (-\d+),/.exec(s.detail ?? "");
-    if (!said) continue;
-    const label = currentOf(history, s.id)?.version?.label;
-    if (label !== said[1])
-      differ.push(`${s.id}: tracker ${said[1]}, log ${label}`);
+    const named = /\bv?(\d+\.\d+|\d{4}-\d{2}-\d{2})\b/.exec(s.ref)?.[1];
+    const label = currentOf(history, s.id).version?.label;
+    if (named && label && !label.replace(/^v/, "").startsWith(named))
+      differ.push(`${s.id}: named ${named}, log ${label}`);
   }
   assert.deepEqual(differ, []);
 });
@@ -232,5 +247,74 @@ test("days are in order whatever a month-only date sits between them", () => {
   assert.deepEqual(
     historyOf(log, "a").map((e) => e.summary),
     ["October.", "The 10th.", "Some day in November.", "The 20th."],
+  );
+});
+
+test("the status line is the version, where the document stands, and the entry's note", () => {
+  const draft = {
+    status: "wg-draft",
+    version: {
+      entry: "a",
+      label: "-03",
+      url: "https://example.org/",
+      date: "2026-11-05",
+    },
+    standing: "In last call.",
+  };
+  assert.equal(
+    statusLine(draft, "It would be the first."),
+    "Revision -03, November 2026. In last call. It would be the first.",
+  );
+  const rfc = {
+    status: "rfc",
+    version: {
+      entry: "a",
+      label: "RFC 9999",
+      url: "https://example.org/",
+      date: "2012-10",
+    },
+  };
+  assert.equal(statusLine(rfc, "BCP 212."), "October 2012. BCP 212.");
+  assert.equal(statusLine(rfc), "October 2012.");
+  // any other version is named by the standing, in its publisher's words
+  const release = {
+    status: "project",
+    version: {
+      entry: "a",
+      label: "v1.16.0",
+      url: "https://example.org/",
+      date: "2026-11",
+    },
+    standing: "Version 1.16.0, November 2026.",
+  };
+  assert.equal(statusLine(release), "Version 1.16.0, November 2026.");
+  assert.equal(statusLine({ status: "project" }), "");
+});
+
+test("a version the tracker does not word itself comes with where the document stands", () => {
+  const release = (over) =>
+    event({
+      kind: "version",
+      version: { label: "v2.0.0", url: "https://example.org/v2" },
+      ...over,
+    });
+  refuses([base, release({})], /has no standing/);
+  assert.deepEqual(
+    problems([base, release({ standing: "Version 2.0.0." })]),
+    [],
+  );
+  // a release candidate is not the current version, and changes no status line
+  assert.deepEqual(
+    problems([
+      base,
+      release({
+        version: {
+          label: "v2.0.0-rc",
+          url: "https://example.org/rc",
+          pre: true,
+        },
+      }),
+    ]),
+    [],
   );
 });
