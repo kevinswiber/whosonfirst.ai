@@ -1851,7 +1851,7 @@ export const standards: Standard[] = [
     ref: "RFC 8935",
     body: "IETF",
     status: "rfc",
-    detail: "Document dated November 2020.",
+    detail: "November 2020.",
     topics: ["signals"],
     summary:
       "Defines delivery of a Security Event Token by HTTP POST over TLS, with a response reporting acceptance or an error.",
