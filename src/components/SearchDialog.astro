@@ -19,15 +19,13 @@ import GuideSearch from "./GuideSearch.astro";
     const input = dialog.querySelector<HTMLInputElement>('input[name="q"]')!;
     const search = dialog.querySelector('guide-search')!;
     const hint = launcher.querySelector<HTMLElement>('.launch-key')!;
-    hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K';
+    hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? ' ⌘ K' : ' Ctrl K';
     hint.hidden = false;
     launcher.setAttribute('aria-keyshortcuts', 'Control+K Meta+K');
     let returnTo: HTMLElement = launcher;
-    let followingLink = false;
     const openSearch = (from: HTMLElement) => {
       if (!dialog.open) {
         returnTo = from;
-        followingLink = false;
         dialog.showModal();
       }
       input.focus();
@@ -74,21 +72,34 @@ import GuideSearch from "./GuideSearch.astro";
         first?.focus();
       }
     });
-    dialog.querySelector('.dialog-close')!.addEventListener('click', () => dialog.close());
-    dialog.addEventListener('click', (event) => {
-      if (!(event.target instanceof Element)) return;
-      if (event.target === dialog) {
-        dialog.close();
-      } else if (event.target.closest('a[href]') && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
-        // A fragment may be on the current page. Close the dialog and let the
-        // link take the reader there without restoring focus to the header.
-        followingLink = true;
-        dialog.close();
-      }
-    });
-    dialog.addEventListener('close', () => {
+    // The native close event is queued for a later frame. Cancel timers and
+    // requests in the same action that closes the dialog, before a new search
+    // can open or a pending query can fire.
+    const closeSearch = (restoreFocus = true) => {
+      dialog.close();
       search.dispatchEvent(new Event('guide-search-reset'));
-      if (!followingLink) (returnTo.isConnected ? returnTo : launcher).focus({ preventScroll: true });
+      if (restoreFocus) (returnTo.isConnected ? returnTo : launcher).focus({ preventScroll: true });
+    };
+    dialog.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      closeSearch();
+    });
+    dialog.querySelector('.dialog-close')!.addEventListener('click', () => closeSearch());
+    dialog.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element) || event.defaultPrevented) return;
+      if (event.target === dialog) {
+        closeSearch();
+        return;
+      }
+      const link = event.target.closest<HTMLAnchorElement>('a[href]');
+      if (link && !event.button && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        // Reset removes the result links. Keep the chosen href so fragment
+        // navigation also works when the result is on this very page.
+        const href = link.href;
+        event.preventDefault();
+        closeSearch(false);
+        location.assign(href);
+      }
     });
   }
 </script>

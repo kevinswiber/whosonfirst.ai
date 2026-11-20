@@ -298,10 +298,10 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             {QUICK.label}
           </a>
         </div>
-        <a class="search-launch" data-search-launch href="/search/" aria-label="Search the guide" aria-current={path === '/search/' ? 'page' : undefined}>
+        <a class="search-launch" data-search-launch href="/search/" aria-labelledby="header-search-label header-search-key" aria-current={path === '/search/' ? 'page' : undefined}>
           <span class="search-glass" aria-hidden="true"></span>
-          <span class="launch-label">Search the guide</span>
-          <kbd class="launch-key" aria-hidden="true" hidden></kbd>
+          <span class="launch-label" id="header-search-label">Search the guide</span>
+          <kbd class="launch-key" id="header-search-key" hidden></kbd>
         </a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
         <div class="nav-tools">
