@@ -2,7 +2,7 @@
 import GuideSearch from "./GuideSearch.astro";
 ---
 
-<dialog id="global-search" class="search-dialog" aria-labelledby="global-search-title">
+<dialog id="global-search" class="search-dialog" aria-labelledby="global-search-title" aria-describedby="search-keys">
   <div class="dialog-content">
     <div class="dialog-head">
       <h2 id="global-search-title">Search the guide</h2>
@@ -10,6 +10,11 @@ import GuideSearch from "./GuideSearch.astro";
     </div>
     <GuideSearch idPrefix="modal-" />
   </div>
+  <p id="search-keys" class="search-keys">
+    <span><span class="visually-hidden">Up and down arrows</span><kbd aria-hidden="true">↑</kbd><kbd aria-hidden="true">↓</kbd> Navigate</span>
+    <span><kbd>Enter</kbd> Select</span>
+    <span><kbd>Esc</kbd> Close</span>
+  </p>
 </dialog>
 
 <script>
@@ -124,12 +129,41 @@ import GuideSearch from "./GuideSearch.astro";
     border-radius: var(--radius);
     background: var(--bg-raised);
     color: var(--fg);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: hidden;
   }
   .search-dialog::backdrop { background: rgb(14 15 17 / 55%); }
   :global(html:has(.search-dialog[open])) { overflow: hidden; }
-  .dialog-content { padding: clamp(1rem, 3vw, 2rem); }
+  .search-dialog[open] { display: flex; flex-direction: column; }
+  .dialog-content {
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .search-keys {
+    display: flex;
+    flex: none;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding: 0.6rem clamp(1rem, 3vw, 2rem);
+    border-top: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-size: 0.8rem;
+  }
+  .search-keys > span { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .search-keys > span:last-child { margin-inline-start: auto; }
+  .search-keys kbd {
+    min-width: 1.3rem;
+    padding: 0.15rem 0.25rem;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--fg);
+    font: 500 0.72rem/1 var(--font-mono);
+    text-align: center;
+  }
   .dialog-head {
     display: flex;
     align-items: center;

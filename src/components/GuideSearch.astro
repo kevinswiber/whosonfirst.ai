@@ -369,6 +369,33 @@ const examples = [
   .compact .quick-matches, .compact .search-examples { margin-top: 1rem; }
   .compact .quick-matches :global(li) { padding-block: 0.45rem; }
   .compact .search-results :global(li) { padding-block: 0.65rem; }
+  /* Stretch the existing title link across its row. A click on the excerpt
+     or the whitespace then follows the same link as Enter or a context menu. */
+  .compact :is(.quick-matches, .search-results) :global(li) {
+    position: relative;
+    padding-inline: 0.65rem;
+  }
+  .compact :is(.quick-matches, .search-results) :global(a::after) {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .compact .search-examples button { padding-inline: 0.65rem; }
+  .compact :global(li:has(:focus-visible)) {
+    background: var(--accent-soft);
+    border-radius: var(--radius);
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .compact :global(li :focus-visible) { outline: none; }
+  @media (hover: hover) {
+    .compact :global(li:hover) {
+      background: var(--accent-soft);
+      border-radius: var(--radius);
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+    }
+  }
   .quick-matches, .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
   .quick-matches h2, .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
   .quick-matches ul, .search-examples ul { list-style: none; padding: 0; margin: 0.4rem 0 0; }

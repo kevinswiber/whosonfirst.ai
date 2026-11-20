@@ -438,6 +438,48 @@ for (const [device, viewport] of [
   });
 }
 
+test("the keyboard legend stays in view and a click on result padding opens the link", async () => {
+  const ctx = await site.context({ viewport: { width: 840, height: 480 } });
+  const page = await ctx.newPage();
+  await page.route(site.url(fullSearch), (route) =>
+    route.fulfill({ json: { results: [passage] } }),
+  );
+  await open(page, site.url("/"));
+  await page.locator("[data-search-launch]").click();
+  const dialog = page.getByRole("dialog");
+  const keys = dialog.locator("kbd");
+  assert.deepEqual(await keys.allTextContents(), ["↑", "↓", "Enter", "Esc"]);
+  await dialog.getByRole("button", { name: exampleName }).click();
+  const row = dialog.locator(".search-results li").first();
+  await row.scrollIntoViewIfNeeded();
+  const legend = dialog.locator(".search-keys");
+  assert.ok(
+    await legend.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      return document.elementFromPoint(box.x + 4, box.y + 4) === el;
+    }),
+  );
+  const box = await row.boundingBox();
+  const position = { x: box.width - 6, y: box.height - 7 };
+  await row.hover({ position });
+  const hovered = await row.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  assert.notEqual(hovered, "rgba(0, 0, 0, 0)");
+  await page.mouse.move(0, 0);
+  await dialog.getByRole("searchbox").press("ArrowDown");
+  assert.equal(await focused(row.getByRole("link")), true);
+  assert.equal(
+    await row.evaluate((el) => getComputedStyle(el).backgroundColor),
+    hovered,
+  );
+  await Promise.all([
+    page.waitForURL(site.url(passage.href)),
+    row.click({ position }),
+  ]);
+  await ctx.close();
+});
+
 test("the four directory filters stay local and open a fresh site-search dialog", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
