@@ -295,6 +295,80 @@ export function searchManifest(root) {
   return { revision: hash(JSON.stringify(records)), records };
 }
 
+// The browser only needs named destinations. Descriptive queries still go to
+// the full search when submitted, so never ship the passage text or index keys.
+function quickMatches(records) {
+  const entries = new Map();
+  const sentences = new Intl.Segmenter("en", { granularity: "sentence" });
+  function add(record, href, title, aliases) {
+    if (entries.has(href)) return;
+    const lead =
+      record.type === "Standard"
+        ? record.text.split(" Where it stands ")[0]
+        : record.text;
+    let summary = "";
+    for (const { segment } of sentences.segment(lead)) {
+      const next = (summary + segment).trimEnd();
+      if (next.length > 160) {
+        if (!summary) summary = `${next.slice(0, 160).replace(/\s+\S*$/, "")}…`;
+        break;
+      }
+      summary += segment;
+      if (summary.trimEnd().length >= 70) break;
+    }
+    summary = summary.trimEnd();
+    entries.set(href, {
+      title,
+      href,
+      type: record.type,
+      summary,
+      aliases: [
+        ...new Set(
+          aliases.filter((a) => a && a.toLowerCase() !== title.toLowerCase()),
+        ),
+      ],
+    });
+  }
+  for (const record of records) {
+    const { href, title, section, type, aliases } = record;
+    const [path, fragment] = href.split("#");
+    // Every page has a lead, except evidence pages, where the scope is its
+    // first meaningful description. Give those a page-level destination too.
+    if (
+      !fragment ||
+      (type === "Implementation evidence" && fragment === "field-scope")
+    ) {
+      const slug = path.split("/").at(-2) || "";
+      const name =
+        type === "Standard" && section && section !== title
+          ? `${title} (${section})`
+          : title;
+      add(record, path, name, [...aliases, slug.replaceAll("-", " ")]);
+    } else if (type === "Glossary") {
+      add(record, href, section, aliases);
+    } else if (type === "Implementation evidence" && section.includes(" · ")) {
+      // A product often plays several roles. Preserve both role and flow in
+      // the link text, even when two results share the same product name.
+      const flow = title.replace(
+        / implementations and deployment reports$/,
+        "",
+      );
+      add(record, href, `${section} · ${flow}`, [section.split(" · ")[0]]);
+    }
+  }
+  const priority = ["Flow", "Standard", "Glossary", "Implementation evidence"];
+  const rank = (type) => {
+    const index = priority.indexOf(type);
+    return index < 0 ? priority.length : index;
+  };
+  return [...entries.values()].sort(
+    (a, b) =>
+      rank(a.type) - rank(b.type) ||
+      a.title.localeCompare(b.title, "en") ||
+      a.href.localeCompare(b.href, "en"),
+  );
+}
+
 export default function searchPassages() {
   let destination;
   return {
@@ -310,6 +384,10 @@ export default function searchPassages() {
         const temp = join(destination, `manifest-${process.pid}.tmp`);
         writeFileSync(temp, JSON.stringify(manifest));
         renameSync(temp, join(destination, "manifest.json"));
+        writeFileSync(
+          new URL("search/quick-matches.json", dir),
+          JSON.stringify(quickMatches(manifest.records)),
+        );
         // The site and its independently deployed search Worker must agree on
         // both the source revision and the passages produced from it.
         const git = spawnSync("git", ["rev-parse", "HEAD"], {
