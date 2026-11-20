@@ -12,6 +12,7 @@ import {
   currentOf,
   eventIds,
   feedOf,
+  happenings,
   historyOf,
   movedIn,
   readCitations,
@@ -259,6 +260,19 @@ test("days are in order whatever a month-only date sits between them", () => {
     historyOf(log, "a").map((e) => e.summary),
     ["October.", "The 10th.", "Some day in November.", "The 20th."],
   );
+});
+
+// A version is written as its body writes it, and the IETF names a draft in
+// full: draft-ietf-wimse-arch-09, not “revision -09”. The tracker's status
+// lines do so, and what the changelog and the timeline say of each event has
+// to as well, or a reader finds both forms on one page.
+test("what the changelog says of an event names a draft's version in full, not by its number alone", () => {
+  const bare = happenings(history).flatMap((e) =>
+    [e.summary ?? "", ...(e.changes ?? [])]
+      .filter((text) => /\b[Rr]evision -\d/.test(text))
+      .map((text) => `${e.id}: ${text}`),
+  );
+  assert.deepEqual(bare, []);
 });
 
 test("the status line is the version, where the document stands, and the entry's note", () => {
