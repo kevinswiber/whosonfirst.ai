@@ -4,6 +4,7 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { citations } from "../../src/data/history/citations.ts";
 import { history } from "../../src/data/history/index.ts";
 import { standards } from "../../src/data/standards.ts";
 import {
@@ -13,10 +14,12 @@ import {
   feedOf,
   historyOf,
   movedIn,
+  readCitations,
   recordBegan,
   spellDate,
   statusLine,
   timeline,
+  validateCitations,
   validateHistory,
   versionsOf,
 } from "../../src/lib/history.ts";
@@ -449,5 +452,94 @@ test("what moved in a year is what changed where a document is, and what was mar
       (g) => `${g.key}: ${g.events.map((e) => e.summary).join(" ")}`,
     ),
     ["2026-08: Published.", "2026-11: Ended."],
+  );
+});
+
+/* ───────────── What one specification cites of another ───────────── */
+
+test("every citation names versions the log knows", () => {
+  assert.deepEqual(validateCitations(citations, history, ids), []);
+});
+
+test("a citation is refused unless both its versions are in the log", () => {
+  const log = [
+    base,
+    {
+      ...base,
+      entry: "b",
+      version: { label: "v2", url: "https://example.org/b", date: "2026-10" },
+    },
+  ];
+  const cite = (over) => ({
+    from: "b@v2",
+    to: "a@-01",
+    kind: "normative",
+    how: "requires",
+    source: "https://example.org/b#refs",
+    ...over,
+  });
+  const wrong = (c, pattern) => {
+    const found = validateCitations([c], log, ["a", "b"]);
+    assert.ok(
+      found.some((l) => pattern.test(l)),
+      `expected ${pattern}, got ${JSON.stringify(found)}`,
+    );
+  };
+  assert.deepEqual(validateCitations([cite({})], log, ["a", "b"]), []);
+  // a document cited with no revision named
+  assert.deepEqual(validateCitations([cite({ to: "a" })], log, ["a", "b"]), []);
+  wrong(cite({ to: "a@-09" }), /the log has no version -09 of "a"/);
+  wrong(cite({ from: "b" }), /names a version/);
+  wrong(cite({ to: "c@-01" }), /"c" is not a tracker entry/);
+  wrong(cite({ from: "a@-01" }), /does not cite itself/);
+  wrong(cite({ source: "" }), /no source/);
+  wrong(cite({ how: " " }), /how it is cited/);
+  const twice = validateCitations([cite({}), cite({})], log, ["a", "b"]);
+  assert.ok(twice.some((l) => /listed twice/.test(l)));
+});
+
+test("whether a cited revision is still current is read from the log", () => {
+  const cite = {
+    from: "b@v2",
+    to: "a@-01",
+    kind: "normative",
+    how: "requires",
+    source: "https://example.org/",
+  };
+  const b = {
+    ...base,
+    entry: "b",
+    version: { label: "v2", url: "https://example.org/b", date: "2026-10" },
+  };
+  const [now] = readCitations([cite], [base, b]);
+  assert.equal(now.behind, false);
+  assert.equal(now.current, "-01");
+  // the cited document publishes a revision: nothing in the citation changes, and it is behind
+  const later = event({
+    kind: "version",
+    version: { label: "-02", url: "https://example.org/a-02" },
+  });
+  const [then] = readCitations([cite], [base, b, later]);
+  assert.equal(then.behind, true);
+  assert.equal(then.current, "-02");
+  assert.equal(then.superseded, false);
+  // a version is written as its publisher writes it: its full name where the log has one
+  const named = event({
+    kind: "version",
+    date: "2026-11-21",
+    version: {
+      label: "-03",
+      name: "draft-example-a-03",
+      url: "https://example.org/a-03",
+    },
+  });
+  const [full] = readCitations([cite], [base, b, later, named]);
+  assert.equal(full.currentName, "draft-example-a-03");
+  assert.equal(full.toName, "-01");
+  assert.equal(full.fromName, "v2");
+  // a document cited with no revision named is never behind
+  assert.equal(
+    readCitations([{ ...cite, to: "a" }], [base, b, later])[0].behind,
+    false,
   );
 });

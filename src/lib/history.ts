@@ -608,3 +608,120 @@ export const feedOf = (
     "",
   ].join("\n");
 };
+
+/* ───────────── What one specification cites of another ───────────── */
+
+export interface Citation {
+  /** The version that cites: `<entry>@<label>`. */
+  from: string;
+  /** The version cited: `<entry>@<label>`, or `<entry>` where no revision is named. */
+  to: string;
+  /** Whether the citing document depends on it, or only refers to it. */
+  kind: "normative" | "informative";
+  /** What the citing document does with it, as a verb: "requires", "recommends", "builds on". */
+  how: string;
+  /** Where in the citing document this was read. */
+  source: string;
+  /** Anything about the citation that a reader of either entry should know. */
+  note?: string;
+}
+
+/** A version's name taken apart: `oauth-2-1@-13` is entry `oauth-2-1`, label `-13`. */
+export const versionName = (name: string) => {
+  const at = name.indexOf("@");
+  return at < 0
+    ? { entry: name, label: undefined }
+    : { entry: name.slice(0, at), label: name.slice(at + 1) };
+};
+
+/** What is wrong with the citations, one line each, or nothing. */
+export const validateCitations = (
+  citations: Citation[],
+  events: HistoryEvent[],
+  entries: Iterable<string>,
+): string[] => {
+  const known = new Set(entries);
+  const errors: string[] = [];
+  const seen = new Set<string>();
+  for (const citation of citations) {
+    const name = `${citation.from} → ${citation.to}`;
+    const fail = (message: string) => errors.push(`${name}: ${message}`);
+    if (seen.has(name)) fail("is listed twice");
+    seen.add(name);
+    const from = versionName(citation.from);
+    const to = versionName(citation.to);
+    if (!from.label) fail("the citing side names a version: <entry>@<label>");
+    if (from.entry === to.entry) fail("a document does not cite itself");
+    for (const side of [from, to]) {
+      if (!known.has(side.entry)) {
+        fail(`"${side.entry}" is not a tracker entry`);
+      } else if (
+        side.label &&
+        !versionsOf(events, side.entry).some((v) => v.label === side.label)
+      ) {
+        fail(
+          `the log has no version ${side.label} of "${side.entry}": record the event that published it`,
+        );
+      }
+    }
+    if (citation.kind !== "normative" && citation.kind !== "informative")
+      fail(`unknown kind "${citation.kind}"`);
+    if (!citation.how.trim()) fail("does not say how it is cited");
+    if (!isUrl(citation.source))
+      fail("has no source, or one that is not an https address");
+  }
+  return errors;
+};
+
+/** A citation with what the log says of the two versions today. */
+export interface ReadCitation extends Citation {
+  fromEntry: string;
+  fromLabel: string;
+  toEntry: string;
+  /** The revision cited, where one is named. */
+  toLabel?: string;
+  /** The cited document's current version, where the log has one. */
+  current?: string;
+  /**
+   * Each version as its publisher writes it: its full name where the log has
+   * one ("draft-ietf-oauth-v2-1-13"), and its label where that is the whole of
+   * it ("2026-07-28"). A page shows these, and adds no word of its own.
+   */
+  fromName: string;
+  toName?: string;
+  currentName?: string;
+  /** True where a revision is named and the cited document has moved past it. */
+  behind: boolean;
+  /** True where the citing version is no longer its document's current one. */
+  superseded: boolean;
+}
+
+/** Every citation, read against the log. */
+export const readCitations = (
+  citations: Citation[],
+  events: HistoryEvent[],
+): ReadCitation[] =>
+  citations.map((citation) => {
+    const from = versionName(citation.from);
+    const to = versionName(citation.to);
+    const now = currentOf(events, to.entry)?.version;
+    const current = now?.label;
+    const written = (entry: string, label: string | undefined) => {
+      const version = versionsOf(events, entry).find((v) => v.label === label);
+      return version?.name ?? label;
+    };
+    return {
+      ...citation,
+      fromEntry: from.entry,
+      fromLabel: from.label ?? "",
+      toEntry: to.entry,
+      toLabel: to.label,
+      current,
+      fromName: written(from.entry, from.label) ?? "",
+      toName: written(to.entry, to.label),
+      currentName: now?.name ?? now?.label,
+      behind:
+        to.label !== undefined && current !== undefined && current !== to.label,
+      superseded: currentOf(events, from.entry)?.version?.label !== from.label,
+    };
+  });

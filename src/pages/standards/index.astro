@@ -5,7 +5,8 @@ import { standards, std } from "../../data/standards";
 import { flows } from "../../data/flows";
 import { REVIEWED, REVIEWED_ISO } from "../../data/site";
 import { history } from "../../data/history";
-import { monthName, movedIn } from "../../lib/history";
+import { citations } from "../../data/history/citations";
+import { monthName, movedIn, readCitations } from "../../lib/history";
 import {
   RELATED_LABEL,
   STATUS_LABEL,
@@ -30,6 +31,46 @@ const count = (fn: (s: (typeof standards)[number]) => boolean) =>
   standards.filter(fn).length;
 // A flow uses an entry it requires. One it lists as optional or background, or whose role is not
 // settled, it only mentions: a draft named for context is not something the flow depends on.
+// What one specification cites of another, by revision, with whether the
+// revision cited is still the current one: worked out from the log.
+const cited = readCitations(citations, history);
+// A version is written as its publisher writes it, with no word added here.
+const citationsOf = (id: string) => [
+  ...cited
+    .filter((c) => c.fromEntry === id)
+    .map((c) => {
+      const to = std(c.toEntry);
+      const state = !c.toName
+        ? "It names no revision."
+        : c.behind
+          ? `The current one is ${c.currentName}.`
+          : "That is the current one.";
+      return {
+        kind: "Cites",
+        name: c.toName ? `${to.name}, ${c.toName}` : to.name,
+        href: `#${to.id}`,
+        out: false,
+        note: `${c.fromName} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
+      };
+    }),
+  ...cited
+    .filter((c) => c.toEntry === id)
+    .map((c) => {
+      const from = std(c.fromEntry);
+      const state = !c.toName
+        ? "It names no revision."
+        : c.behind
+          ? `It cites ${c.toName}; the current one is ${c.currentName}.`
+          : `It cites ${c.toName}, the current one.`;
+      return {
+        kind: "Cited by",
+        name: `${from.name}, ${c.fromName}`,
+        href: `#${from.id}`,
+        out: false,
+        note: state,
+      };
+    }),
+];
 const listedIn = (id: string) => flows.filter((f) => f.standards.includes(id));
 const usedIn = (id: string) =>
   listedIn(id).filter((f) => !f.roles || f.roles[id] === "required");
@@ -156,13 +197,13 @@ const moved = movedIn(history, YEAR);
                 const mentioned = mentionedIn(s.id);
                 // A related document with its own entry links to that entry
                 // on this page. Any other links to the document itself.
-                const related = (s.related ?? []).map((r) => {
+                const related = [...(s.related ?? []).map((r) => {
                   if ('entry' in r) {
                     const e = std(r.entry);
                     return { kind: RELATED_LABEL[r.kind], name: `${e.name} (${e.ref})`, href: `#${e.id}`, out: false, note: r.note ?? '' };
                   }
                   return { kind: RELATED_LABEL[r.kind], name: r.name, href: r.url, out: true, note: r.note ?? '' };
-                });
+                }), ...citationsOf(s.id)];
                 return (
                   <li
                     class="sx-item"
