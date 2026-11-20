@@ -250,6 +250,8 @@ const data = {
       const data: Data = JSON.parse(this.querySelector('.dg-data')!.textContent!);
       const jump = this.querySelector<HTMLElement>('.dg-jump-n');
       const more = this.querySelector<HTMLDetailsElement>('.dg-more');
+      // the questions under More questions: their answers only take flows out, or move them up
+      const further = data.asks.map((q) => q.id);
       const names = [...new Set([...form.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name))];
 
       const read = (): Answers => {
@@ -267,7 +269,7 @@ const data = {
         const answered = Object.keys(a).length;
         // the questions asked first are counted against their number; the others, as many as are answered
         const first = data.first.filter((n) => a[n] != null).length;
-        const further = answered - first;
+        const extra = answered - first;
 
         if (push) {
           const qs = new URLSearchParams(a).toString();
@@ -281,7 +283,7 @@ const data = {
         }
 
         // best rule per flow; a "start" beats an "add" beats a "consider"
-        const groups = recommend(data.rules, a);
+        const groups = recommend(data.rules, a, further);
 
         let html = '';
         const total = groups.start.length + groups.add.length + groups.consider.length;
@@ -291,7 +293,7 @@ const data = {
         const copy = navigator.clipboard
           ? `<button class="btn small ghost dg-copy" type="button">Copy result link</button>`
           : '';
-        const status = `${first} of ${data.first.length} answered${further ? `, ${further} more` : ''}`;
+        const status = `${first} of ${data.first.length} answered${extra ? `, ${extra} more` : ''}`;
         html += `<div class="dg-top"><p class="dg-status">${status} · ${count}</p><p class="dg-tools"><a class="dg-edit" href="#questions">Edit answers</a>${copy}<span class="dg-copied"></span></p></div>`;
 
         // The name of the case, once the questions it comes from are answered,

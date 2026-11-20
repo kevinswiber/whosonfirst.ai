@@ -3,7 +3,8 @@
  * and the names for the cases the first two answers describe.
  *
  * A rule applies when every key it names matches the selected answer. Questions
- * the reader has not answered yet do not rule anything out.
+ * the reader has not answered yet do not rule anything out. A rule is brought up
+ * by an answer to one of the first six questions, never by a further one alone.
  */
 
 export interface Question {

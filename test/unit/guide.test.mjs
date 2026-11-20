@@ -19,6 +19,9 @@ import {
   recommend,
 } from "../../src/lib/guide-rules.ts";
 
+// The questions under “More questions”, which the guide tells recommend about.
+const FURTHER = questions.filter((q) => q.advanced).map((q) => q.id);
+
 const answers = (id) =>
   questions.find((q) => q.id === id).options.map((o) => o.value);
 
@@ -117,7 +120,7 @@ test("a flow is listed once: the stronger heading, then more answers matched, th
     rule("z", "start", { principal: ["user"] }, { weight: 1 }),
     rule("z", "start", { human: ["absent"] }, { weight: 9 }),
   ];
-  const got = recommend(made, a);
+  const got = recommend(made, a, []);
   assert.deepEqual(
     got.add.map((r) => r.why),
     [made[1].why],
@@ -139,6 +142,7 @@ test("under a heading, flows are ordered by answers matched and then by weight",
       rule("close", "start", { principal: ["user"], human: ["absent"] }),
     ],
     { principal: "user", human: "absent" },
+    [],
   );
   assert.deepEqual(
     got.start.map((r) => r.flow),
@@ -160,7 +164,7 @@ test("a case’s page has every flow the guide starts with, however the other qu
     for (const others of combinations(rest)) {
       const a = { ...fixed, ...others };
       const mine = listed.filter((r) => holds(r.when, a));
-      const guide = recommend(rules, a).start;
+      const guide = recommend(rules, a, FURTHER).start;
       assert.deepEqual(
         [...new Set(mine.map((r) => r.flow))].sort(),
         guide.map((r) => r.flow).sort(),
@@ -188,7 +192,7 @@ test("a case’s page lists no rule that never applies, and none twice", () => {
         all.some(
           (a) =>
             holds(r.when, a) &&
-            recommend(rules, a).start.some((g) => g.why === r.why),
+            recommend(rules, a, FURTHER).start.some((g) => g.why === r.why),
         ),
         `${s.slug}: the guide never gives this reason for ${r.flow}`,
       );
@@ -296,7 +300,7 @@ test("every flow on the site is one the guide brings up for some answers to the 
   assert.ok(slugs.length > 20, `only ${slugs.length} flows found`);
   const reached = new Set();
   for (const a of combinations(first))
-    for (const f of flowsIn(recommend(rules, a))) reached.add(f);
+    for (const f of flowsIn(recommend(rules, a, FURTHER))) reached.add(f);
   for (const slug of slugs) {
     if (slug in NEVER) {
       assert.ok(!reached.has(slug), `${slug} is listed as never reached`);
@@ -329,10 +333,10 @@ test("the further questions are asked after the first six and change no name", (
 test("an answer to a further question never changes where to start and never adds a flow", () => {
   const extras = combinations(further);
   for (const a of combinations(first)) {
-    const before = recommend(rules, a);
+    const before = recommend(rules, a, FURTHER);
     const shown = flowsIn(before);
     for (const extra of extras) {
-      const after = recommend(rules, { ...a, ...extra });
+      const after = recommend(rules, { ...a, ...extra }, FURTHER);
       assert.deepEqual(
         after.start.map((r) => [r.flow, r.why]),
         before.start.map((r) => [r.flow, r.why]),
@@ -360,10 +364,10 @@ test("each further question takes out the flows whose reasons wait on it, and no
   assert.deepEqual(Object.keys(TAKES_OUT), further);
   const out = Object.fromEntries(further.map((q) => [q, new Set()]));
   for (const a of combinations(first)) {
-    const shown = flowsIn(recommend(rules, a));
+    const shown = flowsIn(recommend(rules, a, FURTHER));
     for (const q of further)
       for (const v of answers(q)) {
-        const after = flowsIn(recommend(rules, { ...a, [q]: v }));
+        const after = flowsIn(recommend(rules, { ...a, [q]: v }, FURTHER));
         for (const f of shown) if (!after.has(f)) out[q].add(f);
       }
   }
@@ -386,16 +390,23 @@ test("a handoff to another agent keeps token exchange, whatever is said about th
       target: "agent",
       ...(onward ? { onward } : {}),
     };
-    assert.ok(flowsIn(recommend(rules, a)).has("token-exchange"), onward);
+    assert.ok(
+      flowsIn(recommend(rules, a, FURTHER)).has("token-exchange"),
+      onward,
+    );
   }
   assert.ok(
     !flowsIn(
-      recommend(rules, {
-        principal: "user",
-        boundary: "same",
-        target: "api",
-        onward: "no",
-      }),
+      recommend(
+        rules,
+        {
+          principal: "user",
+          boundary: "same",
+          target: "api",
+          onward: "no",
+        },
+        FURTHER,
+      ),
     ).has("token-exchange"),
   );
 });
@@ -431,4 +442,78 @@ test("the guide counts what one more answer could take out, and nothing it could
   // answered yes, the flow stays, and is not counted again
   assert.ok(!narrowable(rules, asks, { ...a, cert: "yes" }).has("oauth-mtls"));
   assert.equal(narrowable(rules, asks, {}).size, 0);
+});
+
+// Every way of answering some, all or none of these questions.
+const partial = (ids) =>
+  ids.reduce(
+    (sets, id) =>
+      sets.flatMap((a) => [a, ...answers(id).map((v) => ({ ...a, [id]: v }))]),
+    [{}],
+  );
+
+test("every rule is brought up by one of the first six questions, not by a further one alone", () => {
+  for (const r of rules)
+    assert.ok(
+      Object.keys(r.when).some((q) => first.includes(q)),
+      `${r.flow}: ${JSON.stringify(r.when)}`,
+    );
+  // a rule that waits on a further answer is not brought up by it
+  const made = [rule("x", "consider", { target: ["api"], cert: ["yes"] })];
+  const shown = (a) => flowsIn(recommend(made, a, ["cert"]));
+  assert.equal(shown({ principal: "self", cert: "yes" }).size, 0);
+  assert.equal(shown({ target: "api" }).size, 1);
+  assert.equal(shown({ target: "api", cert: "no" }).size, 0);
+  assert.equal(shown({ target: "api", cert: "yes" }).size, 1);
+});
+
+test("with the first six answered in part or not at all, a further answer never adds a flow, or changes the start, the name or the cautions", () => {
+  // one further answer at a time, and every way of answering all five
+  const extras = [
+    ...further.flatMap((q) => answers(q).map((v) => ({ [q]: v }))),
+    ...combinations(further),
+  ];
+  const warned = (a) =>
+    cautions.filter((c) => matches(c.when, a, true)).map((c) => c.text);
+  for (const a of partial(first)) {
+    const before = recommend(rules, a, FURTHER);
+    const shown = flowsIn(before);
+    for (const extra of extras) {
+      const b = { ...a, ...extra };
+      const after = recommend(rules, b, FURTHER);
+      const at = `${JSON.stringify(a)} ${JSON.stringify(extra)}`;
+      for (const f of flowsIn(after))
+        assert.ok(shown.has(f), `${f} appears only after ${at}`);
+      assert.deepEqual(
+        after.start.map((r) => [r.flow, r.why]),
+        before.start.map((r) => [r.flow, r.why]),
+        at,
+      );
+      assert.equal(caseFor(cases, b)?.slug, caseFor(cases, a)?.slug, at);
+      assert.deepEqual(warned(b), warned(a), at);
+    }
+  }
+});
+
+test("what one more answer could take out is counted with the first six answered in part", () => {
+  const asks = questions.filter((q) => q.advanced);
+  assert.ok(!narrowable(rules, asks, { principal: "self" }).has("oauth-mtls"));
+  assert.ok(
+    narrowable(rules, asks, { principal: "self", target: "api" }).has(
+      "oauth-mtls",
+    ),
+  );
+  // each one counted is shown, and taken out by some one answer
+  const gone = (a, f) =>
+    asks.some((q) =>
+      q.options.some(
+        (o) =>
+          !flowsIn(recommend(rules, { ...a, [q.id]: o.value }, FURTHER)).has(f),
+      ),
+    );
+  for (const a of partial(["principal", "human", "target", "boundary"])) {
+    const shown = flowsIn(recommend(rules, a, FURTHER));
+    for (const f of narrowable(rules, asks, a))
+      assert.ok(shown.has(f) && gone(a, f), `${JSON.stringify(a)}: ${f}`);
+  }
 });
