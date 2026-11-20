@@ -142,6 +142,8 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     await open(page, site.url(LESSON));
     await linkFor(page, "keep").click();
     assert.equal(new URL(page.url()).hash, "#keep");
+    // the address is copied a moment after the press, when the clipboard answers
+    await page.locator("section-link[data-copied]").waitFor();
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     assert.equal(copied, `${site.origin}${LESSON}#keep`);
     await page.waitForFunction(
@@ -266,6 +268,8 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
     );
     const height = await heightOf(page, "keep");
     await link.tap();
+    // the address is copied a moment after the press, when the clipboard answers
+    await page.locator("section-link[data-copied]").waitFor();
     assert.equal(await label(link), "Copied", "but a press says it copied");
     assert.equal(await heightOf(page, "keep"), height);
     assert.ok(
@@ -295,6 +299,7 @@ describe("the word “Copied”, where the window is narrow", {
     await link.scrollIntoViewIfNeeded();
     const height = await heightOf(page, "standards");
     await link.click();
+    await page.locator("section-link[data-copied]").waitFor();
     assert.equal(await label(link), "Copied");
     assert.equal(await heightOf(page, "standards"), height);
     assert.ok(
