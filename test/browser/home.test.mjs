@@ -402,8 +402,15 @@ describe("header by width", () => {
   }
 
   test("a section is marked on its own pages: in the bar, or in the menu if it waits there", async (t) => {
-    const changes = await seen(await at(t, 1280, "/standards/changes/"));
-    assert.deepEqual(changes.marked, ["/standards/"]);
+    // the timeline is under the standards: the bar marks the section it shows
+    const timeline = await seen(await at(t, 1280, "/standards/timeline/"));
+    assert.deepEqual(timeline.marked, ["/standards/"]);
+    const narrow = await at(t, 900, "/standards/timeline/");
+    await narrow.click(".menu-toggle");
+    assert.deepEqual((await seen(narrow)).marked, [
+      "/standards/",
+      "/standards/timeline/",
+    ]);
     const flow = await seen(await at(t, 900, "/flows/dpop/"));
     assert.deepEqual(flow.quickMarked, ["/flows/"]);
     const page = await at(t, 900, "/implementations/");

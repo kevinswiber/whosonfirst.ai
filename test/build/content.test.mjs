@@ -288,7 +288,7 @@ test("every page's footer lists the sections in the header's groups, then the gu
     const own = footer.at(-1);
     if (
       own?.name !== "This guide" ||
-      !["/about/", "/search/", "/standards/timeline/"].every((href) =>
+      !["/about/", "/search/", "/standards/changes/"].every((href) =>
         own.links.includes(href),
       )
     )

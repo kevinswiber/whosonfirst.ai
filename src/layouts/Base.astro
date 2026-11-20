@@ -268,9 +268,9 @@ const groups: { name: string; items: Section[] }[] = [
         note: `${glossary.length} terms, each in a sentence or two`,
       },
       {
-        href: "/standards/changes/",
-        label: "Changelog",
-        note: "What the tracker recorded, newest first",
+        href: "/standards/timeline/",
+        label: "Timeline",
+        note: "What has happened to the specifications, by date",
         more: true,
       },
     ],
@@ -280,7 +280,7 @@ const nav = groups.flatMap((g) => g.items.filter((i) => !i.more));
 // The three ways in that the home page opens with. They stay in the bar where
 // the rest of the list waits behind the menu; a phone has room for the first.
 const QUICK = [nav[0], nav[1], nav[2]];
-// A section is marked on every page under its address. The changelog is under
+// A section is marked on every page under its address. The timeline is under
 // the standards, so both are marked there: the bar shows only the first.
 const path = Astro.url.pathname;
 const marked = (item: Section) =>
@@ -476,7 +476,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             <ul aria-labelledby="foot-group-site">
               <li><a href="/about/">About</a></li>
               <li><a href="/search/">Search the guide</a></li>
-              <li><a href="/standards/timeline/">Timeline</a></li>
+              <li><a href="/standards/changes/">Changelog</a></li>
               <li><a href={SOURCE}>Source on GitHub</a></li>
               <li><a href={CHANNEL.url}>Films on YouTube</a></li>
             </ul>
