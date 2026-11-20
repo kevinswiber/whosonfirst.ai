@@ -367,9 +367,9 @@ The conversion knows the site's components by class name: which are controls (`C
 
 ### Searching across the guide
 
-The search link opens `/search/`. Submitting a question sends one same-origin POST to `/api/search/query`. The search Worker returns ranked passages with their source links. A native form submission receives an HTML page, and the enhanced form requests JSON. Typing in a directory filter still narrows that page in the browser.
+The header opens search over the page the reader is on. Command-K or Ctrl-K opens it from the keyboard. The address `/search/` also works as a standalone page, including a native HTML form when JavaScript is off. Directory filters still narrow their own pages in the browser.
 
-Typing on the search page shows up to five quick matches from a small directory of page names, terms, identifiers and evidence entries. The browser loads the directory from `/search/quick-matches.json` and matches subsequent edits locally. Enter or either “Search the whole guide” button submits the current text to the search Worker. Choosing a “Try a search” example submits that example immediately. To preview the generated directory locally, build the site and serve its built assets.
+After two letters or digits, quick matches look up names, terms and identifiers in the static `/search/quick-matches.json` directory. After three letters or digits and a 450 ms pause, the browser requests ranked results with a same-origin POST to `/api/search/query`. Enter and the examples run that search immediately. Clearing the field restores the examples. To preview the quick-match directory locally, build the site and serve its built assets.
 
 The Astro build extracts passages from the public reading pages into `.astro/search/manifest.json`. Each key identifies its location and content. The upload script sends the corresponding Markdown documents to Cloudflare AI Search and waits for indexing. The separate Worker bundles the same manifest, accepts only keys present in it, and uses its own titles, links and excerpts for the results. An exact RFC number gets its standard’s page first.
 

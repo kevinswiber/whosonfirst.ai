@@ -1,4 +1,9 @@
 ---
+interface Props {
+  idPrefix?: string;
+}
+const { idPrefix = "" } = Astro.props;
+const id = (name: string) => idPrefix + name;
 const examples = [
   "My agent needs me to approve a payment on my phone",
   "Nobody is signed in when the overnight job runs",
@@ -6,29 +11,34 @@ const examples = [
 ];
 ---
 
-<guide-search>
-  <form id="guide-search-form" role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
-    <label for="guide-query">Describe your situation, or enter a term or RFC number.</label>
+<guide-search class:list={[{ compact: Boolean(idPrefix) }]}>
+  <form id={id("guide-search-form")} role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
+    <label class:list={[{ "visually-hidden": idPrefix }]} for={id("guide-query")}>{idPrefix ? "Search the guide" : "Describe a task, or enter a term or RFC number."}</label>
     <div class="search-controls">
-      <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-hint" />
-      <button class="btn primary" type="submit">Search the whole guide</button>
+      <div class="search-field">
+        <input id={id("guide-query")} name="q" type="search" placeholder={idPrefix ? "Ask a question or find a term" : undefined} required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby={id("search-hint")} />
+        <button class="clear-query" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
+      </div>
+      <button class="btn primary" type="submit" aria-label="Search the whole guide">Search</button>
     </div>
-    <p id="search-hint">Press Enter to search the whole guide.</p>
+    <p class="search-hint" id={id("search-hint")}>Press Enter to search.</p>
   </form>
-  <section class="quick-matches" aria-labelledby="quick-matches-title" hidden>
-    <h2 id="quick-matches-title">Quick matches</h2>
+  <section class="quick-matches" aria-labelledby={id("quick-matches-title")} hidden>
+    <h2 id={id("quick-matches-title")}>Quick matches</h2>
     <p class="quick-count" aria-live="polite"></p>
     <ul></ul>
-    <button class="btn ghost" type="submit" form="guide-search-form">Search the whole guide</button>
   </section>
-  <section class="search-examples" aria-labelledby="search-examples-title" hidden>
-    <h2 id="search-examples-title">Try a search</h2>
+  <section class="search-examples" aria-labelledby={id("search-examples-title")} hidden>
+    <h2 id={id("search-examples-title")}>Try a search</h2>
     <ul>
-      {examples.map((example) => <li><button type="button" data-query={example}>{example}<span aria-hidden="true">↗</span></button></li>)}
+      {examples.map((example) => <li><button type="button" data-query={example}>{example}<span aria-hidden="true">→</span></button></li>)}
     </ul>
   </section>
-  <p role="status" aria-live="polite"><span id="search-status-text"></span></p>
-  <ol class="search-results" id="search-results"></ol>
+  <section class="guide-results" aria-labelledby={id("guide-results-title")}>
+    <h2 id={id("guide-results-title")}>Guide results</h2>
+    <p role="status" aria-live="polite"><span id={id("search-status-text")}></span></p>
+    <ol class="search-results" id={id("search-results")}></ol>
+  </section>
 </guide-search>
 
 <script>
@@ -37,50 +47,118 @@ const examples = [
   type QuickRecord = { href: string; type: string; title: string; summary: string; aliases: string[] };
   type Passage = { href: string; type: string; title: string; section: string; excerpt: string };
 
+  let catalog: Promise<QuickRecord[]> | undefined;
+  function loadCatalog() {
+    catalog ??= fetch('/search/quick-matches.json').then((response) => {
+      if (!response.ok) throw new Error('Quick matches unavailable');
+      return response.json();
+    });
+    return catalog;
+  }
+
+  const searchableLength = (text: string) => text.match(/[\p{L}\p{N}]/gu)?.length ?? 0;
+
+  function siteUrl(href: string) {
+    if (!href.startsWith('/')) return;
+    const url = new URL(href, location.origin);
+    return url.origin === location.origin ? url.href : undefined;
+  }
+
+  function guideRow(passage: Passage) {
+    const href = siteUrl(passage.href);
+    if (!href) return;
+    const row = document.createElement('li');
+    const kind = document.createElement('p');
+    kind.className = 'result-kind';
+    kind.textContent = passage.type;
+    const heading = document.createElement('h3');
+    const link = document.createElement('a');
+    link.href = href;
+    link.textContent = passage.title;
+    heading.append(link);
+    row.append(kind, heading);
+    if (passage.section && passage.section !== passage.title) {
+      link.setAttribute('aria-label', `${passage.title}, ${passage.section}`);
+      const section = document.createElement('p');
+      section.className = 'result-section';
+      section.textContent = passage.section;
+      row.append(section);
+    }
+    const excerpt = document.createElement('p');
+    excerpt.textContent = passage.excerpt;
+    row.append(excerpt);
+    return row;
+  }
+
   class GuideSearch extends HTMLElement {
     connectedCallback() {
+      this.setAttribute('data-live', '');
       const form = this.querySelector('form')!;
       const input = form.querySelector('input')!;
-      const status = this.querySelector<HTMLElement>('#search-status-text')!;
-      const results = this.querySelector<HTMLOListElement>('#search-results')!;
+      const clear = form.querySelector<HTMLButtonElement>('.clear-query')!;
+      clear.hidden = !input.value;
+      const hint = this.querySelector<HTMLElement>('.search-hint')!;
+      const status = this.querySelector<HTMLElement>('[role="status"] span')!;
+      const results = this.querySelector<HTMLOListElement>('.search-results')!;
       const examples = this.querySelector<HTMLElement>('.search-examples')!;
       const quick = this.querySelector<HTMLElement>('.quick-matches')!;
       const quickList = quick.querySelector('ul')!;
       const quickCount = quick.querySelector<HTMLElement>('.quick-count')!;
-      let catalog: Promise<QuickRecord[]> | undefined;
-      let quickRevision = 0;
+      const cache = new Map<string, Passage[]>();
+      let revision = 0;
+      let draft = results.hasAttribute('data-search-submitted') ? input.value.trim().toLowerCase().replace(/\s+/g, ' ') : '';
       let composing = false;
+      let timer: number | undefined;
+      let pending: AbortController | undefined;
+      let retryAfter = 0;
 
-      const dismissQuick = () => {
-        quickRevision++;
+      hint.textContent = 'Results update as you type. Press Enter to search immediately.';
+      examples.hidden = results.hasAttribute('data-search-submitted');
+
+      const clearResults = () => {
+        revision++;
+        window.clearTimeout(timer);
+        pending?.abort();
+        pending = undefined;
+        status.textContent = '';
+        results.replaceChildren();
+        results.removeAttribute('aria-busy');
+        results.removeAttribute('data-search-submitted');
         quick.hidden = true;
         quickList.replaceChildren();
         quickCount.textContent = '';
+        examples.hidden = Boolean(input.value.trim());
       };
 
-      const showQuick = async () => {
-        const query = input.value.trim();
-        if (composing || (query.match(/[\p{L}\p{N}]/gu)?.length ?? 0) < 2) {
-          dismissQuick();
-          return;
+      // Leave quick links in place while the reader is choosing one.
+      const groupQuickLinks = () => {
+        if (!quick.hidden && (quick.contains(document.activeElement) || quick.matches(':hover'))) return;
+        const guideLinks = new Set([...results.querySelectorAll('a')].map((a) => a.href));
+        let count = 0;
+        for (const row of quickList.children) {
+          const link = row.querySelector('a')!;
+          const duplicate = guideLinks.has(link.href);
+          (row as HTMLElement).hidden = duplicate;
+          if (!duplicate) count++;
         }
-        const revision = ++quickRevision;
-        quick.hidden = false;
-        examples.hidden = true;
+        // A longer question is waiting for guide results. An empty local
+        // list would announce a miss just before those results arrive.
+        quick.hidden = count === 0 && (searchableLength(draft) >= 3 || results.children.length > 0);
+        quickCount.textContent = count ? `${count} quick ${count === 1 ? 'match' : 'matches'}.` : 'No quick matches.';
+      };
+
+      const showQuick = async (query: string, version: number) => {
         try {
-          catalog ??= fetch('/search/quick-matches.json').then((response) => {
-            if (!response.ok) throw new Error('Quick matches unavailable');
-            return response.json();
-          });
-          const records = await catalog;
-          if (revision !== quickRevision) return;
+          const records = await loadCatalog();
+          if (revision !== version) return;
           const rows = document.createDocumentFragment();
-          for (const record of quickMatches(records, query)) {
-            const url = new URL(record.href, location.origin);
-            if (!record.href.startsWith('/') || url.origin !== location.origin) continue;
+          const limit = this.classList.contains('compact') ? 3 : 5;
+          for (const record of quickMatches(records, query).slice(0, limit)) {
+            const href = siteUrl(record.href);
+            if (!href) continue;
             const row = document.createElement('li');
             const link = document.createElement('a');
-            link.href = url.href;
+            link.href = href;
             link.textContent = record.title;
             const kind = document.createElement('span');
             kind.className = 'quick-type';
@@ -90,47 +168,49 @@ const examples = [
             row.append(link, kind, description);
             rows.append(row);
           }
-          const count = rows.childElementCount;
           quickList.replaceChildren(rows);
-          quickCount.textContent = count ? `${count} quick ${count === 1 ? 'match' : 'matches'}.` : 'No quick matches.';
+          groupQuickLinks();
         } catch {
-          if (revision === quickRevision) {
-            quickList.replaceChildren();
-            quickCount.textContent = 'Quick matches are unavailable.';
-          }
+          if (revision !== version) return;
+          quick.hidden = results.children.length > 0;
+          quickCount.textContent = 'Quick matches are unavailable.';
         }
       };
 
-      examples.hidden = results.hasAttribute('data-search-submitted');
-      examples.addEventListener('click', (event) => {
-        const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
-        if (!button) return;
-        input.value = button.dataset.query!;
-        input.setCustomValidity('');
-        input.focus();
-        form.requestSubmit();
-      });
-      let pending: AbortController | undefined;
+      const render = (passages: Passage[], query: string) => {
+        const rows = document.createDocumentFragment();
+        for (const passage of passages) {
+          const row = guideRow(passage);
+          if (row) rows.append(row);
+        }
+        const count = rows.childElementCount;
+        results.replaceChildren(rows);
+        if (quickList.children.length) groupQuickLinks();
+        else if (count > 0) quick.hidden = true;
+        status.textContent = count === 0 ? 'No results found. Try a shorter phrase.'
+          : `${count} ${count === 1 ? 'result' : 'results'} for “${query}”.`;
+      };
 
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (composing) return;
-        if (quick.contains(document.activeElement)) input.focus();
-        dismissQuick();
+      const search = async () => {
         const query = input.value.trim();
-        if (!query) {
-          input.focus();
-          input.setCustomValidity('Enter a question, a term or an RFC number.');
-          input.reportValidity();
+        const key = draft;
+        const cached = cache.get(key);
+        if (cached) {
+          render(cached, query);
           return;
         }
-        pending?.abort();
+        if (pending) return;
+        if (Date.now() < retryAfter) {
+          const seconds = Math.ceil((retryAfter - Date.now()) / 1000);
+          status.textContent = `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
+          return;
+        }
+
         const request = new AbortController();
         pending = request;
-        examples.hidden = true;
-        results.replaceChildren();
         results.setAttribute('aria-busy', 'true');
         status.textContent = 'Searching…';
+        const deadline = window.setTimeout(() => request.abort(), 12000);
         try {
           const response = await fetch(form.action, {
             method: 'POST',
@@ -140,72 +220,88 @@ const examples = [
           });
           if (pending !== request) return;
           if (response.status === 429) {
-            const delay = response.headers.get('Retry-After');
-            const seconds = delay && /^\d+$/.test(delay) ? Number(delay) : 0;
-            status.textContent = seconds > 0
-              ? `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`
-              : 'Too many searches. Wait a moment and try again.';
+            const delay = response.headers.get('Retry-After') || '60';
+            const until = /^\d+$/.test(delay) ? Date.now() + Number(delay) * 1000 : Date.parse(delay);
+            retryAfter = Number.isFinite(until) ? until : Date.now() + 60000;
+            const seconds = Math.max(1, Math.ceil((retryAfter - Date.now()) / 1000));
+            status.textContent = `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
             return;
           }
           if (!response.ok) throw new Error('Search unavailable');
-          const { results: passages } = await response.json() as { results: Passage[] };
+          const payload = await response.json() as { results: Passage[] };
           if (pending !== request) return;
-          const rows = document.createDocumentFragment();
-          for (const passage of passages) {
-            const url = new URL(passage.href, location.origin);
-            if (!passage.href.startsWith('/') || url.origin !== location.origin) continue;
-            const row = document.createElement('li');
-            const kind = document.createElement('p');
-            kind.className = 'result-kind';
-            kind.textContent = passage.type;
-            const heading = document.createElement('h2');
-            const link = document.createElement('a');
-            link.href = url.href;
-            link.textContent = passage.title;
-            heading.append(link);
-            row.append(kind, heading);
-            if (passage.section && passage.section !== passage.title) {
-              link.setAttribute('aria-label', `${passage.title}, ${passage.section}`);
-              const section = document.createElement('p');
-              section.className = 'result-section';
-              section.textContent = passage.section;
-              row.append(section);
-            }
-            const excerpt = document.createElement('p');
-            excerpt.textContent = passage.excerpt;
-            row.append(excerpt);
-            rows.append(row);
-          }
-          const count = rows.childElementCount;
-          results.replaceChildren(rows);
-          status.textContent = count === 0
-            ? 'No results found. Try describing whose access the agent needs, or try a shorter phrase.'
-            : `${count} ${count === 1 ? 'result' : 'results'} for “${query}”.`;
+          render(payload.results, query);
+          if (cache.size >= 16) cache.delete(cache.keys().next().value!);
+          cache.set(key, payload.results);
         } catch {
           if (pending === request) status.textContent = 'Search is unavailable. Try again, or browse the guide.';
         } finally {
-          if (pending === request) results.removeAttribute('aria-busy');
+          window.clearTimeout(deadline);
+          if (pending === request) {
+            pending = undefined;
+            results.removeAttribute('aria-busy');
+          }
         }
-      });
-      input.addEventListener('input', () => {
+      };
+
+      const update = (immediate: boolean, withQuick = true) => {
+        clear.hidden = !input.value;
+        if (composing) return;
         input.setCustomValidity('');
-        void showQuick();
-        if (!input.value.trim()) examples.hidden = results.children.length > 0 || Boolean(status.textContent);
+        const query = input.value.trim();
+        const key = query.toLowerCase().replace(/\s+/g, ' ');
+        const length = searchableLength(query);
+        if (key !== draft) {
+          clearResults();
+          draft = key;
+          if (withQuick && length >= 2) void showQuick(query, revision);
+        } else if (!immediate) return;
+        window.clearTimeout(timer);
+        if (immediate && !length) {
+          input.setCustomValidity('Enter a question, a term or an RFC number.');
+          input.reportValidity();
+          return;
+        }
+        if (immediate || (length >= 3 && cache.has(key))) void search();
+        else if (length >= 3) timer = window.setTimeout(search, 450);
+      };
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        update(true);
       });
+      input.addEventListener('input', () => update(false));
       input.addEventListener('compositionstart', () => {
         composing = true;
-        dismissQuick();
+        draft = '';
+        clearResults();
       });
       input.addEventListener('compositionend', () => {
         composing = false;
-        void showQuick();
+        update(false);
       });
-      this.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !composing && !quick.hidden) {
-          event.preventDefault();
-          dismissQuick();
-          input.focus();
-        }
+      examples.addEventListener('click', (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
+        if (!button) return;
+        input.value = button.dataset.query!;
+        input.focus();
+        update(true, false);
+      });
+      const reset = () => {
+        input.value = '';
+        clear.hidden = true;
+        input.setCustomValidity('');
+        composing = false;
+        draft = '';
+        clearResults();
+      };
+      clear.addEventListener('click', () => {
+        reset();
+        input.focus();
+      });
+      this.addEventListener('guide-search-reset', () => {
+        reset();
+        cache.clear();
       });
     }
   }
@@ -214,10 +310,12 @@ const examples = [
 
 <style>
   guide-search { display: block; }
+  .compact[data-live] .search-controls > button { display: none; }
   label { display: block; margin-bottom: 0.55rem; }
   .search-controls { display: flex; gap: 0.5rem; align-items: stretch; }
+  .search-field { position: relative; flex: 1; min-width: 0; }
   input {
-    flex: 1;
+    width: 100%;
     min-width: 0;
     min-height: 3rem;
     padding: 0.6rem 0.8rem;
@@ -227,12 +325,34 @@ const examples = [
     background: var(--bg-raised);
     color: var(--fg);
   }
-  #search-hint { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
-  [role='status'] { margin: 1.6rem 0 0; }
+  .search-field:has(.clear-query:not([hidden])) input { padding-inline-end: 3rem; }
+  .search-field:has(.clear-query:not([hidden])) input::-webkit-search-cancel-button { display: none; }
+  .clear-query {
+    position: absolute;
+    inset-inline-end: 0.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--fg-muted);
+    font: inherit;
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+  .search-hint { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
+  [role='status'] { margin: 0.35rem 0; }
+  .guide-results > h2 { font-size: 1.1rem; text-transform: none; margin: 1.2rem 0 0; }
+  .guide-results:not(:has([data-search-submitted], [role='status'] span:not(:empty))) > h2 { display: none; }
+  .guide-results [role='status']:has(span:empty) { margin: 0; }
+  .compact .quick-matches :global(li p) { display: none; }
+  .compact .quick-matches, .compact .search-examples { margin-top: 1rem; }
+  .compact .quick-matches :global(li) { padding-block: 0.45rem; }
+  .compact .search-results :global(li) { padding-block: 0.65rem; }
   .quick-matches, .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
   .quick-matches h2, .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
   .quick-matches ul, .search-examples ul { list-style: none; padding: 0; margin: 0.4rem 0 0; }
-  .quick-matches > button { margin-top: 0.8rem; }
   .quick-matches :global(li) {
     border-bottom: 1px solid var(--border);
     margin: 0;
@@ -268,7 +388,7 @@ const examples = [
   .search-examples button:hover { text-decoration: underline; }
   .search-results { list-style: none; padding: 0; margin: 0; }
   .search-results :global(li) { border-top: 1px solid var(--border); padding: 1.1rem 0; margin: 0; }
-  .search-results :global(h2) {
+  .search-results :global(:is(h2, h3)) {
     font-family: var(--font-heading);
     font-size: 1.25rem;
     text-transform: none;

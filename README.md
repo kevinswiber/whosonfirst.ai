@@ -177,7 +177,7 @@ A reference is only worth having if it is right. In the tracker, IETF revision n
 
 The name is from Abbott and Costello’s routine, in which a man asks who is playing first base and never gets an answer he can use. Ask a production system which person an API call was made for, and which software made it, when an agent sat in between, and the conversation is often the same.
 
-The guide’s pages are built ahead of time. When you submit a site-wide search, a Worker on the same host asks Cloudflare AI Search for matching passages. Directory filters run in your browser. The site sets no cookies, loads its assets from its own origin, and works with JavaScript off.
+The guide’s pages are built ahead of time. Site-wide search shows quick matches locally and searches the whole guide after a pause in typing. A Worker on the same host retrieves the ranked results. Directory filters run in your browser. The site sets no cookies, loads its assets from its own origin, and works with JavaScript off.
 
 ## Working on the site
 

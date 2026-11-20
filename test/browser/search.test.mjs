@@ -1,344 +1,441 @@
-// The local form is usable before enhancement. The enhanced page sends only
-// submitted queries, and renders passages without putting the query in a URL.
+// Reader-facing search on the standalone page and in the global dialog. The
+// directory and index are real built assets; only the Cloudflare API is stubbed.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
+import { catalogFor, guideSearch } from "../../workers/search/search.mjs";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 import { sideways } from "../support/measure.mjs";
+import { file } from "../support/site.mjs";
 
 const site = useBrowser();
 const quickIndex = "/search/quick-matches.json";
 const fullSearch = "/api/search/query";
+const exampleName = "RFC 9449";
+const passage = {
+  href: "/standards/rfc9449/",
+  title: "DPoP",
+  section: "",
+  type: "Standard",
+  excerpt: "A proof bound to the sender.",
+};
 
-// Record the destination and payload at the network boundary. Typing may
-// load a shared index; only a submitted query belongs in the API request.
-function searchTraffic(page) {
-  const seen = [];
+function submittedQueries(page) {
+  const queries = [];
   page.on("request", (request) => {
-    if (
-      !["fetch", "xhr"].includes(request.resourceType()) &&
-      !request.url().includes(fullSearch)
-    )
-      return;
-    seen.push([request.method(), request.url(), request.postData()]);
+    if (request.url() === site.url(fullSearch)) {
+      assert.equal(request.method(), "POST");
+      queries.push(new URLSearchParams(request.postData()).get("q"));
+    }
   });
-  return seen;
+  return queries;
 }
 
-test("the form and browse links work without scripts", async () => {
+// Freeze after open() has measured its animation frames. Timer assertions
+// advance browser time explicitly, including tests for requests that must
+// never be sent when a timer is superseded or canceled.
+async function pauseTimers(page) {
+  const start = new Date("2026-01-01T00:00:00Z");
+  await page.clock.install({ time: start });
+  await page.clock.pauseAt(new Date(start.getTime() + 60_000));
+}
+const focused = (locator) =>
+  locator.evaluate((node) => node === document.activeElement);
+
+test("without scripts the header leads to a native form and browse links", async () => {
   const ctx = await site.context({ javaScriptEnabled: false });
   const page = await ctx.newPage();
-  await open(page, site.url("/search/"));
+  const sent = submittedQueries(page);
+  await open(page, site.url("/guide/"));
+  await page.locator('.site-header a[href="/search/"]:visible').click();
   const form = page.getByRole("search");
-  const sent = searchTraffic(page);
+  assert.equal(page.url(), site.url("/search/"));
   assert.equal(await form.getAttribute("method"), "post");
-  assert.equal(await form.getAttribute("action"), "/api/search/query");
-  assert.equal(await form.getByRole("searchbox").isVisible(), true);
-  assert.equal(
-    await page.locator("aside a").first().getAttribute("href"),
-    "/guide/",
-  );
-  assert.equal(
-    await page.getByRole("region", { name: "Quick matches" }).count(),
-    0,
-  );
-  await page.route("**/api/search/query", (route) =>
-    route.fulfill({
-      contentType: "text/html",
-      body: "<h1>Guide results</h1>",
-    }),
+  assert.equal(await form.getAttribute("action"), fullSearch);
+  assert.equal(await page.locator('aside a[href="/guide/"]').isVisible(), true);
+  await page.route(site.url(fullSearch), (route) =>
+    route.fulfill({ contentType: "text/html", body: "<h1>Guide results</h1>" }),
   );
   await form.getByRole("searchbox").fill("Agent on a phone");
-  await form.getByRole("button", { name: "Search the whole guide" }).click();
+  await form.locator('button[type="submit"]').click();
   await page.getByRole("heading", { name: "Guide results" }).waitFor();
-  assert.deepEqual(sent, [
-    ["POST", site.url(fullSearch), "q=Agent+on+a+phone"],
-  ]);
+  assert.deepEqual(sent, ["Agent on a phone"]);
   await ctx.close();
 });
 
-test("each example runs a full search immediately on a narrow phone", async () => {
+test("deleting a query restored from a native POST clears the server-rendered results", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  const sent = submittedQueries(page);
+  const record = {
+    ...passage,
+    key: "proof.md",
+    text: passage.excerpt,
+    aliases: [exampleName],
+  };
+  const render = guideSearch(
+    catalogFor([record]),
+    file("search/index.html"),
+    {},
+  );
+  await page.route(site.url(fullSearch), async (route) => {
+    const request = route.request();
+    const response = await render(
+      new Request(request.url(), {
+        method: "POST",
+        body: request.postData(),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "text/html",
+        },
+      }),
+      {
+        SEARCH_LIMITER: { limit: async () => ({ success: true }) },
+        AI_SEARCH: { get: () => ({ search: async () => ({ chunks: [] }) }) },
+      },
+    );
+    await route.fulfill({
+      status: response.status,
+      contentType: "text/html",
+      body: await response.text(),
+    });
+  });
+  await open(page, site.url("/search/"));
+  await Promise.all([
+    page.waitForURL(site.url(fullSearch)),
+    page.getByRole("searchbox").evaluate((input, query) => {
+      input.value = query;
+      input.form.submit();
+    }, exampleName),
+  ]);
+  const input = page.getByRole("searchbox");
+  await page.locator(".search-results a").waitFor();
+  assert.equal(await input.inputValue(), exampleName);
+  await input.fill("");
+  await page.locator(".search-examples").waitFor();
+  assert.equal(await page.locator(".search-results a").count(), 0);
+  assert.equal(await page.locator("#search-status-text").textContent(), "");
+  assert.deepEqual(sent, [exampleName]);
+  await ctx.close();
+});
+
+test("a short term gives local matches, followed by one remote query after typing pauses", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  const sent = submittedQueries(page);
+  const indexRequests = [];
+  page.on("request", (r) => {
+    if (r.url().includes(quickIndex)) indexRequests.push([r.method(), r.url()]);
+  });
+  const release = Promise.withResolvers();
+  await page.route(site.url(fullSearch), async (route) => {
+    await release.promise;
+    await route.fulfill({ json: { results: [passage] } });
+  });
+  await open(page, site.url("/search/"));
+  const input = page.getByRole("searchbox");
+  const quick = page.locator(".quick-matches");
+  await pauseTimers(page);
+  await input.fill("r");
+  await page.clock.fastForward(600);
+  assert.deepEqual(indexRequests, []);
+  await input.fill("rf");
+  await quick.getByRole("link").first().waitFor();
+  await page.clock.fastForward(600);
+  assert.deepEqual(indexRequests, [["GET", site.url(quickIndex)]]);
+  assert.deepEqual(sent, []);
+  await input.fill("RFC");
+  await page.clock.fastForward(250);
+  await input.fill("RFC 9449");
+  await quick.locator('a[href$="/standards/rfc9449/"]').waitFor();
+  assert.equal(await focused(input), true);
+  await page.clock.fastForward(350);
+  assert.deepEqual(sent, []);
+  const requested = page.waitForRequest(site.url(fullSearch));
+  await page.clock.fastForward(150);
+  await requested;
+  await input.press("Enter");
+  release.resolve();
+  const result = page
+    .locator(".search-results")
+    .getByRole("link", { name: passage.title, exact: true });
+  await result.waitFor();
+  assert.equal(
+    await quick.locator('a[href$="/standards/rfc9449/"]:visible').count(),
+    0,
+  );
+  await input.press("Enter");
+  await page.clock.fastForward(1000);
+  assert.deepEqual(sent, ["RFC 9449"]);
+  assert.equal(page.url(), site.url("/search/"));
+  await ctx.close();
+});
+
+test("each example searches immediately and clearing restores the examples", async () => {
   const ctx = await site.context({ viewport: { width: 320, height: 568 } });
   const page = await ctx.newPage();
-  const sent = searchTraffic(page);
-  await page.route("**/api/search/query", async (route) => {
-    await route.fulfill({
-      json: {
-        results: [
-          {
-            href: "/standards/rfc9449/",
-            title: "DPoP",
-            type: "Standard",
-            section: "Where it stands",
-            excerpt: "An excerpt from the standard’s page.",
-          },
-        ],
-      },
-    });
-  });
-  for (const example of [
-    "My agent needs me to approve a payment on my phone",
-    "Nobody is signed in when the overnight job runs",
-    "RFC 9449",
-  ]) {
-    await open(page, site.url("/search/"));
-    sent.length = 0;
-    await page.getByRole("button", { name: example, exact: true }).click();
-    const link = page.locator("#search-results a");
-    await link.waitFor();
-    assert.equal(
-      await link.getAttribute("href"),
-      site.url("/standards/rfc9449/"),
-    );
-    assert.equal(await page.getByRole("searchbox").inputValue(), example);
-    assert.equal(
-      await page.locator("#search-status-text").textContent(),
-      `1 result for “${example}”.`,
-    );
-    assert.deepEqual(sent, [
-      [
-        "POST",
-        site.url(fullSearch),
-        new URLSearchParams({ q: example }).toString(),
-      ],
-    ]);
+  const sent = submittedQueries(page);
+  await page.route(site.url(fullSearch), (route) =>
+    route.fulfill({ json: { results: [passage] } }),
+  );
+  await open(page, site.url("/search/"));
+  await pauseTimers(page);
+  const examples = page.locator(".search-examples");
+  const names = await examples
+    .locator("button[data-query]")
+    .evaluateAll((buttons) => buttons.map((button) => button.dataset.query));
+  assert.ok(names.includes(exampleName) && names.length > 1);
+  const input = page.getByRole("searchbox");
+  for (const name of names) {
+    await examples.getByRole("button", { name, exact: true }).click();
+    await page.locator(".search-results a").waitFor();
+    assert.equal(await input.inputValue(), name);
+    assert.equal(await examples.isVisible(), false);
+    await page.getByRole("button", { name: "Clear search" }).click();
+    assert.equal(await focused(input), true);
+    assert.equal(await input.inputValue(), "");
+    await examples.waitFor();
+    assert.equal(await page.locator(".search-results a").count(), 0);
+    await page.clock.fastForward(1000);
   }
-  assert.equal(page.url(), site.url("/search/"));
+  assert.deepEqual(sent, names);
   assert.ok((await page.evaluate(sideways)).by <= 0);
-  const header = page.locator(".site-header");
-  const search = await header
-    .getByRole("link", { name: "Search the guide", exact: true })
-    .boundingBox();
-  assert.ok(search && search.width >= 44 && search.height >= 44);
-  const wordmark = await header.locator(".wordmark").boundingBox();
-  const learn = await header.locator(".quick").boundingBox();
-  assert.ok(
-    wordmark.x + wordmark.width <= learn.x,
-    "Learn overlaps the site name",
-  );
   await ctx.close();
 });
 
-test("typing looks up nearby destinations locally and a keyboard reader can open one", async () => {
+test("clearing cancels both a scheduled query and an in-flight query", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
-  const seen = searchTraffic(page);
+  // A transport can still deliver a response after the reader clears a query.
+  // Capture cancellation and then deliver that response to exercise both guards.
+  await page.addInitScript(() => {
+    const fetchOriginal = window.fetch;
+    window.fetch = (input, init) => {
+      if (
+        new URL(String(input), location.href).pathname === "/api/search/query"
+      ) {
+        window.previousSearchSignal = init.signal;
+        return fetchOriginal(input, { ...init, signal: undefined });
+      }
+      return fetchOriginal(input, init);
+    };
+  });
+  const release = Promise.withResolvers();
+  const sent = submittedQueries(page);
+  await page.route(site.url(fullSearch), async (route) => {
+    await release.promise;
+    await route.fulfill({ json: { results: [passage] } });
+  });
   await open(page, site.url("/search/"));
+  await pauseTimers(page);
   const input = page.getByRole("searchbox");
-  const quick = page.getByRole("region", { name: "Quick matches" });
-  await input.focus();
-  await input.fill("r");
-  assert.deepEqual(seen, []);
-  await input.fill("RFC 9449");
-  const standard = quick.locator('a[href$="/standards/rfc9449/"]');
-  await standard.waitFor();
-  assert.equal(
-    await input.evaluate((node) => node === document.activeElement),
-    true,
-  );
-  assert.deepEqual(seen, [["GET", site.url(quickIndex), null]]);
-  // Use the real tab order, allowing for the form's submit button and other
-  // relevant destinations. Focus must reach the standard without a mouse.
-  const maxTabs = (await quick.getByRole("link").count()) + 2;
-  for (
-    let i = 0;
-    i < maxTabs &&
-    !(await standard.evaluate((node) => node === document.activeElement));
-    i++
-  ) {
-    await page.keyboard.press("Tab");
-  }
-  assert.equal(
-    await standard.evaluate((node) => node === document.activeElement),
-    true,
-  );
-  await Promise.all([
-    page.waitForURL(site.url("/standards/rfc9449/")),
-    page.keyboard.press("Enter"),
-  ]);
-  assert.deepEqual(seen, [["GET", site.url(quickIndex), null]]);
-  await ctx.close();
-});
-
-test("clearing or dismissing quick matches keeps the search local", async () => {
-  const ctx = await site.context();
-  const page = await ctx.newPage();
-  const seen = searchTraffic(page);
-  await open(page, site.url("/search/"));
-  const input = page.getByRole("searchbox");
-  const quick = page.getByRole("region", { name: "Quick matches" });
-  await input.fill("DPoP");
-  await quick.getByRole("link").first().waitFor();
-  await input.press("Escape");
-  await quick.waitFor({ state: "hidden" });
-  assert.equal(await input.inputValue(), "DPoP");
-  await input.fill("unmatchablezzzy");
-  await page.getByText("No quick matches.", { exact: true }).waitFor();
-  assert.equal(
-    await quick
-      .getByRole("button", { name: "Search the whole guide" })
-      .isEnabled(),
-    true,
-  );
+  await input.fill("obsolete timer");
   await input.fill("");
-  await quick.waitFor({ state: "hidden" });
-  assert.deepEqual(seen, [["GET", site.url(quickIndex), null]]);
-  await ctx.close();
-});
-
-test("the reader can still submit once when the quick-match index fails", async () => {
-  const ctx = await site.context();
-  const page = await ctx.newPage();
-  const seen = searchTraffic(page);
-  await page.route("**/search/quick-matches.json", (route) =>
-    route.fulfill({ status: 503, body: "" }),
-  );
-  await page.route("**/api/search/query", (route) =>
-    route.fulfill({ json: { results: [] } }),
-  );
-  await open(page, site.url("/search/"));
-  const input = page.getByRole("searchbox");
-  await input.fill("My agent needs to call another service");
-  await page
-    .getByText("Quick matches are unavailable.", { exact: true })
-    .waitFor();
-  assert.deepEqual(seen, [["GET", site.url(quickIndex), null]]);
-  await input.press("Enter");
-  await page
-    .locator("#search-status-text")
-    .filter({ hasText: "No results found" })
-    .waitFor();
-  assert.deepEqual(seen, [
-    ["GET", site.url(quickIndex), null],
-    ["POST", site.url(fullSearch), "q=My+agent+needs+to+call+another+service"],
-  ]);
-  assert.equal(page.url(), site.url("/search/"));
-  await ctx.close();
-});
-
-test("a slow quick lookup cannot reopen the list over submitted results", async () => {
-  const ctx = await site.context();
-  const page = await ctx.newPage();
-  let release;
-  const wait = new Promise((resolve) => {
-    release = resolve;
-  });
-  await page.route("**/search/quick-matches.json", async (route) => {
-    await wait;
-    await route.fulfill({
-      json: [
-        {
-          href: "/flows/dpop/",
-          title: "DPoP",
-          type: "Flow",
-          summary: "An HTTP proof",
-          aliases: [],
-        },
-      ],
-    });
-  });
-  await page.route("**/api/search/query", (route) =>
-    route.fulfill({ json: { results: [] } }),
-  );
-  await open(page, site.url("/search/"));
-  const input = page.getByRole("searchbox");
-  const requested = page.waitForRequest(site.url(quickIndex));
-  await input.fill("DPoP");
+  await page.clock.fastForward(1100);
+  assert.deepEqual(sent, []);
+  await input.fill("obsolete response");
+  const requested = page.waitForRequest(site.url(fullSearch));
+  await page.clock.fastForward(600);
   await requested;
-  await page
-    .getByRole("region", { name: "Quick matches" })
-    .getByRole("button", { name: "Search the whole guide" })
-    .click();
-  await page
-    .locator("#search-status-text")
-    .filter({ hasText: "No results found" })
-    .waitFor();
+  await input.fill("");
+  assert.equal(
+    await page.evaluate(() => window.previousSearchSignal.aborted),
+    true,
+  );
   const delivered = page.waitForEvent(
     "requestfinished",
-    (req) => req.url() === site.url(quickIndex),
+    (r) => r.url() === site.url(fullSearch),
   );
-  release();
+  release.resolve();
   await delivered;
+  await page.clock.resume();
   await frames(page);
-  assert.equal(
-    await page.getByRole("region", { name: "Quick matches" }).isVisible(),
-    false,
-  );
+  assert.equal(await page.locator(".search-results a").count(), 0);
+  assert.equal(await page.locator(".quick-matches").isVisible(), false);
+  assert.equal(await page.locator(".search-examples").isVisible(), true);
+  assert.equal(await page.locator("#search-status-text").textContent(), "");
+  assert.deepEqual(sent, ["obsolete response"]);
   await ctx.close();
 });
 
-test("outage, rate limit, and zero matches give different outcomes", async () => {
+test("a superseded query cannot replace results for the current input", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
+  const release = Promise.withResolvers();
+  await page.route(site.url(fullSearch), async (route) => {
+    const query = new URLSearchParams(route.request().postData()).get("q");
+    if (query === "first query") await release.promise;
+    await route.fulfill({ json: { results: [{ ...passage, title: query }] } });
+  });
+  await open(page, site.url("/search/"));
+  await pauseTimers(page);
+  const input = page.getByRole("searchbox");
+  await input.fill("first query");
+  const first = page.waitForRequest(site.url(fullSearch));
+  await page.clock.fastForward(600);
+  await first;
+  await input.fill("second query");
+  await page.clock.fastForward(600);
+  const current = page.locator(".search-results a");
+  await current.filter({ hasText: "second query" }).waitFor();
+  release.resolve();
+  await page.clock.resume();
+  await frames(page);
+  assert.equal(await current.textContent(), "second query");
+  await ctx.close();
+});
+
+test("a stalled automatic search times out, keeps local matches, and can be retried", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  const sent = submittedQueries(page);
+  const first = Promise.withResolvers();
+  let attempts = 0;
+  await page.route(site.url(fullSearch), async (route) => {
+    if (++attempts === 1) await first.promise;
+    await route.fulfill({ json: { results: [passage] } });
+  });
+  await open(page, site.url("/search/"));
+  await pauseTimers(page);
+  const input = page.getByRole("searchbox");
+  await input.fill("DPoP");
+  await page.locator(".quick-matches a").first().waitFor();
+  const started = page.waitForRequest(site.url(fullSearch));
+  await page.clock.fastForward(600);
+  await started;
+  await page.clock.fastForward(13000);
+  await page
+    .locator("#search-status-text")
+    .filter({ hasText: /unavailable/i })
+    .waitFor();
+  assert.equal(
+    await page.locator(".quick-matches a").first().isVisible(),
+    true,
+  );
+  first.resolve();
+  await input.press("Enter");
+  await page.locator(".search-results a").waitFor();
+  assert.deepEqual(sent, ["DPoP", "DPoP"]);
+  await ctx.close();
+});
+
+test("local index failure, unavailable service, rate limiting and zero results are recoverable", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  const sent = submittedQueries(page);
+  await page.route(site.url(quickIndex), (route) =>
+    route.fulfill({ status: 503, body: "" }),
+  );
   const replies = [
     { status: 503, body: "" },
     { status: 429, headers: { "Retry-After": "60" }, body: "" },
     { json: { results: [] } },
   ];
-  await page.route("**/api/search/query", (route) =>
+  await page.route(site.url(fullSearch), (route) =>
     route.fulfill(replies.shift()),
   );
   await open(page, site.url("/search/"));
+  await pauseTimers(page);
   const input = page.getByRole("searchbox");
-  await input.fill("An unfamiliar situation");
-  for (const expected of [/unavailable/, /60 seconds/, /No results found/]) {
-    await input.press("Enter");
-    await page
-      .locator("#search-status-text")
-      .filter({ hasText: expected })
-      .waitFor();
-    assert.equal(await input.inputValue(), "An unfamiliar situation");
-  }
-  await ctx.close();
-});
-
-test("a revised search supersedes an unfinished request", async () => {
-  const ctx = await site.context();
-  const page = await ctx.newPage();
-  let releaseFirst;
-  const waitForSecond = new Promise((resolve) => {
-    releaseFirst = resolve;
-  });
-  await page.route("**/api/search/query", async (route) => {
-    const query = new URLSearchParams(route.request().postData()).get("q");
-    if (query === "first") await waitForSecond;
-    await route.fulfill({
-      json: {
-        results: [
-          {
-            href: "/guide/",
-            title: query,
-            section: "",
-            type: "Guide",
-            excerpt: "Guide passage",
-          },
-        ],
-      },
-    });
-  });
-  await open(page, site.url("/search/"));
-  const input = page.getByRole("searchbox");
-  await input.fill("first");
-  const firstSent = page.waitForRequest("**/api/search/query");
-  await input.press("Enter");
-  await firstSent;
-  await input.fill("second");
-  await input.press("Enter");
+  const status = page.locator("#search-status-text");
+  await input.fill("DPoP");
   await page
-    .locator("#search-status-text")
-    .filter({ hasText: "second" })
+    .locator(".quick-matches")
+    .getByText(/unavailable/i)
     .waitFor();
-  releaseFirst();
-  assert.equal(await page.locator("#search-results a").textContent(), "second");
+  await page.clock.fastForward(600);
+  await status.filter({ hasText: /unavailable/i }).waitFor();
+  await input.press("Enter");
+  await status.filter({ hasText: /60 seconds/i }).waitFor();
+  await input.fill("a revised question");
+  await page.clock.fastForward(1000);
+  await input.press("Enter");
+  assert.deepEqual(sent, ["DPoP", "DPoP"]);
+  await page.clock.fastForward(60000);
+  await input.press("Enter");
+  await status.filter({ hasText: /No results found/i }).waitFor();
+  assert.deepEqual(sent, ["DPoP", "DPoP", "a revised question"]);
   await ctx.close();
 });
 
-test("a directory filter links to an empty site search without submitting its text", async () => {
+for (const [device, viewport] of [
+  ["desktop", { width: 1280, height: 900 }],
+  ["phone", { width: 320, height: 568 }],
+]) {
+  test(`the ${device} header opens an accessible dialog and returns focus to its launcher`, async () => {
+    const ctx = await site.context({ viewport });
+    const page = await ctx.newPage();
+    const sent = submittedQueries(page);
+    await open(page, site.url("/guide/"));
+    await pauseTimers(page);
+    const trigger = page.locator(".site-header [data-search-launch]:visible");
+    assert.equal(await trigger.count(), 1);
+    if (device === "phone") {
+      const box = await trigger.boundingBox();
+      assert.ok(box.width >= 44 && box.height >= 44);
+      const name = await page.locator(".site-header .wordmark").boundingBox();
+      const learn = await page.locator(".site-header .quick").boundingBox();
+      assert.ok(name.x + name.width <= learn.x, "Learn overlaps the site name");
+    }
+    await trigger.focus();
+    await page.keyboard.press(device === "phone" ? "Enter" : "Control+k");
+    const dialog = page.getByRole("dialog", { name: "Search the guide" });
+    await dialog.waitFor();
+    const input = dialog.getByRole("searchbox");
+    assert.equal(await focused(input), true);
+    assert.equal(page.url(), site.url("/guide/"));
+    await input.press("ArrowDown");
+    assert.equal(
+      await focused(dialog.locator(".search-examples button").first()),
+      true,
+    );
+    await page.keyboard.press("ArrowUp");
+    assert.equal(await focused(input), true);
+    await input.fill("RFC 9449");
+    const standard = dialog.locator(
+      '.quick-matches a[href$="/standards/rfc9449/"]',
+    );
+    await standard.waitFor();
+    for (let i = 0; i < 10 && !(await focused(standard)); i++) {
+      await page.keyboard.press("Tab");
+      assert.equal(
+        await dialog.evaluate((node) => node.contains(document.activeElement)),
+        true,
+      );
+    }
+    assert.equal(await focused(standard), true);
+    await page.keyboard.press("Escape");
+    await dialog.waitFor({ state: "hidden" });
+    await page.clock.fastForward(1000);
+    assert.deepEqual(sent, []);
+    assert.equal(await focused(trigger), true);
+    await trigger.click();
+    await dialog.waitFor();
+    assert.equal(await input.inputValue(), "");
+    assert.equal(await dialog.locator(".search-examples").isVisible(), true);
+    assert.ok((await page.evaluate(sideways)).by <= 0);
+    if (device === "desktop") {
+      await dialog.getByRole("button", { name: "Close search" }).click();
+      await dialog.waitFor({ state: "hidden" });
+      assert.equal(await focused(trigger), true);
+    } else {
+      await input.fill("RFC 9449");
+      await standard.waitFor();
+      await input.press("ArrowDown");
+      assert.equal(await focused(standard), true);
+      await Promise.all([
+        page.waitForURL(site.url("/standards/rfc9449/")),
+        page.keyboard.press("Enter"),
+      ]);
+      assert.deepEqual(sent, []);
+    }
+    await ctx.close();
+  });
+}
+
+test("the four directory filters stay local and open a fresh site-search dialog", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
-  const searches = [];
-  page.on("request", (request) => {
-    if (request.url().includes("/api/search/")) searches.push(request.url());
-  });
+  const sent = submittedQueries(page);
   for (const directory of [
     "flows",
     "glossary",
@@ -347,10 +444,20 @@ test("a directory filter links to an empty site search without submitting its te
   ]) {
     await open(page, site.url(`/${directory}/`));
     await page.getByRole("searchbox").fill("unrepresented-query-zzzz");
-    await page.getByRole("link", { name: "Search the whole guide" }).click();
-    assert.equal(page.url(), site.url("/search/"));
-    assert.equal(await page.getByRole("searchbox").inputValue(), "");
+    const jump = page.getByRole("link", { name: "Search the whole guide" });
+    await jump.waitFor();
+    const directoryURL = page.url();
+    await jump.click();
+    const dialog = page.getByRole("dialog", { name: "Search the guide" });
+    await dialog.waitFor();
+    assert.equal(page.url(), directoryURL);
+    assert.equal(await dialog.getByRole("searchbox").inputValue(), "");
+    await dialog.getByRole("button", { name: "Close search" }).click();
+    assert.equal(
+      await page.getByRole("searchbox").inputValue(),
+      "unrepresented-query-zzzz",
+    );
   }
-  assert.deepEqual(searches, []);
+  assert.deepEqual(sent, []);
   await ctx.close();
 });
