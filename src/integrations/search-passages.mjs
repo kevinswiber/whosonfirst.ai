@@ -1,5 +1,6 @@
 // Read the same published HTML as the Markdown integration. Item keys identify
 // a location and its exact content, so a stale retrieval cannot resolve to a new claim.
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -303,6 +304,16 @@ export default function searchPassages() {
         const temp = join(destination, `manifest-${process.pid}.tmp`);
         writeFileSync(temp, JSON.stringify(manifest));
         renameSync(temp, join(destination, "manifest.json"));
+        // The site and its independently deployed search Worker must agree on
+        // both the source revision and the passages produced from it.
+        const git = spawnSync("git", ["rev-parse", "HEAD"], {
+          encoding: "utf8",
+        });
+        const commit = git.status === 0 ? git.stdout.trim() : null;
+        writeFileSync(
+          new URL("search/release.json", dir),
+          JSON.stringify({ commit, revision: manifest.revision }),
+        );
         logger.info(`${manifest.records.length} passages for site search`);
       },
     },

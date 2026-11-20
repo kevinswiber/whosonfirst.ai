@@ -3,7 +3,7 @@
 const ENDPOINT = "/api/search/query";
 const MAX_BYTES = 8192;
 const MAX_CHARS = 500;
-const MAX_RESULTS = 6;
+const MAX_RESULTS = 5;
 const PROVIDER_TIMEOUT_MS = 5000;
 
 const escapeHTML = (value) =>

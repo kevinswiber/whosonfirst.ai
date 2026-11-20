@@ -9,7 +9,7 @@ import {
 import { catalogFor, validateShell } from "./search.mjs";
 
 requireCurrentBuild("The search Worker would point at an old site.");
-const { records } = JSON.parse(
+const { records, revision } = JSON.parse(
   readFileSync(
     new URL("../../.astro/search/manifest.json", import.meta.url),
     "utf8",
@@ -33,6 +33,13 @@ const headers = Object.fromEntries(
     .filter(([name]) => name !== "Link" && name !== "Vary"),
 );
 if (!headers["Content-Security-Policy"]) throw new Error("Missing site CSP");
+const marker = JSON.parse(
+  readFileSync(join(BUILT_ASSETS, "search/release.json"), "utf8"),
+);
+if (marker.revision !== revision)
+  throw new Error("Search Worker and site have different passage manifests.");
+if (marker.commit) headers["X-Guide-Search-Commit"] = marker.commit;
+headers["X-Guide-Search-Revision"] = revision;
 mkdirSync(new URL(".astro/", import.meta.url), { recursive: true });
 const source = Object.entries({ records, shell, headers })
   .map(([name, value]) => `export const ${name} = ${JSON.stringify(value)};\n`)

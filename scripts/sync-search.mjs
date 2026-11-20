@@ -104,7 +104,8 @@ export async function syncSearch(
     accepted++;
     if (accepted % 100 === 0) log(`Accepted ${accepted}/${changed.length}.`);
   });
-  const deadline = Date.now() + 20 * 60_000;
+  let highWater = 0;
+  let lastProgress = Date.now();
   while (true) {
     const current = await listItems(request);
     let count = 0;
@@ -123,9 +124,13 @@ export async function syncSearch(
       return;
     }
     log(`Indexed ${count}/${records.length}. Waiting for Cloudflare.`);
-    if (Date.now() >= deadline)
+    if (count > highWater) {
+      highWater = count;
+      lastProgress = Date.now();
+    }
+    if (Date.now() - lastProgress >= 20 * 60_000)
       throw new Error(
-        "Indexing is still pending. Run the same command to resume.",
+        "Indexing has made no progress for 20 minutes. Run the same command to resume.",
       );
     await pause(15_000);
   }
