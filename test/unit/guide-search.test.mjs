@@ -144,6 +144,23 @@ test("the Worker distinguishes service failures, rate limits and empty results",
   assert.deepEqual(await empty.json(), { results: [] });
 });
 
+test("a retrieval that exceeds the Worker deadline returns a gateway timeout", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const started = Promise.withResolvers();
+  const waiting = handle(
+    submit("ciba"),
+    envFor(() => {
+      started.resolve();
+      return new Promise(() => {});
+    }),
+  );
+  await started.promise;
+  t.mock.timers.runAll();
+  const response = await waiting;
+  assert.equal(response.status, 504);
+  assert.match((await response.json()).error, /took too long/);
+});
+
 test("distinct pages lead before a second passage and unknown identifiers return no semantic neighbours", () => {
   const tracer = { ...records[1], key: "step.md", href: "/flows/dpop/#step" };
   const lookup = catalogFor([...records, tracer]);

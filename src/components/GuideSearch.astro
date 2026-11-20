@@ -37,6 +37,7 @@ const examples = [
   <section class="guide-results" aria-labelledby={id("guide-results-title")}>
     <h2 id={id("guide-results-title")}>Guide results</h2>
     <p role="status" aria-live="polite"><span id={id("search-status-text")}></span></p>
+    <button class="btn retry-query" type="button" hidden>Try again</button>
     <ol class="search-results" id={id("search-results")}></ol>
   </section>
 </guide-search>
@@ -99,6 +100,7 @@ const examples = [
       clear.hidden = !input.value;
       const hint = this.querySelector<HTMLElement>('.search-hint')!;
       const status = this.querySelector<HTMLElement>('[role="status"] span')!;
+      const retry = this.querySelector<HTMLButtonElement>('.retry-query')!;
       const results = this.querySelector<HTMLOListElement>('.search-results')!;
       const examples = this.querySelector<HTMLElement>('.search-examples')!;
       const quick = this.querySelector<HTMLElement>('.quick-matches')!;
@@ -121,6 +123,7 @@ const examples = [
         pending?.abort();
         pending = undefined;
         status.textContent = '';
+        retry.hidden = true;
         results.replaceChildren();
         results.removeAttribute('aria-busy');
         results.removeAttribute('data-search-submitted');
@@ -194,6 +197,7 @@ const examples = [
       const search = async () => {
         const query = input.value.trim();
         const key = draft;
+        retry.hidden = true;
         const cached = cache.get(key);
         if (cached) {
           render(cached, query);
@@ -227,6 +231,11 @@ const examples = [
             status.textContent = `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
             return;
           }
+          if (response.status === 504) {
+            status.textContent = 'Guide results took too long to load.';
+            retry.hidden = false;
+            return;
+          }
           if (!response.ok) throw new Error('Search unavailable');
           const payload = await response.json() as { results: Passage[] };
           if (pending !== request) return;
@@ -234,7 +243,11 @@ const examples = [
           if (cache.size >= 16) cache.delete(cache.keys().next().value!);
           cache.set(key, payload.results);
         } catch {
-          if (pending === request) status.textContent = 'Search is unavailable. Try again, or browse the guide.';
+          if (pending !== request) return;
+          status.textContent = request.signal.aborted
+            ? 'Guide results took too long to load.'
+            : 'Guide results are temporarily unavailable.';
+          retry.hidden = false;
         } finally {
           window.clearTimeout(deadline);
           if (pending === request) {
@@ -269,6 +282,10 @@ const examples = [
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         update(true);
+      });
+      retry.addEventListener('click', () => {
+        input.focus();
+        form.requestSubmit();
       });
       input.addEventListener('input', () => update(false));
       input.addEventListener('compositionstart', () => {
@@ -310,6 +327,8 @@ const examples = [
 
 <style>
   guide-search { display: block; }
+  .retry-query { margin-top: 0.5rem; }
+  .retry-query[hidden] { display: none; }
   .compact[data-live] .search-controls > button { display: none; }
   label { display: block; margin-bottom: 0.55rem; }
   .search-controls { display: flex; gap: 0.5rem; align-items: stretch; }

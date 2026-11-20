@@ -305,14 +305,14 @@ test("a stalled automatic search times out, keeps local matches, and can be retr
   await page.clock.fastForward(13000);
   await page
     .locator("#search-status-text")
-    .filter({ hasText: /unavailable/i })
+    .filter({ hasText: /took too long/i })
     .waitFor();
   assert.equal(
     await page.locator(".quick-matches a").first().isVisible(),
     true,
   );
   first.resolve();
-  await input.press("Enter");
+  await page.getByRole("button", { name: "Try again" }).click();
   await page.locator(".search-results a").waitFor();
   assert.deepEqual(sent, ["DPoP", "DPoP"]);
   await ctx.close();
@@ -344,8 +344,12 @@ test("local index failure, unavailable service, rate limiting and zero results a
     .waitFor();
   await page.clock.fastForward(600);
   await status.filter({ hasText: /unavailable/i }).waitFor();
-  await input.press("Enter");
+  await page.getByRole("button", { name: "Try again" }).click();
   await status.filter({ hasText: /60 seconds/i }).waitFor();
+  assert.equal(
+    await page.getByRole("button", { name: "Try again" }).isVisible(),
+    false,
+  );
   await input.fill("a revised question");
   await page.clock.fastForward(1000);
   await input.press("Enter");
