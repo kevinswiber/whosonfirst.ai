@@ -186,11 +186,14 @@ const here = fm.section
     margin-top: 2.6em;
     padding-top: 1.1em;
     border-top: 1px solid var(--border);
+    /* where the link to the section sits: level with the first line, below this */
+    --section-link-top: 1.1em;
   }
   .article :global(h2:first-child),
   .article :global(.lede + h2) {
     border-top: 0;
     padding-top: 0;
+    --section-link-top: 0px;
   }
   .article :global(.table-scroll) {
     margin-block: 1.4em 1.8em;

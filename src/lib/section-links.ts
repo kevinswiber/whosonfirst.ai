@@ -5,8 +5,7 @@
  * `linkSections()` reads a page's body as HTML and returns it with one change
  * to each section heading, an h2 or an h3: a small link to the heading's own
  * address, so that pressing it puts that address in the address bar. The link
- * is plain HTML, a small link icon. It is the first thing in the heading and
- * is set in the margin to the left of it. A script in SectionLinks.astro
+ * is plain HTML, a small link icon. A script in SectionLinks.astro
  * adds copying to it, and nothing here needs the script.
  *
  * - A heading with an id keeps it. A heading without one, an h2 only, is
@@ -219,13 +218,12 @@ export function linkSections(html: string): string {
         ? ""
         : ` aria-label="${escapeHtml(h.text)}"`,
     ].join("");
-    // The opening tag ends in ">", so what is added goes before it. The link
-    // comes first in the heading, where the style sheet hangs it in the margin.
+    // The opening tag ends in ">", so what is added goes before it.
     const openEnd = h.from - 1;
     out += html.slice(last, openEnd) + added;
-    out += html.slice(openEnd, h.from);
+    out += html.slice(openEnd, h.to);
     out += `<section-link class="section-link"><a href="#${escapeHtml(h.id)}" aria-label="${escapeHtml(LABEL + h.text)}">${ICON}</a></section-link>`;
-    last = h.from;
+    last = h.to;
   }
   return out + html.slice(last);
 }

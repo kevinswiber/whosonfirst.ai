@@ -24,11 +24,11 @@ test("the link holds a drawing and no words", () => {
   assert.equal(link.replace(/<[^>]*>/g, ""), "");
 });
 
-test("a heading with an id keeps it and gets a link to it, first in it, and its name is its own words", () => {
+test("a heading with an id keeps it and gets a link to it, and its name is its own words", () => {
   const html = '<h2 id="how">How it works</h2><p>Text.</p>';
   assert.equal(
     linkSections(html),
-    `<h2 id="how" aria-label="How it works">${LINK("how", "How it works")}How it works</h2><p>Text.</p>`,
+    `<h2 id="how" aria-label="How it works">How it works${LINK("how", "How it works")}</h2><p>Text.</p>`,
   );
 });
 
@@ -52,8 +52,8 @@ test("an id is never one the page has, in the page or in its frame", () => {
 
 test("an id that a heading has is not changed, and one a later heading has is not taken", () => {
   const out = linkSections('<h2>Setup</h2><h2 id="setup">Other</h2>');
-  assert.match(out, /<h2 id="setup-2" [^>]*>.*<\/section-link>Setup/);
-  assert.match(out, /<h2 id="setup" [^>]*>.*<\/section-link>Other/);
+  assert.match(out, /<h2 id="setup-2" [^>]*>Setup/);
+  assert.match(out, /<h2 id="setup" [^>]*>Other/);
 });
 
 test("an h3 is linked only where it already has an id", () => {

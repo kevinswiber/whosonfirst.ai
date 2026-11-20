@@ -376,9 +376,9 @@ test("a section link goes to its own heading, which is named by its words, and n
   for (const p of built) {
     const ids = [...p.html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
     for (const m of p.html.matchAll(
-      /<(h[23])\b([^>]*)><section-link class="section-link"><a href="#([^"]+)" aria-label="([^"]*)"><svg [^>]*aria-hidden="true"[^>]*>(?:(?!<\/svg>)[\s\S])*<\/svg><\/a><\/section-link>((?:(?!<\/\1>)[\s\S])*?)<\/\1>/g,
+      /<(h[23])\b([^>]*)>((?:(?!<\/\1>)[\s\S])*?)<section-link class="section-link"><a href="#([^"]+)" aria-label="([^"]*)"><svg [^>]*aria-hidden="true"[^>]*>(?:(?!<\/svg>)[\s\S])*<\/svg><\/a><\/section-link><\/\1>/g,
     )) {
-      const [, , attrs, href, label, inner] = m;
+      const [, , attrs, inner, href, label] = m;
       const id = /\sid="([^"]+)"/.exec(attrs)?.[1];
       const name = /\saria-label="([^"]*)"/.exec(attrs)?.[1];
       if (id !== href) wrong.push(`${p.path}: a link to #${href} in #${id}`);

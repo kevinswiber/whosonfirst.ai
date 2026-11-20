@@ -5,35 +5,27 @@
  * heading when the page is built, and pressing it puts that section's address
  * in the address bar, with or without this script. The script adds one thing:
  * the same press also copies the address, and says so.
+ *
+ * The link is the last thing in its heading, and where the window is wider than
+ * 40rem, as wide as the page's other layouts treat as a desk, it is set in the
+ * margin to the left of the heading, as GitHub sets its own. Below that the
+ * page's side padding is too narrow to hold it, and it stays after the text.
  */
 ---
 
 <style is:global>
-  /* The link is the first thing in its heading, floated into the margin to the
-     left of it, as GitHub sets its own. Its box is one em of the heading wide
-     and pulled back by the same, so the text does not move and takes none of
-     its room, and as high as the heading's first line, so the icon is level
-     with it whatever the heading's padding. The icon has the box's right side,
-     and the gap to the text is what is left. */
   .section-link {
-    --hang: 1em;
     position: relative;
-    float: left;
-    box-sizing: border-box;
-    width: var(--hang);
-    height: 1lh;
-    margin-inline-start: calc(-1 * var(--hang));
+    margin-inline-start: 0.4em;
+    font-size: 0.65em;
+    line-height: 1;
     white-space: nowrap;
   }
-  /* The link is a small icon with room around it to press. The room is in the
-     padding, which is taken back in the margin, so nothing is moved by it. */
+  /* The link is a small icon with room around it to press: the room is taken
+     back in the margin, so the heading is no taller for it. */
   .section-link a {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-    padding: 0 0.3em;
-    margin: 0 -0.3em;
+    padding: 0.3em 0.5em;
+    margin: -0.3em -0.5em;
     border-radius: var(--radius);
     color: var(--fg-subtle);
     text-decoration: none;
@@ -41,46 +33,22 @@
   .section-link a:hover {
     color: var(--accent);
   }
+  /* A little under the height of the heading's capitals, level with their middle */
   .section-link svg {
-    flex: none;
-    width: 0.65em;
-    height: 0.65em;
-    margin-inline-end: 0.35em;
-  }
-  @media (pointer: coarse) {
-    .section-link svg {
-      width: 0.75em;
-      height: 0.75em;
-      margin-inline-end: 0.25em;
-    }
-  }
-  /* The margin of a narrow page is the page's own side padding, 1rem at least.
-     The box is that wide, and the icon is a little smaller and in the middle
-     of it, so that it clears the edge of the window as well as the text. */
-  @media (max-width: 40rem) {
-    .section-link {
-      --hang: 1rem;
-    }
-    .section-link a {
-      justify-content: center;
-      padding: 0 0.5rem 0 0;
-      margin: 0 -0.5rem 0 0;
-    }
-    .section-link svg {
-      width: 0.8rem;
-      height: 0.8rem;
-      margin: 0;
-    }
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.1em;
   }
   /* The word "Copied", said under the icon for a moment after a press that
-     copied the address: out of the flow, so that it takes no room in the
-     heading and cannot widen the page. It is only generated content: the
-     polite status line says it to a screen reader. Nothing is said on hover or
-     focus, since the icon says enough. */
+     copied the address. It is out of the flow and ends where the icon does, so
+     that it takes no room in the heading and cannot wrap it or widen the page.
+     It is only generated content: the polite status line says it to a screen
+     reader. Nothing is said on hover or focus, since the icon says enough. */
   .section-link a::after {
     position: absolute;
-    left: 0;
-    top: calc(100% + 0.35rem);
+    right: 0;
+    top: calc(100% + 0.6rem);
     z-index: 2;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border-strong);
@@ -100,14 +68,15 @@
     content: "Copied" / "";
     display: block;
   }
-  /* With a pointer the icon waits until the heading is pointed at, reached by
-     keyboard or arrived at. Where there is none to point with it is always
-     there. */
+  /* With a pointer the icon waits until the heading is pointed at or reached by
+     keyboard. A heading that was linked to does not show it: where the link
+     led is already plain. Where there is no pointer to point with, the icon is
+     always there, and a little larger to press. */
   @media (hover: hover) {
     .section-link {
       opacity: 0;
     }
-    :is(h2, h3):is(:hover, :focus-within, :target) > .section-link,
+    :is(h2, h3):is(:hover, :focus-within) > .section-link,
     .section-link[data-copied] {
       opacity: 1;
     }
@@ -115,6 +84,65 @@
   @media (prefers-reduced-motion: no-preference) {
     .section-link {
       transition: opacity 0.12s;
+    }
+  }
+  @media (pointer: coarse) {
+    .section-link {
+      font-size: 0.8em;
+    }
+    .section-link a {
+      padding: 0.6em 0.7em;
+      margin: -0.6em -0.7em;
+    }
+  }
+  /* From 40rem the margin of the page is wide enough to hold the icon. The
+     heading becomes the box the link is set against, and the link is taken out
+     of the flow: one em of the heading wide, ending where the heading begins,
+     and as high as its first line, so that the text does not move and loses no
+     room, and no layout moves with the window's width. The icon has the right
+     of that box and the gap to the text is what is left. --section-link-top is
+     what a heading has above its first line, which only a few have. */
+  @media (min-width: 40.01rem) {
+    :is(h2, h3):has(> .section-link) {
+      position: relative;
+    }
+    .section-link {
+      position: absolute;
+      right: 100%;
+      top: var(--section-link-top, 0px);
+      box-sizing: border-box;
+      width: 1em;
+      height: 1lh;
+      margin: 0;
+      font-size: 1em;
+      line-height: inherit;
+    }
+    .section-link a {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      padding: 0 0.3em;
+      margin: 0 -0.3em;
+    }
+    .section-link svg {
+      flex: none;
+      width: 0.65em;
+      height: 0.65em;
+      margin-inline-end: 0.3em;
+      vertical-align: baseline;
+    }
+    .section-link a::after {
+      right: auto;
+      left: 0;
+      top: calc(100% + 0.35rem);
+    }
+  }
+  @media (min-width: 40.01rem) and (pointer: coarse) {
+    .section-link svg {
+      width: 0.75em;
+      height: 0.75em;
+      margin-inline-end: 0.2em;
     }
   }
   @media print {
