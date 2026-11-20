@@ -114,7 +114,7 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     );
     const height = await heightOf(page, "keep");
     await link.hover();
-    assert.equal(await label(link), "Copy link", "says what a press does");
+    assert.equal(await label(link), "none", "and says nothing more on hover");
     assert.equal(
       await heightOf(page, "keep"),
       height,
@@ -130,7 +130,7 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     );
     await page.waitForTimeout(250);
     assert.equal(await opacity(link), 1, "shown when it has focus");
-    assert.equal(await label(link), "Copy link", "and says what a press does");
+    assert.equal(await label(link), "none", "and nothing more on focus");
     assert.equal(
       await link.evaluate((a) => getComputedStyle(a).outlineStyle),
       "solid",
@@ -386,16 +386,19 @@ describe("the icon in the margin", { concurrency: true }, () => {
     });
   }
 
-  test("the label goes under the icon and widens nothing", async (t) => {
+  test("“Copied” goes under the icon and moves and widens nothing", async (t) => {
     const ctx = await site.context({ viewport: { width: 390, height: 844 } });
+    await ctx.grantPermissions(["clipboard-read", "clipboard-write"], {
+      origin: site.origin,
+    });
     t.after(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url(FLOW));
     const link = linkFor(page, "standards");
     await link.scrollIntoViewIfNeeded();
     const height = await heightOf(page, "standards");
-    await link.hover();
-    assert.equal(await label(link), "Copy link");
+    await link.click();
+    assert.equal(await label(link), "Copied");
     assert.equal(await heightOf(page, "standards"), height);
     assert.ok(
       await page.evaluate(

@@ -72,10 +72,11 @@
       margin: 0;
     }
   }
-  /* What pressing it does, said under the icon: out of the flow, so that it
-     takes no room in the heading and cannot widen the page. Without the script
-     a press only goes to the section, and the icon says nothing more than its
-     name. With it, a press copies. */
+  /* The word "Copied", said under the icon for a moment after a press that
+     copied the address: out of the flow, so that it takes no room in the
+     heading and cannot widen the page. It is only generated content: the
+     polite status line says it to a screen reader. Nothing is said on hover or
+     focus, since the icon says enough. */
   .section-link a::after {
     position: absolute;
     left: 0;
@@ -94,14 +95,7 @@
     pointer-events: none;
     display: none;
   }
-  @media (hover: hover) {
-    .section-link[data-ready] a:is(:hover, :focus-visible)::after {
-      content: "Copy link";
-      content: "Copy link" / "";
-      display: block;
-    }
-  }
-  .section-link[data-copied][data-ready] a::after {
+  .section-link[data-copied] a::after {
     content: "Copied";
     content: "Copied" / "";
     display: block;
@@ -138,8 +132,6 @@
     private timer = 0;
     connectedCallback() {
       region();
-      // from here a press copies, and the label beside the chain may say so
-      this.toggleAttribute('data-ready', true);
       const link = this.querySelector('a');
       link?.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
