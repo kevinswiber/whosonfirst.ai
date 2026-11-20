@@ -682,6 +682,14 @@ export interface ReadCitation extends Citation {
   toLabel?: string;
   /** The cited document's current version, where the log has one. */
   current?: string;
+  /**
+   * Each version as its publisher writes it: its full name where the log has
+   * one ("draft-ietf-oauth-v2-1-13"), and its label where that is the whole of
+   * it ("2026-07-28"). A page shows these, and adds no word of its own.
+   */
+  fromName: string;
+  toName?: string;
+  currentName?: string;
   /** True where a revision is named and the cited document has moved past it. */
   behind: boolean;
   /** True where the citing version is no longer its document's current one. */
@@ -696,7 +704,12 @@ export const readCitations = (
   citations.map((citation) => {
     const from = versionName(citation.from);
     const to = versionName(citation.to);
-    const current = currentOf(events, to.entry)?.version?.label;
+    const now = currentOf(events, to.entry)?.version;
+    const current = now?.label;
+    const written = (entry: string, label: string | undefined) => {
+      const version = versionsOf(events, entry).find((v) => v.label === label);
+      return version?.name ?? label;
+    };
     return {
       ...citation,
       fromEntry: from.entry,
@@ -704,6 +717,9 @@ export const readCitations = (
       toEntry: to.entry,
       toLabel: to.label,
       current,
+      fromName: written(from.entry, from.label) ?? "",
+      toName: written(to.entry, to.label),
+      currentName: now?.name ?? now?.label,
       behind:
         to.label !== undefined && current !== undefined && current !== to.label,
       superseded: currentOf(events, from.entry)?.version?.label !== from.label,

@@ -34,43 +34,37 @@ const count = (fn: (s: (typeof standards)[number]) => boolean) =>
 // What one specification cites of another, by revision, with whether the
 // revision cited is still the current one: worked out from the log.
 const cited = readCitations(citations, history);
-const revision = (label: string) =>
-  /^-\d+$/.test(label) ? `revision ${label}` : label;
-// The version that cites, as the subject of a sentence.
-const citing = (label: string) =>
-  /^-\d+$|^\d{4}-\d{2}-\d{2}$/.test(label)
-    ? `Revision ${label}`
-    : `Version ${label}`;
+// A version is written as its publisher writes it, with no word added here.
 const citationsOf = (id: string) => [
   ...cited
     .filter((c) => c.fromEntry === id)
     .map((c) => {
       const to = std(c.toEntry);
-      const state = !c.toLabel
+      const state = !c.toName
         ? "It names no revision."
         : c.behind
-          ? `The current one is ${revision(c.current ?? "")}.`
+          ? `The current one is ${c.currentName}.`
           : "That is the current one.";
       return {
         kind: "Cites",
-        name: c.toLabel ? `${to.name}, ${revision(c.toLabel)}` : to.name,
+        name: c.toName ? `${to.name}, ${c.toName}` : to.name,
         href: `#${to.id}`,
         out: false,
-        note: `${citing(c.fromLabel)} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
+        note: `${c.fromName} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
       };
     }),
   ...cited
     .filter((c) => c.toEntry === id)
     .map((c) => {
       const from = std(c.fromEntry);
-      const state = !c.toLabel
+      const state = !c.toName
         ? "It names no revision."
         : c.behind
-          ? `It cites ${revision(c.toLabel)}; the current one is ${revision(c.current ?? "")}.`
-          : `It cites ${revision(c.toLabel)}, the current one.`;
+          ? `It cites ${c.toName}; the current one is ${c.currentName}.`
+          : `It cites ${c.toName}, the current one.`;
       return {
         kind: "Cited by",
-        name: `${from.name}, ${revision(c.fromLabel)}`,
+        name: `${from.name}, ${c.fromName}`,
         href: `#${from.id}`,
         out: false,
         note: state,

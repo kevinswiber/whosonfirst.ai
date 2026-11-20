@@ -523,6 +523,20 @@ test("whether a cited revision is still current is read from the log", () => {
   assert.equal(then.behind, true);
   assert.equal(then.current, "-02");
   assert.equal(then.superseded, false);
+  // a version is written as its publisher writes it: its full name where the log has one
+  const named = event({
+    kind: "version",
+    date: "2026-11-21",
+    version: {
+      label: "-03",
+      name: "draft-example-a-03",
+      url: "https://example.org/a-03",
+    },
+  });
+  const [full] = readCitations([cite], [base, b, later, named]);
+  assert.equal(full.currentName, "draft-example-a-03");
+  assert.equal(full.toName, "-01");
+  assert.equal(full.fromName, "v2");
   // a document cited with no revision named is never behind
   assert.equal(
     readCitations([{ ...cite, to: "a" }], [base, b, later])[0].behind,

@@ -12,7 +12,7 @@ const line = (c) => {
   const state = !c.toLabel
     ? "names no revision"
     : c.behind
-      ? `the current one is ${c.current}`
+      ? `the current one is ${c.currentName}`
       : "the current one";
   const note = c.note ? `\n      ${c.note}` : "";
   const old = c.superseded ? " (itself no longer current)" : "";
