@@ -902,17 +902,20 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     text-decoration: none;
     color: var(--fg-muted);
     padding: 0.5rem 0.55rem;
-    border-radius: var(--radius);
     white-space: nowrap;
   }
+  /* Under the pointer a section turns the link color, as every link on the
+     site does and as the search field beside it does. The rule under a
+     section is kept for the one the reader is in. */
   #site-nav a:hover {
-    color: var(--fg);
-    background: var(--bg-sunken);
+    color: var(--accent);
   }
   #site-nav a[aria-current='page'] {
     color: var(--fg);
     box-shadow: inset 0 -2px 0 var(--accent);
-    border-radius: 0;
+  }
+  #site-nav a[aria-current='page']:hover {
+    color: var(--accent);
   }
   /* In the bar a group is told from the next by a short rule. Its name, what
      each section holds and the lesser sections are for the menu, which has
@@ -1085,7 +1088,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       text-decoration: none;
     }
     .quick a:hover {
-      text-decoration: underline;
+      color: var(--accent);
     }
     .quick a[aria-current='page'] {
       box-shadow: inset 0 -2px 0 var(--accent);
@@ -1163,13 +1166,9 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       color: var(--fg);
       white-space: normal;
       border-bottom: 1px solid var(--border);
-      border-radius: 0;
     }
     .site-header[data-js] #site-nav a:hover {
-      background: none;
-    }
-    .site-header[data-js] #site-nav a:hover .nav-label {
-      text-decoration: underline;
+      color: var(--accent);
     }
     .site-header[data-js] .nav-label {
       display: block;
