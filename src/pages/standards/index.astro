@@ -190,7 +190,7 @@ const moved = movedIn(history, YEAR);
                     data-text={`${s.name} ${s.ref} ${s.id} ${s.body} ${s.summary} ${s.agents} ${s.detail ?? ''} ${related.map((r) => `${r.kind} ${r.name} ${r.note}`).join(' ')} ${(s.otherNames ?? []).join(' ')}`.toLowerCase()}
                   >
                     <header>
-                      <h3>{s.name}</h3>
+                      <h3><a href={`/standards/${s.id}/`}>{s.name}</a></h3>
                       <span class="sx-ref">{s.ref}</span>
                     </header>
                     <div class="chips">
@@ -242,9 +242,6 @@ const moved = movedIn(history, YEAR);
                       <a href={s.url} rel="noopener">
                         Source ↗
                       </a>
-                      <span class="sx-used">
-                        <a href={`/standards/${s.id}/`}>Versions and history</a>
-                      </span>
                       {used.length > 0 && (
                         <span class="sx-used">
                           Used in{' '}
@@ -658,6 +655,13 @@ const moved = movedIn(history, YEAR);
   .sx-item h3 {
     margin: 0;
     font-size: 1.24rem;
+  }
+  /* The title leads to this site's page for the entry; the source is the link marked ↗ below. */
+  .sx-item h3 a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.18em;
   }
   .sx-item > .chips {
     column-gap: 0.6rem;

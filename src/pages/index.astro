@@ -5,8 +5,21 @@ import { byGroup, flow, flows } from "../data/flows";
 import { lessons, totalMinutes } from "../data/learn/lessons";
 import { standards } from "../data/standards";
 import { REVIEWED } from "../data/site";
+import { history } from "../data/history";
+import { changelog, spellDate } from "../lib/history";
 import { questions } from "../data/guide";
 import { must } from "../lib/must";
+
+// The newest day the changelog has an entry for, and that day's heading there.
+const newest = must(
+  changelog(history)[0],
+  "a day in the standards changelog",
+).key;
+const latest = {
+  date: spellDate(newest),
+  iso: newest,
+  href: `/standards/changes/#g-${newest}`,
+};
 
 const groups = byGroup();
 const drafts = standards.filter(
@@ -225,7 +238,7 @@ const news = [
       </nav>
 
       <div class="hero-meta">
-        <DocMeta lead="An independent guide, not a specification" reviewed={REVIEWED} />
+        <DocMeta lead="An independent guide, not a specification" reviewed={REVIEWED} latest={latest} />
       </div>
     </div>
   </section>

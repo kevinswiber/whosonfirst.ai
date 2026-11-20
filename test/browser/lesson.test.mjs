@@ -151,8 +151,8 @@ for (const theme of THEMES) {
               top("#check-yourself"),
               top("#keep"),
               top("#names"),
-              top("#deeper"),
               top(".pager"),
+              top("#deeper"),
             ],
             here: document
               .querySelector(".path a[aria-current='page']")
@@ -161,13 +161,31 @@ for (const theme of THEMES) {
             next: document.querySelector(".pager .next")?.getAttribute("href"),
           };
         }));
-      test("lesson runs in its order: figure, questions, what to keep, names, go deeper, next", async () => {
+      test("lesson runs in its order: figure, questions, what to keep, names, next lesson, go deeper", async () => {
         const { order } = await shape();
         assert.ok(
           order.every((y) => y !== null) &&
             order.every((y, i) => i === 0 || y > order[i - 1]),
           order.map((y) => (y === null ? "missing" : Math.round(y))).join(" "),
         );
+      });
+      // "Go deeper" is an aside: a reader who has finished should see the next
+      // lesson as the step to take, and not mistake a list of links for it
+      test("the next lesson is boxed, a tap target, and drawn larger than the links under go deeper", async () => {
+        const m = await page.evaluate(() => {
+          const next = document.querySelector(".pager .next");
+          const deeper = document.querySelector(".deeper li > a");
+          const size = (el) => parseFloat(getComputedStyle(el).fontSize);
+          return {
+            border: parseFloat(getComputedStyle(next).borderTopWidth),
+            height: next.getBoundingClientRect().height,
+            next: size(next),
+            deeper: size(deeper),
+          };
+        });
+        assert.ok(m.border >= 2, `a border of ${m.border}px`);
+        assert.ok(m.height >= 44, `${Math.round(m.height)}px tall`);
+        assert.ok(m.next > m.deeper, `${m.next}px against ${m.deeper}px`);
       });
       test("lesson says where it sits among the others, and what comes next", async () => {
         const s = await shape();

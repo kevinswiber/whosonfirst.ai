@@ -7,6 +7,8 @@ import { recordBegan, spellDate, timeline } from "../../lib/history";
 const groups = timeline(history);
 const count = groups.reduce((n, g) => n + g.events.length, 0);
 const began = spellDate(recordBegan(history));
+// The oldest group is last: the timeline is newest first.
+const oldest = spellDate(groups[groups.length - 1].key);
 ---
 
 <Base
@@ -21,8 +23,8 @@ const began = spellDate(recordBegan(history));
         What has happened to the specifications the tracker follows, newest first, by the date it happened.
       </p>
       <p class="also">
-        {count} events. The record began on {began}, so most of what came before is not here.{" "}
-        <a href="/standards/">The tracker</a> says where each specification stands now, and{" "}
+        {count} events, the oldest from {oldest}.{" "}
+        <a href="/standards/">The&nbsp;tracker</a> says where each specification stands now, and{" "}
         <a href="/standards/changes/">the changelog</a> lists the same events by the day this site reported them.
       </p>
     </div>
@@ -31,6 +33,11 @@ const began = spellDate(recordBegan(history));
   <section class="section">
     <div class="wrap">
       <HistoryList groups={groups} by="happened" />
+      <p class="tl-end">
+        The timeline is not complete before this point. This site began recording on {began}. Entries from earlier are
+        here where the tracker had already reported them or a specification cites that revision. Other things that
+        happened before then may be missing.
+      </p>
       <div class="callout">
         <p class="callout-title">What is an event</p>
         <p>
@@ -45,6 +52,13 @@ const began = spellDate(recordBegan(history));
 </Base>
 
 <style>
+  .tl-end {
+    max-width: 52rem;
+    margin: 0 0 2rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-strong);
+    color: var(--fg-muted);
+  }
   .also {
     max-width: 52rem;
     color: var(--fg-muted);

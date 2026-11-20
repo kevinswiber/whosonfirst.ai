@@ -50,6 +50,26 @@ for (const theme of THEMES) {
       });
       after(() => ctx.close());
 
+      test("each entry's title leads to its own page, and the source is a separate link", async () => {
+        const bad = await page.evaluate(() =>
+          [...document.querySelectorAll(".sx-item")].flatMap((item) => {
+            const title = item.querySelector("h3 a");
+            const problems = [];
+            if (title?.getAttribute("href") !== `/standards/${item.id}/`)
+              problems.push(`${item.id}: title does not lead to its page`);
+            const hrefs = [...item.querySelectorAll("a")].map((a) =>
+              a.getAttribute("href"),
+            );
+            if (
+              hrefs.filter((h) => h === `/standards/${item.id}/`).length !== 1
+            )
+              problems.push(`${item.id}: its page is linked more than once`);
+            return problems;
+          }),
+        );
+        assert.deepEqual(bad, []);
+      });
+
       let measured;
       const lookup = () =>
         (measured ??= page.evaluate(() => ({

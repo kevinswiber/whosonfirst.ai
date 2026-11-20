@@ -1,8 +1,9 @@
 /**
- * The deployment guides, in the order the index page lists them. The index page
- * and the way on at the end of each guide both read this list, so a guide added
- * here shows up in both. `alsoRead` names the other guides a reader of this one
- * most likely wants next.
+ * The deployment guides, in the order the index page lists them. The index page,
+ * the way on at the end of each guide and the previous and next links under it all
+ * read this list, so a guide added here shows up in each. `alsoRead` names the
+ * other guides a reader of this one most likely wants next; the previous and next
+ * links follow the list's order instead.
  */
 export interface Place {
   slug: string;

@@ -48,7 +48,30 @@ for (const s of cases) {
   }
 }
 
+// The questions every reader is asked, then the ones under “More questions”.
+const first = questions.filter((q) => !q.advanced);
+const more = questions.filter((q) => q.advanced);
+const WORDS = [
+  "No",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+];
+const counted = (n: number) => WORDS[n] ?? String(n);
+
 const data = {
+  // which questions are asked first, and the others with their answers, to
+  // count what one more answer could take out of a result
+  first: first.map((q) => q.id),
+  asks: more.map((q) => ({
+    id: q.id,
+    options: q.options.map((o) => ({ value: o.value })),
+  })),
   rules,
   cautions,
   deployLinks,
@@ -87,8 +110,10 @@ const data = {
       <p class="eyebrow">Decision guide</p>
       <h1>Which flow fits your agent?</h1>
       <p class="lede">
-        Six questions. Answer as many as you can; the recommendations update as you go and the address bar keeps your
-        answers, so you can share the result. The first two answers also put it in{' '}
+        {counted(first.length)} questions. Answer as many as you can; the recommendations update as you go and the
+        address bar keeps your answers, so you can share the result. {counted(more.length)} more, under{' '}
+        <a href="#more">More questions</a>, take out what does not apply when the list is long. The first two answers
+        also put it in{' '}
         <a href="#cases">one of four named cases</a>. If the questions use words you have not met, <a href="/learn/">the
         lessons</a> teach them in about forty minutes.
         You can also <a href="/flows/">browse all {flows.length} flows</a>.
@@ -100,10 +125,11 @@ const data = {
     <decision-guide class="dg">
       <form class="dg-questions" id="questions" aria-label="About your agent">
         {
-          questions.map((q, i) => (
+          [first, more].map((list, part) => {
+            const fields = list.map((q) => (
             <fieldset>
               <legend>
-                <span class="dg-num">{i + 1}</span>
+                <span class="dg-num">{questions.indexOf(q) + 1}</span>
                 {q.title}
               </legend>
               {q.help && (
@@ -129,7 +155,25 @@ const data = {
                 ))}
               </div>
             </fieldset>
-          ))
+            ));
+            // The questions after the first few are there to read, without a
+            // script, and wait to be opened: a reader who leaves them gets the
+            // whole list, and one who answers them can shorten it.
+            return part === 0 ? (
+              fields
+            ) : (
+              <details class="dg-more" id="more">
+                <summary>
+                  <strong class="dg-more-title">More questions</strong><span class="visually-hidden">.</span>
+                  <span class="dg-more-sub">
+                    {counted(list.length)} more, for a closer fit. Each answer can take out a flow that does not apply,
+                    or move one that does up its list.
+                  </span>
+                </summary>
+                {fields}
+              </details>
+            );
+          })
         }
         <p class="dg-foot">
           <button class="btn small ghost" type="reset">Start over</button>
@@ -182,9 +226,11 @@ const data = {
 
 <script>
   import type { Rule } from '../../data/guide';
-  import { type Answers, matches, recommend, caseFor } from '../../lib/guide-rules';
+  import { type Answers, matches, recommend, caseFor, narrowable } from '../../lib/guide-rules';
 
   interface Data {
+    first: string[];
+    asks: { id: string; options: { value: string }[] }[];
     rules: Rule[];
     cautions: { when: Record<string, string[]>; text: string }[];
     cases: { slug: string; name: string; when: Record<string, string[]>; short: string }[];
@@ -203,6 +249,9 @@ const data = {
       const out = this.querySelector<HTMLElement>('.dg-out')!;
       const data: Data = JSON.parse(this.querySelector('.dg-data')!.textContent!);
       const jump = this.querySelector<HTMLElement>('.dg-jump-n');
+      const more = this.querySelector<HTMLDetailsElement>('.dg-more');
+      // the questions under More questions: their answers only take flows out, or move them up
+      const further = data.asks.map((q) => q.id);
       const names = [...new Set([...form.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name))];
 
       const read = (): Answers => {
@@ -218,6 +267,9 @@ const data = {
       const render = (push = true) => {
         const a = read();
         const answered = Object.keys(a).length;
+        // the questions asked first are counted against their number; the others, as many as are answered
+        const first = data.first.filter((n) => a[n] != null).length;
+        const extra = answered - first;
 
         if (push) {
           const qs = new URLSearchParams(a).toString();
@@ -231,7 +283,7 @@ const data = {
         }
 
         // best rule per flow; a "start" beats an "add" beats a "consider"
-        const groups = recommend(data.rules, a);
+        const groups = recommend(data.rules, a, further);
 
         let html = '';
         const total = groups.start.length + groups.add.length + groups.consider.length;
@@ -241,7 +293,8 @@ const data = {
         const copy = navigator.clipboard
           ? `<button class="btn small ghost dg-copy" type="button">Copy result link</button>`
           : '';
-        html += `<div class="dg-top"><p class="dg-status">${answered} of ${names.length} answered · ${count}</p><p class="dg-tools"><a class="dg-edit" href="#questions">Edit answers</a>${copy}<span class="dg-copied"></span></p></div>`;
+        const status = `${first} of ${data.first.length} answered${extra ? `, ${extra} more` : ''}`;
+        html += `<div class="dg-top"><p class="dg-status">${status} · ${count}</p><p class="dg-tools"><a class="dg-edit" href="#questions">Edit answers</a>${copy}<span class="dg-copied"></span></p></div>`;
 
         // The name of the case, once the questions it comes from are answered,
         // then every other answer as a fact with the word for its question: the name
@@ -261,6 +314,13 @@ const data = {
         }
         if (facts.length) html += `<dl class="dg-facts">${facts.join('')}</dl>`;
         html += `</section>`;
+
+        // A long list may hold flows whose reason depends on something not yet asked.
+        // Say how many, and where the questions are that can take them out.
+        const open = narrowable(data.rules, data.asks, a).size;
+        if (open) {
+          html += `<p class="dg-narrow">${open} of these ${open === 1 ? 'depends' : 'depend'} on a question you have not answered yet. <a href="#more">Answer more questions</a> to keep only what applies.</p>`;
+        }
 
         if (total === 0) {
           html += `<p class="dg-empty">No flow matches that exact combination. Try relaxing an answer, or browse <a href="/flows/">all flows</a>.</p>`;
@@ -319,7 +379,14 @@ const data = {
         const input = form.querySelector<HTMLInputElement>(`input[name="${n}"][value="${CSS.escape(v)}"]`);
         if (input) input.checked = true;
       }
+      // Answers to the further questions, from the address, are shown where they can be seen.
+      if (more && (data.asks.some((q) => params.has(q.id)) || location.hash === '#more')) more.open = true;
       render(false);
+
+      // A link to the further questions opens them, wherever on the page it is.
+      document.addEventListener('click', (e) => {
+        if (more && (e.target as Element).closest('a[href="#more"]')) more.open = true;
+      });
 
       out.addEventListener('click', async (e) => {
         const button = (e.target as Element).closest('.dg-copy');
@@ -417,6 +484,53 @@ const data = {
     margin: 0 0 0.3rem 1.9rem;
     font-size: 0.92rem;
     color: var(--fg-muted);
+  }
+
+  /* The further questions: a line across, then one row that opens them, with
+     a sentence on what they do. Opened, they read as the ones above. */
+  .dg-more {
+    margin: 0 0 1.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border);
+  }
+  .dg-more > summary {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.4rem 0 0.4rem 1.9rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .dg-more > summary::-webkit-details-marker {
+    display: none;
+  }
+  .dg-more[open] > summary {
+    margin-bottom: 1rem;
+  }
+  .dg-more-title {
+    font-family: var(--font-heading);
+    font-size: 1.32rem;
+    font-weight: 560;
+    line-height: 1.2;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.18em;
+  }
+  .dg-more-title::after {
+    content: "↓";
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 0.3em;
+  }
+  .dg-more[open] .dg-more-title::after {
+    content: "↑";
+  }
+  .dg-more-sub {
+    font-size: 0.92rem;
+    color: var(--fg-muted);
+  }
+  .dg-more > summary:hover .dg-more-title {
+    color: var(--accent);
   }
 
   /* An answer is a row with a radio button, and the whole row is the target. */
@@ -558,6 +672,11 @@ const data = {
   }
   .dg-out :global(.dg-facts dd) {
     margin: 0;
+  }
+  .dg-out :global(.dg-narrow) {
+    margin: 1rem 0 0;
+    font-size: 0.93rem;
+    color: var(--fg-muted);
   }
   .dg-out :global(.dg-empty) {
     color: var(--fg-muted);

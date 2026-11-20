@@ -76,7 +76,8 @@ const MADE_FROM: [
   page: RegExp,
   sources: (slug: string, site: Site) => string[],
 ][] = [
-  [/^\/$/, () => ["src/pages/index.astro"]],
+  // The hero says the newest day the changelog recorded something.
+  [/^\/$/, () => ["src/pages/index.astro", HISTORY]],
   // The list of flows rates each one, and a rating is taken from the standards
   // the flow lists.
   [

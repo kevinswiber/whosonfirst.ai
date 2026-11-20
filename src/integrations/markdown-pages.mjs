@@ -351,7 +351,7 @@ function guideRules(main) {
     element("h2", {}, [say("The rules")]),
     element("p", {}, [
       say(
-        "On the page, a script turns the answers into recommendations. These are the rules it applies. A rule applies when every question it names that has been answered has one of the answers listed, and at least one of them has been answered. A question left unanswered rules nothing out. A flow is shown once, under the strongest heading any of its rules gives it. Where two of a flow’s rules apply under the same heading, the reason shown is the one from the rule that matches more of the answers, or from the one listed first when they match as many.",
+        "On the page, a script turns the answers into recommendations. These are the rules it applies. A rule applies when every question it names that has been answered has one of the answers listed, and at least one of them is among the first six questions and has been answered. An answer to one of the questions after those never brings a rule up by itself: it can only rule one out. A question left unanswered rules nothing out. A flow is shown once, under the strongest heading any of its rules gives it. Where two of a flow’s rules apply under the same heading, the reason shown is the one from the rule that matches more of the answers, or from the one listed first when they match as many.",
       ),
     ]),
   ];
@@ -430,6 +430,21 @@ function prepare(main, page, site) {
   visit(main, "element", (node, index, parent) => {
     if (!has(node, "flow-stage")) return;
     parent.children.splice(index, 1, ...sequence(node, page));
+    return [SKIP, index + 2];
+  });
+
+  // The way on to the page before and the page after is a list of two links with
+  // no heading of its own. In text it would read as the end of the section above it,
+  // so the label a screen reader is given opens it.
+  visit(main, "element", (node, index, parent) => {
+    if (!is(node, "nav") || !has(node, "pager")) return;
+    parent.children.splice(
+      index,
+      0,
+      element("p", {}, [
+        element("strong", {}, [say(String(node.properties.ariaLabel))]),
+      ]),
+    );
     return [SKIP, index + 2];
   });
 
@@ -528,6 +543,12 @@ function prepare(main, page, site) {
       parent.children.splice(index, 1, ...node.children);
       return [SKIP, index];
     }
+    // 2b. A checklist is a task list, so it can be pasted into an issue.
+    if (is(node, "ul") && has(node, "checklist"))
+      for (const li of node.children.filter((c) => is(c, "li")))
+        li.children.unshift(
+          element("input", { type: "checkbox", checked: false }, []),
+        );
     // 3. Addresses are whole, so a copy of this text still leads somewhere.
     if (is(node, "a") && typeof node.properties.href === "string")
       node.properties.href = new URL(

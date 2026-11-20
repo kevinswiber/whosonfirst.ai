@@ -8,6 +8,7 @@ import FlowCard from "../../components/FlowCard.astro";
 import StandardCard from "../../components/StandardCard.astro";
 import DocMeta from "../../components/DocMeta.astro";
 import ImplementationSummary from "../../components/ImplementationSummary.astro";
+import Pager from "../../components/Pager.astro";
 import { comparisonSlug, comparisonsOf, flowsOf } from "../../data/comparisons";
 import { implementationProfile } from "../../data/implementations";
 import {
@@ -565,26 +566,11 @@ const detailGroups = [
       )
     }
 
-    <nav class="pager" aria-label="More flows">
-      {
-        prev ? (
-          <a href={`/flows/${prev.slug}/`}>
-            <span>← Previous</span>
-            {prev.short}
-          </a>
-        ) : (
-          <span />
-        )
-      }
-      {
-        next && (
-          <a class="next" href={`/flows/${next.slug}/`}>
-            <span>Next →</span>
-            {next.short}
-          </a>
-        )
-      }
-    </nav>
+    <Pager
+      label="More flows"
+      prev={prev && { href: `/flows/${prev.slug}/`, kicker: 'Previous flow', title: prev.short }}
+      next={next && { href: `/flows/${next.slug}/`, kicker: 'Next flow', title: next.short }}
+    />
   </div>
   </article>
 </Base>
@@ -893,35 +879,5 @@ const detailGroups = [
   }
   .notes {
     font-size: 0.98rem;
-  }
-
-  .pager {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: clamp(2.5rem, 5vw, 3.75rem);
-    padding-top: 1.4rem;
-    border-top: 1px solid var(--border);
-  }
-  .pager a {
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 560;
-    line-height: 1.25;
-  }
-  .pager a span {
-    display: block;
-    font-family: var(--font-label);
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-bottom: 0.3rem;
-  }
-  .pager .next {
-    text-align: right;
-    grid-column: 2;
   }
 </style>

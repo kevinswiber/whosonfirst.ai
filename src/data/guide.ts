@@ -3,7 +3,8 @@
  * and the names for the cases the first two answers describe.
  *
  * A rule applies when every key it names matches the selected answer. Questions
- * the reader has not answered yet do not rule anything out.
+ * the reader has not answered yet do not rule anything out. A rule is brought up
+ * by an answer to one of the first six questions, never by a further one alone.
  */
 
 export interface Question {
@@ -16,6 +17,13 @@ export interface Question {
   more?: { href: string; text: string };
   /** `brief` is the answer in a few words, for the list of facts beside a result. */
   options: { value: string; label: string; brief: string; hint?: string }[];
+  /**
+   * Asked only by a reader who opens “More questions”. Such a question can
+   * take a flow out of a result, or move it up under its heading. It never
+   * changes what the guide starts with, so a case’s page, which lists the
+   * starts, holds whatever it is answered: test/unit/guide.test.mjs checks both.
+   */
+  advanced?: boolean;
 }
 
 export const questions: Question[] = [
@@ -148,15 +156,21 @@ export const questions: Question[] = [
         brief: "Our own servers or cloud",
         hint: "A hosted app, containers, Kubernetes",
       },
+      // The two overlap: a managed platform can run the agent in a sandbox.
+      // What decides is on /deployments/: who issues the identity and holds the
+      // credentials, against code or content a stranger wrote, which must not be
+      // where a credential is (sandboxes.mdx, its description and lede).
       {
         value: "managed",
         label: "A managed agent platform",
         brief: "Managed agent platform",
+        hint: "The platform issues the agent’s identity and keeps its credentials in a vault",
       },
       {
         value: "sandbox",
         label: "A sandbox that runs untrusted code",
         brief: "Sandbox running untrusted code",
+        hint: "It runs code or reads content a stranger wrote, so it must hold no credential; choose this even on a managed platform",
       },
     ],
   },
@@ -177,6 +191,98 @@ export const questions: Question[] = [
         brief: "Irreversible",
         hint: "Move money, delete, send in someone’s name",
       },
+    ],
+  },
+
+  // ── more questions ──
+  // Each asks a fact that a reason in the rules below already depends on:
+  // whether the work goes further, whether access has to end with a session,
+  // whether there is a client certificate, whether a gateway ends TLS, whether
+  // the agent buys things. A reader who leaves them unanswered gets the whole
+  // list; one who answers can take out what does not apply.
+  {
+    id: "onward",
+    short: "Onward",
+    advanced: true,
+    title: "Does the work go further than the first call?",
+    help: "For example, a tool or another agent calls more services to finish the job, or the agent hands part of the task to a worker.",
+    options: [
+      {
+        value: "yes",
+        label: "Yes, it goes further",
+        brief: "Goes further",
+        hint: "More services act on the same task",
+      },
+      {
+        value: "no",
+        label: "No, one call does it",
+        brief: "One call",
+        hint: "The service it calls does the work itself",
+      },
+    ],
+  },
+  {
+    id: "revoke",
+    short: "Cut-off",
+    advanced: true,
+    title: "If a person’s session ends, must the agent’s access end with it?",
+    help: "For a person’s authority. An API that checks a signed token only by itself can go on accepting it until it expires.",
+    options: [
+      {
+        value: "yes",
+        label: "Yes, before its token expires",
+        brief: "Before the token expires",
+      },
+      {
+        value: "no",
+        label: "No, it can wait for the token to expire",
+        brief: "When the token expires",
+      },
+    ],
+  },
+  {
+    id: "cert",
+    short: "Certificate",
+    advanced: true,
+    title: "Can the agent present a client certificate?",
+    help: "Over mutual TLS, to the authorization server and to the service it calls.",
+    options: [
+      {
+        value: "yes",
+        label: "Yes",
+        brief: "Has one",
+        hint: "For example, an X.509-SVID from SPIFFE",
+      },
+      { value: "no", label: "No", brief: "None" },
+    ],
+  },
+  {
+    id: "gateway",
+    short: "Gateway",
+    advanced: true,
+    title: "Does a gateway or proxy end the TLS connection on the way?",
+    options: [
+      {
+        value: "yes",
+        label: "Yes",
+        brief: "Ends TLS on the way",
+        hint: "An API gateway, an MCP gateway, an inspection proxy",
+      },
+      {
+        value: "no",
+        label: "No, TLS runs end to end",
+        brief: "TLS end to end",
+      },
+    ],
+  },
+  {
+    id: "buys",
+    short: "Buying",
+    advanced: true,
+    title: "Does the agent complete purchases?",
+    options: [
+      { value: "yes", label: "Yes", brief: "Completes purchases" },
+      { value: "no", label: "No", brief: "No purchases" },
     ],
   },
 ];
@@ -428,6 +534,10 @@ export const rules: Rule[] = [
   },
 
   // ── delegation down a chain ──
+  // Two rules for one flow. Handing a task to another agent is itself a hop
+  // for the same user, so the second does not wait on whether the work goes
+  // further. The first is listed first: with neither the target nor that
+  // question answered, both match as many answers and its reason is the one shown.
   {
     flow: "token-exchange",
     role: "add",
@@ -435,9 +545,21 @@ export const rules: Rule[] = [
     when: {
       principal: ["user"],
       boundary: ["same"],
-      target: ["mcp", "api", "agent"],
+      target: ["mcp", "api"],
+      onward: ["yes"],
     },
     why: "Any tool or sub-agent that calls another service for the same user should exchange the token it received for a new one, never forward it.",
+  },
+  {
+    flow: "token-exchange",
+    role: "add",
+    weight: 7,
+    when: {
+      principal: ["user"],
+      boundary: ["same"],
+      target: ["agent"],
+    },
+    why: "Whether the remote agent learns which user the task is for depends on the token you send. Exchange the token you hold for a new one aimed at that agent, which can name both the user and your agent, rather than forwarding it.",
   },
   {
     flow: "transaction-tokens",
@@ -447,13 +569,14 @@ export const rules: Rule[] = [
       principal: ["user"],
       target: ["api", "mcp", "agent"],
       boundary: ["same"],
+      onward: ["yes"],
     },
     why: "If the call fans out across services in one trust domain, carry the user and the fixed details of the request in a short-lived token. Use workload identity to authenticate each hop.",
   },
   {
     flow: "biscuit-delegation",
     role: "consider",
-    when: { target: ["api", "mcp", "agent"] },
+    when: { target: ["api", "mcp", "agent"], onward: ["yes"] },
     why: "If the agent hands work to a tool or worker and the receiving service supports Biscuit, give the worker a restricted copy of the token without asking the issuer for a new one.",
   },
   {
@@ -532,6 +655,7 @@ export const rules: Rule[] = [
     when: {
       runtime: ["k8s", "managed"],
       target: ["api", "mcp", "agent"],
+      gateway: ["yes"],
     },
     why: "If both workloads can use the same workload identity scheme and gateways terminate TLS between them, a key-bound token with per-request proof survives the hop. The specifications are still working-group drafts.",
   },
@@ -555,7 +679,7 @@ export const rules: Rule[] = [
     flow: "agent-payments",
     role: "consider",
     weight: 5,
-    when: { target: ["web", "agent"], risk: ["irreversible"] },
+    when: { target: ["web", "agent"], risk: ["irreversible"], buys: ["yes"] },
     why: "If the irreversible thing is a purchase, signed mandates give merchants and payment providers evidence of what the user approved.",
   },
 
@@ -578,6 +702,7 @@ export const rules: Rule[] = [
     when: {
       principal: ["user"],
       target: ["api", "mcp", "agent"],
+      revoke: ["yes"],
     },
     why: "If ending a user’s session needs to cut off access before the token expires, the authorization server can report the change and the receiving service can enforce it. Both have to agree on which session the event identifies.",
   },
@@ -616,7 +741,7 @@ export const rules: Rule[] = [
   {
     flow: "oauth-mtls",
     role: "consider",
-    when: { target: ["api", "mcp", "agent"] },
+    when: { target: ["api", "mcp", "agent"], cert: ["yes"] },
     why: "If the authorization server and receiving service support certificate-bound OAuth tokens, present the same client certificate at both. The receiving service checks that it matches the token’s binding.",
   },
 ];
