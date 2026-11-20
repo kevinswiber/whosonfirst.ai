@@ -5,8 +5,8 @@
  * `linkSections()` reads a page's body as HTML and returns it with one change
  * to each section heading, an h2 or an h3: a small link to the heading's own
  * address, so that pressing it puts that address in the address bar. The link
- * is plain HTML. A script in SectionLinks.astro adds copying to it, and
- * nothing here needs the script.
+ * is plain HTML, a small chain-link drawing. A script in SectionLinks.astro
+ * adds copying to it, and nothing here needs the script.
  *
  * - A heading with an id keeps it. A heading without one, an h2 only, is
  *   given the id the base layout's script would give it once the page had
@@ -24,6 +24,9 @@
  */
 
 const LABEL = "Link to this section: ";
+/** A chain link, drawn in the colour of the text around it. It says nothing: the link is named. */
+const ICON =
+  '<svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="true" focusable="false"><path d="M6.5 9.5a2.5 2.5 0 0 0 3.5 0l2.5-2.5a2.5 2.5 0 0 0-3.5-3.5l-.75.75M9.5 6.5a2.5 2.5 0 0 0-3.5 0L3.5 9a2.5 2.5 0 0 0 3.5 3.5l.75-.75" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 /** Elements that end without a closing tag. */
 const VOID = new Set([
@@ -214,7 +217,7 @@ export function linkSections(html: string): string {
     const openEnd = h.from - 1;
     out += html.slice(last, openEnd) + added;
     out += html.slice(openEnd, h.to);
-    out += `<section-link class="section-link"><a href="#${escapeHtml(h.id)}" aria-label="${escapeHtml(LABEL + h.text)}"></a></section-link>`;
+    out += `<section-link class="section-link"><a href="#${escapeHtml(h.id)}" aria-label="${escapeHtml(LABEL + h.text)}">${ICON}</a></section-link>`;
     last = h.to;
   }
   return out + html.slice(last);
