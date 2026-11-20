@@ -737,7 +737,11 @@ test("the home page's latest recorded change is the changelog's newest day and l
     "not the changelog's newest day",
   );
   assert.equal(id, `g-${iso}`);
-  assert.ok(changelog.includes(`<h2 id="${id}">${spelled}</h2>`));
+  // The heading with that id opens with the day, whatever else it carries.
+  assert.ok(
+    new RegExp(`<h2 id="${id}"[^>]*>${spelled}\\s*<`).test(changelog),
+    "the changelog's heading for that day does not say the day",
+  );
   assert.ok(
     /Latest change recorded:[\s\S]*Reviewed:<\/span>\s*[A-Z][a-z]+ \d{4}\./.test(
       home.html,
