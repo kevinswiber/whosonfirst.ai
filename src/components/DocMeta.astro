@@ -35,6 +35,12 @@ interface Props {
   /** A leading fact for pages that follow no single specification, e.g. "83 entries". */
   lead?: string;
   reviewed: string;
+  /**
+   * The newest day the standards changelog recorded something, and the link to
+   * that day's heading there. It is a different fact from the review month:
+   * a review that finds nothing changed records nothing.
+   */
+  latest?: { date: string; iso: string; href: string };
   /** What the review date is a review of: "Guide" on a flow page, "Tracker" on the standards page. */
   subject?: string;
   details?: MetaItem[];
@@ -47,6 +53,7 @@ const {
   based,
   lead,
   reviewed,
+  latest,
   subject,
   details = [],
   groups = [],
@@ -82,6 +89,15 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
       )
     }
     {' '}{lead && <span class="doc-fact">{lead}.</span>}{' '}
+    {latest && (
+      <>
+        <span class="doc-fact">
+          <span class="doc-key">Latest change recorded:</span>{' '}
+          <a href={latest.href}><time datetime={latest.iso}>{latest.date}</time></a>.
+        </span>
+        {' '}
+      </>
+    )}
     <span class="doc-fact">
       <span class="doc-key">{subject ? `${subject} reviewed` : 'Reviewed'}:</span>{' '}
       {reviewed}.
