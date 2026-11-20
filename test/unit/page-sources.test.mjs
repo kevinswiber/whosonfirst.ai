@@ -290,13 +290,23 @@ test("every data file a page imports either dates the page or is listed, with a 
   assert.ok(pages.length > 20, "the pages were not found");
 
   // One address for each page file: a page made from data stands for the rest of its kind.
-  const SAMPLE = { slug: "dpop", case: "own-authority", pair: "dpop-vs-gnap" };
+  const SAMPLE = {
+    slug: "dpop",
+    case: "own-authority",
+    pair: "dpop-vs-gnap",
+    id: "rfc9449",
+  };
   const address = (file) =>
     `/${relative(join(root, "src/pages"), file)
       .replace(/\.(astro|mdx)$/, "")
       .replace(/\[(\w+)\]/g, (_, name) => SAMPLE[name])
       .replace(/(^|\/)index$/, "")}/`.replace(/^\/\/$/, "/");
-  const everything = { ...site, lessons: [...site.lessons] };
+  // the sample standard is one a citation names, so its page shows the citations
+  const everything = {
+    ...site,
+    lessons: [...site.lessons],
+    cited: [SAMPLE.id],
+  };
   for (const file of pages) {
     const lesson = /src\/pages\/learn\/([^/]+)\.astro$/.exec(file)?.[1];
     if (
@@ -337,4 +347,22 @@ test("every data file a page imports either dates the page or is listed, with a 
     }
   }
   assert.deepEqual(unlisted, []);
+});
+
+test("a standard's page is made from its entry, the log's events for it and, where a citation names it, the citations", () => {
+  const withCitations = { ...site, cited: ["rfc9449"] };
+  assert.deepEqual(madeFrom("/standards/rfc9449/", withCitations), [
+    "src/data/standards.ts#rfc9449",
+    "src/data/history/#rfc9449",
+    "src/data/history/citations.ts",
+  ]);
+  assert.deepEqual(madeFrom("/standards/rfc7519/", withCitations), [
+    "src/data/standards.ts#rfc7519",
+    "src/data/history/#rfc7519",
+  ]);
+  // the timeline and the changelog are pages of their own, not a standard's
+  assert.deepEqual(madeFrom("/standards/timeline/", withCitations), [
+    "src/pages/standards/timeline.astro",
+    "src/data/history/",
+  ]);
 });

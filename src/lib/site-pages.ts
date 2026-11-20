@@ -8,6 +8,7 @@ import { comparisonSlug, comparisons } from "../data/comparisons";
 import { flows } from "../data/flows";
 import { cases } from "../data/guide";
 import { implementationProfiles } from "../data/implementations";
+import { standards } from "../data/standards";
 
 /** Static pages come from the filesystem; parameterized routes come from published data. */
 const files = Object.keys(import.meta.glob("../pages/**/*.{astro,mdx}"))
@@ -26,4 +27,5 @@ export const sitePages: string[] = [
   ...comparisons.map((c) => `/compare/${comparisonSlug(c)}/`),
   ...cases.map((s) => `/guide/${s.slug}/`),
   ...implementationProfiles.map((p) => `/implementations/${p.slug}/`),
+  ...standards.map((s) => `/standards/${s.id}/`),
 ].sort();

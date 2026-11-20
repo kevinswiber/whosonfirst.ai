@@ -656,6 +656,12 @@ const SECTIONS = [
     title: "Reference",
     match: /^\/(standards\/(timeline\/|changes\/)?|glossary\/)$/,
   },
+  // After Reference, which takes the timeline and the changelog first.
+  {
+    title: "Standards, one by one",
+    match: /^\/standards\/[^/]+\/$/,
+    order: "/standards/",
+  },
   { title: "Optional", match: /^\/about\/$/ },
 ];
 

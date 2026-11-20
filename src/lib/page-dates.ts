@@ -14,8 +14,10 @@
 import history from "virtual:page-dates";
 import { flows } from "../data/flows";
 import { glossary } from "../data/glossary";
+import { citations } from "../data/history/citations";
 import { implementationProfiles } from "../data/implementations";
 import { lessons } from "../data/learn/lessons";
+import { versionName } from "./history";
 import type { PageDates, Site } from "./page-sources";
 import { datesFor, madeFrom } from "./page-sources";
 
@@ -27,6 +29,10 @@ const site: Site = {
   lessons,
   records: implementationProfiles.map((profile) => profile.slug),
   glossaryStandards: glossary.flatMap((term) => term.standard ?? []),
+  cited: citations.flatMap((c) => [
+    versionName(c.from).entry,
+    versionName(c.to).entry,
+  ]),
 };
 
 /** What a page is made from: files, directories ending in "/" and entries as `<file>#<name>`. */

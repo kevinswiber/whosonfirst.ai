@@ -773,3 +773,12 @@ test("a flow that names a standard's version from the log lists that standard", 
   }
   assert.deepEqual(wrong, []);
 });
+
+// Each standard has a page at /standards/<id>/, beside the timeline and the
+// changelog, so an entry cannot take either's name, and an id is an address.
+test("no tracker entry's id is the address of another page under /standards/, or has a dot in it", () => {
+  for (const id of ids) {
+    assert.ok(!["timeline", "changes"].includes(id), id);
+    assert.match(id, /^[a-z0-9][a-z0-9-]*$/, id);
+  }
+});

@@ -826,3 +826,56 @@ export const readCitations = (
       superseded: currentOf(events, from.entry)?.version?.label !== from.label,
     };
   });
+
+/** A citation as one entry's page says it: what it cites, or what cites it. */
+export interface CitationLine {
+  kind: "Cites" | "Cited by";
+  /** The other document, and the version of it the citation names. */
+  name: string;
+  /** The other document's tracker entry. */
+  entry: string;
+  note: string;
+}
+
+/**
+ * The citations an entry is part of, as sentences, from its side: first what
+ * its versions cite, then what cites it. A version is written as its
+ * publisher writes it, with no word added. `nameOf` gives an entry's name.
+ */
+export const citationLines = (
+  read: ReadCitation[],
+  entry: string,
+  nameOf: (entry: string) => string,
+): CitationLine[] => [
+  ...read
+    .filter((c) => c.fromEntry === entry)
+    .map((c): CitationLine => {
+      const state = !c.toName
+        ? "It names no revision."
+        : c.behind
+          ? `The current one is ${c.currentName}.`
+          : "That is the current one.";
+      return {
+        kind: "Cites",
+        name: c.toName
+          ? `${nameOf(c.toEntry)}, ${c.toName}`
+          : nameOf(c.toEntry),
+        entry: c.toEntry,
+        note: `${c.fromName} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
+      };
+    }),
+  ...read
+    .filter((c) => c.toEntry === entry)
+    .map(
+      (c): CitationLine => ({
+        kind: "Cited by",
+        name: `${nameOf(c.fromEntry)}, ${c.fromName}`,
+        entry: c.fromEntry,
+        note: !c.toName
+          ? "It names no revision."
+          : c.behind
+            ? `It cites ${c.toName}; the current one is ${c.currentName}.`
+            : `It cites ${c.toName}, the current one.`,
+      }),
+    ),
+];

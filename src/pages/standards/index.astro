@@ -6,7 +6,12 @@ import { flows } from "../../data/flows";
 import { REVIEWED, REVIEWED_ISO } from "../../data/site";
 import { history } from "../../data/history";
 import { citations } from "../../data/history/citations";
-import { monthName, movedIn, readCitations } from "../../lib/history";
+import {
+  citationLines,
+  monthName,
+  movedIn,
+  readCitations,
+} from "../../lib/history";
 import {
   RELATED_LABEL,
   STATUS_LABEL,
@@ -34,43 +39,14 @@ const count = (fn: (s: (typeof standards)[number]) => boolean) =>
 // What one specification cites of another, by revision, with whether the
 // revision cited is still the current one: worked out from the log.
 const cited = readCitations(citations, history);
-// A version is written as its publisher writes it, with no word added here.
-const citationsOf = (id: string) => [
-  ...cited
-    .filter((c) => c.fromEntry === id)
-    .map((c) => {
-      const to = std(c.toEntry);
-      const state = !c.toName
-        ? "It names no revision."
-        : c.behind
-          ? `The current one is ${c.currentName}.`
-          : "That is the current one.";
-      return {
-        kind: "Cites",
-        name: c.toName ? `${to.name}, ${c.toName}` : to.name,
-        href: `#${to.id}`,
-        out: false,
-        note: `${c.fromName} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
-      };
-    }),
-  ...cited
-    .filter((c) => c.toEntry === id)
-    .map((c) => {
-      const from = std(c.fromEntry);
-      const state = !c.toName
-        ? "It names no revision."
-        : c.behind
-          ? `It cites ${c.toName}; the current one is ${c.currentName}.`
-          : `It cites ${c.toName}, the current one.`;
-      return {
-        kind: "Cited by",
-        name: `${from.name}, ${c.fromName}`,
-        href: `#${from.id}`,
-        out: false,
-        note: state,
-      };
-    }),
-];
+const citationsOf = (id: string) =>
+  citationLines(cited, id, (entry) => std(entry).name).map((line) => ({
+    kind: line.kind,
+    name: line.name,
+    href: `#${line.entry}`,
+    out: false,
+    note: line.note,
+  }));
 const listedIn = (id: string) => flows.filter((f) => f.standards.includes(id));
 const usedIn = (id: string) =>
   listedIn(id).filter((f) => !f.roles || f.roles[id] === "required");
@@ -266,6 +242,9 @@ const moved = movedIn(history, YEAR);
                       <a href={s.url} rel="noopener">
                         Source ↗
                       </a>
+                      <span class="sx-used">
+                        <a href={`/standards/${s.id}/`}>Versions and history</a>
+                      </span>
                       {used.length > 0 && (
                         <span class="sx-used">
                           Used in{' '}

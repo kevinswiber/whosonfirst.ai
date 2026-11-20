@@ -39,7 +39,7 @@ const entry = (id: string) =>
               <div class="hl-what">
                 <p class="hl-name">
                   <span class="hl-kind">{corrected ? "Corrected" : KIND_LABEL[e.kind as keyof typeof KIND_LABEL]}:</span>{" "}
-                  {s ? <a href={`/standards/#${s.id}`}>{s.name}</a> : <span>{e.subject}</span>}
+                  {s ? <a href={`/standards/${s.id}/`}>{s.name}</a> : <span>{e.subject}</span>}
                 </p>
                 <p set:html={inline(e.summary ?? "")} />
                 {e.changes && (

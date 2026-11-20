@@ -36,6 +36,8 @@ export interface Site {
   records: string[];
   /** The tracker ids of the glossary terms that name a standard. */
   glossaryStandards: string[];
+  /** The tracker ids that a citation names, on either side. */
+  cited?: string[];
 }
 
 /** Each source's first and last commit. An entry's first is the commit that added it. */
@@ -132,6 +134,19 @@ const MADE_FROM: [
     /^\/standards\/(timeline|changes)\/$/,
     (page) => [`src/pages/standards/${page}.astro`, HISTORY],
   ],
+  // One standard's page: its tracker entry, what the log has recorded for it,
+  // and, where a citation names it, the citations. As with a flow, the file
+  // that lays every such page out is not one of them: a change to it is not a
+  // change to what any one standard's page says.
+  [
+    /^\/standards\/([^/]+)\/$/,
+    (id, site) => [
+      `${STANDARDS}#${id}`,
+      `${HISTORY}#${id}`,
+      // only a standard some citation names shows one, so only its page moves with them
+      ...(site.cited?.includes(id) ? [`${HISTORY}citations.ts`] : []),
+    ],
+  ],
   // A term that names a standard shows that standard's status.
   [
     /^\/glossary\/$/,
@@ -210,6 +225,9 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/standards/index.astro": {
     "src/data/flows/index.ts": "the names of the flows that list a standard",
+  },
+  "src/pages/standards/[id].astro": {
+    "src/data/flows/index.ts": "the names of the flows that list the standard",
   },
   "src/pages/standards/timeline.astro": {
     "src/data/standards.ts": "the names of the documents its events are about",
