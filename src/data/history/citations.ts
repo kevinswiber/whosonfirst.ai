@@ -20,7 +20,7 @@ export const citations: Citation[] = [
     how: "requires",
     source:
       "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
-    note: "One link in the revision, on storing refresh tokens, is to -14.",
+    note: "One link in it, on storing refresh tokens, is to revision -14.",
   },
   {
     from: "mcp-authorization@2026-07-28",
