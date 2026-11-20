@@ -2,8 +2,8 @@ import * as astro from "@astrojs/cloudflare/entrypoints/server" with {
   type: "cf-worker",
 };
 import { bindings, defineConfig } from "cf/config";
-import * as markdown from "./src/worker.ts" with { type: "cf-worker" };
-import * as preview from "./workers/preview/index.mjs" with {
+import * as pages from "./src/worker.ts" with { type: "cf-worker" };
+import * as pagesWithSearch from "./workers/preview/index.mjs" with {
   type: "cf-worker",
 };
 
@@ -12,7 +12,11 @@ export default defineConfig(({ mode, isPreview }) => ({
     name: "whosonfirst-ai",
     compatibilityDate: "2026-11-03",
     compatibilityFlags: ["global_fetch_strictly_public"],
-    entrypoint: mode === "development" ? astro : isPreview ? preview : markdown,
+    // Production routes search to a separate Worker. A preview handles
+    // /api/search/query here and forwards every other request it receives to
+    // src/worker.ts, which serves the page as HTML or Markdown.
+    entrypoint:
+      mode === "development" ? astro : isPreview ? pagesWithSearch : pages,
     env: {
       ASSETS: bindings.assets(),
       ...(isPreview && {
