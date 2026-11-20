@@ -1,13 +1,12 @@
-// Exercise the deployable bundle with local bindings. A PR can test its assets
-// and both handlers without a Cloudflare account or any search index writes.
+// Exercise the preview entrypoint with the native build’s assets and local bindings.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import preview from "./.cloudflare/output/v1/workers/default/bundle/index.js";
+import preview from "../../workers/preview/index.mjs";
 
 const output = new URL(
-  "./.cloudflare/output/v1/workers/default/",
+  "../../.cloudflare/output/v1/workers/default/",
   import.meta.url,
 );
 const asset = (path) => readFileSync(new URL(`assets/${path}`, output), "utf8");
@@ -17,20 +16,17 @@ const config = JSON.parse(
 const marker = JSON.parse(asset("search/release.json"));
 const origin = "https://pr.example.test";
 
-test("the preview targets only its dedicated Worker, Version URLs and limiter", () => {
-  assert.equal(config.name, "whosonfirst-ai-preview");
-  assert.equal(config.previewUrls, true);
-  assert.equal(config.workersDev, false);
+test("the native site preview carries the guide’s retrieval bindings", () => {
+  const root = JSON.parse(
+    readFileSync(new URL("../../config.json", output), "utf8"),
+  );
+  assert.equal(root.buildContext.isPreview, true);
+  assert.equal(config.name, "whosonfirst-ai");
   assert.equal(config.routes, undefined);
-  assert.equal(
-    config.env.SEARCH_LIMITER.namespace,
-    process.env.SEARCH_PREVIEW_RATE_NAMESPACE,
-  );
+  assert.equal(config.env.SEARCH_LIMITER.namespace, "512806497");
   assert.equal(config.env.ASSETS.type, "assets");
-  assert.equal(
-    config.env.AI_SEARCH.namespace,
-    process.env.SEARCH_NAMESPACE ?? "whosonfirst",
-  );
+  assert.equal(config.env.AI_SEARCH.namespace, "whosonfirst");
+  assert.equal(config.env.SEARCH_INSTANCE.value, "whosonfirst-guide");
   assert.equal(
     marker.commit,
     execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
@@ -75,23 +71,32 @@ test("the preview serves the site's HTML, negotiated Markdown and quick matches"
 });
 
 test("same-origin search responses carry the release of the preview's pages", async () => {
+  const payload = asset("search/preview-catalog.json");
+  const record = JSON.parse(payload).records.find(
+    ({ href }) => href === "/standards/rfc9449/",
+  );
   const env = {
+    ASSETS: {
+      fetch(url) {
+        assert.equal(url.href, `${origin}/search/preview-catalog.json`);
+        return new Response(payload);
+      },
+    },
     SEARCH_INSTANCE: config.env.SEARCH_INSTANCE.value,
     SEARCH_LIMITER: { limit: () => ({ success: true }) },
     AI_SEARCH: {
       get(instance) {
-        assert.equal(
-          instance,
-          process.env.SEARCH_INSTANCE ?? "whosonfirst-guide",
-        );
-        return { search: async () => ({ chunks: [] }) };
+        assert.equal(instance, "whosonfirst-guide");
+        return {
+          search: async () => ({ chunks: [{ item: { key: record.key } }] }),
+        };
       },
     },
   };
   for (const accept of ["application/json", "text/html"]) {
     const request = new Request(`${origin}/api/search/query`, {
       method: "POST",
-      body: new URLSearchParams({ q: "RFC 9449" }),
+      body: new URLSearchParams({ q: "proof of possession" }),
       headers: { Accept: accept, Origin: origin },
     });
     const response = await preview.fetch(request, env);

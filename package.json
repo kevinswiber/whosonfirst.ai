@@ -29,7 +29,7 @@
     "deploy": "cf deploy",
     "search:sync": "node scripts/sync-search.mjs",
     "search:build": "npm --prefix workers/search run build",
-    "search:preview:build": "npm --prefix workers/preview run build"
+    "search:preview:build": "CLOUDFLARE_PREVIEW_BUILD=true cf build && node --test test/preview/search.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

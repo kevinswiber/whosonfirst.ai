@@ -14,20 +14,11 @@ The search Worker uses standard invocation telemetry. It receives the question i
 
 ## Pull request previews
 
-Open **View deployment** for **search-preview** on a pull request, or follow the link in the **Preview guide search** workflow summary. This preview serves the PR’s pages and the search endpoint together. The ordinary Workers Builds preview still covers the site Worker alone.
+Open the site preview linked by **Workers Builds** on the pull request. The site Worker’s existing Git connection runs `npx cf previews deploy` for non-production branches. The native preview build serves both the branch’s pages and `/api/search/query` at that URL. GitHub Actions tests the preview with local fixtures and needs no preview secrets.
 
-For each same-repository PR to `main`, the workflow builds the PR head commit and uploads a version of the dedicated `whosonfirst-ai-preview` Worker with the alias `pr-<number>`. Later pushes refresh the same URL. The workflow checks that the public site and API report the reviewed commit and passage revision, then checks a real search. Fork and Dependabot PRs run the local CI checks with fixture bindings.
+Quick matches come from the branch’s catalog. Full search uses the published `whosonfirst-guide` index and accepts hits whose content keys match the branch’s rendered passages. Added or edited passages become eligible once the production release indexes them. The previews share a separate rate limiter. Only the production release workflow uploads passages.
 
-Quick matches come from the branch’s catalog. Full search queries the published index and displays hits whose content keys are in the branch’s manifest. Added or edited passages become eligible after production indexes them. Index uploads and production traffic changes stay in the release workflow on `main`.
-
-### Set up previews once
-
-1. Create a Worker named `whosonfirst-ai-preview` in the Cloudflare account holding the published search index. A starter Worker is sufficient. Enable **Preview URLs** under **Settings → Domains & Routes**. The workflow uploads prebuilt versions with assets and bindings. A custom domain, zone route, and Git integration are unnecessary.
-2. Give a dedicated Cloudflare API token **Editor** access to that Worker. In the repository’s `search-preview` GitHub environment, save the token as the secret `CLOUDFLARE_PREVIEW_DEPLOY_TOKEN` and the account ID as the secret `CLOUDFLARE_ACCOUNT_ID`. Allow deployments from trusted PRs to this environment. Keep the production deployment and passage-upload tokens in `search-production`.
-3. Set the `search-preview` environment **variable** `SEARCH_PREVIEW_RATE_NAMESPACE` to a numeric limiter ID dedicated to previews. The preview URLs share this limiter. Set `SEARCH_NAMESPACE` and `SEARCH_INSTANCE` there if the published guide uses values other than the defaults above.
-4. Open or update a same-repository PR to `main`, or rerun its failed preview job after correcting settings. The preview step publishes one version and checks its alias. Its URL should show the PR’s site and return results for a term such as “CIBA”.
-
-For a local check, run `npm run build`, then `SEARCH_PREVIEW_RATE_NAMESPACE=1 npm run search:preview:build`. The preview build exercises the bundled handlers with local bindings.
+To check a branch locally, run `npm run search:preview:build`. It builds the same preview entrypoint and tests its search and page handlers. Run `npm run build` to return to the production site build.
 
 ## What a release does
 

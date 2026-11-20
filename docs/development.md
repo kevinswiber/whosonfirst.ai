@@ -373,7 +373,7 @@ After two letters or digits, quick matches look up names, terms and identifiers 
 
 The Astro build extracts passages from the public reading pages into `.astro/search/manifest.json`. Each key identifies its location and content. The upload script sends the corresponding Markdown documents to Cloudflare AI Search and waits for indexing. The separate Worker bundles the same manifest, accepts only keys present in it, and uses its own titles, links and excerpts for the results. An exact RFC number gets its standard’s page first.
 
-For a local check, build the site, run `npm run search:sync -- --dry-run`, then run `SEARCH_RATE_NAMESPACE=1 npm run search:build`. The namespace in this example is for a local build. CI builds both Workers and tests search with a fixture provider. For an end-to-end review, open the PR’s **search-preview** deployment. [Publishing and testing site search](search-release.md) covers preview setup, live indexing, deployment and rollback.
+For a local check, build the site, run `npm run search:sync -- --dry-run`, then run `SEARCH_RATE_NAMESPACE=1 npm run search:build`. The namespace in this example is for a local build. CI builds both Workers and tests search with a fixture provider. For an end-to-end review, open the site preview linked by **Workers Builds** on the PR. [Publishing and testing site search](search-release.md) covers preview setup, live indexing, deployment and rollback.
 
 ### Markdown at the page's own address
 

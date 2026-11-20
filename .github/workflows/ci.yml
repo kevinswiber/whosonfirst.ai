@@ -77,10 +77,6 @@ jobs:
         run: |
           npm run search:sync -- --dry-run
           npm run search:build
-      - name: Build and exercise the combined preview Worker with local bindings
-        env:
-          SEARCH_PREVIEW_RATE_NAMESPACE: "1"
-        run: npm run search:preview:build
       # The checks run headless, so the headless shell is all they need, and the
       # runner's image already has the libraries it links against. With
       # `--with-deps` the step also asked apt for nine font packages: fonts for
@@ -91,3 +87,5 @@ jobs:
         run: npx playwright install --only-shell chromium
       - name: Rendered checks
         run: npm run check:rendered
+      - name: Build and test the site’s Cloudflare branch preview
+        run: npm run search:preview:build
