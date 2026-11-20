@@ -718,7 +718,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "wg-draft",
     standing:
-      "OAuth working group document. The latest revision requires URL normalization and defines error handling. The MCP draft revision moves to -03.",
+      "OAuth working group document. The latest revision requires URL normalization and defines error handling. The MCP draft revision moves to draft-ietf-oauth-client-id-metadata-document-03.",
     version: {
       label: "-03",
       name: "draft-ietf-oauth-client-id-metadata-document-03",
@@ -745,7 +745,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "wg-draft",
     standing:
-      "A working group last call opened in September 2026; since October the draft has working group consensus and is waiting for its write-up. Revision -12 defines its header fields as Structured Fields in place of the token68 syntax.",
+      "A working group last call opened in September 2026; since October the draft has working group consensus and is waiting for its write-up. draft-ietf-oauth-attestation-based-client-auth-12 defines its header fields as Structured Fields in place of the token68 syntax.",
     version: {
       label: "-12",
       name: "draft-ietf-oauth-attestation-based-client-auth-12",
@@ -811,7 +811,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "wg-draft",
     standing:
-      "OAuth working group document. Revision -05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. Revision -06 changed the error returned for a subject token that fails validation.",
+      "OAuth working group document. draft-ietf-oauth-identity-assertion-authz-grant-05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. draft-ietf-oauth-identity-assertion-authz-grant-06 changed the error returned for a subject token that fails validation.",
     version: {
       label: "-06",
       name: "draft-ietf-oauth-identity-assertion-authz-grant-06",

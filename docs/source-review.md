@@ -81,7 +81,7 @@ Also report:
 
 - A draft published as an RFC. Give the RFC number and date from `https://www.rfc-editor.org/rfc/rfc<number>.json`.
 - A draft adopted, replaced, renamed or expired.
-- What changed in a new revision, when the tracker describes the previous one ("Revision -12 defines its header fields as Structured Fields") or a flow page shows syntax the revision changed. The draft's change log or the diff linked from its datatracker page is the source.
+- What changed in a new revision, when the tracker describes the previous one ("draft-ietf-oauth-attestation-based-client-auth-12 defines its header fields as Structured Fields") or a flow page shows syntax the revision changed. The draft's change log or the diff linked from its datatracker page is the source.
 
 ### Other drafts and versioned specifications
 
