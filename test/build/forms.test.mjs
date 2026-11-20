@@ -721,7 +721,10 @@ test("every entry in the changelog's feed says what the timeline says of its eve
 // Markdown copy says it too.
 test("the home page's latest recorded change is the changelog's newest day and links to that day's heading, in the page and in its Markdown copy", () => {
   const home = pageAt("/");
-  const changelog = pageAt("/standards/changes/").html;
+  const changelog = pageAt("/standards/changes/").html.replace(
+    / data-astro-cid-\w+/g,
+    "",
+  );
   const link =
     /Latest change recorded:<\/span>\s*<a href="(\/standards\/changes\/#(g-[\d-]+))"><time datetime="([\d-]+)">([^<]*)<\/time>/.exec(
       home.html,
