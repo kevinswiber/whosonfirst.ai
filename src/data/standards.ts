@@ -182,7 +182,7 @@ const entries: StandardEntry[] = [
         name: "JSON Web Token Best Current Practices, the update to RFC 8725",
         url: draft("draft-ietf-oauth-rfc8725bis"),
         kind: "updated-by",
-        note: "Approved, and in the RFC Editor queue at revision -10 since August 2026, with no RFC number yet. It updates RFC 7519 and obsoletes RFC 8725.",
+        note: "Approved, and in the RFC Editor queue as draft-ietf-oauth-rfc8725bis-10 since August 2026, with no RFC number yet. It updates RFC 7519 and obsoletes RFC 8725.",
       },
     ],
     topics: ["core"],
@@ -837,7 +837,7 @@ const entries: StandardEntry[] = [
     summary:
       "Architecture and terminology for workload identity and for propagating security context between workloads.",
     agents:
-      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context. Revision -09 adds that agents to be audited, revoked or governed separately should not share a workload identity.",
+      "Includes a section on agents: each hop in an agent chain must explicitly scope and re-bind the security context. draft-ietf-wimse-arch-09 adds that agents to be audited, revoked or governed separately should not share a workload identity.",
     url: draft("draft-ietf-wimse-arch"),
   },
   {

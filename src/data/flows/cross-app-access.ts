@@ -1,3 +1,4 @@
+import { cited } from "../history/says.ts";
 import type { Flow } from "../types";
 
 export const crossAppAccess: Flow = {
@@ -137,7 +138,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       label: "JWT bearer grant with ID-JAG",
       title:
         "The agent presents the grant to the application’s authorization server",
-      body: `A standard JWT bearer grant (RFC 7523). The agent authenticates as a client of this authorization server, either pre-registered or by using a Client ID Metadata Document URL as its client ID. A URL as \`client_id\` says who the client claims to be and proves nothing by itself, so the request also carries an assertion signed with a key the client’s metadata document publishes. A client registered in advance may send its registered secret instead. Revision -06 of the draft has the authorization server reject a request that comes with neither client authentication nor a grant bound to a key the client proves it holds. Without one of them, anyone who copies the grant can redeem it. The MCP extension, which cites revision -04, calls authenticating with the metadata document’s key optional.`,
+      body: `A standard JWT bearer grant (RFC 7523). The agent authenticates as a client of this authorization server, either pre-registered or by using a Client ID Metadata Document URL as its client ID. A URL as \`client_id\` says who the client claims to be and proves nothing by itself, so the request also carries an assertion signed with a key the client’s metadata document publishes. A client registered in advance may send its registered secret instead. draft-ietf-oauth-identity-assertion-authz-grant-06 has the authorization server reject a request that comes with neither client authentication nor a grant bound to a key the client proves it holds. Without one of them, anyone who copies the grant can redeem it. The MCP extension, which cites ${cited("mcp-ema@2026-07-28", "id-jag")}, calls authenticating with the metadata document’s key optional.`,
       code: {
         lang: "http",
         text: `POST /oauth2/token HTTP/1.1
@@ -198,7 +199,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
   ],
   basis: ["id-jag", "mcp-ema"],
   roles: {
-    "id-jag": "required", // the grant, at revision -06: steps 2 to 7
+    "id-jag": "required", // the grant, at draft-ietf-oauth-identity-assertion-authz-grant-06: steps 2 to 7
     "mcp-ema": "required", // the MCP application of it: `audience` and `resource` in step 2, and the token restricted to the MCP server in step 7
     rfc8693: "required", // the token exchange request, step 2
     rfc7523: "required", // the JWT bearer grant and the client assertion, step 5
