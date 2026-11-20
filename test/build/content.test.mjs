@@ -6,11 +6,13 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   built,
+  copyOf,
   FLOWS,
   file,
   LESSONS,
   main,
   pageAt,
+  plain,
   some,
 } from "../support/site.mjs";
 
@@ -364,6 +366,45 @@ test("every page's footer links to the comparisons, and a lesson that leads to b
         wrong.push(`${path} leads to both flows of ${pair} and not to it`);
   }
   assert.deepEqual(some(wrong), []);
+});
+
+// Each section heading has a link to itself, put there when the page is built.
+// It goes to its own heading, no id is on a page twice, the heading's name is
+// still its own words, and the page's copy in Markdown has no trace of it.
+test("a section link goes to its own heading, which is named by its words, and no id is taken twice", () => {
+  const wrong = [];
+  for (const p of built) {
+    const ids = [...p.html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+    for (const m of p.html.matchAll(
+      /<(h[23])\b([^>]*)>((?:(?!<\/\1>)[\s\S])*?)<section-link class="section-link"><a href="#([^"]+)" aria-label="([^"]*)"><svg [^>]*aria-hidden="true"[^>]*>(?:(?!<\/svg>)[\s\S])*<\/svg><\/a><\/section-link><\/\1>/g,
+    )) {
+      const [, , attrs, inner, href, label] = m;
+      const id = /\sid="([^"]+)"/.exec(attrs)?.[1];
+      const name = /\saria-label="([^"]*)"/.exec(attrs)?.[1];
+      if (id !== href) wrong.push(`${p.path}: a link to #${href} in #${id}`);
+      if (ids.filter((x) => x === id).length > 1)
+        wrong.push(`${p.path} has #${id} twice`);
+      if (plain(name ?? "") !== plain(inner))
+        wrong.push(`${p.path}#${id} is named “${name}”, not “${plain(inner)}”`);
+      if (plain(label) !== `Link to this section: ${plain(inner)}`)
+        wrong.push(`${p.path}#${id}: the link says “${label}”`);
+    }
+    const copy = copyOf(p) && file(copyOf(p));
+    if (/Link to this section|section-link/.test(copy))
+      wrong.push(`${p.path}: its Markdown copy has a section link`);
+  }
+  assert.deepEqual(some(wrong), []);
+  // and they are made: a long page of each kind has them
+  for (const path of [
+    "/about/",
+    LESSONS[0],
+    FLOWS[0],
+    "/deployments/gateways/",
+  ])
+    assert.ok(
+      /<section-link/.test(pageAt(path).html),
+      `${path} has no section link`,
+    );
 });
 
 // The timeline reaches back before the day recording began, and says so under

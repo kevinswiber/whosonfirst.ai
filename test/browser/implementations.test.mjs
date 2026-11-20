@@ -284,7 +284,12 @@ test("flow sections and recommendation results lead to their implementation reco
     })
     .click();
   assert.match(page.url(), /#implementation-evidence$/);
-  assert.ok((await page.locator(":target").getByRole("link").count()) === 0);
+  // the heading is not a link to anything else; the link every section heading
+  // has to its own address is not one of these
+  assert.equal(
+    await page.locator(":target a:not(section-link > a)").count(),
+    0,
+  );
   await page
     .getByRole("region", {
       name: "Implementations and deployment reports",

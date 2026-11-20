@@ -94,6 +94,7 @@ const CHROME = [
   "path-n",
   "step-phase", // which part a step belongs to; "In short" lists the parts
   "held-note", // the same footnote under every step
+  "section-link", // the link beside a heading to its own address; the heading is the section's name
 ];
 /** Facts set side by side in a row. In a line of text they need something between them. */
 const ROW = [

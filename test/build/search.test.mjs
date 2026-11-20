@@ -59,7 +59,15 @@ test("a definition, RFC, flow step and product's role each lead to their source"
   assert.match(proof.section, /Keycloak/i);
   assert.match(proof.text, /Limits\./);
   assert.match(proof.text, /Checked /);
-  assert.ok(records.some((r) => r.href === "/guide/#cases"));
+  // a section's passages lead to its heading, which has an address of its own
+  // even where the author gave it none: see src/lib/section-links.ts
+  assert.ok(
+    records.some(
+      (r) =>
+        r.href === "/guide/#four-cases-by-name" &&
+        r.section === "Four cases, by name",
+    ),
+  );
   assert.equal(
     records.filter((r) => r.href.startsWith("/standards/#")).length,
     0,
