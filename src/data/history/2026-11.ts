@@ -275,12 +275,21 @@ export const events: HistoryEvent[] = [
     source: history("draft-ietf-wimse-workload-identity-practices"),
   },
   {
+    entry: "mcp-ema",
+    kind: "publication",
+    date: "2026-06-17",
+    recorded: "2026-11-11",
+    summary: "Promoted to stable among MCP’s authorization extensions.",
+    status: "final",
+    source:
+      "https://github.com/modelcontextprotocol/ext-auth/commits/main/specification/stable",
+  },
+  {
     entry: "mcp-client-credentials",
     kind: "publication",
     date: "2026-10-23",
     recorded: "2026-11-11",
-    summary:
-      "The extension’s specification moved to the stable directory of MCP’s authorization extensions.",
+    summary: "Moved to stable among MCP’s authorization extensions.",
     status: "final",
     source:
       "https://github.com/modelcontextprotocol/ext-auth/commits/main/specification/stable",
