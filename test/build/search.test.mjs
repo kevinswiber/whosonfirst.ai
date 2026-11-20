@@ -2,7 +2,7 @@ import { strict as assert } from "node:assert";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { built, pageAt } from "../support/site.mjs";
+import { built, file, pageAt } from "../support/site.mjs";
 
 const manifest = JSON.parse(
   readFileSync(".astro/search/manifest.json", "utf8"),
@@ -94,4 +94,42 @@ test("search omits directory prompts but keeps claims and walkthrough context", 
   assert.ok(
     records.some(({ href }) => href === "/implementations/dpop/#field-scope"),
   );
+});
+
+test("quick matches ship one short entry per named destination", () => {
+  const quick = JSON.parse(file("search/quick-matches.json"));
+  const byHref = new Map(quick.map((entry) => [entry.href, entry]));
+  assert.equal(quick.length, byHref.size);
+  for (const entry of quick) {
+    assert.deepEqual(Object.keys(entry).sort(), [
+      "aliases",
+      "href",
+      "summary",
+      "title",
+      "type",
+    ]);
+    assert.ok(
+      entry.title && entry.summary && entry.summary.length <= 161,
+      entry.href,
+    );
+    const [path, id] = entry.href.split("#");
+    assert.ok(
+      pageAt(path) && (!id || pageAt(path).html.includes(`id="${id}"`)),
+      entry.href,
+    );
+  }
+  for (const path of new Set(records.map((r) => r.href.split("#")[0])))
+    assert.ok(byHref.has(path), path);
+  const rfc = byHref.get("/standards/rfc9449/");
+  assert.ok(
+    rfc.aliases.includes("RFC 9449") && rfc.aliases.includes("rfc9449"),
+  );
+  assert.equal(byHref.get("/glossary/#audience").title, "Audience");
+  assert.ok(byHref.get("/glossary/#audience").aliases.includes("aud"));
+  assert.match(
+    byHref.get("/implementations/dpop/#field-dpop-keycloak").title,
+    /Keycloak · Authorization server · DPoP/,
+  );
+  assert.ok(!byHref.has("/flows/dpop/#step-1"));
+  assert.ok(!byHref.has("/implementations/dpop/#field-dates"));
 });

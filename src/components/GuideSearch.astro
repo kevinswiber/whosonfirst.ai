@@ -7,14 +7,20 @@ const examples = [
 ---
 
 <guide-search>
-  <form role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
+  <form id="guide-search-form" role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
     <label for="guide-query">Describe your situation, or enter a term or RFC number.</label>
     <div class="search-controls">
       <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-privacy" />
-      <button class="btn primary" type="submit">Search</button>
+      <button class="btn primary" type="submit">Search the whole guide</button>
     </div>
-    <p id="search-privacy">Cloudflare processes your words when you press Search.</p>
+    <p id="search-privacy">Quick matches run in your browser. A full search sends your question to Cloudflare to find related passages.</p>
   </form>
+  <section class="quick-matches" aria-labelledby="quick-matches-title" hidden>
+    <h2 id="quick-matches-title">Quick matches</h2>
+    <p class="quick-count" aria-live="polite"></p>
+    <ul></ul>
+    <button class="btn ghost" type="submit" form="guide-search-form">Search all passages</button>
+  </section>
   <section class="search-examples" aria-labelledby="search-examples-title" hidden>
     <h2 id="search-examples-title">Try a search</h2>
     <ul>
@@ -26,6 +32,9 @@ const examples = [
 </guide-search>
 
 <script>
+  import { quickMatches } from "../lib/quick-matches.mjs";
+
+  type QuickRecord = { href: string; type: string; title: string; summary: string; aliases: string[] };
   type Passage = { href: string; type: string; title: string; section: string; excerpt: string };
 
   class GuideSearch extends HTMLElement {
@@ -35,11 +44,69 @@ const examples = [
       const status = this.querySelector<HTMLElement>('#search-status-text')!;
       const results = this.querySelector<HTMLOListElement>('#search-results')!;
       const examples = this.querySelector<HTMLElement>('.search-examples')!;
+      const quick = this.querySelector<HTMLElement>('.quick-matches')!;
+      const quickList = quick.querySelector('ul')!;
+      const quickCount = quick.querySelector<HTMLElement>('.quick-count')!;
+      let catalog: Promise<QuickRecord[]> | undefined;
+      let quickRevision = 0;
+      let composing = false;
+
+      const dismissQuick = () => {
+        quickRevision++;
+        quick.hidden = true;
+        quickList.replaceChildren();
+        quickCount.textContent = '';
+      };
+
+      const showQuick = async () => {
+        const query = input.value.trim();
+        if (composing || (query.match(/[\p{L}\p{N}]/gu)?.length ?? 0) < 2) {
+          dismissQuick();
+          return;
+        }
+        const revision = ++quickRevision;
+        quick.hidden = false;
+        examples.hidden = true;
+        try {
+          catalog ??= fetch('/search/quick-matches.json').then((response) => {
+            if (!response.ok) throw new Error('Quick matches unavailable');
+            return response.json();
+          });
+          const records = await catalog;
+          if (revision !== quickRevision) return;
+          const rows = document.createDocumentFragment();
+          for (const record of quickMatches(records, query)) {
+            const url = new URL(record.href, location.origin);
+            if (!record.href.startsWith('/') || url.origin !== location.origin) continue;
+            const row = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = url.href;
+            link.textContent = record.title;
+            const kind = document.createElement('span');
+            kind.className = 'quick-type';
+            kind.textContent = record.type;
+            const description = document.createElement('p');
+            description.textContent = record.summary;
+            row.append(link, kind, description);
+            rows.append(row);
+          }
+          const count = rows.childElementCount;
+          quickList.replaceChildren(rows);
+          quickCount.textContent = count ? `${count} quick ${count === 1 ? 'match' : 'matches'}.` : 'No quick matches.';
+        } catch {
+          if (revision === quickRevision) {
+            quickList.replaceChildren();
+            quickCount.textContent = 'Quick matches are unavailable.';
+          }
+        }
+      };
+
       examples.hidden = results.hasAttribute('data-search-submitted');
       examples.addEventListener('click', (event) => {
         const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
         if (!button) return;
         input.value = button.dataset.query!;
+        void showQuick();
         input.setCustomValidity('');
         input.focus();
       });
@@ -47,6 +114,9 @@ const examples = [
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        if (composing) return;
+        if (quick.contains(document.activeElement)) input.focus();
+        dismissQuick();
         const query = input.value.trim();
         if (!query) {
           input.focus();
@@ -117,7 +187,26 @@ const examples = [
           if (pending === request) results.removeAttribute('aria-busy');
         }
       });
-      input.addEventListener('input', () => input.setCustomValidity(''));
+      input.addEventListener('input', () => {
+        input.setCustomValidity('');
+        void showQuick();
+        if (!input.value.trim()) examples.hidden = results.children.length > 0 || Boolean(status.textContent);
+      });
+      input.addEventListener('compositionstart', () => {
+        composing = true;
+        dismissQuick();
+      });
+      input.addEventListener('compositionend', () => {
+        composing = false;
+        void showQuick();
+      });
+      this.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !composing && !quick.hidden) {
+          event.preventDefault();
+          dismissQuick();
+          input.focus();
+        }
+      });
     }
   }
   customElements.define('guide-search', GuideSearch);
@@ -140,9 +229,26 @@ const examples = [
   }
   #search-privacy { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
   [role='status'] { margin: 1.6rem 0 0; }
-  .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
-  .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
-  .search-examples ul { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+  .quick-matches, .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
+  .quick-matches h2, .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
+  .quick-matches ul, .search-examples ul { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+  .quick-matches > button { margin-top: 0.8rem; }
+  .quick-matches :global(li) {
+    border-bottom: 1px solid var(--border);
+    margin: 0;
+    padding: 0.65rem 0;
+    overflow-wrap: anywhere;
+  }
+  .quick-matches :global(li a) { font-weight: 600; }
+  .quick-matches :global(.quick-type) {
+    color: var(--fg-muted);
+    font: 500 0.78rem var(--font-label);
+    margin-inline-start: 0.6rem;
+  }
+  .quick-matches :global(li p), .quick-count { font-size: 0.92rem; margin: 0.2rem 0 0; }
+  @media (max-width: 36rem) {
+    .search-controls { flex-direction: column; align-items: stretch; }
+  }
   .search-examples li { margin: 0; border-bottom: 1px solid var(--border); }
   .search-examples button {
     width: 100%;

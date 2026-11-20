@@ -58,3 +58,6 @@
 /search/release.json
   Cache-Control: no-store
   X-Robots-Tag: noindex
+
+/search/quick-matches.json
+  X-Robots-Tag: noindex
