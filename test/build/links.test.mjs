@@ -1,5 +1,6 @@
 // Where the built site's links lead, and what lists its pages: the lessons
-// index, the README and the deployment guides' way on.
+// index, the README, the deployment guides' way on and the previous and next
+// links at the foot of a series of pages.
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -8,6 +9,7 @@ import {
   exists,
   LESSON_ORDER,
   LESSONS,
+  main,
   pageAt,
   some,
 } from "../support/site.mjs";
@@ -125,6 +127,80 @@ test("every deployment guide ends with a way on, drawn from the flows it names a
         wrong.push(`${g.path} points to ${h}, which it does not name`);
     if (index && !index.html.includes(`href="${g.path}"`))
       wrong.push(`${g.path} is not on the index page`);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+// A page that is one of a series ends with a link to the one before it and the
+// one after it. The series is in the order its own index page lists it, so a
+// page and its index cannot disagree about what comes next. A series has this
+// only where its order is one a reader would follow: the lessons, the flows and
+// the deployment guides. The standards, the implementations, the decision
+// guide's cases and the comparisons are looked up one at a time, and have none.
+test("the lessons, flows and deployment guides each end with a link to the page before and after, in the order their index lists them", () => {
+  const listed = (index, pattern) => [
+    ...new Set([...main(pageAt(index)).matchAll(pattern)].map((m) => m[1])),
+  ];
+  const series = [
+    {
+      name: "lesson",
+      pages: LESSON_ORDER,
+      // the first lesson goes back to the list, and the last goes on to what follows them
+      before: "/learn/",
+      after: "/learn/#next",
+    },
+    {
+      name: "flow",
+      // the "Side by side" table of the flows index is in the order of the catalog
+      pages: listed(
+        "/flows/",
+        /<tr data-flow="[^"]*"[^>]*><td[^>]*><a href="(\/flows\/[a-z0-9-]+\/)"/g,
+      ),
+    },
+    {
+      name: "deployment guide",
+      pages: listed("/deployments/", /href="(\/deployments\/[a-z0-9-]+\/)"/g),
+    },
+  ];
+  const wrong = [];
+  for (const { name, pages, before, after } of series) {
+    if (pages.length < 2)
+      wrong.push(`the index lists ${pages.length} ${name}s`);
+    pages.forEach((path, i) => {
+      const page = pageAt(path);
+      const navs = [
+        ...(page?.html.matchAll(/<nav class="pager[ "][\s\S]*?<\/nav>/g) ?? []),
+      ];
+      if (navs.length !== 1) {
+        wrong.push(`${path} has ${navs.length} previous and next links`);
+        return;
+      }
+      const to = (rel) => {
+        const tag = new RegExp(`<a\\b[^>]*\\brel="${rel}"[^>]*>`).exec(
+          navs[0][0],
+        )?.[0];
+        return tag && /\shref="([^"]*)"/.exec(tag)?.[1];
+      };
+      const [prev, next] = [to("prev"), to("next")];
+      const [wantPrev, wantNext] = [
+        pages[i - 1] ?? before,
+        pages[i + 1] ?? after,
+      ];
+      if (prev !== wantPrev)
+        wrong.push(`${path} goes back to ${prev}, not ${wantPrev}`);
+      if (next !== wantNext)
+        wrong.push(`${path} goes on to ${next}, not ${wantNext}`);
+      // A lesson's "Go deeper" is an aside, and comes after the way on. Nothing
+      // else has a section after it.
+      const at = page.html.indexOf(navs[0][0]);
+      if (name === "lesson") {
+        if (page.html.indexOf('id="deeper"') < at)
+          wrong.push(`${path} puts "Go deeper" before the next lesson`);
+      } else if (
+        /<h2\b/.test(page.html.slice(at, page.html.indexOf("</main>")))
+      )
+        wrong.push(`${path} has a section after its previous and next links`);
+    });
   }
   assert.deepEqual(some(wrong), []);
 });
