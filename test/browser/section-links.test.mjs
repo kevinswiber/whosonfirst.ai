@@ -116,6 +116,11 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     await link.hover();
     assert.equal(await label(link), "Copy link", "says what a press does");
     assert.equal(
+      await page.locator("section-link[data-below]").count(),
+      0,
+      "to the right of the icon, where there is room",
+    );
+    assert.equal(
       await heightOf(page, "keep"),
       height,
       "and is no taller for it",
@@ -277,6 +282,27 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
     // and the heading is no taller for it: the room to press is in the margin
     const heading = await page.locator("#keep").boundingBox();
     assert.ok(heading.height < 60, `${heading.height}px`);
+  });
+});
+
+describe("the label, where the window is narrow", { concurrency: 1 }, () => {
+  test("it goes below the icon where there is no room beside it, and widens nothing", async (t) => {
+    const ctx = await site.context({ viewport: { width: 390, height: 844 } });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url(FLOW));
+    const link = linkFor(page, "standards");
+    await link.scrollIntoViewIfNeeded();
+    const height = await heightOf(page, "standards");
+    await link.hover();
+    assert.equal(await label(link), "Copy link");
+    assert.equal(await page.locator("section-link[data-below]").count(), 1);
+    assert.equal(await heightOf(page, "standards"), height);
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
   });
 });
 

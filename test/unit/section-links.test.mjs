@@ -6,9 +6,9 @@ import { linkSections, sectionSlug } from "../../src/lib/section-links.ts";
 
 const LINK = (id, text) =>
   `<section-link class="section-link"><a href="#${id}" aria-label="Link to this section: ${text}">${ICON}</a></section-link>`;
-// a chain, in the colour of the text, with no words of its own
+// an icon, in the colour of the text, with no words of its own
 const ICON =
-  /<svg [^>]*aria-hidden="true"[^>]*><path [^>]*stroke="currentColor"[^>]*\/><\/svg>/.exec(
+  /<svg [^>]*aria-hidden="true"[^>]*><path [^>]*fill="currentColor"[^>]*\/><\/svg>/.exec(
     linkSections('<h2 id="x">X</h2>'),
   )?.[0];
 /** The page with every link taken out again, and the names the headings were given. */
