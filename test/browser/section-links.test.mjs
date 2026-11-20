@@ -28,6 +28,14 @@ const SECTIONS = [
   },
 ];
 const linkFor = (page, id) => page.locator(`main :is(h2, h3)#${id} a`);
+/** What is written beside the chain: the content of the link's ::after. */
+const label = async (link) =>
+  (await link.evaluate((a) => getComputedStyle(a, "::after").content)).replace(
+    /^"(.*?)"( \/ "")?$/,
+    "$1",
+  );
+const heightOf = (page, id) =>
+  page.locator(`#${id}`).evaluate((h) => h.getBoundingClientRect().height);
 
 describe("without a script", { concurrency: 1 }, () => {
   let page;
@@ -59,6 +67,10 @@ describe("without a script", { concurrency: 1 }, () => {
         await page.locator(`#${id}`).evaluate((h) => h.textContent.trim()),
         words,
       );
+      // a press only goes to the section here, so nothing says it copies
+      await page.locator(`#${id}`).hover();
+      await link.hover({ force: true });
+      assert.equal(await label(link), "none");
       await link.evaluate((a) => a.click());
       assert.equal(new URL(page.url()).hash, `#${id}`);
       const top = await page
@@ -95,6 +107,19 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     await page.locator("#keep").hover();
     await page.waitForTimeout(250);
     assert.equal(await opacity(link), 1, "shown over its heading");
+    assert.equal(
+      await label(link),
+      "none",
+      "and says nothing until it is itself the target",
+    );
+    const height = await heightOf(page, "keep");
+    await link.hover();
+    assert.equal(await label(link), "Copy link", "says what a press does");
+    assert.equal(
+      await heightOf(page, "keep"),
+      height,
+      "and is no taller for it",
+    );
     await page.mouse.move(0, 500);
     await link.focus();
     await page.keyboard.press("Shift+Tab");
@@ -105,6 +130,7 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     );
     await page.waitForTimeout(250);
     assert.equal(await opacity(link), 1, "shown when it has focus");
+    assert.equal(await label(link), "Copy link", "and says what a press does");
     assert.equal(
       await link.evaluate((a) => getComputedStyle(a).outlineStyle),
       "solid",
@@ -130,6 +156,16 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
       await page.locator("section-link[data-copied]").count(),
       1,
       "and shows it beside the link",
+    );
+    assert.equal(await label(linkFor(page, "keep")), "Copied");
+    await page.waitForFunction(
+      () => !document.querySelector("section-link[data-copied]"),
+    );
+    await page.mouse.move(0, 500);
+    assert.equal(
+      await label(linkFor(page, "keep")),
+      "none",
+      "and puts it away",
     );
   });
 
@@ -205,6 +241,9 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
       isMobile: true,
       hasTouch: true,
     });
+    await ctx.grantPermissions(["clipboard-read", "clipboard-write"], {
+      origin: site.origin,
+    });
     t.after(() => ctx.close());
     const page = await ctx.newPage();
     await open(page, site.url(LESSON));
@@ -219,6 +258,21 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
     assert.ok(
       box.width >= 24 && box.height >= 24,
       `${box.width} by ${box.height}`,
+    );
+    assert.equal(
+      await label(link),
+      "none",
+      "no label where nothing is pointed at",
+    );
+    const height = await heightOf(page, "keep");
+    await link.tap();
+    assert.equal(await label(link), "Copied", "but a press says it copied");
+    assert.equal(await heightOf(page, "keep"), height);
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      "and widens nothing",
     );
     // and the heading is no taller for it: the room to press is in the margin
     const heading = await page.locator("#keep").boundingBox();

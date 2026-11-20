@@ -5,12 +5,24 @@ import { test } from "node:test";
 import { linkSections, sectionSlug } from "../../src/lib/section-links.ts";
 
 const LINK = (id, text) =>
-  `<section-link class="section-link"><a href="#${id}" aria-label="Link to this section: ${text}"></a></section-link>`;
+  `<section-link class="section-link"><a href="#${id}" aria-label="Link to this section: ${text}">${ICON}</a></section-link>`;
+// a chain, in the colour of the text, with no words of its own
+const ICON =
+  /<svg [^>]*aria-hidden="true"[^>]*><path [^>]*stroke="currentColor"[^>]*\/><\/svg>/.exec(
+    linkSections('<h2 id="x">X</h2>'),
+  )?.[0];
 /** The page with every link taken out again, and the names the headings were given. */
 const bare = (html) =>
   html
     .replace(/<section-link[\s\S]*?<\/section-link>/g, "")
     .replace(/ aria-label="[^"]*"/g, "");
+
+test("the link holds a drawing and no words", () => {
+  const link = /<a [^>]*>([\s\S]*?)<\/a>/.exec(
+    linkSections('<h2 id="x">X</h2>'),
+  )[1];
+  assert.equal(link.replace(/<[^>]*>/g, ""), "");
+});
 
 test("a heading with an id keeps it and gets a link to it, and its name is its own words", () => {
   const html = '<h2 id="how">How it works</h2><p>Text.</p>';
