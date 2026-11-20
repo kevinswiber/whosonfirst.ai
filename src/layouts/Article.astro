@@ -5,9 +5,12 @@
  */
 import Base from "./Base.astro";
 import DocMeta from "../components/DocMeta.astro";
+import Pager from "../components/Pager.astro";
 import WayOn from "../components/WayOn.astro";
+import { placeAt, places } from "../data/deployments";
 import { REVIEWED } from "../data/site";
 import { gloss, markHtml } from "../lib/gloss";
+import { must } from "../lib/must";
 
 interface Heading {
   depth: number;
@@ -49,6 +52,18 @@ const details = kind
       },
     ]
   : [];
+// A deployment guide is one of a series, in the order its index page lists. The
+// pager steps through that order, and the way on above it picks out the guides
+// that go with this one.
+const place = kind
+  ? must(
+      placeAt(Astro.url.pathname),
+      `deployment guide ${Astro.url.pathname} in data/deployments.ts`,
+    )
+  : undefined;
+const at = place ? places.indexOf(place) : -1;
+const before = at > 0 ? places[at - 1] : undefined;
+const after = at >= 0 ? places[at + 1] : undefined;
 // Where the reader is, for the line under the site header. A page that is its
 // own section, as About is, has no trail: the line is its name.
 const here = fm.section
@@ -105,6 +120,15 @@ const here = fm.section
           <Fragment set:html={article} />
         </div>
         {kind && <WayOn html={body} path={Astro.url.pathname} />}
+        {
+          kind && (
+            <Pager
+              label="More deployment guides"
+              prev={before && { href: before.href, kicker: 'Previous guide', title: before.title }}
+              next={after && { href: after.href, kicker: 'Next guide', title: after.title }}
+            />
+          )
+        }
       </div>
     </div>
   </article>

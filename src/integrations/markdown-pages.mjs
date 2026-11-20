@@ -432,6 +432,21 @@ function prepare(main, page, site) {
     return [SKIP, index + 2];
   });
 
+  // The way on to the page before and the page after is a list of two links with
+  // no heading of its own. In text it would read as the end of the section above it,
+  // so the label a screen reader is given opens it.
+  visit(main, "element", (node, index, parent) => {
+    if (!is(node, "nav") || !has(node, "pager")) return;
+    parent.children.splice(
+      index,
+      0,
+      element("p", {}, [
+        element("strong", {}, [say(String(node.properties.ariaLabel))]),
+      ]),
+    );
+    return [SKIP, index + 2];
+  });
+
   // 1. What is not content goes.
   visit(main, "element", (node, index, parent) => {
     // A place where a line may break, between a label and what follows it, is

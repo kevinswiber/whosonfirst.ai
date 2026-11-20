@@ -5,14 +5,22 @@
  * Every lesson has the same shape, so a reader learns it once: the question,
  * where this lesson sits among the others, the lesson itself, questions to
  * answer from memory, what to keep, the specifications' words for what was
- * just taught, where the same ground is covered in full, and the next lesson.
+ * just taught, the next lesson, and last, where the same ground is covered in
+ * full.
  *
  * The questions come before the summary on purpose. Answering from memory is
  * what makes an idea stay; answering with the summary still on screen is only
  * reading it twice.
+ *
+ * The next lesson comes before "Go deeper", and "Go deeper" is set smaller and
+ * quieter than the lesson's own sections. A reader who has finished is taken to
+ * the next lesson first, and the way off the path is an aside. With the two the
+ * other way round, a list of links that all looked like next steps stood
+ * between the reader and the one that was.
  */
 import Base from "./Base.astro";
 import Check from "../components/Check.astro";
+import Pager from "../components/Pager.astro";
 import { glossary } from "../data/glossary";
 import { lesson, lessons } from "../data/learn/lessons";
 import type { CheckQuestion } from "../data/learn/types";
@@ -156,53 +164,32 @@ const term = (name: string) =>
             </section>
           )
         }
-
-        <section class="deeper" aria-labelledby="deeper">
-          <h2 id="deeper">Go deeper</h2>
-          <p>
-            The same ground at full depth, when you want it.{next && ' None of it is needed for the next lesson.'}
-          </p>
-          <ul>
-            {
-              l.deeper.map((d) => (
-                <li>
-                  <a href={d.href}>{d.label}</a>
-                  <span>{d.note}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </section>
       </div>
 
-      <nav class="pager" aria-label="Lessons before and after">
-        {
-          prev ? (
-            <a href={`/learn/${prev.slug}/`}>
-              <span>← Lesson {i}</span>
-              {prev.title}
-            </a>
-          ) : (
-            <a href="/learn/">
-              <span>← Back to</span>
-              All lessons
-            </a>
-          )
-        }
-        {
-          next ? (
-            <a class="next" href={`/learn/${next.slug}/`}>
-              <span>Lesson {i + 2} →</span>
-              {next.title}
-            </a>
-          ) : (
-            <a class="next" href="/learn/#next">
-              <span>Finished →</span>
-              Where to go from here
-            </a>
-          )
-        }
-      </nav>
+      <Pager
+        label="Lessons before and after"
+        prev={prev
+          ? { href: `/learn/${prev.slug}/`, kicker: 'Previous lesson', title: prev.title }
+          : { href: '/learn/', kicker: 'Back to', title: 'All lessons' }}
+        next={next
+          ? { href: `/learn/${next.slug}/`, kicker: `Next lesson, ${i + 2} of ${lessons.length}`, title: next.title }
+          : { href: '/learn/#next', kicker: 'Finished', title: 'Where to go from here' }}
+      />
+
+      <section class="deeper" aria-labelledby="deeper">
+        <h2 id="deeper">Go deeper</h2>
+        <p>The same ground at full depth, when you want it.{next && ' None of it is needed for the next lesson.'}</p>
+        <ul>
+          {
+            l.deeper.map((d) => (
+              <li>
+                <a href={d.href}>{d.label}</a>
+                <span>{d.note}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
     </div>
   </article>
 </Base>
@@ -339,8 +326,7 @@ const term = (name: string) =>
     font-weight: 500;
   }
 
-  .names > p,
-  .deeper > p {
+  .names > p {
     color: var(--fg-muted);
     font-size: 0.96rem;
   }
@@ -414,59 +400,45 @@ const term = (name: string) =>
     }
   }
 
+  /* An aside after the way on: smaller and quieter than the sections above it, so
+     that it is not taken for the next step. */
+  .deeper {
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    max-width: 44rem;
+  }
+  .deeper h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    color: var(--fg-muted);
+  }
+  .deeper > p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+  }
   .deeper ul {
     list-style: none;
     padding: 0;
-    margin: 0;
-    border-top: 1px solid var(--fg);
-    max-width: 44rem;
+    margin: 0.8rem 0 0;
+    border-top: 1px solid var(--border);
   }
   .deeper li {
     display: grid;
     gap: 0.1rem;
     margin: 0;
-    padding: 0.65rem 0;
+    padding: 0.55rem 0;
     border-bottom: 1px solid var(--border);
   }
   .deeper li > a {
     justify-self: start;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 500;
   }
   .deeper li > a::after {
     content: ' →';
   }
   .deeper span {
-    font-size: 0.93rem;
+    font-size: 0.9rem;
     color: var(--fg-muted);
-  }
-
-  .pager {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: clamp(2.5rem, 5vw, 3.75rem);
-    padding-top: 1.4rem;
-    border-top: 1px solid var(--fg);
-  }
-  .pager a {
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 560;
-    line-height: 1.25;
-  }
-  .pager a span {
-    display: block;
-    font-family: var(--font-label);
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-    margin-bottom: 0.3rem;
-  }
-  .pager .next {
-    text-align: right;
-    grid-column: 2;
   }
 </style>

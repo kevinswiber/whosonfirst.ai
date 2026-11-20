@@ -1,0 +1,123 @@
+---
+/**
+ * The way on at the foot of a page that is one of a series: the one before and
+ * the one after. Flow pages, lessons and deployment guides each end with it, so
+ * a reader learns it once.
+ *
+ * The caller gives the series in the order its index page lists it and finds the
+ * neighbours itself, so the order is never kept twice. A series has this only
+ * where its order is one a reader would follow, and each page of a reference
+ * list that is looked up one entry at a time is left without.
+ *
+ * The next link is drawn heavier than the previous one: it is where a reader
+ * who has finished the page goes.
+ */
+export interface PagerLink {
+  href: string;
+  /** What kind of step this is, such as "Next lesson". */
+  kicker: string;
+  /** Where it goes: the name of the page. */
+  title: string;
+}
+interface Props {
+  /** What the nav is called to a screen reader, and above the links in the Markdown copy. */
+  label: string;
+  prev?: PagerLink;
+  next?: PagerLink;
+}
+const { label, prev, next } = Astro.props;
+---
+
+{
+  (prev || next) && (
+    <nav class="pager" aria-label={label}>
+      <ul>
+        {
+          prev && (
+            <li>
+              <a href={prev.href} rel="prev">
+                <span class="pager-kicker"><span aria-hidden="true">← </span>{prev.kicker}<span class="visually-hidden">: </span></span>
+                <span class="pager-title">{prev.title}</span>
+              </a>
+            </li>
+          )
+        }
+        {
+          next && (
+            <li>
+              <a class="next" href={next.href} rel="next">
+                <span class="pager-kicker">{next.kicker}<span class="visually-hidden">: </span><span aria-hidden="true"> →</span></span>
+                <span class="pager-title">{next.title}</span>
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .pager {
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--fg);
+  }
+  .pager ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pager li {
+    margin: 0;
+  }
+  .pager li:has(> .next) {
+    grid-column: 2;
+  }
+  .pager a {
+    display: block;
+    height: 100%;
+    padding: 0.85rem 1.1rem 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--fg);
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 560;
+    line-height: 1.25;
+  }
+  .pager a:hover {
+    border-color: var(--fg);
+  }
+  .pager .next {
+    padding: calc(0.85rem - 1px) calc(1.1rem - 1px) calc(0.95rem - 1px);
+    border: 2px solid var(--fg);
+    text-align: right;
+  }
+  .pager-kicker {
+    display: block;
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.3rem;
+  }
+  /* On a phone the two do not share a line: each is a row of its own, the next one last. */
+  @media (max-width: 40rem) {
+    .pager ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pager li:has(> .next) {
+      grid-column: 1;
+    }
+    .pager .next {
+      text-align: left;
+    }
+  }
+</style>
