@@ -36,8 +36,8 @@ export interface Site {
   records: string[];
   /** The tracker ids of the glossary terms that name a standard. */
   glossaryStandards: string[];
-  /** The tracker ids that a citation names, on either side. */
-  cited?: string[];
+  /** Each citation, as the two tracker ids it joins: the one that cites, and the one cited. */
+  cited?: [from: string, to: string][];
 }
 
 /** Each source's first and last commit. An entry's first is the commit that added it. */
@@ -135,17 +135,25 @@ const MADE_FROM: [
     (page) => [`src/pages/standards/${page}.astro`, HISTORY],
   ],
   // One standard's page: its tracker entry, what the log has recorded for it,
-  // and, where a citation names it, the citations. As with a flow, the file
+  // and, where a citation names it, the citations and the log's events for the
+  // document at the other end of each. As with a flow, the file
   // that lays every such page out is not one of them: a change to it is not a
   // change to what any one standard's page says.
   [
     /^\/standards\/([^/]+)\/$/,
-    (id, site) => [
-      `${STANDARDS}#${id}`,
-      `${HISTORY}#${id}`,
-      // only a standard some citation names shows one, so only its page moves with them
-      ...(site.cited?.includes(id) ? [`${HISTORY}citations.ts`] : []),
-    ],
+    (id, site) => {
+      // A citation's line says which version is cited and which is current,
+      // so it changes with the log's events for the document at its other end.
+      const others = (site.cited ?? [])
+        .filter((pair) => pair.includes(id))
+        .flatMap((pair) => pair.filter((entry) => entry !== id));
+      return [
+        `${STANDARDS}#${id}`,
+        `${HISTORY}#${id}`,
+        ...(others.length ? [`${HISTORY}citations.ts`] : []),
+        ...[...new Set(others)].map((entry) => `${HISTORY}#${entry}`),
+      ];
+    },
   ],
   // A term that names a standard shows that standard's status.
   [

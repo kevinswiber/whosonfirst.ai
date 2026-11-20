@@ -305,7 +305,7 @@ test("every data file a page imports either dates the page or is listed, with a 
   const everything = {
     ...site,
     lessons: [...site.lessons],
-    cited: [SAMPLE.id],
+    cited: [[SAMPLE.id, "rfc7519"]],
   };
   for (const file of pages) {
     const lesson = /src\/pages\/learn\/([^/]+)\.astro$/.exec(file)?.[1];
@@ -349,17 +349,39 @@ test("every data file a page imports either dates the page or is listed, with a 
   assert.deepEqual(unlisted, []);
 });
 
-test("a standard's page is made from its entry, the log's events for it and, where a citation names it, the citations", () => {
-  const withCitations = { ...site, cited: ["rfc9449"] };
+test("a standard's page is made from its entry, the log's events for it and, where a citation names it, the citations and the other document's events", () => {
+  const withCitations = {
+    ...site,
+    cited: [
+      ["rfc9449", "rfc7519"],
+      ["rfc9449", "rfc9635"],
+    ],
+  };
   assert.deepEqual(madeFrom("/standards/rfc9449/", withCitations), [
     "src/data/standards.ts#rfc9449",
     "src/data/history/#rfc9449",
     "src/data/history/citations.ts",
+    "src/data/history/#rfc7519",
+    "src/data/history/#rfc9635",
   ]);
+  // the cited side says which revision is current too, and moves with the citing document
   assert.deepEqual(madeFrom("/standards/rfc7519/", withCitations), [
     "src/data/standards.ts#rfc7519",
     "src/data/history/#rfc7519",
+    "src/data/history/citations.ts",
+    "src/data/history/#rfc9449",
   ]);
+  // a standard no citation names is made from its own entry and events
+  assert.deepEqual(madeFrom("/standards/rfc8693/", withCitations), [
+    "src/data/standards.ts#rfc8693",
+    "src/data/history/#rfc8693",
+  ]);
+  // a new revision of a cited document moves the page of the one that cites it
+  const moved = datesFor(madeFrom("/standards/rfc9449/", withCitations), {
+    "src/data/standards.ts#rfc9449": { first: day(9), last: day(9) },
+    "src/data/history/#rfc7519": { last: day(18) },
+  });
+  assert.equal(moved.modified, day(18));
   // the timeline and the changelog are pages of their own, not a standard's
   assert.deepEqual(madeFrom("/standards/timeline/", withCitations), [
     "src/pages/standards/timeline.astro",

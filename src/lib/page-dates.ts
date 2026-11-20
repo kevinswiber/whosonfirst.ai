@@ -29,7 +29,7 @@ const site: Site = {
   lessons,
   records: implementationProfiles.map((profile) => profile.slug),
   glossaryStandards: glossary.flatMap((term) => term.standard ?? []),
-  cited: citations.flatMap((c) => [
+  cited: citations.map((c) => [
     versionName(c.from).entry,
     versionName(c.to).entry,
   ]),
