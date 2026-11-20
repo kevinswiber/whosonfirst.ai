@@ -11,15 +11,12 @@
 <style is:global>
   .section-link {
     position: relative;
-    margin-inline-start: 0.35em;
-    font-family: var(--font-mono);
-    font-size: 0.7em;
-    font-weight: 500;
-    letter-spacing: 0;
+    margin-inline-start: 0.4em;
+    font-size: 0.65em;
     line-height: 1;
     white-space: nowrap;
   }
-  /* The link is a small chain with room around it to press: the room is taken
+  /* The link is a small icon with room around it to press: the room is taken
      back in the margin, so the heading is no taller for it. */
   .section-link a {
     padding: 0.3em 0.5em;
@@ -31,27 +28,42 @@
   .section-link a:hover {
     color: var(--accent);
   }
+  /* A little under the height of the heading's capitals, level with their middle */
   .section-link svg {
     display: inline-block;
-    vertical-align: -0.12em;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.1em;
   }
-  /* What pressing it does, said beside it, below the line and ending where the
-     chain does, so that it takes no room in the heading and cannot wrap it or
-     widen the page. Without the script a press only goes to the section, and
-     the chain says nothing more than its name. With it, a press copies. */
+  /* What pressing it does, said beside it: to the right on the same line, or
+     below it where the script finds no room, and out of the flow either way,
+     so that it takes no room in the heading and cannot wrap it or widen the
+     page. Without the script a press only goes to the section, and the icon
+     says nothing more than its name. With it, a press copies. */
   .section-link a::after {
     position: absolute;
-    right: 0;
-    top: calc(100% + 0.6rem);
+    left: calc(100% + 0.9rem);
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 2;
+    font-family: var(--font-mono);
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     background: var(--bg-raised);
     color: var(--fg);
-    font: 500 0.78rem/1.2 var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0;
     pointer-events: none;
     display: none;
+  }
+  .section-link[data-below] a::after {
+    left: auto;
+    right: 0;
+    top: calc(100% + 0.8rem);
+    transform: none;
   }
   @media (hover: hover) {
     .section-link[data-ready] a:is(:hover, :focus-visible)::after {
@@ -108,11 +120,19 @@
       region();
       // from here a press copies, and the label beside the chain may say so
       this.toggleAttribute('data-ready', true);
-      this.querySelector('a')?.addEventListener('click', (event) => {
+      const link = this.querySelector('a');
+      for (const type of ['pointerenter', 'focusin']) link?.addEventListener(type, () => this.place());
+      link?.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
           return;
         void this.copy(event.currentTarget as HTMLAnchorElement);
       });
+    }
+    // The label goes to the right of the icon when the window has room for it
+    // there, and below when it has not.
+    private place() {
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      this.toggleAttribute('data-below', document.documentElement.clientWidth - this.getBoundingClientRect().right < 9 * rem);
     }
     private async copy(link: HTMLAnchorElement) {
       try {
@@ -120,6 +140,7 @@
       } catch {
         return;
       }
+      this.place();
       this.toggleAttribute('data-copied', true);
       clearTimeout(this.timer);
       this.timer = window.setTimeout(() => this.removeAttribute('data-copied'), 2000);
