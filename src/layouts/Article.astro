@@ -110,6 +110,56 @@ const here = fm.section
   </article>
 </Base>
 
+<script>
+  // A checklist copied as a task list, for pasting into an issue or a pull
+  // request. The list is read from the page's own Markdown copy, which the
+  // build writes from this same list, so the two cannot differ. Without this
+  // script, or where the browser cannot copy, there is no button.
+  const markdown = document.querySelector<HTMLLinkElement>('link[rel="alternate"][type="text/markdown"]')?.href;
+  const lists = document.querySelectorAll<HTMLUListElement>('.article ul.checklist');
+  if (markdown && navigator.clipboard && lists.length) {
+    const title = document.querySelector('h1')?.textContent?.trim() ?? document.title;
+    const address = location.origin + location.pathname;
+    lists.forEach((list, n) => {
+      let heading: Element | null = list;
+      while (heading && heading.tagName !== 'H2') heading = heading.previousElementSibling;
+      const name = heading?.textContent?.trim() || 'Checklist';
+      const row = document.createElement('p');
+      row.className = 'checklist-copy';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn small ghost';
+      button.textContent = 'Copy as a task list';
+      const said = document.createElement('span');
+      said.className = 'checklist-said';
+      said.setAttribute('aria-live', 'polite');
+      row.append(button, ' ', said);
+      list.after(row);
+      button.addEventListener('click', async () => {
+        try {
+          const response = await fetch(markdown);
+          if (!response.ok) throw new Error(String(response.status));
+          // The nth run of task lines is the nth list on the page.
+          const runs: string[][] = [];
+          let inRun = false;
+          for (const line of (await response.text()).split('\n')) {
+            const task = line.startsWith('- [ ] ');
+            if (task && !inRun) runs.push([]);
+            if (task) runs[runs.length - 1].push(line);
+            inRun = task;
+          }
+          const items = runs[n];
+          if (!items || items.length !== list.children.length) throw new Error('list not found');
+          await navigator.clipboard.writeText(`**${name}**, from [${title}](${address})\n\n${items.join('\n')}\n`);
+          said.textContent = 'Copied. Paste it into an issue or a pull request.';
+        } catch {
+          said.textContent = 'Not copied. The page as Markdown has the same list.';
+        }
+      });
+    });
+  }
+</script>
+
 <style>
   .primer {
     margin: 1rem 0 0;
@@ -221,6 +271,22 @@ const here = fm.section
     margin: 0;
     padding: 0.65rem 0 0.65rem 2rem;
     border-bottom: 1px solid var(--border);
+  }
+  .article :global(.checklist-copy) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0.75rem 0 0;
+  }
+  .article :global(.checklist-said) {
+    color: var(--fg-muted);
+    font-size: 0.9rem;
+  }
+  @media print {
+    .article :global(.checklist-copy) {
+      display: none;
+    }
   }
   .article :global(.checklist li::before) {
     content: '';
