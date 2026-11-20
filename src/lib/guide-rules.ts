@@ -43,11 +43,25 @@ const RANK: Record<Role, number> = { start: 0, add: 1, consider: 2 };
  * listed once: a "start" beats an "add" beats a "consider", and of two rules
  * under the same heading the one that matches more answers is kept, or the
  * earlier when they match as many.
+ *
+ * `further` names the questions under “More questions”. A rule is brought up
+ * by the other questions alone: an answer to one of these can only take it out
+ * again, when it is the wrong answer, or count as one more answer matched. So
+ * for any answers, adding an answer to one of them never adds a flow.
  */
-export function recommend(rules: Rule[], a: Answers): Record<Role, Chosen[]> {
+export function recommend(
+  rules: Rule[],
+  a: Answers,
+  further: readonly string[],
+): Record<Role, Chosen[]> {
+  if (!Array.isArray(further))
+    throw new Error("recommend: say which questions are further ones");
   const best = new Map<string, Chosen>();
   for (const r of rules) {
-    if (!matches(r.when, a)) continue;
+    const first = Object.fromEntries(
+      Object.entries(r.when).filter(([q]) => !further.includes(q)),
+    );
+    if (!matches(first, a) || !compatible(r.when, a)) continue;
     const specificity = Object.keys(r.when).filter((q) => a[q] != null).length;
     const prev = best.get(r.flow);
     if (
@@ -142,4 +156,37 @@ export function possibleStarts(rules: Rule[], a: Answers): Rule[] {
           (size(b) > size(r) || (size(b) === size(r) && j < i)),
       ),
   );
+}
+
+/**
+ * The flows these answers bring up that one more answer would take out: an
+ * answer to one of `asks`, the questions given, where it has not been answered.
+ * The guide counts them, so a reader with a long list knows that more
+ * questions can shorten it.
+ */
+export function narrowable(
+  rules: Rule[],
+  asks: { id: string; options: { value: string }[] }[],
+  a: Answers,
+): Set<string> {
+  const flowsFor = (answers: Answers) =>
+    new Set(
+      Object.values(
+        recommend(
+          rules,
+          answers,
+          asks.map((q) => q.id),
+        ),
+      ).flatMap((list) => list.map((r) => r.flow)),
+    );
+  const shown = flowsFor(a);
+  const out = new Set<string>();
+  for (const q of asks) {
+    if (a[q.id] != null) continue;
+    for (const o of q.options) {
+      const after = flowsFor({ ...a, [q.id]: o.value });
+      for (const f of shown) if (!after.has(f)) out.add(f);
+    }
+  }
+  return out;
 }
