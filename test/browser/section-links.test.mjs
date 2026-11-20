@@ -1,0 +1,279 @@
+// The link beside each section heading: it is in the page without a script and
+// goes to the section, it can be found with a keyboard, a pointer and a finger,
+// it says which section it is for without changing what the heading says, and
+// with a script it also copies the address and says that it has. It is not on
+// the print, and not where it would be wrong: in a card, in a menu or in a
+// flow's own steps.
+import { strict as assert } from "node:assert";
+import { after, before, describe, test } from "node:test";
+import { open, useBrowser } from "../support/browser.mjs";
+import { FLOW, LESSON } from "../support/site.mjs";
+
+const site = useBrowser();
+
+/** A page, a heading on it, and the words that heading says. */
+const SECTIONS = [
+  { path: LESSON, id: "keep", words: "What to keep" },
+  { path: FLOW, id: "standards", words: "Standards in play" },
+  { path: "/about/", id: "how-flows-are-rated", words: "How flows are rated" },
+  {
+    path: "/deployments/gateways/",
+    id: "the-mcp-gateway",
+    words: "The MCP gateway",
+  },
+  {
+    path: "/standards/rfc9449/",
+    id: "where-it-stands",
+    words: "Where it stands",
+  },
+];
+const linkFor = (page, id) => page.locator(`main :is(h2, h3)#${id} a`);
+
+describe("without a script", { concurrency: 1 }, () => {
+  let page;
+  before(async () => {
+    const ctx = await site.context({
+      javaScriptEnabled: false,
+      viewport: { width: 1280, height: 900 },
+    });
+    page = await ctx.newPage();
+  });
+  after(() => page.context().close());
+
+  for (const { path, id, words } of SECTIONS) {
+    test(`${path}: the link beside “${words}” goes to it, and is named for it`, async () => {
+      await open(page, site.url(path));
+      const link = linkFor(page, id);
+      assert.equal(await link.count(), 1);
+      assert.equal(await link.getAttribute("href"), `#${id}`);
+      assert.equal(
+        await link.getAttribute("aria-label"),
+        `Link to this section: ${words}`,
+      );
+      // the heading's own name is its words: the link adds nothing to it
+      assert.equal(
+        await page.getByRole("heading", { name: words, exact: true }).count(),
+        1,
+      );
+      assert.equal(
+        await page.locator(`#${id}`).evaluate((h) => h.textContent.trim()),
+        words,
+      );
+      await link.evaluate((a) => a.click());
+      assert.equal(new URL(page.url()).hash, `#${id}`);
+      const top = await page
+        .locator(`#${id}`)
+        .evaluate((h) => h.getBoundingClientRect().top);
+      assert.ok(
+        top >= 0 && top < 400,
+        `the section is at the top of the window (${top}px)`,
+      );
+    });
+  }
+});
+
+describe("with a script, on a desktop", { concurrency: 1 }, () => {
+  let page;
+  let ctx;
+  before(async () => {
+    ctx = await site.context({ viewport: { width: 1280, height: 900 } });
+    await ctx.grantPermissions(["clipboard-read", "clipboard-write"], {
+      origin: site.origin,
+    });
+    page = await ctx.newPage();
+  });
+  after(() => ctx.close());
+
+  const opacity = (link) =>
+    link.evaluate((a) => Number(getComputedStyle(a.parentElement).opacity));
+
+  test("it is there when the heading is pointed at or reached by keyboard, and not before", async () => {
+    await open(page, site.url(LESSON));
+    const link = linkFor(page, "keep");
+    await page.mouse.move(0, 500);
+    assert.equal(await opacity(link), 0, "not shown until it is wanted");
+    await page.locator("#keep").hover();
+    await page.waitForTimeout(250);
+    assert.equal(await opacity(link), 1, "shown over its heading");
+    await page.mouse.move(0, 500);
+    await link.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    assert.equal(
+      await link.evaluate((a) => a === document.activeElement),
+      true,
+    );
+    await page.waitForTimeout(250);
+    assert.equal(await opacity(link), 1, "shown when it has focus");
+    assert.equal(
+      await link.evaluate((a) => getComputedStyle(a).outlineStyle),
+      "solid",
+      "and marked as focused",
+    );
+  });
+
+  test("pressing it copies the page's address with the section's, and says so", async () => {
+    await open(page, site.url(LESSON));
+    await linkFor(page, "keep").click();
+    assert.equal(new URL(page.url()).hash, "#keep");
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    assert.equal(copied, `${site.origin}${LESSON}#keep`);
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[role="status"].visually-hidden')?.textContent,
+    );
+    assert.equal(
+      await page.locator('[role="status"].visually-hidden').textContent(),
+      "Link to “What to keep” copied.",
+    );
+    assert.equal(
+      await page.locator("section-link[data-copied]").count(),
+      1,
+      "and shows it beside the link",
+    );
+  });
+
+  test("the list of the page's sections names the headings and nothing more", async () => {
+    await open(page, site.url("/about/"));
+    const listed = await page.evaluate(() => {
+      const links = [...document.querySelectorAll(".here-menu a")];
+      const heads = [...document.querySelectorAll("main h2")];
+      return {
+        links: links.map((a) => a.textContent.trim()),
+        heads: heads.map((h) => h.textContent.trim()),
+        toc: [...document.querySelectorAll(".article-toc a")].map((a) =>
+          a.textContent.trim(),
+        ),
+      };
+    });
+    assert.deepEqual(
+      listed.links,
+      listed.heads.filter((h) => h),
+    );
+    assert.ok(!listed.heads.some((h) => h.includes("#") || /Link to/.test(h)));
+    assert.ok(listed.toc.every((t) => listed.heads.includes(t)));
+  });
+
+  test("a press with a modifier, or no clipboard, leaves it to the browser", async () => {
+    await open(page, site.url(LESSON));
+    await page.evaluate(() => navigator.clipboard.writeText("before"));
+    await linkFor(page, "keep")
+      .click({ modifiers: ["Shift"] })
+      .catch(() => {});
+    assert.equal(
+      await page.evaluate(() => navigator.clipboard.readText()),
+      "before",
+    );
+    const bare = await site.context({ viewport: { width: 1280, height: 900 } });
+    const p = await bare.newPage();
+    await p.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", { value: undefined });
+    });
+    await open(p, site.url(LESSON));
+    await linkFor(p, "keep").click();
+    assert.equal(
+      new URL(p.url()).hash,
+      "#keep",
+      "it still goes to the section",
+    );
+    assert.equal(
+      await p.locator('[role="status"].visually-hidden').textContent(),
+      "",
+      "and says nothing of a copy",
+    );
+    await bare.close();
+  });
+
+  test("it is not on a page that is printed", async () => {
+    await open(page, site.url(LESSON));
+    await page.emulateMedia({ media: "print" });
+    const shown = await page.evaluate(
+      () =>
+        [...document.querySelectorAll("section-link")].filter(
+          (e) => e.getClientRects().length,
+        ).length,
+    );
+    assert.equal(shown, 0);
+    await page.emulateMedia({ media: "screen" });
+  });
+});
+
+describe("with a script, on a phone", { concurrency: 1 }, () => {
+  test("it is shown without a pointer, and large enough to press", async (t) => {
+    const ctx = await site.context({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url(LESSON));
+    const link = linkFor(page, "keep");
+    assert.equal(
+      await link.evaluate((a) =>
+        Number(getComputedStyle(a.parentElement).opacity),
+      ),
+      1,
+    );
+    const box = await link.boundingBox();
+    assert.ok(
+      box.width >= 24 && box.height >= 24,
+      `${box.width} by ${box.height}`,
+    );
+    // and the heading is no taller for it: the room to press is in the margin
+    const heading = await page.locator("#keep").boundingBox();
+    assert.ok(heading.height < 60, `${heading.height}px`);
+  });
+});
+
+describe("where there is none", { concurrency: 1 }, () => {
+  test("no heading inside a card, a menu, a dialog, a list item or a flow's own steps has one", async (t) => {
+    const ctx = await site.context({ viewport: { width: 1280, height: 900 } });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    for (const path of [
+      "/",
+      FLOW,
+      LESSON,
+      "/flows/",
+      "/guide/",
+      "/concepts/",
+      "/standards/",
+      "/search/",
+    ]) {
+      await open(page, site.url(path));
+      const wrong = await page.evaluate(() =>
+        [...document.querySelectorAll("section-link")]
+          .filter((e) =>
+            e.closest(
+              "a, button, dialog, nav, li, summary, form, flow-diagram, .card, header.site-header",
+            ),
+          )
+          .map((e) => e.closest("h2, h3")?.textContent.trim()),
+      );
+      assert.deepEqual(wrong, [], path);
+    }
+    await open(page, site.url("/search/"));
+    assert.equal(
+      await page.locator("section-link").count(),
+      0,
+      "none on the search page",
+    );
+  });
+
+  test("a section link on a flow page leaves the step the page is at as it was", async (t) => {
+    const ctx = await site.context({ viewport: { width: 1280, height: 900 } });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url(`${FLOW}#step-4`));
+    const step = () =>
+      page
+        .locator("flow-diagram .flow-step.is-current")
+        .evaluateAll((e) => e.map((s) => s.id));
+    const before = await step();
+    assert.deepEqual(before, ["step-4"]);
+    await linkFor(page, "standards").click();
+    assert.equal(new URL(page.url()).hash, "#standards");
+    assert.deepEqual(await step(), before);
+  });
+});
