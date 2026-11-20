@@ -18,7 +18,7 @@ const files = Object.keys(import.meta.glob("../pages/**/*.{astro,mdx}"))
       .replace(/\.(astro|mdx)$/, "")
       .replace(/\/index$/, "/"),
   )
-  .filter((p) => !p.includes("[") && p !== "/404")
+  .filter((p) => !p.includes("[") && p !== "/404" && p !== "/search/")
   .map((p) => (p.endsWith("/") ? p : `${p}/`));
 
 export const sitePages: string[] = [

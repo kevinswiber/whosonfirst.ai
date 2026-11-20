@@ -1,0 +1,175 @@
+---
+const examples = [
+  "My agent needs me to approve a payment on my phone",
+  "Nobody is signed in when the overnight job runs",
+  "RFC 9449",
+];
+---
+
+<guide-search>
+  <form role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
+    <label for="guide-query">Describe your situation, or enter a term or RFC number.</label>
+    <div class="search-controls">
+      <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-privacy" />
+      <button class="btn primary" type="submit">Search</button>
+    </div>
+    <p id="search-privacy">Cloudflare processes your words when you press Search.</p>
+  </form>
+  <section class="search-examples" aria-labelledby="search-examples-title" hidden>
+    <h2 id="search-examples-title">Try a search</h2>
+    <ul>
+      {examples.map((example) => <li><button type="button" data-query={example}>{example}<span aria-hidden="true">↗</span></button></li>)}
+    </ul>
+  </section>
+  <p role="status" aria-live="polite"><span id="search-status-text"></span></p>
+  <ol class="search-results" id="search-results"></ol>
+</guide-search>
+
+<script>
+  type Passage = { href: string; type: string; title: string; section: string; excerpt: string };
+
+  class GuideSearch extends HTMLElement {
+    connectedCallback() {
+      const form = this.querySelector('form')!;
+      const input = form.querySelector('input')!;
+      const status = this.querySelector<HTMLElement>('#search-status-text')!;
+      const results = this.querySelector<HTMLOListElement>('#search-results')!;
+      const examples = this.querySelector<HTMLElement>('.search-examples')!;
+      examples.hidden = results.hasAttribute('data-search-submitted');
+      examples.addEventListener('click', (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
+        if (!button) return;
+        input.value = button.dataset.query!;
+        input.setCustomValidity('');
+        input.focus();
+      });
+      let pending: AbortController | undefined;
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const query = input.value.trim();
+        if (!query) {
+          input.focus();
+          input.setCustomValidity('Enter a question, a term or an RFC number.');
+          input.reportValidity();
+          return;
+        }
+        pending?.abort();
+        const request = new AbortController();
+        pending = request;
+        examples.hidden = true;
+        results.replaceChildren();
+        results.setAttribute('aria-busy', 'true');
+        status.textContent = 'Searching…';
+        try {
+          const response = await fetch(form.action, {
+            method: 'POST',
+            headers: { Accept: 'application/json' },
+            body: new URLSearchParams({ q: query }),
+            signal: request.signal,
+          });
+          if (pending !== request) return;
+          if (response.status === 429) {
+            const delay = response.headers.get('Retry-After');
+            const seconds = delay && /^\d+$/.test(delay) ? Number(delay) : 0;
+            status.textContent = seconds > 0
+              ? `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`
+              : 'Too many searches. Wait a moment and try again.';
+            return;
+          }
+          if (!response.ok) throw new Error('Search unavailable');
+          const { results: passages } = await response.json() as { results: Passage[] };
+          if (pending !== request) return;
+          const rows = document.createDocumentFragment();
+          for (const passage of passages) {
+            const url = new URL(passage.href, location.origin);
+            if (!passage.href.startsWith('/') || url.origin !== location.origin) continue;
+            const row = document.createElement('li');
+            const kind = document.createElement('p');
+            kind.className = 'result-kind';
+            kind.textContent = passage.type;
+            const heading = document.createElement('h2');
+            const link = document.createElement('a');
+            link.href = url.href;
+            link.textContent = passage.title;
+            heading.append(link);
+            row.append(kind, heading);
+            if (passage.section && passage.section !== passage.title) {
+              link.setAttribute('aria-label', `${passage.title}, ${passage.section}`);
+              const section = document.createElement('p');
+              section.className = 'result-section';
+              section.textContent = passage.section;
+              row.append(section);
+            }
+            const excerpt = document.createElement('p');
+            excerpt.textContent = passage.excerpt;
+            row.append(excerpt);
+            rows.append(row);
+          }
+          const count = rows.childElementCount;
+          results.replaceChildren(rows);
+          status.textContent = count === 0
+            ? 'No matching passages. Try describing whose access the agent needs, or try a shorter phrase.'
+            : `${count} matching ${count === 1 ? 'passage' : 'passages'} for “${query}”.`;
+        } catch {
+          if (pending === request) status.textContent = 'Search is unavailable. Try again, or browse the guide.';
+        } finally {
+          if (pending === request) results.removeAttribute('aria-busy');
+        }
+      });
+      input.addEventListener('input', () => input.setCustomValidity(''));
+    }
+  }
+  customElements.define('guide-search', GuideSearch);
+</script>
+
+<style>
+  guide-search { display: block; }
+  label { display: block; margin-bottom: 0.55rem; }
+  .search-controls { display: flex; gap: 0.5rem; align-items: stretch; }
+  input {
+    flex: 1;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font: inherit;
+    background: var(--bg-raised);
+    color: var(--fg);
+  }
+  #search-privacy { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
+  [role='status'] { margin: 1.6rem 0 0; }
+  .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
+  .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
+  .search-examples ul { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+  .search-examples li { margin: 0; border-bottom: 1px solid var(--border); }
+  .search-examples button {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: baseline;
+    text-align: left;
+    background: transparent;
+    color: var(--accent);
+    border: 0;
+    padding: 0.8rem 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .search-examples button:hover { text-decoration: underline; }
+  .search-results { list-style: none; padding: 0; margin: 0; }
+  .search-results :global(li) { border-top: 1px solid var(--border); padding: 1.1rem 0; margin: 0; }
+  .search-results :global(h2) {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    text-transform: none;
+    margin: 0.15rem 0 0.35rem;
+    overflow-wrap: anywhere;
+  }
+  .search-results :global(p) { margin: 0; overflow-wrap: anywhere; }
+  .search-results :global(.result-kind) { color: var(--fg-muted); font: 500 0.76rem var(--font-label); }
+  .search-results :global(.result-section) { font-weight: 600; margin-bottom: 0.2rem; }
+</style>

@@ -365,6 +365,14 @@ The conversion knows the site's components by class name: which are controls (`C
 
 `public/robots.txt` allows every crawler and states, in the terms of [contentsignals.org](https://contentsignals.org/), that the site may be indexed, used to answer questions, and used for training.
 
+### Searching across the guide
+
+The search link opens `/search/`. Submitting a question sends one same-origin POST to `/api/search/query`. The search Worker returns ranked passages with their source links. A native form submission receives an HTML page, and the enhanced form requests JSON. Typing in a directory filter still narrows that page in the browser.
+
+The Astro build extracts passages from the public reading pages into `.astro/search/manifest.json`. Each key identifies its location and content. The upload script sends the corresponding Markdown documents to Cloudflare AI Search and waits for indexing. The separate Worker bundles the same manifest, accepts only keys present in it, and uses its own titles, links and excerpts for the results. An exact RFC number gets its standard’s page first.
+
+For a local check, build the site, run `npm run search:sync -- --dry-run`, then run `SEARCH_RATE_NAMESPACE=1 npm run search:build`. The namespace in this example is for a local build. CI builds both Workers and tests search with a fixture provider. [Publishing and testing site search](search-release.md) covers live indexing, deployment and rollback.
+
 ### Markdown at the page's own address
 
 Some agents ask for Markdown with `Accept: text/markdown`. A request that does gets the page's Markdown copy at the page's own address, and a request that does not gets the page.

@@ -26,6 +26,7 @@ It is an independent reference, not a specification. Every page says which month
 | If you…                                         | Go to                                                                                                                                                                                                                |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | are new to this                                 | **[The lessons](https://whosonfirst.ai/learn/)**: 6 short lessons, about 40 minutes, starting from an API key. No OAuth knowledge needed.                                                                            |
+| can describe the problem in your own words      | **[Search the guide](https://whosonfirst.ai/search/)** to find passages about your situation. You can also look up a term or RFC number.                                                                             |
 | are designing an agent                          | **[The decision guide](https://whosonfirst.ai/guide/)**: six questions that turn your agent’s situation into a short list of flows, with reasons. The first two put it in one of four named cases, each with a page. |
 | know which flow you need                        | **[The flows](https://whosonfirst.ai/flows/)**: 25 flows, each a sequence diagram you can step through, with the messages on the wire and what each party has to do.                                                 |
 | are looking for an implementation               | **[Implementations](https://whosonfirst.ai/implementations/)**: documented product roles, named production reports, sources and dates. Browse the overview, then open a flow’s full evidence record.                 |
@@ -176,7 +177,7 @@ A reference is only worth having if it is right. In the tracker, IETF revision n
 
 The name is from Abbott and Costello’s routine, in which a man asks who is playing first base and never gets an answer he can use. Ask a production system which person an API call was made for, and which software made it, when an agent sat in between, and the conversation is often the same.
 
-The site is static. It sets no cookies and loads nothing from another origin, and every page reads correctly with JavaScript off.
+The guide’s pages are built ahead of time. When you submit a site-wide search, a Worker on the same host asks Cloudflare AI Search for matching passages. Directory filters run in your browser. The site sets no cookies, loads its assets from its own origin, and works with JavaScript off.
 
 ## Working on the site
 

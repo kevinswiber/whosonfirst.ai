@@ -18,6 +18,7 @@ const DESTINATIONS = [
   "/deployments/",
   "/standards/",
   "/glossary/",
+  "/search/",
 ];
 
 const site = useBrowser();
@@ -53,9 +54,10 @@ for (const theme of THEMES) {
       };
 
       if (vp.name === "phone") {
-        test("header keeps the lessons in view", async () => {
+        test("header keeps lessons and search in view", async () => {
           const closed = await visibleLinks();
           assert.ok(closed.includes("/learn/"), closed.join(" "));
+          assert.ok(closed.includes("/search/"), closed.join(" "));
         });
         test("menu opens from the keyboard and shows every destination", async () => {
           await openMenu();

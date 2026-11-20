@@ -1,6 +1,6 @@
 # Sent with every page and file the site serves. (The host does not add them to
-# its own "not found" response.) The site is static: it sets no cookies, takes no
-# input and loads nothing from another origin. These headers hold it to that.
+# its own "not found" response.) Assets load from this origin. The search form
+# posts to a separate Worker on this host, which sets its own response headers.
 #
 # script-src and style-src allow inline code because the theme switch has to
 # run before the first paint, and code samples and diagrams are colored and
@@ -53,3 +53,8 @@
 # wrong characters. These files are UTF-8, so say so.
 /*.txt
   Content-Type: text/plain; charset=utf-8
+
+# The search release checks the commit and passage revision currently served.
+/search/release.json
+  Cache-Control: no-store
+  X-Robots-Tag: noindex

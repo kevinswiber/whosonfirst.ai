@@ -71,6 +71,12 @@ jobs:
       - run: npm ci
       - name: Build
         run: npm run build
+      - name: Build the search Worker from the same pages
+        env:
+          SEARCH_RATE_NAMESPACE: "1" # Local build fixture
+        run: |
+          npm run search:sync -- --dry-run
+          npm run search:build
       # The checks run headless, so the headless shell is all they need, and the
       # runner's image already has the libraries it links against. With
       # `--with-deps` the step also asked apt for nine font packages: fonts for

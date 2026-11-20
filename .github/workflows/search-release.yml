@@ -1,0 +1,51 @@
+name: Release guide search
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guide-search-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main' && vars.SEARCH_RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    environment: search-production
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      SEARCH_RATE_NAMESPACE: ${{ vars.SEARCH_RATE_NAMESPACE }}
+      SEARCH_NAMESPACE: ${{ vars.SEARCH_NAMESPACE || 'whosonfirst' }}
+      SEARCH_INSTANCE: ${{ vars.SEARCH_INSTANCE || 'whosonfirst-guide' }}
+      SEARCH_WORKER_NAME: ${{ vars.SEARCH_WORKER_NAME || 'whosonfirst-ai-search' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run search:build
+      - run: npm run search:sync -- --dry-run
+      - name: Wait for Cloudflare Workers Builds to publish this guide
+        run: node scripts/release-search.mjs wait
+      - name: Sync the public passages and wait for indexing
+        run: npm run search:sync
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN: ${{ secrets.CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN }}
+      - name: Upload the search Worker, activate it and check the same-origin route
+        run: node scripts/release-search.mjs publish
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_SEARCH_WORKER_DEPLOY_TOKEN }}

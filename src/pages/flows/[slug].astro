@@ -339,7 +339,7 @@ const detailGroups = [
     <section aria-labelledby="walkthrough">
       <div class="section-head stacked">
         <h2 id="walkthrough">Step by step</h2>
-        <p>
+        <p data-search-ignore>
           {flow.steps.length} steps between {flow.participants.length} parties. Each step shows the message and
           who holds which credential afterward.
         </p>
@@ -545,7 +545,7 @@ const detailGroups = [
 
     {
       rel.length > 0 && (
-        <section aria-labelledby="related">
+        <section aria-labelledby="related" data-search-ignore>
           <h2 id="related">Related flows</h2>
           <div class="grid">
             {rel.map((f) => (

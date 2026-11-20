@@ -25,6 +25,7 @@ export const LESSON = "/learn/tokens/";
 /** One page of each kind, looked at in each theme on a desktop and on a phone. */
 export const PAGES = [
   { path: "/", name: "home" },
+  { path: "/search/", name: "search" },
   { path: "/learn/", name: "lessons index" },
   { path: LESSON, name: "lesson" },
   { path: FLOW, name: "flow" },
