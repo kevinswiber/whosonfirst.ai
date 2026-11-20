@@ -87,3 +87,5 @@ jobs:
         run: npx playwright install --only-shell chromium
       - name: Rendered checks
         run: npm run check:rendered
+      - name: Build and test the site’s Cloudflare branch preview
+        run: npm run search:preview:build

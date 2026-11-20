@@ -5,7 +5,7 @@ import {
   guideSearch,
   rankedResults,
   validateShell,
-} from "../../workers/search/search.mjs";
+} from "../../workers/search/search.ts";
 
 const site = "https://example.org";
 const url = `${site}/api/search/query`;

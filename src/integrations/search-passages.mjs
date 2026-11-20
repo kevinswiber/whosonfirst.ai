@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rehypeParse from "rehype-parse";
 import { unified } from "unified";
+import { searchSiteData } from "../../workers/search/site-data.mjs";
 import { builtPages } from "./built-pages.mjs";
 import { omitFromReading } from "./markdown-pages.mjs";
 
@@ -398,6 +399,12 @@ export default function searchPassages() {
           new URL("search/release.json", dir),
           JSON.stringify({ commit, revision: manifest.revision }),
         );
+        if (process.env.CLOUDFLARE_PREVIEW_BUILD === "true") {
+          writeFileSync(
+            new URL("search/preview-catalog.json", dir),
+            JSON.stringify(searchSiteData(fileURLToPath(dir), manifest)),
+          );
+        }
         logger.info(`${manifest.records.length} passages for site search`);
       },
     },

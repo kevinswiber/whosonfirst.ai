@@ -2,7 +2,7 @@
 // directory and index are real built assets; only the Cloudflare API is stubbed.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { catalogFor, guideSearch } from "../../workers/search/search.mjs";
+import { catalogFor, guideSearch } from "../../workers/search/search.ts";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 import { sideways } from "../support/measure.mjs";
 import { file } from "../support/site.mjs";
