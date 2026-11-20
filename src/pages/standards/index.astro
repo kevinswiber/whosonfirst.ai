@@ -5,7 +5,8 @@ import { standards, std } from "../../data/standards";
 import { flows } from "../../data/flows";
 import { REVIEWED, REVIEWED_ISO } from "../../data/site";
 import { history } from "../../data/history";
-import { monthName, movedIn } from "../../lib/history";
+import { citations } from "../../data/history/citations";
+import { monthName, movedIn, readCitations } from "../../lib/history";
 import {
   RELATED_LABEL,
   STATUS_LABEL,
@@ -30,6 +31,52 @@ const count = (fn: (s: (typeof standards)[number]) => boolean) =>
   standards.filter(fn).length;
 // A flow uses an entry it requires. One it lists as optional or background, or whose role is not
 // settled, it only mentions: a draft named for context is not something the flow depends on.
+// What one specification cites of another, by revision, with whether the
+// revision cited is still the current one: worked out from the log.
+const cited = readCitations(citations, history);
+const revision = (label: string) =>
+  /^-\d+$/.test(label) ? `revision ${label}` : label;
+// The version that cites, as the subject of a sentence.
+const citing = (label: string) =>
+  /^-\d+$|^\d{4}-\d{2}-\d{2}$/.test(label)
+    ? `Revision ${label}`
+    : `Version ${label}`;
+const citationsOf = (id: string) => [
+  ...cited
+    .filter((c) => c.fromEntry === id)
+    .map((c) => {
+      const to = std(c.toEntry);
+      const state = !c.toLabel
+        ? "It names no revision."
+        : c.behind
+          ? `The current one is ${revision(c.current ?? "")}.`
+          : "That is the current one.";
+      return {
+        kind: "Cites",
+        name: c.toLabel ? `${to.name}, ${revision(c.toLabel)}` : to.name,
+        href: `#${to.id}`,
+        out: false,
+        note: `${citing(c.fromLabel)} ${c.how} it. ${state}${c.note ? ` ${c.note}` : ""}`,
+      };
+    }),
+  ...cited
+    .filter((c) => c.toEntry === id)
+    .map((c) => {
+      const from = std(c.fromEntry);
+      const state = !c.toLabel
+        ? "It names no revision."
+        : c.behind
+          ? `It cites ${revision(c.toLabel)}; the current one is ${revision(c.current ?? "")}.`
+          : `It cites ${revision(c.toLabel)}, the current one.`;
+      return {
+        kind: "Cited by",
+        name: `${from.name}, ${revision(c.fromLabel)}`,
+        href: `#${from.id}`,
+        out: false,
+        note: state,
+      };
+    }),
+];
 const listedIn = (id: string) => flows.filter((f) => f.standards.includes(id));
 const usedIn = (id: string) =>
   listedIn(id).filter((f) => !f.roles || f.roles[id] === "required");
@@ -156,13 +203,13 @@ const moved = movedIn(history, YEAR);
                 const mentioned = mentionedIn(s.id);
                 // A related document with its own entry links to that entry
                 // on this page. Any other links to the document itself.
-                const related = (s.related ?? []).map((r) => {
+                const related = [...(s.related ?? []).map((r) => {
                   if ('entry' in r) {
                     const e = std(r.entry);
                     return { kind: RELATED_LABEL[r.kind], name: `${e.name} (${e.ref})`, href: `#${e.id}`, out: false, note: r.note ?? '' };
                   }
                   return { kind: RELATED_LABEL[r.kind], name: r.name, href: r.url, out: true, note: r.note ?? '' };
-                });
+                }), ...citationsOf(s.id)];
                 return (
                   <li
                     class="sx-item"

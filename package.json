@@ -22,6 +22,7 @@
     "readme:figure": "node scripts/readme-figure.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "sources:changed": "node scripts/source-changes.mjs",
+    "standards:citations": "node scripts/citations.mjs",
     "implementations:coverage": "node scripts/implementation-coverage.mjs",
     "implementations:check": "node scripts/implementation-check.mjs",
     "generate-types": "cf workers types",

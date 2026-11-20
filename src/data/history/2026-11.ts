@@ -716,7 +716,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "wg-draft",
     standing:
-      "OAuth working group document. The latest revision requires URL normalization and defines error handling. MCP 2026-07-28 cites -00; the MCP draft revision moves to -03.",
+      "OAuth working group document. The latest revision requires URL normalization and defines error handling. The MCP draft revision moves to -03.",
     version: {
       label: "-03",
       name: "draft-ietf-oauth-client-id-metadata-document-03",
@@ -809,7 +809,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "wg-draft",
     standing:
-      "OAuth working group document. Revision -05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. Revision -06 changed the error returned for a subject token that fails validation. The MCP extension pins -04.",
+      "OAuth working group document. Revision -05 limited a token exchange request to one audience and added mutual TLS certificate binding as an alternative to DPoP. Revision -06 changed the error returned for a subject token that fails validation.",
     version: {
       label: "-06",
       name: "draft-ietf-oauth-identity-assertion-authz-grant-06",
@@ -1407,7 +1407,7 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "final",
     standing:
-      "Current revision 2026-07-28. It requires OAuth 2.1, citing draft -13, and recommends Client ID Metadata Documents, citing draft -00. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
+      "Current revision 2026-07-28. It requires OAuth 2.1 and recommends Client ID Metadata Documents. Earlier revisions: 2025-03-26, 2025-06-18, 2025-11-25. The next release is targeted for March 30, 2027, as version 2027-03-30. MCP is a Linux Foundation project hosted by the Agentic AI Foundation.",
     version: {
       label: "2026-07-28",
       url: "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
@@ -1421,6 +1421,11 @@ export const events: HistoryEvent[] = [
     recorded: BASELINE,
     status: "final",
     standing: "Official extension, stable at revision 2026-07-28.",
+    version: {
+      label: "2026-07-28",
+      url: "https://github.com/modelcontextprotocol/ext-auth/blob/main/specification/stable/enterprise-managed-authorization/2026-07-28/enterprise-managed-authorization.mdx",
+      date: "2026-10-23",
+    },
   },
   {
     entry: "mcp-client-credentials",
@@ -1811,6 +1816,51 @@ export const events: HistoryEvent[] = [
       label: "1.0",
       url: "https://github.com/cosai-oasis/ws4-secure-design-agentic-systems",
       date: "2026-03-20",
+    },
+  },
+
+  /* ───────────── Recorded 20 November 2026 ───────────── */
+  // Earlier revisions that a published specification cites, recorded so that
+  // the citation has something to name. See citations.ts.
+  {
+    entry: "oauth-2-1",
+    kind: "version",
+    date: "2025-05-28",
+    recorded: "2026-11-20",
+    summary: "Revision -13, the one MCP 2026-07-28 cites.",
+    source: history("draft-ietf-oauth-v2-1"),
+    version: {
+      label: "-13",
+      name: "draft-ietf-oauth-v2-1-13",
+      url: archive("draft-ietf-oauth-v2-1-13"),
+    },
+  },
+  {
+    entry: "cimd",
+    kind: "version",
+    date: "2025-10-08",
+    recorded: "2026-11-20",
+    summary:
+      "Revision -00, its first as an OAuth working group document, and the one MCP 2026-07-28 cites.",
+    source: history("draft-ietf-oauth-client-id-metadata-document"),
+    version: {
+      label: "-00",
+      name: "draft-ietf-oauth-client-id-metadata-document-00",
+      url: archive("draft-ietf-oauth-client-id-metadata-document-00"),
+    },
+  },
+  {
+    entry: "id-jag",
+    kind: "version",
+    date: "2026-05-21",
+    recorded: "2026-11-20",
+    summary:
+      "Revision -04, the one MCP’s Enterprise-Managed Authorization extension cites.",
+    source: history("draft-ietf-oauth-identity-assertion-authz-grant"),
+    version: {
+      label: "-04",
+      name: "draft-ietf-oauth-identity-assertion-authz-grant-04",
+      url: archive("draft-ietf-oauth-identity-assertion-authz-grant-04"),
     },
   },
 ];

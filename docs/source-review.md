@@ -99,7 +99,17 @@ And the specifications that publish dated or numbered revisions:
 
 ### What one specification cites of another
 
-A published specification pins the draft revision it was written against. The site states both numbers, so either moving makes it stale.
+A published specification is written against a revision of each document it relies on, and that revision is often not the latest. `src/data/history/citations.ts` holds each such citation, read in the citing document, from one version to another. The tracker shows them on both entries, and works out from the log whether the revision cited is still the current one. List them with:
+
+```bash
+npm run standards:citations
+```
+
+- **A citation of an earlier revision.** Read the citing document again: has it moved to a later revision? Then read what changed between the two revisions, and check that the site says what differs where it matters.
+- **A new version of a citing document** is a new citation, from that version. Leave the old one: it is still what that version cites.
+- **A citation to a revision the log does not have** is refused by `npm test`. Record the event that published the revision, with its date and its own address.
+
+The flow pages still state some of these in their own words, and nothing ties those to the data:
 
 | The site says                                                                                                           | Where                                                                                                                               |
 | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
