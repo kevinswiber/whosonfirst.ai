@@ -420,3 +420,64 @@ describe("header by width", () => {
     assert.equal(got.sideways, 0);
   });
 });
+
+// The six things a reader may be building are a short list. A reader whose own
+// is not on it is told, under the list, that search takes a description.
+describe("building something else", () => {
+  const LINE = ".building-more a";
+
+  test("the line under the list opens search over the page, and gives focus back", async (t) => {
+    const ctx = await site.context({ viewport: { width: 1280, height: 900 } });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/"));
+    const placed = await page.evaluate((sel) => {
+      const list = document.querySelector("ul.building");
+      const line = document.querySelector(sel);
+      return {
+        under:
+          line.getBoundingClientRect().top >=
+          list.getBoundingClientRect().bottom,
+        sameSection: line.closest("section") === list.closest("section"),
+        words: line.closest("p").textContent.replace(/\s+/g, " ").trim(),
+      };
+    }, LINE);
+    assert.deepEqual(placed, {
+      under: true,
+      sameSection: true,
+      words:
+        "Building something else? Describe it in your own words, and search the guide.",
+    });
+    const dialog = page.getByRole("dialog", { name: "Search the guide" });
+    await page.locator(LINE).click();
+    await dialog.waitFor();
+    assert.equal(page.url(), site.url("/"));
+    assert.equal(
+      await dialog
+        .getByRole("searchbox")
+        .evaluate((el) => el === document.activeElement),
+      true,
+    );
+    // what a description looks like is shown before the reader types one
+    assert.equal(await dialog.locator(".search-examples").isVisible(), true);
+    await page.keyboard.press("Escape");
+    await dialog.waitFor({ state: "hidden" });
+    assert.equal(
+      await page.locator(LINE).evaluate((el) => el === document.activeElement),
+      true,
+    );
+  });
+
+  test("without scripts the line leads to the search page", async (t) => {
+    const ctx = await site.context({
+      viewport: { width: 1280, height: 900 },
+      javaScriptEnabled: false,
+    });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/"));
+    await page.locator(LINE).click();
+    await page.getByRole("search").waitFor();
+    assert.equal(page.url(), site.url("/search/"));
+  });
+});
