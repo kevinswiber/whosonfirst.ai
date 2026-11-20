@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { KIND_LABEL } from "../../src/lib/history.ts";
+import { KIND_LABEL, spellDate } from "../../src/lib/history.ts";
 import { faults, kind } from "../support/mermaid.mjs";
 import {
   attr,
@@ -599,14 +599,22 @@ test("the IndexNow key is served from the site's root and holds its own name", (
 // The changelog's feed is read away from the site, in a reader or a service
 // that posts what is new. Each entry says what its event says on the timeline,
 // where the entry leads: the HTML is made from the same text and the same
-// links, and the summary is what happened, with its formatting taken out.
-test("every entry in the changelog's feed says what the timeline says of its event, with what happened in plain text and its kind and document as categories", () => {
+// links, and the summary is what happened, with its formatting taken out. It
+// is dated as the changelog dates it, by when the site recorded the event: a
+// reader puts an entry by its date, and one dated by when the event happened
+// would go among what the reader read long ago.
+test("every entry in the changelog's feed says what the timeline says of its event and is dated as the changelog dates it, with what happened in plain text and its kind and document as categories", () => {
   const feed = file("standards/changes.xml");
   assert.ok(feed, "the build has no /standards/changes.xml");
   const timeline = pageAt("/standards/timeline/").html.replace(
     / data-astro-cid-\w+/g,
     "",
   );
+  const changelog = pageAt("/standards/changes/").html;
+  const day = (entry, element) =>
+    entry.match(
+      new RegExp(`<${element}>(\\d{4}-\\d{2}-\\d{2})T00:00:00Z<`),
+    )?.[1];
   const unxml = (text) =>
     text
       .replaceAll("&lt;", "<")
@@ -662,6 +670,20 @@ test("every entry in the changelog's feed says what the timeline says of its eve
       );
     if (content.some((line) => /href="(?!https:\/\/)/.test(line)))
       wrong.push(`${anchor}: its content has a link that is not given in full`);
+
+    // the timeline gives the day it was recorded, and the day of a correction
+    const recorded = meta.match(/ · Recorded here (.+?)(?: · |$)/)?.[1];
+    const correction = meta.match(/ · Corrected (.+)$/)?.[1];
+    const published = day(entry, "published");
+    const updated = day(entry, "updated");
+    if (!published || spellDate(published) !== recorded)
+      wrong.push(`${anchor}: published ${published}, but recorded ${recorded}`);
+    else if (!changelog.includes(`id="g-${published}"`))
+      wrong.push(`${anchor}: the changelog has no day ${published}`);
+    if (!updated || spellDate(updated) !== (correction ?? recorded))
+      wrong.push(
+        `${anchor}: updated ${updated}, but last changed ${correction ?? recorded}`,
+      );
 
     const summary = entry.match(/<summary>([^<]*)<\/summary>/)?.[1];
     if (summary === undefined || unxml(summary) !== textOf(said))

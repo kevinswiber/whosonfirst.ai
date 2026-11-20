@@ -580,8 +580,11 @@ export const eventAnchor = (id: string) => id.replaceAll("/", "-");
 
 /**
  * The changelog as an Atom feed (RFC 4287): an entry for each event, newest
- * recording first. An entry's `updated` is the day the site recorded the event,
- * or corrected it, and `published` the day it happened where that is a day.
+ * recording first. An entry is the site's record of an event, so it is dated as
+ * the changelog dates it: `published` is the day the site recorded the event,
+ * and `updated` that day or the day it was corrected. When the event happened
+ * can be long before, and is in the entry's content. Dating an entry by that
+ * would put something new among what a reader read long ago (RFC 4287, 4.2.9).
  * Its id is made from the event's name, so it stays the same as the log grows.
  *
  * An entry's `content` is the event as the timeline shows it, in HTML: when it
@@ -639,10 +642,8 @@ export const feedOf = (
       "  <entry>",
       `    <id>tag:${host},2026:standards/${xml(e.id)}</id>`,
       `    <title>${xml(`${label}: ${about}`)}</title>`,
+      `    <published>${at(e.recorded)}</published>`,
       `    <updated>${at(changed(e))}</updated>`,
-      ...(e.date.length === 10
-        ? [`    <published>${at(e.date)}</published>`]
-        : []),
       `    <link rel="alternate" type="text/html" href="${xml(`${origin}/standards/timeline/#${eventAnchor(e.id)}`)}"/>`,
       ...(e.source
         ? [`    <link rel="related" href="${xml(e.source)}"/>`]

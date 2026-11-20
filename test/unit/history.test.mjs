@@ -432,10 +432,13 @@ test("the feed has an entry for each event, newest recording first, and none for
     "2026-11-21T00:00:00Z",
     "2026-11-11T00:00:00Z",
   ]);
-  // only an event dated to a day says when it happened
+  // an entry is published the day the site recorded its event: not the day
+  // it happened, which may be long before, and a month for the late one.
+  // A correction changes when it was updated, not when it was published.
   assert.deepEqual(all(/<published>([^<]+)</g), [
-    "2026-11-20T00:00:00Z",
-    "2026-10-30T00:00:00Z",
+    "2026-11-12T00:00:00Z",
+    "2026-11-21T00:00:00Z",
+    "2026-11-11T00:00:00Z",
   ]);
   assert.match(feed, /<title>New version: Doc a<\/title>/);
   assert.match(
