@@ -40,17 +40,19 @@ test("every entry has its status from the log, and names none of its own", () =>
     assert.equal(s.status, currentOf(history, s.id).status, s.id);
 });
 
-test("a draft's status line opens with its revision and month, and an RFC's with its month", () => {
+test("a draft's status line opens with its name, as the IETF writes it, and its month, and an RFC's with its month", () => {
   const byId = Object.fromEntries(standards.map((s) => [s.id, s]));
   assert.match(
     byId["oauth-2-1"].detail,
-    /^Revision -\d+, [A-Z][a-z]+ \d{4}\. /,
+    /^draft-ietf-oauth-v2-1-\d+, [A-Z][a-z]+ \d{4}\. /,
   );
   assert.equal(byId.rfc7636.detail, "September 2015.");
   for (const s of standards) {
     const version = currentOf(history, s.id).version;
-    if (/^-\d+$/.test(version?.label ?? ""))
-      assert.ok(s.detail.startsWith(`Revision ${version.label}, `), s.id);
+    if (!/^-\d+$/.test(version?.label ?? "")) continue;
+    // the name is the draft's own, and ends with the revision the log calls current
+    assert.equal(version.name, `${s.ref}${version.label}`, s.id);
+    assert.ok(s.detail.startsWith(`${version.name}, `), s.id);
   }
 });
 
@@ -273,6 +275,14 @@ test("the status line is the version, where the document stands, and the entry's
   assert.equal(
     statusLine(draft, "It would be the first."),
     "Revision -03, November 2026. In last call. It would be the first.",
+  );
+  // a draft with its name in the log is called by it
+  assert.equal(
+    statusLine({
+      ...draft,
+      version: { ...draft.version, name: "draft-example-a-03" },
+    }),
+    "draft-example-a-03, November 2026. In last call.",
   );
   const rfc = {
     status: "rfc",

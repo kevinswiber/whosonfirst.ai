@@ -253,14 +253,16 @@ const monthAndYear = (date: string) =>
 
 /**
  * What the tracker says of a version by itself, for the two kinds whose
- * wording is always the same: an IETF draft's revision and month, and an
- * RFC's month. Any other version is named by the entry's `standing`, in its
- * publisher's words, so an event that publishes one states a new `standing`.
+ * wording is always the same: an IETF draft's name and month, and an RFC's
+ * month. A draft is named as the IETF names it, in full, revision and all:
+ * "draft-ietf-oauth-v2-1-17". Any other version is named by the entry's
+ * `standing`, in its publisher's words, so an event that publishes one states
+ * a new `standing`.
  */
 export const versionLine = (version: KnownVersion | undefined) => {
   if (!version) return "";
   if (DRAFT_REVISION.test(version.label))
-    return `Revision ${version.label}, ${monthAndYear(version.date)}.`;
+    return `${version.name ?? `Revision ${version.label}`}, ${monthAndYear(version.date)}.`;
   if (RFC_NUMBER.test(version.label)) return `${monthAndYear(version.date)}.`;
   return "";
 };
