@@ -369,6 +369,27 @@ test("the timeline is by the month things happened, and the changelog by the day
   assert.equal(spellDate("2026-10"), "October 2026");
 });
 
+const ORIGIN = "https://whosonfirst.ai";
+// The site formats an event's text with inline() in src/lib/md.ts, which reads
+// the glossary and the tracker and is not loaded here. This stands in for it:
+// it escapes the text and makes code spans and links, as inline() does.
+// test/build/forms.test.mjs reads the feed the site is built with.
+const format = (text) =>
+  text
+    .replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    )
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+// A piece of the feed as a reader has it once it has read the XML.
+const unxml = (text) =>
+  text
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&");
+
 test("the feed has an entry for each event, newest recording first, and none for a baseline", () => {
   const log = [
     event({
@@ -393,7 +414,7 @@ test("the feed has an entry for each event, newest recording first, and none for
       corrected: { on: "2026-11-25", note: "The month." },
     }),
   ];
-  const feed = feedOf(log, "https://whosonfirst.ai", (id) => `Doc ${id}`);
+  const feed = feedOf(log, ORIGIN, (id) => `Doc ${id}`, format);
   const all = (pattern) => [...feed.matchAll(pattern)].map((m) => m[1]);
   assert.deepEqual(all(/<entry>\s*<id>([^<]+)<\/id>/g), [
     "tag:whosonfirst.ai,2026:standards/a/2026-11/process",
@@ -421,11 +442,76 @@ test("the feed has an entry for each event, newest recording first, and none for
     feed,
     /href="https:\/\/whosonfirst\.ai\/standards\/timeline\/#a-2026-11-20-version"/,
   );
-  assert.match(feed, /- One thing\./);
-  assert.match(feed, /Corrected: The month\./);
-  // what an event says is text, and is escaped
-  assert.match(feed, /A &lt;b&gt; &amp; c\./);
+  // what an event says is text: escaped once in its summary, and in its
+  // content once for the HTML and again for the XML
+  assert.match(feed, /<summary>A &lt;b&gt; &amp; c\.<\/summary>/);
+  assert.match(feed, /&lt;p&gt;A &amp;lt;b&amp;gt; &amp;amp; c\.&lt;\/p&gt;/);
   assert.ok(!feed.includes("<b>"));
+});
+
+test("a feed entry is the event as the timeline gives it, in HTML, with what happened in plain text and its kind and document as categories", () => {
+  const log = [
+    base,
+    event({
+      kind: "version",
+      date: "2026-11",
+      summary: "Revision `-02`, under [the tracker](/standards/#a) & <b>.",
+      version: {
+        label: "-02",
+        name: "draft-a-02",
+        url: "https://example.org/a-02",
+      },
+      changes: ["Adds `x`."],
+      changesSource: "https://example.org/diff",
+      corrected: { on: "2026-11-25", note: "The <month>." },
+    }),
+    event({
+      entry: undefined,
+      subject: "A meeting",
+      kind: "discussion",
+      summary: "Met.",
+      reported: true,
+    }),
+  ];
+  const feed = feedOf(log, ORIGIN, (id) => `Doc ${id}`, format);
+  const [version, meeting] = feed.split("<entry>").slice(1);
+  const content = (entry) =>
+    unxml(entry.match(/<content type="html">([^<]*)<\/content>/)[1]);
+  const summary = (entry) =>
+    unxml(entry.match(/<summary>([^<]*)<\/summary>/)[1]);
+  const categories = (entry) =>
+    [...entry.matchAll(/<category ([^>]*)\/>/g)].map((m) => m[1]);
+
+  // when it happened, what, what changed, the correction and the links, with
+  // a link on the site given in full: the feed is read away from it
+  assert.equal(
+    content(version),
+    [
+      "<p>Happened November 2026</p>",
+      '<p>Revision <code>-02</code>, under <a href="https://whosonfirst.ai/standards/#a">the tracker</a> &amp; &lt;b&gt;.</p>',
+      "<ul><li>Adds <code>x</code>.</li></ul>",
+      "<p>Corrected: The &lt;month&gt;.</p>",
+      '<p><a href="https://example.org/history">Source</a> · <a href="https://example.org/diff">What changed</a> · <a href="https://example.org/a-02">draft-a-02</a></p>',
+    ].join("\n"),
+  );
+  assert.match(
+    content(meeting),
+    /<p><a href="https:\/\/example\.org\/history">Reported by this source<\/a><\/p>$/,
+  );
+  // what happened alone, with no formatting, for a service that posts a line
+  assert.equal(summary(version), "Revision -02, under the tracker & <b>.");
+  assert.equal(summary(meeting), "Met.");
+  // the kind always, and the document where the event is about one
+  assert.deepEqual(categories(version), [
+    'scheme="tag:whosonfirst.ai,2026:standards/kind" term="version" label="New version"',
+    'scheme="tag:whosonfirst.ai,2026:standards/entry" term="a" label="Doc a"',
+  ]);
+  assert.deepEqual(categories(meeting), [
+    'scheme="tag:whosonfirst.ai,2026:standards/kind" term="discussion" label="Discussed"',
+  ]);
+  // the HTML is escaped in the XML, so none of it is an element of the feed
+  for (const tag of ["<p>", "<code>", "<a ", "<ul>", "<b>"])
+    assert.ok(!feed.includes(tag), `the feed has ${tag} unescaped`);
 });
 
 test("what moved in a year is what changed where a document is, and what was marked notable", () => {

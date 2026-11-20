@@ -2,10 +2,11 @@
 // A list of events from the log of the standards' history, in groups: by the
 // month they happened for the timeline, by the day the site recorded them for
 // the changelog. Everything an event has is on the page: nothing waits behind
-// a click.
+// a click. The changelog's feed gives each event the same text and links
+// (feedOf in lib/history.ts).
 import { must } from "../lib/must";
 import { inline } from "../lib/md";
-import { eventAnchor, KIND_LABEL, spellDate } from "../lib/history";
+import { eventAnchor, eventLinks, KIND_LABEL, spellDate } from "../lib/history";
 import type { EventGroup } from "../lib/history";
 import { standards } from "../data/standards";
 
@@ -50,19 +51,12 @@ const entry = (id: string) =>
                 )}
                 {corrected && <p>Corrected: {e.corrected!.note}</p>}
                 <p class="hl-meta">
-                  <a href={e.source}>{e.reported ? "Reported by this source" : "Source"}</a>
-                  {e.changesSource && e.changesSource !== e.source && (
+                  {eventLinks(e).map((link, at) => (
                     <>
-                      {" · "}
-                      <a href={e.changesSource}>What changed</a>
+                      {at > 0 && " · "}
+                      <a href={link.href}>{link.text}</a>
                     </>
-                  )}
-                  {e.version && (
-                    <>
-                      {" · "}
-                      <a href={e.version.url}>{e.version.name ?? e.version.label}</a>
-                    </>
-                  )}
+                  ))}
                   {by === "happened" && <>{" · "}Recorded here {spellDate(e.recorded)}</>}
                   {by === "happened" && e.corrected && <>{" · "}Corrected {spellDate(e.corrected.on)}</>}
                 </p>
