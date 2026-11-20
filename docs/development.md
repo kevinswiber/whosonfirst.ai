@@ -369,7 +369,7 @@ The conversion knows the site's components by class name: which are controls (`C
 
 The search link opens `/search/`. Submitting a question sends one same-origin POST to `/api/search/query`. The search Worker returns ranked passages with their source links. A native form submission receives an HTML page, and the enhanced form requests JSON. Typing in a directory filter still narrows that page in the browser.
 
-Typing on the search page shows up to five quick matches from a small directory of page names, terms, identifiers and evidence entries. The browser loads the directory from `/search/quick-matches.json` and matches subsequent edits locally. Enter or either full-search button submits the current text to the search Worker. To preview the generated directory locally, build the site and serve its built assets.
+Typing on the search page shows up to five quick matches from a small directory of page names, terms, identifiers and evidence entries. The browser loads the directory from `/search/quick-matches.json` and matches subsequent edits locally. Enter or either “Search the whole guide” button submits the current text to the search Worker. Choosing a “Try a search” example submits that example immediately. To preview the generated directory locally, build the site and serve its built assets.
 
 The Astro build extracts passages from the public reading pages into `.astro/search/manifest.json`. Each key identifies its location and content. The upload script sends the corresponding Markdown documents to Cloudflare AI Search and waits for indexing. The separate Worker bundles the same manifest, accepts only keys present in it, and uses its own titles, links and excerpts for the results. An exact RFC number gets its standard’s page first.
 

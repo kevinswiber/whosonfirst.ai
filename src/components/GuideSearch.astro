@@ -13,13 +13,13 @@ const examples = [
       <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-privacy" />
       <button class="btn primary" type="submit">Search the whole guide</button>
     </div>
-    <p id="search-privacy">Quick matches run in your browser. A full search sends your question to Cloudflare to find related passages.</p>
+    <p id="search-privacy">Quick matches run in your browser. Searching the whole guide sends your question to Cloudflare.</p>
   </form>
   <section class="quick-matches" aria-labelledby="quick-matches-title" hidden>
     <h2 id="quick-matches-title">Quick matches</h2>
     <p class="quick-count" aria-live="polite"></p>
     <ul></ul>
-    <button class="btn ghost" type="submit" form="guide-search-form">Search all passages</button>
+    <button class="btn ghost" type="submit" form="guide-search-form">Search the whole guide</button>
   </section>
   <section class="search-examples" aria-labelledby="search-examples-title" hidden>
     <h2 id="search-examples-title">Try a search</h2>
@@ -106,9 +106,9 @@ const examples = [
         const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
         if (!button) return;
         input.value = button.dataset.query!;
-        void showQuick();
         input.setCustomValidity('');
         input.focus();
+        form.requestSubmit();
       });
       let pending: AbortController | undefined;
 
@@ -179,8 +179,8 @@ const examples = [
           const count = rows.childElementCount;
           results.replaceChildren(rows);
           status.textContent = count === 0
-            ? 'No matching passages. Try describing whose access the agent needs, or try a shorter phrase.'
-            : `${count} matching ${count === 1 ? 'passage' : 'passages'} for “${query}”.`;
+            ? 'No results found. Try describing whose access the agent needs, or try a shorter phrase.'
+            : `${count} ${count === 1 ? 'result' : 'results'} for “${query}”.`;
         } catch {
           if (pending === request) status.textContent = 'Search is unavailable. Try again, or browse the guide.';
         } finally {
