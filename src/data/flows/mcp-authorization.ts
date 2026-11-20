@@ -1,3 +1,4 @@
+import { cited, current } from "../history/says.ts";
 import type { Flow } from "../types";
 
 export const mcpAuthorization: Flow = {
@@ -286,7 +287,7 @@ Mcp-Name: search_files
   basis: ["mcp-authorization"],
   roles: {
     "mcp-authorization": "required", // the stated basis: revision 2026-07-28
-    "oauth-2-1": "required", // the MCP revision requires it, and cites draft -13
+    "oauth-2-1": "required", // the MCP revision requires it, at the revision in history/citations.ts
     cimd: "required", // how the client is identified in steps 4 to 8
     rfc9728: "required", // steps 2 and 3
     rfc8414: "required", // step 4, as drawn
@@ -356,7 +357,7 @@ If your server has to call something else for the user, it gets a token of its o
   notes: [
     {
       title: "Why this flow is rated emerging",
-      body: `The 2026-07-28 revision is published and current, but two things this page draws rest on IETF working-group drafts. The revision requires authorization servers to implement OAuth 2.1 and cites draft -13; the current draft is -17. It recommends Client ID Metadata Documents, which steps 4 to 8 use, and cites draft -00; the current draft is -03. Both current drafts require the authorization server to send \`iss\`, which the revision only recommends (step 9). Either draft can still change. The rating describes those dependencies. It is not a judgment on how safe the flow is.`,
+      body: `The 2026-07-28 revision is published and current, but two things this page draws rest on IETF working-group drafts. The revision requires authorization servers to implement OAuth 2.1 and cites ${cited("mcp-authorization@2026-07-28", "oauth-2-1")}; the current draft is ${current("oauth-2-1")}. It recommends Client ID Metadata Documents, which steps 4 to 8 use, and cites ${cited("mcp-authorization@2026-07-28", "cimd")}; the current draft is ${current("cimd")}. Both current drafts require the authorization server to send \`iss\`, which the revision only recommends (step 9). Either draft can still change. The rating describes those dependencies. It is not a judgment on how safe the flow is.`,
     },
     {
       title: "How the specification got here",

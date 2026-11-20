@@ -1,3 +1,4 @@
+import { current, currentDate } from "../history/says.ts";
 import type { Flow } from "../types";
 
 export const authorizationCodePkce: Flow = {
@@ -288,7 +289,7 @@ grant_type=refresh_token
     },
     {
       title: "How OAuth 2.1 relates",
-      body: `OAuth 2.1 (\`draft-ietf-oauth-v2-1\`) is an Internet-Draft of the IETF OAuth working group, at revision -17 dated October 31, 2026. It is not an RFC. It gathers RFC 6749, RFC 6750, RFC 7636, RFC 8252, RFC 9700 and RFC 10017 into one document and changes some behavior as it does.
+      body: `OAuth 2.1 is an Internet-Draft of the IETF OAuth working group, now ${current("oauth-2-1")}, dated ${currentDate("oauth-2-1")}. It is not an RFC. It gathers RFC 6749, RFC 6750, RFC 7636, RFC 8252, RFC 9700 and RFC 10017 into one document and changes some behavior as it does.
 
 Three of its changes touch this page. A token request no longer carries \`redirect_uri\`, the PKCE \`plain\` method is removed, and the authorization server must send \`iss\` in its response. This page shows the published RFCs, so step 7 still sends \`redirect_uri\`, and step 6 and the part on hosted apps allow for a server that sends no \`iss\`. A flow built on the draft, such as [MCP authorization](/flows/mcp-authorization/), leaves \`redirect_uri\` out.`,
     },
