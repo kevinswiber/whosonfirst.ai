@@ -575,6 +575,18 @@ const textOf = (html: string) =>
     .replaceAll("&quot;", '"')
     .replaceAll("&amp;", "&");
 
+/**
+ * A time written so that it falls on `day`: as it is, where it does in its
+ * own zone, or in UTC, where it does there. A time that falls on the day in
+ * neither gives nothing: it is not a time on that day.
+ */
+export const timeOnDay = (time: string | undefined, day: string) => {
+  if (!time || Number.isNaN(Date.parse(time))) return undefined;
+  if (time.slice(0, 10) === day) return time;
+  const utc = new Date(time).toISOString().replace(/\.\d{3}Z$/, "Z");
+  return utc.slice(0, 10) === day ? utc : undefined;
+};
+
 /** An event's place on the timeline, which is where a feed entry leads. */
 export const eventAnchor = (id: string) => id.replaceAll("/", "-");
 
@@ -587,6 +599,12 @@ export const eventAnchor = (id: string) => id.replaceAll("/", "-");
  * would put something new among what a reader read long ago (RFC 4287, 4.2.9).
  * Its id is made from the event's name, so it stays the same as the log grows.
  *
+ * Each date has the time the event reached the site, and the time its
+ * correction did, from `times`, where that time falls on the day: so entries
+ * recorded the same day are in the order they went on the site. Where there is
+ * no such time, the date is the start of its day in UTC. A correction is never
+ * dated before what it corrects.
+ *
  * An entry's `content` is the event as the timeline shows it, in HTML: when it
  * happened, what happened, what changed, a correction, and its links. Its
  * `summary` is what happened alone, as plain text, for a service that posts a
@@ -594,31 +612,47 @@ export const eventAnchor = (id: string) => id.replaceAll("/", "-");
  * the tracker entry it is about, so that a reader or a script can keep to some.
  *
  * `origin` is the site's address with no slash at its end, `names` gives the
- * name of the document an entry is about, and `format` turns the inline
- * Markdown an event is written in into HTML, as the timeline does.
+ * name of the document an entry is about, `format` turns the inline
+ * Markdown an event is written in into HTML, as the timeline does, and
+ * `times` gives an event's times by its name, where they are known.
  */
 export const feedOf = (
   events: HistoryEvent[],
   origin: string,
   names: (entry: string) => string,
   format: (text: string) => string,
+  times: (
+    id: string,
+  ) => { recorded?: string; corrected?: string } | undefined = () => undefined,
 ): string => {
   const at = (day: string) => `${day}T00:00:00Z`;
   // a feed is read away from the site, so an address on it is given in full
   const absolute = (html: string) =>
     html.replaceAll('href="/', `href="${origin}/`);
-  const changed = (e: NamedEvent) => e.corrected?.on ?? e.recorded;
+  const dated = (e: NamedEvent) => {
+    const time = times(e.id);
+    const published = timeOnDay(time?.recorded, e.recorded) ?? at(e.recorded);
+    const fixed = e.corrected
+      ? (timeOnDay(time?.corrected, e.corrected.on) ?? at(e.corrected.on))
+      : published;
+    const updated =
+      Date.parse(fixed) < Date.parse(published) ? published : fixed;
+    return { published, updated };
+  };
   const entries = happenings(events)
-    .map((event, order) => ({ event, order }))
+    .map((event, order) => ({ event, order, ...dated(event) }))
     .sort(
       (a, b) =>
-        changed(b.event).localeCompare(changed(a.event)) || b.order - a.order,
-    )
-    .map(({ event }) => event);
+        Date.parse(b.updated) - Date.parse(a.updated) || b.order - a.order,
+    );
   const host = new URL(origin).host;
   /** What a category's term is one of: the kinds of event, or the tracker's entries. */
   const scheme = (of: "kind" | "entry") => `tag:${host},2026:standards/${of}`;
-  const entry = (e: NamedEvent) => {
+  const entry = ({
+    event: e,
+    published,
+    updated,
+  }: (typeof entries)[number]) => {
     const about = e.entry ? names(e.entry) : (e.subject ?? "");
     const label = KIND_LABEL[e.kind as keyof typeof KIND_LABEL];
     const summary = e.summary ? absolute(format(e.summary)) : "";
@@ -642,8 +676,8 @@ export const feedOf = (
       "  <entry>",
       `    <id>tag:${host},2026:standards/${xml(e.id)}</id>`,
       `    <title>${xml(`${label}: ${about}`)}</title>`,
-      `    <published>${at(e.recorded)}</published>`,
-      `    <updated>${at(changed(e))}</updated>`,
+      `    <published>${xml(published)}</published>`,
+      `    <updated>${xml(updated)}</updated>`,
       `    <link rel="alternate" type="text/html" href="${xml(`${origin}/standards/timeline/#${eventAnchor(e.id)}`)}"/>`,
       ...(e.source
         ? [`    <link rel="related" href="${xml(e.source)}"/>`]
@@ -659,14 +693,14 @@ export const feedOf = (
       "  </entry>",
     ].join("\n");
   };
-  const updated = entries.length ? changed(entries[0]) : recordBegan(events);
+  const updated = entries.length ? entries[0].updated : at(recordBegan(events));
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<feed xmlns="http://www.w3.org/2005/Atom">',
     `  <id>${xml(`${origin}${FEED.href}`)}</id>`,
     `  <title>${xml(`${FEED.title}: Who’s on First`)}</title>`,
     "  <subtitle>What has happened to the standards for agent authentication and authorization, as this site records it.</subtitle>",
-    `  <updated>${at(updated)}</updated>`,
+    `  <updated>${xml(updated)}</updated>`,
     "  <author><name>Who’s on First</name></author>",
     `  <link rel="self" type="application/atom+xml" href="${xml(`${origin}${FEED.href}`)}"/>`,
     `  <link rel="alternate" type="text/html" href="${xml(`${origin}/standards/changes/`)}"/>`,

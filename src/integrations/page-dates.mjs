@@ -44,6 +44,14 @@
  * two differences: it is a directory with a file for each month, and an entry
  * there is every event with that entry's name. A standard's date from the log
  * is under `<directory>/#<name>`, the latest from any month.
+ *
+ * The module also gives `events`: for each event of the log, by the name
+ * `eventIds` in src/lib/history.ts gives it, when it reached the line of
+ * commits being built, and when its correction did. That is read along first
+ * parents only, so on main it is the time of the merge that brought the event
+ * in: when it went on the site, not when its branch was written. The
+ * changelog's feed gives each entry that time, where it falls on the day the
+ * event says it was recorded. A shallow clone gives no events either.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -238,6 +246,66 @@ export function entryFirsts(versions, key) {
 }
 
 /**
+ * The events of one month of a log, by the name `eventIds` in
+ * src/lib/history.ts gives them: `<entry>/<date>/<kind>`, with "field" for an
+ * event about no entry. Each has the day of its correction, where it has one.
+ * A name two events share is left out, since which is which cannot be told.
+ */
+export function eventsOf(text) {
+  const events = new Map();
+  const shared = new Set();
+  const field = (event, name) =>
+    new RegExp(`^ {4}${name}:\\s*(["'\`])(.*?)\\1`, "m").exec(event)?.[2];
+  const lines = text.split("\n");
+  let open;
+  lines.forEach((line, i) => {
+    if (/^ {2}\{\s*$/.test(line)) open = i;
+    else if (/^ {2}\},?\s*$/.test(line) && open !== undefined) {
+      const event = lines.slice(open, i + 1).join("\n");
+      open = undefined;
+      const date = field(event, "date");
+      const kind = field(event, "kind");
+      if (!date || !kind) return;
+      const name = `${field(event, "entry") ?? "field"}/${date}/${kind}`;
+      if (events.has(name)) shared.add(name);
+      const corrected = /^ {4}corrected:\s*\{\s*on:\s*(["'`])(.*?)\1/m.exec(
+        event,
+      )?.[2];
+      events.set(name, corrected ? { corrected } : {});
+    }
+  });
+  for (const name of shared) events.delete(name);
+  return events;
+}
+
+/**
+ * When each event of a month of a log reached the line of commits the build
+ * is on. `versions` is the month's file at each commit of that line that
+ * changed it, newest first, as `{ date, text }`. An event's `recorded` is the
+ * oldest commit since which it has been in the file, and `corrected`, for an
+ * event that has a correction, the oldest since which it has had that one.
+ */
+export function eventTimes(versions) {
+  const times = {};
+  const read = versions.map((version) => eventsOf(version.text));
+  if (read.length === 0) return times;
+  for (const [name, now] of read[0]) {
+    const time = {};
+    let correcting = now.corrected !== undefined;
+    for (const [at, events] of read.entries()) {
+      const then = events.get(name);
+      if (!then) break;
+      time.recorded = versions[at].date;
+      if (correcting && then.corrected === now.corrected)
+        time.corrected = versions[at].date;
+      else correcting = false;
+    }
+    times[name] = time;
+  }
+  return times;
+}
+
+/**
  * The map for the repository at `root`, and a sentence on what was found.
  * `env` is the build's environment, which says whether this is the deployed build.
  */
@@ -265,6 +333,7 @@ export function historyDates(root, env = process.env) {
     if (shallow())
       return {
         dates: {},
+        events: {},
         found:
           env.WORKERS_CI === "1"
             ? "the clone is shallow and the rest of its history could not be fetched: pages carry no date"
@@ -315,13 +384,51 @@ export function historyDates(root, env = process.env) {
         }
       }
     }
+    // When each event reached the line of commits being built: on main, the
+    // merge that brought it in. An event's name is unique in the log, so one
+    // that two months share is timed in neither.
+    const events = {};
+    const seen = new Set();
+    for (const { dir } of LOGS) {
+      const months = existsSync(join(root, dir))
+        ? readdirSync(join(root, dir)).filter((name) => MONTH_FILE.test(name))
+        : [];
+      for (const month of months.sort()) {
+        const file = `${dir}/${month}`;
+        const versions = git(
+          "log",
+          "--first-parent",
+          "--format=%H %cI",
+          "HEAD",
+          "--",
+          file,
+        )
+          .split("\n")
+          .filter(Boolean)
+          .map((line) => line.split(" "))
+          .map(([hash, date]) => {
+            try {
+              return { date, text: git("show", `${hash}:${file}`) };
+            } catch {
+              return { date, text: "" };
+            }
+          });
+        for (const [name, time] of Object.entries(eventTimes(versions))) {
+          if (seen.has(name)) delete events[name];
+          else events[name] = time;
+          seen.add(name);
+        }
+      }
+    }
     return {
       dates,
-      found: `${files} files and ${Object.keys(dates).length - files} entries dated from the history${fetched}`,
+      events,
+      found: `${files} files and ${Object.keys(dates).length - files} entries dated from the history${fetched}; ${Object.keys(events).length} events of the log timed by when they reached this line of commits`,
     };
   } catch {
     return {
       dates: {},
+      events: {},
       found: "there is no history to read here: pages carry no date",
     };
   }
@@ -332,7 +439,9 @@ export default function pageDates() {
     name: "page-dates",
     hooks: {
       "astro:config:setup": ({ config, updateConfig, logger }) => {
-        const { dates, found } = historyDates(fileURLToPath(config.root));
+        const { dates, events, found } = historyDates(
+          fileURLToPath(config.root),
+        );
         logger.info(found);
         updateConfig({
           vite: {
@@ -342,7 +451,7 @@ export default function pageDates() {
                 resolveId: (id) => (id === ID ? `\0${ID}` : undefined),
                 load: (id) =>
                   id === `\0${ID}`
-                    ? `export default ${JSON.stringify(dates)};`
+                    ? `export default ${JSON.stringify(dates)};\nexport const events = ${JSON.stringify(events)};`
                     : undefined,
               },
             ],
