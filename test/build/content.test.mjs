@@ -365,3 +365,30 @@ test("every page's footer links to the comparisons, and a lesson that leads to b
   }
   assert.deepEqual(some(wrong), []);
 });
+
+// The timeline reaches back before the day recording began, and says so under
+// its oldest entry, with dates read from the log: it does not claim that
+// nothing earlier is there.
+test("the timeline says where its record is incomplete, under its oldest entry", async () => {
+  const { history } = await import("../../src/data/history/index.ts");
+  const { recordBegan, spellDate, timeline } = await import(
+    "../../src/lib/history.ts"
+  );
+  const groups = timeline(history);
+  const html = main(pageAt("/standards/timeline/"));
+  const text = words(html);
+  assert.ok(
+    !text.includes("most of what came before is not here"),
+    "the page opening says the record began later than its oldest entry",
+  );
+  const began = spellDate(recordBegan(history));
+  const note = text.indexOf(
+    `The timeline is not complete before this point. This site began recording on ${began}`,
+  );
+  assert.ok(note >= 0, "the note under the oldest entry is missing");
+  const oldest = html.lastIndexOf(`id="g-${groups.at(-1).key}"`);
+  assert.ok(
+    oldest >= 0 && html.indexOf("tl-end") > oldest,
+    "the note is not after the oldest group",
+  );
+});
