@@ -4,6 +4,8 @@ Cloudflare Workers Builds publishes the guide. The optional GitHub Actions workf
 
 ## Set up once
 
+The search Worker uses standard invocation telemetry. It receives the question in the POST body and emits no application logs. Review account-level logging and retention separately.
+
 1. Keep the primary site on Workers Builds with the production branch set to `main`. Set up the sibling Worker and its narrow same-origin route `whosonfirst.ai/api/search/*` separately in the Cloudflare zone. Leave page handling on the primary Worker. Confirm the namespace binding points at the intended AI Search namespace and the instance has both keyword and vector indexing enabled.
 2. In the public repository create the **search-production** GitHub environment, select `main` as its deployment branch, and use the repository’s existing review and CI policy. The release workflow uses the trusted code merged there. Its triggers are pushes to main and manual dispatches from main in the upstream repository.
 3. Set the environment variable `SEARCH_RATE_NAMESPACE` to an operator-chosen numeric identifier dedicated to this Worker’s rate limiter. Use a different number from other limiters in the same account. The identifier is configuration and does not require another permission or a quota increase. Set it once and reuse it across releases. The limit is 20 submissions per IP per minute per Cloudflare location. Optional environment variables are `SEARCH_WORKER_NAME` (default `whosonfirst-ai-search`), `SEARCH_NAMESPACE` (default `whosonfirst`), and `SEARCH_INSTANCE` (default `whosonfirst-guide`). Use the same values for indexing and retrieval.
