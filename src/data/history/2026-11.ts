@@ -277,12 +277,16 @@ export const events: HistoryEvent[] = [
   {
     entry: "mcp-ema",
     kind: "publication",
-    date: "2026-06-17",
+    date: "2026-06-18",
     recorded: "2026-11-11",
-    summary: "Promoted to stable among MCP’s authorization extensions.",
+    summary:
+      "Promoted to stable among MCP’s authorization extensions, and aligned with revision -04 of the Identity Assertion JWT Authorization Grant. MCP announced it the same day.",
     status: "final",
-    source:
-      "https://github.com/modelcontextprotocol/ext-auth/commits/main/specification/stable",
+    source: "https://github.com/modelcontextprotocol/ext-auth/pull/29",
+    corrected: {
+      on: "2026-11-20",
+      note: "The date was given as June 17, 2026, the day the change was written. It was merged, and announced, on June 18.",
+    },
   },
   {
     entry: "mcp-client-credentials",
