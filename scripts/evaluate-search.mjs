@@ -9,7 +9,7 @@ import {
   catalogFor,
   rankedResults,
   searchRequest,
-} from "../workers/search/search.mjs";
+} from "../workers/search/search.ts";
 
 const { values } = parseArgs({
   options: {

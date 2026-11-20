@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import preview from "../../workers/preview/index.mjs";
+import preview from "../../workers/preview/index.ts";
 
 const output = new URL(
   "../../.cloudflare/output/v1/workers/default/",
@@ -77,8 +77,8 @@ test("same-origin search responses carry the release of the preview's pages", as
   );
   const env = {
     ASSETS: {
-      fetch(url) {
-        assert.equal(url.href, `${origin}/search/preview-catalog.json`);
+      fetch(request) {
+        assert.equal(request.url, `${origin}/search/preview-catalog.json`);
         return new Response(payload);
       },
     },

@@ -43,10 +43,10 @@ const examples = [
 </guide-search>
 
 <script>
+  import type { SearchResult } from "../../workers/search/search.ts";
   import { quickMatches } from "../lib/quick-matches.mjs";
 
   type QuickRecord = { href: string; type: string; title: string; summary: string; aliases: string[] };
-  type Passage = { href: string; type: string; title: string; section: string; excerpt: string };
 
   let catalog: Promise<QuickRecord[]> | undefined;
   function loadCatalog() {
@@ -65,7 +65,7 @@ const examples = [
     return url.origin === location.origin ? url.href : undefined;
   }
 
-  function guideRow(passage: Passage) {
+  function guideRow(passage: SearchResult) {
     const href = siteUrl(passage.href);
     if (!href) return;
     const row = document.createElement('li');
@@ -106,7 +106,7 @@ const examples = [
       const quick = this.querySelector<HTMLElement>('.quick-matches')!;
       const quickList = quick.querySelector('ul')!;
       const quickCount = quick.querySelector<HTMLElement>('.quick-count')!;
-      const cache = new Map<string, Passage[]>();
+      const cache = new Map<string, SearchResult[]>();
       let revision = 0;
       let draft = results.hasAttribute('data-search-submitted') ? input.value.trim().toLowerCase().replace(/\s+/g, ' ') : '';
       let composing = false;
@@ -180,7 +180,7 @@ const examples = [
         }
       };
 
-      const render = (passages: Passage[], query: string) => {
+      const render = (passages: SearchResult[], query: string) => {
         const rows = document.createDocumentFragment();
         for (const passage of passages) {
           const row = guideRow(passage);
@@ -237,7 +237,7 @@ const examples = [
             return;
           }
           if (!response.ok) throw new Error('Search unavailable');
-          const payload = await response.json() as { results: Passage[] };
+          const payload = await response.json() as { results: SearchResult[] };
           if (pending !== request) return;
           render(payload.results, query);
           if (cache.size >= 16) cache.delete(cache.keys().next().value!);

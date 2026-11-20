@@ -12,7 +12,7 @@ if (!rateNamespace || !/^\d+$/.test(rateNamespace))
 export default defineConfig({
   worker: {
     name: process.env.SEARCH_WORKER_NAME ?? "whosonfirst-ai-search",
-    entrypoint: "./index.mjs",
+    entrypoint: "./index.ts",
     compatibilityDate: "2026-11-20",
     workersDev: true,
     previewUrls: false,

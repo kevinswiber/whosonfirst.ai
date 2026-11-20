@@ -3,7 +3,7 @@ import * as astro from "@astrojs/cloudflare/entrypoints/server" with {
 };
 import { bindings, defineConfig } from "cf/config";
 import * as pages from "./src/worker.ts" with { type: "cf-worker" };
-import * as pagesWithSearch from "./workers/preview/index.mjs" with {
+import * as pagesWithSearch from "./workers/preview/index.ts" with {
   type: "cf-worker",
 };
 

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalogFor, validateShell } from "./search.mjs";
+import { catalogFor, validateShell } from "./search.ts";
 
 // Use the same rendered form, passages and response headers for both Workers.
 export function searchSiteData(assets, { records, revision }) {
