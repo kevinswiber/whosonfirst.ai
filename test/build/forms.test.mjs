@@ -611,10 +611,14 @@ test("every entry in the changelog's feed says what the timeline says of its eve
     "",
   );
   const changelog = pageAt("/standards/changes/").html;
-  const day = (entry, element) =>
+  // a date and time as RFC 3339 writes it; the day is the date it is written with
+  const stamp = (entry, element) =>
     entry.match(
-      new RegExp(`<${element}>(\\d{4}-\\d{2}-\\d{2})T00:00:00Z<`),
+      new RegExp(
+        `<${element}>(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2}))<`,
+      ),
     )?.[1];
+  const day = (entry, element) => stamp(entry, element)?.slice(0, 10);
   const unxml = (text) =>
     text
       .replaceAll("&lt;", "<")
@@ -684,6 +688,10 @@ test("every entry in the changelog's feed says what the timeline says of its eve
       wrong.push(
         `${anchor}: updated ${updated}, but last changed ${correction ?? recorded}`,
       );
+    // a time is when the event, or its correction, went on the site
+    const [from, to] = [stamp(entry, "published"), stamp(entry, "updated")];
+    if (from && to && Date.parse(to) < Date.parse(from))
+      wrong.push(`${anchor}: updated ${to}, before it was published ${from}`);
 
     const summary = entry.match(/<summary>([^<]*)<\/summary>/)?.[1];
     if (summary === undefined || unxml(summary) !== textOf(said))

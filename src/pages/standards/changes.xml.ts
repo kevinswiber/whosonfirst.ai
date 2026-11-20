@@ -1,3 +1,4 @@
+import { events } from "virtual:page-dates";
 import type { APIRoute } from "astro";
 import { history } from "../../data/history";
 import { std } from "../../data/standards";
@@ -6,7 +7,8 @@ import { inline } from "../../lib/md";
 
 // The changelog as a feed, written when the site is built and served from this
 // origin: for anyone who follows the tracker in a feed reader. An event's text
-// is formatted as the timeline formats it.
+// is formatted as the timeline formats it, and an entry's dates have the time
+// the repository's history says the event reached the site, where it has one.
 export const GET: APIRoute = ({ site }) => {
   const origin = (site ?? new URL("https://whosonfirst.ai")).origin;
   return new Response(
@@ -15,6 +17,7 @@ export const GET: APIRoute = ({ site }) => {
       origin,
       (id) => std(id).name,
       (text) => inline(text),
+      (id) => events[id],
     ),
     { headers: { "Content-Type": "application/atom+xml; charset=utf-8" } },
   );

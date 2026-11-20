@@ -4,17 +4,21 @@
 import { strict as assert } from "node:assert";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
+import { history } from "../../src/data/history/index.ts";
 import {
   ENTRIES,
   entriesOf,
   entryDates,
   entryFirsts,
+  eventsOf,
+  eventTimes,
   historyDates,
   ignoredRevisions,
   LOGS,
   readLog,
   withoutLayout,
 } from "../../src/integrations/page-dates.mjs";
+import { eventIds } from "../../src/lib/history.ts";
 
 const A = "a".repeat(40);
 const B = "b".repeat(40);
@@ -298,4 +302,96 @@ test("every month of a log is a list this reading can take apart", () => {
       assert.equal(read.split(`${key}:`).length - 1, named, month);
     }
   }
+});
+
+// The changelog's feed gives each entry the time its event reached the site.
+// That is read from each month of the log at the commits along first parents,
+// by the event's name, which is how src/lib/history.ts names it.
+const event = (entry, date, kind, corrected) =>
+  [
+    "  {",
+    ...(entry ? [`    entry: "${entry}",`] : ['    subject: "A meeting",']),
+    `    kind: "${kind}",`,
+    `    date: "${date}",`,
+    "    version: {",
+    '      label: "-02",',
+    '      date: "2026-10",',
+    "    },",
+    ...(corrected
+      ? [
+          "    corrected: {",
+          `      on: "${corrected}",`,
+          '      note: "Put right.",',
+          "    },",
+        ]
+      : []),
+    "  },",
+  ].join("\n");
+const month = (...events) =>
+  `export const events: HistoryEvent[] = [\n${events.join("\n")}\n];`;
+
+test("a month's events are named as the log names them, with the day of a correction, and a name two share is left out", () => {
+  const text = month(
+    event("a", "2026-11-20", "version"),
+    event(undefined, "2026-11", "discussion", "2026-11-25"),
+    event("b", "2026-11-02", "call"),
+    event("b", "2026-11-02", "call"),
+  );
+  // the version's own date, inside it, is not the event's
+  assert.deepEqual(Object.fromEntries(eventsOf(text)), {
+    "a/2026-11-20/version": {},
+    "field/2026-11/discussion": { corrected: "2026-11-25" },
+  });
+});
+
+test("an event is timed by the commit since which it has been in the log, and its correction by the one since which it has had it", () => {
+  const a = (corrected) => event("a", "2026-11-20", "version", corrected);
+  const b = event("b", "2026-11-21", "call");
+  const c = event("c", "2026-11-22", "process");
+  const gone = event("d", "2026-11-19", "process");
+  // newest first, as `git log --first-parent --format=%H %cI` lists them
+  const versions = [
+    { date: "2026-11-26T09:00:00-08:00", text: month(a("2026-11-26"), b, c) },
+    { date: "2026-11-25T10:00:00Z", text: month(a("2026-11-25"), b, c) },
+    { date: "2026-11-22T18:00:00Z", text: month(a(), b, c) },
+    { date: "2026-11-21T10:00:00Z", text: month(a(), c) },
+    { date: "2026-11-20T08:00:00Z", text: month(a(), b, gone) },
+  ];
+  assert.deepEqual(eventTimes(versions), {
+    // in since the first, and its correction as it is now since the newest
+    "a/2026-11-20/version": {
+      recorded: "2026-11-20T08:00:00Z",
+      corrected: "2026-11-26T09:00:00-08:00",
+    },
+    // taken out and put back: it is on the site since it came back
+    "b/2026-11-21/call": { recorded: "2026-11-22T18:00:00Z" },
+    "c/2026-11-22/process": { recorded: "2026-11-21T10:00:00Z" },
+  });
+  assert.deepEqual(eventTimes([]), {});
+});
+
+// A baseline is not in the feed, and is dated by a constant the reading does not follow.
+test("every event in the log the feed carries is one this reading can name, with its correction", () => {
+  const read = new Map();
+  for (const { dir } of LOGS)
+    for (const name of readdirSync(new URL(`../../${dir}/`, import.meta.url)))
+      if (/^\d{4}-\d{2}\.ts$/.test(name))
+        for (const [id, event] of eventsOf(
+          readFileSync(
+            new URL(`../../${dir}/${name}`, import.meta.url),
+            "utf8",
+          ),
+        ))
+          read.set(id, event);
+  const ids = eventIds(history);
+  const missed = history
+    .map((event, at) => ({ id: ids[at], event }))
+    .filter(({ id, event }) => event.kind !== "baseline" && !/-\d+$/.test(id))
+    .filter(
+      ({ id, event }) =>
+        !read.has(id) || read.get(id).corrected !== event.corrected?.on,
+    )
+    .map(({ id }) => id);
+  assert.ok(read.size > 0, "no event was read");
+  assert.deepEqual(missed, []);
 });

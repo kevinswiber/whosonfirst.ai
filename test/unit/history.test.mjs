@@ -20,6 +20,7 @@ import {
   spellDate,
   statusLine,
   timeline,
+  timeOnDay,
   validateCitations,
   validateHistory,
   versionsOf,
@@ -529,6 +530,83 @@ test("a feed entry is the event as the timeline gives it, in HTML, with what hap
   // the HTML is escaped in the XML, so none of it is an element of the feed
   for (const tag of ["<p>", "<code>", "<a ", "<ul>", "<b>"])
     assert.ok(!feed.includes(tag), `the feed has ${tag} unescaped`);
+});
+
+// The feed gives each entry the time its event reached the site, from the
+// repository's history, written so that it falls on the day the changelog
+// gives. src/integrations/page-dates.mjs reads the times.
+test("a time is written to fall on its day, in its own zone or in UTC, or not at all", () => {
+  // a merge in the afternoon in California, on the day it was recorded
+  assert.equal(
+    timeOnDay("2026-11-19T13:23:38-08:00", "2026-11-19"),
+    "2026-11-19T13:23:38-08:00",
+  );
+  // the same evening there is already the next day in UTC
+  assert.equal(
+    timeOnDay("2026-11-19T17:25:33-08:00", "2026-11-20"),
+    "2026-11-20T01:25:33Z",
+  );
+  // the day the log began is not the day an event carried into it was recorded
+  assert.equal(timeOnDay("2026-11-19T22:24:23+00:00", "2026-11-09"), undefined);
+  assert.equal(timeOnDay(undefined, "2026-11-09"), undefined);
+  assert.equal(timeOnDay("soon", "2026-11-09"), undefined);
+});
+
+test("a feed entry has the time its event reached the site where that falls on its day, and the start of the day where not", () => {
+  const on = (kind, date, over = {}) =>
+    event({ kind, date, recorded: "2026-11-20", summary: "A.", ...over });
+  const log = [
+    base,
+    on("version", "2026-11-15"),
+    on("call", "2026-11-16"),
+    on("process", "2026-11-17"),
+    on("approval", "2026-11-18", {
+      corrected: { on: "2026-11-25", note: "Put right." },
+    }),
+    on("discussion", "2026-11-19", {
+      corrected: { on: "2026-11-20", note: "The same day." },
+    }),
+  ];
+  const times = {
+    "a/2026-11-15/version": { recorded: "2026-11-20T15:00:00Z" },
+    "a/2026-11-16/call": { recorded: "2026-11-19T17:25:33-08:00" },
+    "a/2026-11-17/process": { recorded: "2026-11-19T22:24:23+00:00" },
+    "a/2026-11-18/approval": {
+      recorded: "2026-11-20T10:00:00Z",
+      corrected: "2026-11-25T08:00:00-08:00",
+    },
+    "a/2026-11-19/discussion": { recorded: "2026-11-20T12:00:00Z" },
+  };
+  const feed = feedOf(
+    log,
+    ORIGIN,
+    (id) => `Doc ${id}`,
+    format,
+    (id) => times[id],
+  );
+  const entries = [
+    ...feed.matchAll(
+      /<id>tag:[^<]*:standards\/([^<]+)<\/id>[\s\S]*?<published>([^<]+)<\/published>\s*<updated>([^<]+)<\/updated>/g,
+    ),
+  ].map(([, id, published, updated]) => [id, published, updated]);
+  // newest change first, and within a day in the order they went on the site
+  assert.deepEqual(entries, [
+    // corrected days later, at the time the correction went on
+    [
+      "a/2026-11-18/approval",
+      "2026-11-20T10:00:00Z",
+      "2026-11-25T08:00:00-08:00",
+    ],
+    ["a/2026-11-15/version", "2026-11-20T15:00:00Z", "2026-11-20T15:00:00Z"],
+    // corrected the same day at no known time: not before what it corrects
+    ["a/2026-11-19/discussion", "2026-11-20T12:00:00Z", "2026-11-20T12:00:00Z"],
+    // on the day only in UTC
+    ["a/2026-11-16/call", "2026-11-20T01:25:33Z", "2026-11-20T01:25:33Z"],
+    // its only time is on another day, so it has the start of its own
+    ["a/2026-11-17/process", "2026-11-20T00:00:00Z", "2026-11-20T00:00:00Z"],
+  ]);
+  // the feed is as new as its newest change
+  assert.match(feed, /^ {2}<updated>2026-11-25T08:00:00-08:00<\/updated>/m);
 });
 
 test("what moved in a year is what changed where a document is, and what was marked notable", () => {
