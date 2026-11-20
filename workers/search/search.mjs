@@ -35,24 +35,9 @@ export function catalogFor(records) {
 }
 
 export function rankedResults(catalog, query, chunks) {
-  const seen = new Set();
-  const perPage = new Map();
-  const results = [];
+  const records = new Map();
   const add = (record) => {
-    if (!record || results.length >= MAX_RESULTS || seen.has(record.href))
-      return;
-    const page = record.href.split("#")[0];
-    const count = perPage.get(page) ?? 0;
-    if (count >= 2) return;
-    seen.add(record.href);
-    perPage.set(page, count + 1);
-    const { href, type, title, section, text } = record;
-    const passage = text.replace(/\s+/g, " ").trim();
-    const excerpt =
-      passage.length <= 280
-        ? passage
-        : `${passage.slice(0, 279).replace(/\s+\S*$/, "")}…`;
-    results.push({ href, type, title, section, excerpt });
+    if (record && !records.has(record.href)) records.set(record.href, record);
   };
   add(catalog.byRFC.get(rfcNumber(query)));
   for (const { item } of chunks) {
@@ -65,7 +50,43 @@ export function rankedResults(catalog, query, chunks) {
     )
       add(record);
   }
-  return results;
+
+  const candidates = [...records.values()];
+  // A single alphanumeric identifier can have a vector neighbour even when it
+  // never appears in the guide. Allow common punctuation variants such as X.509.
+  if (/^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
+    const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const id = normalize(query);
+    const found = candidates.some((r) =>
+      [r.title, r.section, r.text, r.href, ...r.aliases].some((s) =>
+        normalize(s).includes(id),
+      ),
+    );
+    if (!found) return [];
+  }
+
+  // Show different destinations first. Keep a second relevant passage from
+  // the same page when the search found fewer pages than the list can show.
+  const first = [],
+    second = [];
+  const perPage = new Map();
+  for (const record of candidates) {
+    const page = record.href.split("#")[0];
+    const count = perPage.get(page) ?? 0;
+    if (count === 0) first.push(record);
+    if (count === 1) second.push(record);
+    perPage.set(page, count + 1);
+  }
+  return [...first, ...second]
+    .slice(0, MAX_RESULTS)
+    .map(({ href, type, title, section, text }) => {
+      const passage = text.replace(/\s+/g, " ").trim();
+      const excerpt =
+        passage.length <= 280
+          ? passage
+          : `${passage.slice(0, 279).replace(/\s+\S*$/, "")}…`;
+      return { href, type, title, section, excerpt };
+    });
 }
 
 const tags = {

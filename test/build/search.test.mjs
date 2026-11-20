@@ -65,3 +65,33 @@ test("a definition, RFC, flow step and product's role each lead to their source"
     0,
   );
 });
+
+test("search omits directory prompts but keeps claims and walkthrough context", () => {
+  assert.equal(
+    records.some(({ href }) => /^\/implementations\/[^/#]+\/$/.test(href)),
+    false,
+  );
+  assert.equal(
+    records.some(({ href }) =>
+      /\/(?:flows\/[^/]+\/#related|compare\/[^/]+\/#full|learn\/[^/]+\/#deeper)$/.test(
+        href,
+      ),
+    ),
+    false,
+  );
+  assert.equal(
+    records.some(({ text }) =>
+      text.includes(
+        "Each step shows the message and who holds which credential afterward.",
+      ),
+    ),
+    false,
+  );
+  assert.ok(records.some(({ href }) => href === "/flows/ciba/#step-4"));
+  assert.ok(
+    records.some(({ href }) => href === "/flows/agent-payments/#walkthrough"),
+  );
+  assert.ok(
+    records.some(({ href }) => href === "/implementations/dpop/#field-scope"),
+  );
+});

@@ -39,6 +39,11 @@ const searchChrome = new Set([
   "sp-note",
   "evidence-summary",
   "evidence-controls",
+  "evidence-date",
+  "evidence-links",
+  "evidence-none",
+  "deeper",
+  "primer",
   "evidence-empty",
   "gl-empty",
   "visually-hidden",
@@ -76,6 +81,7 @@ const clean = (value) => value.replace(/\s+/g, " ").trim();
 
 function excluded(node) {
   return (
+    node.properties?.dataSearchIgnore !== undefined ||
     omitFromReading(node) ||
     ["nav", "noscript", "form", "pre"].includes(node.tagName) ||
     classes(node).some((name) => searchChrome.has(name))

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   catalogFor,
   guideSearch,
+  rankedResults,
   validateShell,
 } from "../../workers/search/search.mjs";
 
@@ -141,4 +142,19 @@ test("the Worker distinguishes service failures, rate limits and empty results",
   );
   assert.equal(empty.status, 200);
   assert.deepEqual(await empty.json(), { results: [] });
+});
+
+test("distinct pages lead before a second passage and unknown identifiers return no semantic neighbours", () => {
+  const tracer = { ...records[1], key: "step.md", href: "/flows/dpop/#step" };
+  const lookup = catalogFor([...records, tracer]);
+  const matches = [chunk("flow.md"), chunk("step.md"), chunk("proof.md")];
+  assert.deepEqual(
+    rankedResults(lookup, "prove this call", matches).map((r) => r.href),
+    [records[1].href, records[0].href, tracer.href],
+  );
+  assert.deepEqual(rankedResults(lookup, "XZ-9581", matches), []);
+  assert.equal(
+    rankedResults(lookup, "RFC9449", matches)[0].href,
+    records[0].href,
+  );
 });

@@ -129,5 +129,18 @@ if (values.json) {
     console.log(
       `${label}: ${modes.map((m) => `${m} ${score(m)}/${group.length}`).join(", ")}`,
     );
+    if (kind === "situation") {
+      // A step can answer a situation even if the editorial fixture picked its
+      // overview passage. This second metric still needs an excerpt review.
+      const pageHits = (mode) =>
+        group.filter(({ query, targets }) =>
+          targets.some((href) =>
+            destinationFound(byQuery.get(query)[mode], pathOf(href)),
+          ),
+        ).length;
+      console.log(
+        `situations with a target page in the first three: ${modes.map((m) => `${m} ${pageHits(m)}/${group.length}`).join(", ")}`,
+      );
+    }
   }
 }
