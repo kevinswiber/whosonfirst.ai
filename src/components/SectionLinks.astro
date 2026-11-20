@@ -9,18 +9,31 @@
 ---
 
 <style is:global>
+  /* The link is the first thing in its heading, floated into the margin to the
+     left of it, as GitHub sets its own. Its box is one em of the heading wide
+     and pulled back by the same, so the text does not move and takes none of
+     its room, and as high as the heading's first line, so the icon is level
+     with it whatever the heading's padding. The icon has the box's right side,
+     and the gap to the text is what is left. */
   .section-link {
+    --hang: 1em;
     position: relative;
-    margin-inline-start: 0.4em;
-    font-size: 0.65em;
-    line-height: 1;
+    float: left;
+    box-sizing: border-box;
+    width: var(--hang);
+    height: 1lh;
+    margin-inline-start: calc(-1 * var(--hang));
     white-space: nowrap;
   }
-  /* The link is a small icon with room around it to press: the room is taken
-     back in the margin, so the heading is no taller for it. */
+  /* The link is a small icon with room around it to press. The room is in the
+     padding, which is taken back in the margin, so nothing is moved by it. */
   .section-link a {
-    padding: 0.3em 0.5em;
-    margin: -0.3em -0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    padding: 0 0.3em;
+    margin: 0 -0.3em;
     border-radius: var(--radius);
     color: var(--fg-subtle);
     text-decoration: none;
@@ -28,42 +41,58 @@
   .section-link a:hover {
     color: var(--accent);
   }
-  /* A little under the height of the heading's capitals, level with their middle */
   .section-link svg {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    vertical-align: -0.1em;
+    flex: none;
+    width: 0.65em;
+    height: 0.65em;
+    margin-inline-end: 0.35em;
   }
-  /* What pressing it does, said beside it: to the right on the same line, or
-     below it where the script finds no room, and out of the flow either way,
-     so that it takes no room in the heading and cannot wrap it or widen the
-     page. Without the script a press only goes to the section, and the icon
-     says nothing more than its name. With it, a press copies. */
+  @media (pointer: coarse) {
+    .section-link svg {
+      width: 0.75em;
+      height: 0.75em;
+      margin-inline-end: 0.25em;
+    }
+  }
+  /* The margin of a narrow page is the page's own side padding, 1rem at least.
+     The box is that wide, and the icon is a little smaller and in the middle
+     of it, so that it clears the edge of the window as well as the text. */
+  @media (max-width: 40rem) {
+    .section-link {
+      --hang: 1rem;
+    }
+    .section-link a {
+      justify-content: center;
+      padding: 0 0.5rem 0 0;
+      margin: 0 -0.5rem 0 0;
+    }
+    .section-link svg {
+      width: 0.8rem;
+      height: 0.8rem;
+      margin: 0;
+    }
+  }
+  /* What pressing it does, said under the icon: out of the flow, so that it
+     takes no room in the heading and cannot widen the page. Without the script
+     a press only goes to the section, and the icon says nothing more than its
+     name. With it, a press copies. */
   .section-link a::after {
     position: absolute;
-    left: calc(100% + 0.9rem);
-    top: 50%;
-    transform: translateY(-50%);
+    left: 0;
+    top: calc(100% + 0.35rem);
     z-index: 2;
-    font-family: var(--font-mono);
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     background: var(--bg-raised);
     color: var(--fg);
+    font-family: var(--font-mono);
     font-size: 0.78rem;
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: 0;
     pointer-events: none;
     display: none;
-  }
-  .section-link[data-below] a::after {
-    left: auto;
-    right: 0;
-    top: calc(100% + 0.8rem);
-    transform: none;
   }
   @media (hover: hover) {
     .section-link[data-ready] a:is(:hover, :focus-visible)::after {
@@ -77,9 +106,9 @@
     content: "Copied" / "";
     display: block;
   }
-  /* With a pointer the mark waits until the heading is pointed at, reached by
+  /* With a pointer the icon waits until the heading is pointed at, reached by
      keyboard or arrived at. Where there is none to point with it is always
-     there, and a little larger to press. */
+     there. */
   @media (hover: hover) {
     .section-link {
       opacity: 0;
@@ -92,15 +121,6 @@
   @media (prefers-reduced-motion: no-preference) {
     .section-link {
       transition: opacity 0.12s;
-    }
-  }
-  @media (pointer: coarse) {
-    .section-link {
-      font-size: 0.8em;
-    }
-    .section-link a {
-      padding: 0.6em 0.7em;
-      margin: -0.6em -0.7em;
     }
   }
   @media print {
@@ -121,18 +141,11 @@
       // from here a press copies, and the label beside the chain may say so
       this.toggleAttribute('data-ready', true);
       const link = this.querySelector('a');
-      for (const type of ['pointerenter', 'focusin']) link?.addEventListener(type, () => this.place());
       link?.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
           return;
         void this.copy(event.currentTarget as HTMLAnchorElement);
       });
-    }
-    // The label goes to the right of the icon when the window has room for it
-    // there, and below when it has not.
-    private place() {
-      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      this.toggleAttribute('data-below', document.documentElement.clientWidth - this.getBoundingClientRect().right < 9 * rem);
     }
     private async copy(link: HTMLAnchorElement) {
       try {
@@ -140,7 +153,6 @@
       } catch {
         return;
       }
-      this.place();
       this.toggleAttribute('data-copied', true);
       clearTimeout(this.timer);
       this.timer = window.setTimeout(() => this.removeAttribute('data-copied'), 2000);
