@@ -324,7 +324,7 @@ describe("header by width", () => {
       };
     });
 
-  for (const width of [961, 1088, 1089, 1280, 1680]) {
+  for (const width of [1009, 1136, 1137, 1280, 1680]) {
     test(`${width}px: every section of the bar, in its groups, then search`, async (t) => {
       const got = await seen(await at(t, width));
       assert.deepEqual(got.bar, BAR);
@@ -355,7 +355,7 @@ describe("header by width", () => {
     assert.deepEqual(rules, [false, true, true]);
   });
 
-  for (const width of [736, 900, 960]) {
+  for (const width of [736, 900, 1008]) {
     test(`${width}px: the home page's three ways in stay in the bar, beside search and the menu`, async (t) => {
       const page = await at(t, width);
       const got = await seen(page);

@@ -238,13 +238,13 @@ const groups: { name: string; items: Section[] }[] = [
     items: [
       {
         href: "/flows/",
-        label: "Flows",
+        label: "All flows",
         note: `${flows.length} flows, step by step`,
       },
       {
         href: "/deployments/",
-        label: "Deployments",
-        note: `Where the agent runs: ${places.length} guides`,
+        label: "Where agents run",
+        note: `${places.length} guides, from your own machine to Kubernetes`,
       },
       {
         href: "/implementations/",
@@ -661,7 +661,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       document.addEventListener('click', (e) => {
         if (!header.contains(e.target as Node)) setOpen(false);
       });
-      window.matchMedia('(width > 60rem)').addEventListener('change', () => setOpen(false));
+      window.matchMedia('(width > 63rem)').addEventListener('change', () => setOpen(false));
 
       // Color theme. With no choice made, CSS follows the system setting, and
       // keeps following it when it changes. The button picks the other theme;
@@ -988,7 +988,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   /* Room for every section: the name, the sections in their groups, then
      search at the far end. The bar is as wide as the page under
      it, so the name stands over the page's left edge. */
-  @media (width > 60rem) {
+  @media (width > 63rem) {
     .bar {
       flex-wrap: nowrap;
       column-gap: 0.75rem;
@@ -1014,7 +1014,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     }
   }
   /* just enough room: the links close up and the shortcut's keys go unsaid */
-  @media (60rem < width <= 68rem) {
+  @media (63rem < width <= 71rem) {
     .brand {
       margin-right: 0.3rem;
     }
@@ -1032,7 +1032,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   /* Narrower than that: the name, the ways in that the home page opens with,
      search and a menu button. Every section is one press away, with its group
      and what it holds, and none is off the edge of the screen. */
-  @media (width <= 60rem) {
+  @media (width <= 63rem) {
     .bar {
       gap: 0 0.7rem;
     }
@@ -1189,7 +1189,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   }
   /* Between a phone and the full bar: all three ways in beside the name, and
      search as a field. The open menu sets its groups side by side. */
-  @media screen and (46rem <= width <= 60rem) {
+  @media screen and (46rem <= width <= 63rem) {
     .site-header[data-js] .bar {
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       column-gap: 0.9rem;
@@ -1212,7 +1212,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  @media screen and (54rem <= width <= 60rem) {
+  @media screen and (54rem <= width <= 63rem) {
     .site-header[data-js] .launch-key:not([hidden]) {
       display: inline;
       margin-left: 0.9rem;
