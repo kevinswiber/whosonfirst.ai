@@ -94,8 +94,9 @@ const warn = cautions
   .sort((x, y) => x.applies.length - y.applies.length);
 
 const guideLink = `/guide/?${new URLSearchParams(fixed)}`;
+// The questions every reader is asked; the ones under “More questions” never change where to start.
 const left = ["no", "one", "two", "three", "four", "five", "six"][
-  questions.length - Object.keys(fixed).length
+  questions.filter((q) => !q.advanced).length - Object.keys(fixed).length
 ];
 const others = cases.filter((o) => o.slug !== s.slug);
 ---

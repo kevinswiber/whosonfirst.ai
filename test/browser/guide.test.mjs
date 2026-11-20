@@ -348,3 +348,68 @@ test("answers that bring up both flows of a comparison link to it, and answers t
   assert.ok((await page.locator(".dg-flow").count()) > 0, "no flow was named");
   assert.equal(await page.locator(".dg-weigh").count(), 0);
 });
+
+// The questions after the first six wait to be opened. They can only take a
+// flow out of a result, and the result says how many of its flows they could.
+test("more questions are closed until wanted, open for a link that answers them, and shorten the list", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  const more = page.locator("details#more");
+  const isOpen = () => more.evaluate((d) => d.open);
+  const result = (slug) => page.locator(`.dg-flow[href="/flows/${slug}/"]`);
+  const base =
+    "/guide/?principal=user&human=present&target=api&boundary=same&runtime=k8s&risk=write";
+
+  await open(page, site.url(base));
+  assert.equal(await isOpen(), false, "open at first");
+  assert.equal(await more.locator("fieldset").count(), 5);
+  for (const slug of ["token-exchange", "transaction-tokens", "oauth-mtls"])
+    assert.equal(await result(slug).count(), 1, slug);
+  const narrow = page.locator(".dg-narrow");
+  assert.match(
+    await narrow.textContent(),
+    /^\d+ of these depend on a question you have not answered yet\./,
+  );
+  await narrow.getByRole("link", { name: "Answer more questions" }).click();
+  assert.equal(await isOpen(), true, "the link did not open them");
+
+  await page
+    .getByRole("group", { name: /Does the work go further/ })
+    .getByRole("radio", { name: /No, one call does it/ })
+    .check({ force: true });
+  for (const slug of [
+    "token-exchange",
+    "transaction-tokens",
+    "biscuit-delegation",
+  ])
+    assert.equal(await result(slug).count(), 0, slug);
+  assert.equal(await result("oauth-mtls").count(), 1);
+  assert.match(
+    await page.locator(".dg-status").textContent(),
+    /^6 of 6 answered, 1 more · \d+ matches$/,
+  );
+  assert.match(page.url(), /&onward=no$/);
+
+  // a shared link with an answer to one of them shows it, opened
+  await open(page, site.url(`${base}&cert=no`));
+  assert.equal(await isOpen(), true, "closed over a shared answer");
+  assert.ok(await page.locator('input[name="cert"][value="no"]').isChecked());
+  assert.equal(await result("oauth-mtls").count(), 0);
+  assert.equal(await page.locator(".dg-weigh").count(), 0);
+});
+
+test("without a script, the further questions can still be opened and read", async (t) => {
+  const ctx = await site.context({ javaScriptEnabled: false });
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(page, site.url("/guide/"));
+  const more = page.locator("details#more");
+  await more.locator("summary").click();
+  assert.equal(await more.evaluate((d) => d.open), true);
+  assert.ok(
+    await page
+      .getByRole("group", { name: /Does the agent complete purchases/ })
+      .isVisible(),
+  );
+});

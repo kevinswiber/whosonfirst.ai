@@ -6,6 +6,7 @@
 //
 // Node strips the types from the files as it loads them; they import types only.
 import { strict as assert } from "node:assert";
+import { readdirSync } from "node:fs";
 import { test } from "node:test";
 import { glossary } from "../../src/data/glossary.ts";
 import { cases, cautions, questions, rules } from "../../src/data/guide.ts";
@@ -13,6 +14,7 @@ import {
   caseFor,
   compatible,
   matches,
+  narrowable,
   possibleStarts,
   recommend,
 } from "../../src/lib/guide-rules.ts";
@@ -50,7 +52,8 @@ const NAMES = {
 
 test("every combination of answers has the one name its first two answers give it", () => {
   const all = combinations(questions.map((q) => q.id));
-  assert.equal(all.length, 1080);
+  // 2 × 3 × 4 × 3 × 5 × 3 for the six asked first, and 2 for each of the five more
+  assert.equal(all.length, 1080 * 32);
   for (const a of all) {
     const expected = NAMES[`${a.principal} ${a.human}`];
     assert.ok(expected, `${a.principal} ${a.human}`);
@@ -261,4 +264,171 @@ test("no two cases share a name or an address, and none is a glossary term", () 
     );
     assert.ok(s.title.startsWith(`${s.name}: `), `${s.slug}: title`);
   }
+});
+
+// ── what the guide can bring up, and what the further questions do ──
+
+const first = questions.filter((q) => !q.advanced).map((q) => q.id);
+const further = questions.filter((q) => q.advanced).map((q) => q.id);
+const flowsIn = (groups) =>
+  new Set(Object.values(groups).flatMap((list) => list.map((r) => r.flow)));
+
+// Every flow in the catalog, read from its own file, as the comparisons test does.
+const catalog = async () => {
+  const dir = new URL("../../src/data/flows/", import.meta.url);
+  const slugs = [];
+  for (const file of readdirSync(dir).filter(
+    (f) => f.endsWith(".ts") && f !== "index.ts",
+  )) {
+    const mod = await import(new URL(file, dir));
+    for (const v of Object.values(mod)) if (v?.slug) slugs.push(v.slug);
+  }
+  return slugs.sort();
+};
+
+// A flow the guide never brings up, and why. None today: every flow on the
+// site is a recommendation for some way of answering the first six questions.
+// One added here needs a reason a reader can check against its page.
+const NEVER = {};
+
+test("every flow on the site is one the guide brings up for some answers to the first six questions, unless it says why not", async () => {
+  const slugs = await catalog();
+  assert.ok(slugs.length > 20, `only ${slugs.length} flows found`);
+  const reached = new Set();
+  for (const a of combinations(first))
+    for (const f of flowsIn(recommend(rules, a))) reached.add(f);
+  for (const slug of slugs) {
+    if (slug in NEVER) {
+      assert.ok(!reached.has(slug), `${slug} is listed as never reached`);
+      assert.ok(NEVER[slug].length > 20, `${slug}: say why`);
+    } else assert.ok(reached.has(slug), `the guide never recommends ${slug}`);
+  }
+});
+
+test("the further questions are asked after the first six and change no name", () => {
+  assert.deepEqual(first, [
+    "principal",
+    "human",
+    "target",
+    "boundary",
+    "runtime",
+    "risk",
+  ]);
+  assert.equal(
+    questions.findIndex((q) => q.advanced),
+    first.length,
+    "a further question comes before one asked first",
+  );
+  for (const s of cases)
+    for (const q of Object.keys(s.when)) assert.ok(first.includes(q), q);
+  for (const c of cautions)
+    for (const q of Object.keys(c.when))
+      assert.ok(first.includes(q), `a caution waits on ${q}`);
+});
+
+test("an answer to a further question never changes where to start and never adds a flow", () => {
+  const extras = combinations(further);
+  for (const a of combinations(first)) {
+    const before = recommend(rules, a);
+    const shown = flowsIn(before);
+    for (const extra of extras) {
+      const after = recommend(rules, { ...a, ...extra });
+      assert.deepEqual(
+        after.start.map((r) => [r.flow, r.why]),
+        before.start.map((r) => [r.flow, r.why]),
+        `${JSON.stringify(a)} ${JSON.stringify(extra)}`,
+      );
+      for (const f of flowsIn(after))
+        assert.ok(
+          shown.has(f),
+          `${f} appears only after ${JSON.stringify(extra)}`,
+        );
+    }
+  }
+});
+
+// Written out: each further question asks a fact these flows’ reasons depend on.
+const TAKES_OUT = {
+  onward: ["biscuit-delegation", "token-exchange", "transaction-tokens"],
+  revoke: ["access-revocation"],
+  cert: ["oauth-mtls"],
+  gateway: ["wimse-workload-tokens"],
+  buys: ["agent-payments"],
+};
+
+test("each further question takes out the flows whose reasons wait on it, and no others", () => {
+  assert.deepEqual(Object.keys(TAKES_OUT), further);
+  const out = Object.fromEntries(further.map((q) => [q, new Set()]));
+  for (const a of combinations(first)) {
+    const shown = flowsIn(recommend(rules, a));
+    for (const q of further)
+      for (const v of answers(q)) {
+        const after = flowsIn(recommend(rules, { ...a, [q]: v }));
+        for (const f of shown) if (!after.has(f)) out[q].add(f);
+      }
+  }
+  for (const q of further)
+    assert.deepEqual([...out[q]].sort(), TAKES_OUT[q], q);
+  // answering yes keeps each one, and moves it up its list: it matches one more answer
+  for (const [q, slugs] of Object.entries(TAKES_OUT))
+    for (const slug of slugs)
+      assert.ok(
+        rules.some((r) => r.flow === slug && r.when[q]?.join() === "yes"),
+        `${slug}: no rule for ${q}=yes`,
+      );
+});
+
+test("a handoff to another agent keeps token exchange, whatever is said about the work going further", () => {
+  for (const onward of [undefined, "yes", "no"]) {
+    const a = {
+      principal: "user",
+      boundary: "same",
+      target: "agent",
+      ...(onward ? { onward } : {}),
+    };
+    assert.ok(flowsIn(recommend(rules, a)).has("token-exchange"), onward);
+  }
+  assert.ok(
+    !flowsIn(
+      recommend(rules, {
+        principal: "user",
+        boundary: "same",
+        target: "api",
+        onward: "no",
+      }),
+    ).has("token-exchange"),
+  );
+});
+
+test("the guide counts what one more answer could take out, and nothing it could not", () => {
+  const asks = questions.filter((q) => q.advanced);
+  const a = {
+    principal: "user",
+    human: "present",
+    target: "agent",
+    boundary: "same",
+    runtime: "k8s",
+    risk: "irreversible",
+  };
+  assert.deepEqual([...narrowable(rules, asks, a)].sort(), [
+    "access-revocation",
+    "agent-payments",
+    "biscuit-delegation",
+    "oauth-mtls",
+    "transaction-tokens",
+    "wimse-workload-tokens",
+  ]);
+  // once those are answered, nothing is left to take out
+  const all = {
+    ...a,
+    onward: "no",
+    revoke: "no",
+    cert: "no",
+    gateway: "no",
+    buys: "no",
+  };
+  assert.equal(narrowable(rules, asks, all).size, 0);
+  // answered yes, the flow stays, and is not counted again
+  assert.ok(!narrowable(rules, asks, { ...a, cert: "yes" }).has("oauth-mtls"));
+  assert.equal(narrowable(rules, asks, {}).size, 0);
 });

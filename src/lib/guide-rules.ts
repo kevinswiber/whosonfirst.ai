@@ -143,3 +143,32 @@ export function possibleStarts(rules: Rule[], a: Answers): Rule[] {
       ),
   );
 }
+
+/**
+ * The flows these answers bring up that one more answer would take out: an
+ * answer to one of `asks`, the questions given, where it has not been answered.
+ * The guide counts them, so a reader with a long list knows that more
+ * questions can shorten it.
+ */
+export function narrowable(
+  rules: Rule[],
+  asks: { id: string; options: { value: string }[] }[],
+  a: Answers,
+): Set<string> {
+  const flowsFor = (answers: Answers) =>
+    new Set(
+      Object.values(recommend(rules, answers)).flatMap((list) =>
+        list.map((r) => r.flow),
+      ),
+    );
+  const shown = flowsFor(a);
+  const out = new Set<string>();
+  for (const q of asks) {
+    if (a[q.id] != null) continue;
+    for (const o of q.options) {
+      const after = flowsFor({ ...a, [q.id]: o.value });
+      for (const f of shown) if (!after.has(f)) out.add(f);
+    }
+  }
+  return out;
+}
