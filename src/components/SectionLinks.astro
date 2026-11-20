@@ -1,0 +1,126 @@
+---
+/**
+ * What the links to a page's sections do and how they look. The links are in
+ * the page already: src/lib/section-links.ts puts one beside each section
+ * heading when the page is built, and pressing it puts that section's address
+ * in the address bar, with or without this script. The script adds one thing:
+ * the same press also copies the address, and says so.
+ */
+---
+
+<style is:global>
+  .section-link {
+    margin-inline-start: 0.3em;
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* The link is a small mark with room around it to press: the room is taken
+     back in the margin, so the heading is no taller for it. */
+  .section-link a {
+    padding: 0.3em 0.5em;
+    margin: -0.3em -0.5em;
+    border-radius: var(--radius);
+    color: var(--fg-subtle);
+    text-decoration: none;
+  }
+  .section-link a:hover {
+    color: var(--accent);
+  }
+  .section-link a::before {
+    content: "#";
+    content: "#" / "";
+  }
+  .section-link[data-copied] a::after {
+    content: "Copied";
+    content: "Copied" / "";
+    margin-inline-start: 0.6em;
+    color: var(--fg-muted);
+  }
+  /* With a pointer the mark waits until the heading is pointed at, reached by
+     keyboard or arrived at. Where there is none to point with it is always
+     there, and a little larger to press. */
+  @media (hover: hover) {
+    .section-link {
+      opacity: 0;
+    }
+    :is(h2, h3):is(:hover, :focus-within, :target) > .section-link,
+    .section-link[data-copied] {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .section-link {
+      transition: opacity 0.12s;
+    }
+  }
+  @media (pointer: coarse) {
+    .section-link {
+      font-size: 0.85em;
+    }
+    .section-link a {
+      padding: 0.6em 0.7em;
+      margin: -0.6em -0.7em;
+    }
+  }
+  @media print {
+    .section-link {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Without a clipboard, or when it refuses, the link is what it is without a
+  // script: it goes to the section. A press with a modifier is left to the
+  // browser, which opens it somewhere else.
+  class SectionLink extends HTMLElement {
+    private timer = 0;
+    connectedCallback() {
+      region();
+      this.querySelector('a')?.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
+          return;
+        void this.copy(event.currentTarget as HTMLAnchorElement);
+      });
+    }
+    private async copy(link: HTMLAnchorElement) {
+      try {
+        await navigator.clipboard.writeText(link.href);
+      } catch {
+        return;
+      }
+      this.toggleAttribute('data-copied', true);
+      clearTimeout(this.timer);
+      this.timer = window.setTimeout(() => this.removeAttribute('data-copied'), 2000);
+      const name = this.closest('h2, h3')?.getAttribute('aria-label') ?? this.closest('h2, h3')?.textContent?.trim();
+      say(name ? `Link to “${name}” copied.` : 'Link copied.');
+    }
+  }
+
+  // One polite region for every link on the page. It is made when the first
+  // link starts, well before a copy, because a region that appears in the
+  // same moment as its words is not read.
+  let status: HTMLElement | undefined;
+  const region = () => {
+    if (!status) {
+      status = document.createElement('div');
+      status.className = 'visually-hidden';
+      status.setAttribute('role', 'status');
+      document.body.append(status);
+    }
+    return status;
+  };
+  const say = (words: string) => {
+    const el = region();
+    el.textContent = '';
+    setTimeout(() => {
+      el.textContent = words;
+    }, 60);
+  };
+
+  if (!customElements.get('section-link')) customElements.define('section-link', SectionLink);
+</script>

@@ -20,7 +20,9 @@ import plexSans600 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600
 import markFile from "../../public/favicon.svg?raw";
 import Here from "../components/Here.astro";
 import SearchDialog from "../components/SearchDialog.astro";
+import SectionLinks from "../components/SectionLinks.astro";
 import { longDate, pageDates } from "../lib/page-dates";
+import { linkSections } from "../lib/section-links";
 import { places } from "../data/deployments";
 import { flows } from "../data/flows";
 import { glossary } from "../data/glossary";
@@ -75,6 +77,12 @@ const {
 // Seen outside the site, a title has to say what the page is about and where it is from.
 const fullTitle = title ? `${title} - ${SITE}` : `${SITE} - ${DESCRIPTOR}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Each section heading gets a link to its own address, made here and not by
+// the page that has the heading, so that every page has them. The search page
+// and the "not found" page are tools, not text, and have none.
+const body = await Astro.slots.render("default");
+const sections = !noindex && Astro.url.pathname !== "/search/";
 
 // Two files are written for every page when the site is built, both named
 // after its address: /flows/dpop/ has /og/flows/dpop.png, the card shown where a
@@ -432,8 +440,9 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     </header>
 
     <main id="main">
-      <slot />
+      <Fragment set:html={sections ? linkSections(body) : body} />
     </main>
+    {sections && <SectionLinks />}
 
     <footer class="site-footer">
       <div class="wrap foot">
