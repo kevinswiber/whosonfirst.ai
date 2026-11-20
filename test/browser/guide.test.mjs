@@ -413,3 +413,17 @@ test("without a script, the further questions can still be opened and read", asy
       .isVisible(),
   );
 });
+
+// The line under an answer is part of its label, so it is read with the radio.
+test("the line under a managed platform and a sandbox is read with its answer", async (t) => {
+  const ctx = await site.context();
+  t.after(() => ctx.close());
+  const page = await ctx.newPage();
+  await open(page, site.url("/guide/"));
+  const where = page.getByRole("group", { name: /Where does the agent run/ });
+  for (const name of [
+    /^A managed agent platform The platform issues the agent’s identity/,
+    /^A sandbox that runs untrusted code It runs code .*even on a managed platform$/,
+  ])
+    assert.equal(await where.getByRole("radio", { name }).count(), 1, name);
+});

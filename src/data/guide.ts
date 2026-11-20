@@ -156,15 +156,21 @@ export const questions: Question[] = [
         brief: "Our own servers or cloud",
         hint: "A hosted app, containers, Kubernetes",
       },
+      // The two overlap: a managed platform can run the agent in a sandbox.
+      // What decides is on /deployments/: who issues the identity and holds the
+      // credentials, against code or content a stranger wrote, which must not be
+      // where a credential is (sandboxes.mdx, its description and lede).
       {
         value: "managed",
         label: "A managed agent platform",
         brief: "Managed agent platform",
+        hint: "The platform issues the agent’s identity and keeps its credentials in a vault",
       },
       {
         value: "sandbox",
         label: "A sandbox that runs untrusted code",
         brief: "Sandbox running untrusted code",
+        hint: "It runs code or reads content a stranger wrote, so it must hold no credential; choose this even on a managed platform",
       },
     ],
   },

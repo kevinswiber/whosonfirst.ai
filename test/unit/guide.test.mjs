@@ -517,3 +517,15 @@ test("what one more answer could take out is counted with the first six answered
       assert.ok(shown.has(f) && gone(a, f), `${JSON.stringify(a)}: ${f}`);
   }
 });
+
+// A managed platform can run the agent in a sandbox, so the two answers overlap.
+// Each place says what sets it apart, and the sandbox says which to choose.
+test("every place the agent can run says what sets it apart, and the sandbox says what to choose on a managed platform", () => {
+  const where = questions.find((q) => q.id === "runtime");
+  for (const o of where.options)
+    assert.ok(o.hint, `“${o.label}” says nothing under it`);
+  const hint = (v) => where.options.find((o) => o.value === v).hint;
+  assert.match(hint("managed"), /credentials/);
+  assert.match(hint("sandbox"), /no credential/);
+  assert.match(hint("sandbox"), /even on a managed platform/);
+});
