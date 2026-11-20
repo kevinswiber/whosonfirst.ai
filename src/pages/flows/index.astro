@@ -167,7 +167,7 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
       <div class="fl-results">
         <div class="fl-catalog">
           <p class="fl-count" role="status" hidden></p>
-          <p class="fl-search-guide" hidden><a href="/search/">Search the whole guide</a></p>
+          <p class="fl-search-guide" hidden><a href="/search/" data-search-directory>Search the whole guide</a></p>
           {groups.map((g) => (
             <section class="fl-group" data-group={g.id} aria-labelledby={`g-${g.id}`}>
               <div class="section-head">

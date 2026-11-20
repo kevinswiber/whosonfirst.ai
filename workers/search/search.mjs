@@ -5,6 +5,7 @@ const MAX_BYTES = 8192;
 const MAX_CHARS = 500;
 const MAX_RESULTS = 5;
 const PROVIDER_TIMEOUT_MS = 5000;
+const TIMED_OUT = Symbol("search timed out");
 
 const escapeHTML = (value) =>
   value.replace(
@@ -222,16 +223,15 @@ export function guideSearch(catalog, shell, securityHeaders) {
       const search = env.AI_SEARCH.get(env.SEARCH_INSTANCE).search(
         searchRequest(query),
       );
-      const { chunks } = await Promise.race([
+      const reply = await Promise.race([
         search,
-        new Promise((_, reject) => {
-          timer = setTimeout(
-            () => reject(new Error("Search timed out")),
-            PROVIDER_TIMEOUT_MS,
-          );
+        new Promise((resolve) => {
+          timer = setTimeout(resolve, PROVIDER_TIMEOUT_MS, TIMED_OUT);
         }),
       ]);
-      const results = rankedResults(catalog, query, chunks);
+      if (reply === TIMED_OUT)
+        return respond(504, "Guide results took too long to load. Try again.");
+      const results = rankedResults(catalog, query, reply.chunks);
       return respond(
         200,
         results.length

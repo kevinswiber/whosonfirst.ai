@@ -19,6 +19,7 @@ import plexSans400 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400
 import plexSans600 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url";
 import markFile from "../../public/favicon.svg?raw";
 import Here from "../components/Here.astro";
+import SearchDialog from "../components/SearchDialog.astro";
 import { longDate, pageDates } from "../lib/page-dates";
 import {
   AUTHOR,
@@ -288,40 +289,43 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap bar">
-        <a class="brand" href="/" aria-label={`${SITE}, home`}>
-          <Fragment set:html={MARK} />
-          <span class="wordmark">{SITE}</span>
-        </a>
-        <a class="quick" href={QUICK.href} aria-current={path.startsWith(QUICK.href) ? 'page' : undefined}>
-          {QUICK.label}
-        </a>
-        <a class="search-shortcut" href="/search/" aria-label="Search the guide" aria-current={path === '/search/' ? 'page' : undefined}>
+        <div class="bar-start">
+          <a class="brand" href="/" aria-label={`${SITE}, home`}>
+            <Fragment set:html={MARK} />
+            <span class="wordmark">{SITE}</span>
+          </a>
+          <a class="quick" href={QUICK.href} aria-current={path.startsWith(QUICK.href) ? 'page' : undefined}>
+            {QUICK.label}
+          </a>
+        </div>
+        <a class="search-launch" data-search-launch href="/search/" aria-labelledby="header-search-label header-search-key" aria-current={path === '/search/' ? 'page' : undefined}>
           <span class="search-glass" aria-hidden="true"></span>
+          <span class="launch-label" id="header-search-label">Search the guide</span>
+          <kbd class="launch-key" id="header-search-key" hidden></kbd>
         </a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
-        <nav id="site-nav" aria-label="Primary">
-          <ul>
-            {
-              nav.map((item) => (
-                <li>
-                  <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
-                    {item.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </nav>
-        <a class="search-utility" href="/search/" aria-current={path === '/search/' ? 'page' : undefined}>
-          <span class="search-glass" aria-hidden="true"></span> Search
-        </a>
-        <button class="theme" type="button" title="Switch color theme">
-          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-            <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
-            <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5Z" fill="currentColor"></path>
-          </svg>
-          <span class="theme-text">Switch color theme</span>
-        </button>
+        <div class="nav-tools">
+          <nav id="site-nav" aria-label="Primary">
+            <ul>
+              {
+                nav.map((item) => (
+                  <li>
+                    <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <button class="theme" type="button" title="Switch color theme">
+            <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+              <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5Z" fill="currentColor"></path>
+            </svg>
+            <span class="theme-text">Switch color theme</span>
+          </button>
+        </div>
       </div>
       {
         here && (
@@ -386,6 +390,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
         </p>
       </div>
     </footer>
+    {path !== '/search/' && <SearchDialog />}
 
     <script>
       // The "you are here" line names the section the reader has scrolled to: the
@@ -499,6 +504,25 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
         }
       }
 
+      // The standalone search also answers the shortcut on a native form response.
+      if (!document.getElementById('global-search')) {
+        const input = document.querySelector<HTMLInputElement>('main guide-search input[name="q"]');
+        if (input) {
+          document.addEventListener('keydown', (event) => {
+            if (event.defaultPrevented || event.isComposing || event.altKey || event.shiftKey) return;
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+              event.preventDefault();
+              input.focus();
+            }
+          });
+          document.querySelector('[data-search-launch]')?.addEventListener('click', (event) => {
+            if (!(event instanceof MouseEvent) || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+            event.preventDefault();
+            input.focus();
+          });
+        }
+      }
+
       // The phone menu. Without this script the navigation is simply shown in full.
       const header = document.querySelector<HTMLElement>('.site-header')!;
       const toggle = header.querySelector<HTMLButtonElement>('.menu-toggle')!;
@@ -522,7 +546,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       document.addEventListener('click', (e) => {
         if (!header.contains(e.target as Node)) setOpen(false);
       });
-      window.matchMedia('(min-width: 74.01rem)').addEventListener('change', () => setOpen(false));
+      window.matchMedia('(width > 79rem)').addEventListener('change', () => setOpen(false));
 
       // Color theme. With no choice made, CSS follows the system setting, and
       // keeps following it when it changes. The button picks the other theme;
@@ -671,6 +695,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   @media print {
     .skip,
     .menu-toggle,
+    .search-launch,
     .quick,
     nav,
     .theme,
@@ -786,14 +811,47 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     background: var(--bg-sunken);
   }
 
-  .search-utility, .search-shortcut {
+  .bar-start { display: contents; }
+  .nav-tools {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 0.85rem;
+  }
+  @media (width > 79rem) {
+    .bar {
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+      column-gap: clamp(0.5rem, 1.3vw, 1.4rem);
+      max-width: 110rem;
+    }
+    .search-launch {
+      width: clamp(13.75rem, 16vw, 17rem);
+    }
+  }
+  .search-launch {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
     min-height: 44px;
     min-width: 44px;
-    font: 500 0.85rem var(--font-label);
+    padding-inline: 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    color: var(--fg-muted);
+    font: 500 0.92rem var(--font-body);
+    text-decoration: none;
+  }
+  .search-launch:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .launch-key {
+    margin-left: auto;
+    font: 400 0.69rem var(--font-mono);
+    color: var(--fg-subtle);
+    white-space: nowrap;
   }
   .search-glass {
     width: 0.78rem;
@@ -813,7 +871,6 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     transform: rotate(45deg);
     transform-origin: left center;
   }
-  .search-shortcut,
   .quick,
   .menu-toggle {
     display: none;
@@ -830,7 +887,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
 
   /* Phone and tablet: the brand, the one task link and a menu button. Every
      destination is one tap away and none is off the edge of the screen. */
-  @media (max-width: 74rem) {
+  @media (width <= 79rem) {
     .bar {
       gap: 0 0.7rem;
     }
@@ -848,8 +905,12 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .site-header[data-js] :is(nav, .theme) {
       grid-column: 1 / -1;
     }
-    .search-shortcut { display: inline-flex; }
-    .search-utility { display: none; }
+    .nav-tools { display: contents; }
+    .search-launch {
+      padding-inline: 0;
+      justify-content: center;
+    }
+    .launch-label, .launch-key { display: none; }
     .quick {
       display: inline-flex;
       align-items: center;
@@ -945,6 +1006,37 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .site-header:not([data-js]) .quick {
       display: none;
     }
+  }
+  /* Between a phone and the full navigation, balance the two sides of the
+     search field. The brand and Learn share the left side, Menu takes the right. */
+  @media screen and (46rem <= width <= 79rem) {
+    .site-header[data-js] .bar {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      column-gap: 0.75rem;
+    }
+    .site-header[data-js] .bar-start {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .site-header[data-js] .search-launch {
+      grid-column: 2;
+      grid-row: 1;
+      width: clamp(11rem, 24vw, 17rem);
+      justify-content: flex-start;
+      padding-inline: 0.7rem;
+    }
+    .site-header[data-js] .launch-label { display: inline; }
+    .site-header[data-js] .menu-toggle {
+      grid-column: 3;
+      grid-row: 1;
+      justify-self: end;
+    }
+  }
+  @media screen and (54rem <= width <= 79rem) {
+    .site-header[data-js] .launch-key:not([hidden]) { display: inline; }
   }
   /* on a phone the name steps down a size to leave room */
   @media (max-width: 30rem) {
