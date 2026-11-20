@@ -35,23 +35,22 @@
     height: 1em;
     vertical-align: -0.1em;
   }
-  /* What pressing it does, said beside it: to the right on the same line, or
-     below it where the script finds no room, and out of the flow either way,
-     so that it takes no room in the heading and cannot wrap it or widen the
-     page. Without the script a press only goes to the section, and the icon
-     says nothing more than its name. With it, a press copies. */
+  /* The word "Copied", said under the icon for a moment after a press that
+     copied the address. It is out of the flow and ends where the icon does, so
+     that it takes no room in the heading and cannot wrap it or widen the page.
+     It is only generated content: the polite status line says it to a screen
+     reader. Nothing is said on hover or focus, since the icon says enough. */
   .section-link a::after {
     position: absolute;
-    left: calc(100% + 0.9rem);
-    top: 50%;
-    transform: translateY(-50%);
+    right: 0;
+    top: calc(100% + 0.6rem);
     z-index: 2;
-    font-family: var(--font-mono);
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     background: var(--bg-raised);
     color: var(--fg);
+    font-family: var(--font-mono);
     font-size: 0.78rem;
     font-weight: 500;
     line-height: 1.2;
@@ -59,20 +58,7 @@
     pointer-events: none;
     display: none;
   }
-  .section-link[data-below] a::after {
-    left: auto;
-    right: 0;
-    top: calc(100% + 0.8rem);
-    transform: none;
-  }
-  @media (hover: hover) {
-    .section-link[data-ready] a:is(:hover, :focus-visible)::after {
-      content: "Copy link";
-      content: "Copy link" / "";
-      display: block;
-    }
-  }
-  .section-link[data-copied][data-ready] a::after {
+  .section-link[data-copied] a::after {
     content: "Copied";
     content: "Copied" / "";
     display: block;
@@ -118,21 +104,12 @@
     private timer = 0;
     connectedCallback() {
       region();
-      // from here a press copies, and the label beside the chain may say so
-      this.toggleAttribute('data-ready', true);
       const link = this.querySelector('a');
-      for (const type of ['pointerenter', 'focusin']) link?.addEventListener(type, () => this.place());
       link?.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
           return;
         void this.copy(event.currentTarget as HTMLAnchorElement);
       });
-    }
-    // The label goes to the right of the icon when the window has room for it
-    // there, and below when it has not.
-    private place() {
-      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      this.toggleAttribute('data-below', document.documentElement.clientWidth - this.getBoundingClientRect().right < 9 * rem);
     }
     private async copy(link: HTMLAnchorElement) {
       try {
@@ -140,7 +117,6 @@
       } catch {
         return;
       }
-      this.place();
       this.toggleAttribute('data-copied', true);
       clearTimeout(this.timer);
       this.timer = window.setTimeout(() => this.removeAttribute('data-copied'), 2000);
