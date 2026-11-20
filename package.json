@@ -26,7 +26,9 @@
     "implementations:coverage": "node scripts/implementation-coverage.mjs",
     "implementations:check": "node scripts/implementation-check.mjs",
     "generate-types": "cf workers types",
-    "deploy": "cf deploy"
+    "deploy": "cf deploy",
+    "search:sync": "node scripts/sync-search.mjs",
+    "search:build": "npm --prefix workers/search run build"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

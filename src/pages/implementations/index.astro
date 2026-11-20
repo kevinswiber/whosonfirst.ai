@@ -68,7 +68,7 @@ const reviewed = groups
       <div class="evidence-results">
         <noscript><p>Search and filters need JavaScript. All reviewed summaries are listed below by flow.</p></noscript>
         <p class="evidence-count" role="status" hidden>{flows.length} flows shown</p>
-        <p class="evidence-empty" hidden>No flows match. Try a different term or clear the filters.</p>
+        <p class="evidence-empty" hidden>No flows match. Try a different term or clear the filters.{' '}<a href="/search/">Search the whole guide</a>.</p>
 
         {groups.map((group) => (
           <section class="evidence-group" data-group={group.id} aria-labelledby={`field-${group.id}`}>

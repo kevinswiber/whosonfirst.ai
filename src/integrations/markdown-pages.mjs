@@ -396,6 +396,17 @@ function guideRules(main) {
   return out;
 }
 
+/** Controls and drawings omitted from both readable build outputs. */
+export function omitFromReading(node) {
+  const p = node.properties ?? {};
+  return (
+    DRAWN.includes(node.tagName) ||
+    p.hidden !== undefined ||
+    p.ariaHidden === "true" ||
+    has(node, ...CHROME)
+  );
+}
+
 function prepare(main, page, site) {
   main.children.push(...guideRules(main));
 
@@ -423,19 +434,13 @@ function prepare(main, page, site) {
 
   // 1. What is not content goes.
   visit(main, "element", (node, index, parent) => {
-    const p = node.properties ?? {};
     // A place where a line may break, between a label and what follows it, is
     // a space in text. Left as it is, it joins the two with a character no one sees.
     if (is(node, "wbr")) {
       parent.children.splice(index, 1, say(" "));
       return [SKIP, index];
     }
-    if (
-      DRAWN.includes(node.tagName) ||
-      p.hidden !== undefined ||
-      p.ariaHidden === "true" ||
-      has(node, ...CHROME)
-    ) {
+    if (omitFromReading(node)) {
       parent.children.splice(index, 1);
       return [SKIP, index];
     }

@@ -167,6 +167,7 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
       <div class="fl-results">
         <div class="fl-catalog">
           <p class="fl-count" role="status" hidden></p>
+          <p class="fl-search-guide" hidden><a href="/search/">Search the whole guide</a></p>
           {groups.map((g) => (
             <section class="fl-group" data-group={g.id} aria-labelledby={`g-${g.id}`}>
               <div class="section-head">
@@ -250,6 +251,7 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
       const facets = form.querySelector<HTMLDetailsElement>('.fl-facets')!;
       const active = form.querySelector<HTMLElement>('.fl-active')!;
       const count = this.querySelector<HTMLElement>('.fl-count')!;
+      const searchGuide = this.querySelector<HTMLElement>('.fl-search-guide')!;
       const comparison = this.querySelector<HTMLElement>('.fl-table')!;
       const compareNotice = comparison.querySelector<HTMLElement>('.fl-compare-filter')!;
       const compareText = compareNotice.querySelector('p')!;
@@ -285,6 +287,7 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
           element.toggleAttribute('data-filtered', !selectedGroup || matches === 0);
           if (selectedGroup) shown += matches;
         }
+        searchGuide.hidden = shown > 0;
         count.textContent = shown === 0
           ? 'No flows match. Try a different search or clear the filters.'
           : `${shown} ${shown === 1 ? 'flow' : 'flows'} shown`;

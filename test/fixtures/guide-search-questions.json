@@ -1,0 +1,120 @@
+[
+  {
+    "query": "Our scheduled job runs as the company. Nobody signs in. Where do we start?",
+    "kind": "situation",
+    "targets": ["/guide/own-authority/"]
+  },
+  {
+    "query": "My scheduled job runs for the employee who set it up. They’re asleep when it runs.",
+    "kind": "situation",
+    "targets": ["/guide/person-unavailable/"]
+  },
+  {
+    "query": "The person is away from the terminal. Can we push a request to their registered phone?",
+    "kind": "situation",
+    "targets": ["/flows/ciba/#in-short"]
+  },
+  {
+    "query": "My CLI has no browser. I’m sitting at it and can type a code on my phone.",
+    "kind": "situation",
+    "targets": ["/flows/device-authorization/#in-short"]
+  },
+  {
+    "query": "Push to the phone or show a code on screen?",
+    "kind": "situation",
+    "targets": ["/compare/ciba-vs-device-authorization/"]
+  },
+  {
+    "query": "They’re signed in already, but deleting this resource should require stronger proof.",
+    "kind": "situation",
+    "targets": ["/flows/step-up-authorization/#in-short"]
+  },
+  {
+    "query": "The shop wants evidence that its customer let the agent buy this exact thing.",
+    "kind": "situation",
+    "targets": ["/flows/agent-payments/#in-short"]
+  },
+  {
+    "query": "Can the API decide whether the agent may call a tool with these particular arguments?",
+    "kind": "situation",
+    "targets": ["/flows/tool-call-authorization/#in-short"]
+  },
+  {
+    "query": "Keep a copied access token from working. We can sign each HTTP request.",
+    "kind": "situation",
+    "targets": ["/flows/dpop/#in-short"]
+  },
+  {
+    "query": "Keep a copied token from working. Our clients have certificates and authenticate on the TLS connection.",
+    "kind": "situation",
+    "targets": ["/flows/oauth-mtls/#in-short"]
+  },
+  {
+    "query": "DPoP vs mTLS",
+    "kind": "lookup",
+    "targets": ["/compare/dpop-vs-oauth-mtls/"]
+  },
+  {
+    "query": "RFC9449",
+    "kind": "lookup",
+    "targets": ["/standards/rfc9449/"]
+  },
+  {
+    "query": "RFC 9449",
+    "kind": "lookup",
+    "targets": ["/standards/rfc9449/"]
+  },
+  {
+    "query": "What does audience mean?",
+    "kind": "lookup",
+    "targets": ["/glossary/#audience"]
+  },
+  {
+    "query": "Does Keycloak implement DPoP?",
+    "kind": "lookup",
+    "targets": ["/implementations/dpop/#field-dpop-keycloak"]
+  },
+  {
+    "query": "I need to let a sandbox call a vendor without letting the code read the API key.",
+    "kind": "situation",
+    "targets": [
+      "/deployments/sandboxes/#the-pattern",
+      "/flows/credential-broker/"
+    ]
+  },
+  {
+    "query": "Inside one trust domain the next API needs a new token that still names the original user.",
+    "kind": "situation",
+    "targets": ["/flows/token-exchange/#in-short"]
+  },
+  {
+    "query": "The next API belongs to a different company with its own authorization server. Whose user is this?",
+    "kind": "situation",
+    "targets": ["/flows/identity-chaining/#in-short"]
+  },
+  {
+    "query": "My API has a token. What even is a token?",
+    "kind": "situation",
+    "targets": ["/learn/tokens/"]
+  },
+  {
+    "query": "I don't know whether my agent should act for me or for the company.",
+    "kind": "situation",
+    "targets": ["/guide/#cases"]
+  },
+  {
+    "query": "Who approves a payment on my phone?",
+    "kind": "ambiguous",
+    "targets": ["/flows/ciba/", "/flows/agent-payments/"]
+  },
+  {
+    "query": "What are the opening hours at the museum?",
+    "kind": "off-topic",
+    "targets": []
+  },
+  {
+    "query": "qxzv99712",
+    "kind": "off-topic",
+    "targets": []
+  }
+]

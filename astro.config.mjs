@@ -3,6 +3,7 @@ import mdx from "@astrojs/mdx";
 import { defineConfig } from "astro/config";
 import markdownPages from "./src/integrations/markdown-pages.mjs";
 import pageDates from "./src/integrations/page-dates.mjs";
+import searchPassages from "./src/integrations/search-passages.mjs";
 import socialCards from "./src/integrations/social-cards.mjs";
 import { codeThemes } from "./src/lib/code-themes.mjs";
 
@@ -24,6 +25,7 @@ export default defineConfig({
     pageDates(),
     socialCards(),
     markdownPages(),
+    searchPassages(),
   ],
 
   markdown: {
