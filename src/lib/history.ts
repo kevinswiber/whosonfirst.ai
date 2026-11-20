@@ -443,6 +443,30 @@ export const KIND_LABEL: Record<Exclude<HistoryKind, "baseline">, string> = {
   discussion: "Discussed",
 };
 
+/**
+ * The links that go with an event wherever it is shown, in order: where it
+ * was read, where what changed was read if that is somewhere else, and the
+ * version it published.
+ */
+export const eventLinks = (
+  e: HistoryEvent,
+): { href: string; text: string }[] => [
+  ...(e.source
+    ? [
+        {
+          href: e.source,
+          text: e.reported ? "Reported by this source" : "Source",
+        },
+      ]
+    : []),
+  ...(e.changesSource && e.changesSource !== e.source
+    ? [{ href: e.changesSource, text: "What changed" }]
+    : []),
+  ...(e.version
+    ? [{ href: e.version.url, text: e.version.name ?? e.version.label }]
+    : []),
+];
+
 /** A date as a page writes it: "November 13, 2026", or "November 2026" for a month. */
 export const spellDate = (date: string) =>
   date.length === 7
@@ -542,6 +566,15 @@ const xml = (text: string) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+/** What a piece of HTML says, as text: its tags taken out and its characters unescaped. */
+const textOf = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, "")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&");
+
 /** An event's place on the timeline, which is where a feed entry leads. */
 export const eventAnchor = (id: string) => id.replaceAll("/", "-");
 
@@ -551,15 +584,26 @@ export const eventAnchor = (id: string) => id.replaceAll("/", "-");
  * or corrected it, and `published` the day it happened where that is a day.
  * Its id is made from the event's name, so it stays the same as the log grows.
  *
- * `origin` is the site's address with no slash at its end, and `names` gives
- * the name of the document an entry is about.
+ * An entry's `content` is the event as the timeline shows it, in HTML: when it
+ * happened, what happened, what changed, a correction, and its links. Its
+ * `summary` is what happened alone, as plain text, for a service that posts a
+ * line and a link. Its categories are the kind of event and, where it has one,
+ * the tracker entry it is about, so that a reader or a script can keep to some.
+ *
+ * `origin` is the site's address with no slash at its end, `names` gives the
+ * name of the document an entry is about, and `format` turns the inline
+ * Markdown an event is written in into HTML, as the timeline does.
  */
 export const feedOf = (
   events: HistoryEvent[],
   origin: string,
   names: (entry: string) => string,
+  format: (text: string) => string,
 ): string => {
   const at = (day: string) => `${day}T00:00:00Z`;
+  // a feed is read away from the site, so an address on it is given in full
+  const absolute = (html: string) =>
+    html.replaceAll('href="/', `href="${origin}/`);
   const changed = (e: NamedEvent) => e.corrected?.on ?? e.recorded;
   const entries = happenings(events)
     .map((event, order) => ({ event, order }))
@@ -569,14 +613,27 @@ export const feedOf = (
     )
     .map(({ event }) => event);
   const host = new URL(origin).host;
+  /** What a category's term is one of: the kinds of event, or the tracker's entries. */
+  const scheme = (of: "kind" | "entry") => `tag:${host},2026:standards/${of}`;
   const entry = (e: NamedEvent) => {
     const about = e.entry ? names(e.entry) : (e.subject ?? "");
     const label = KIND_LABEL[e.kind as keyof typeof KIND_LABEL];
-    const text = [
-      `${spellDate(e.date)}. ${e.summary ?? ""}`,
-      ...(e.changes ?? []).map((change) => `- ${change}`),
-      ...(e.corrected ? [`Corrected: ${e.corrected.note}`] : []),
-      `Source: ${e.source ?? ""}`,
+    const summary = e.summary ? absolute(format(e.summary)) : "";
+    const links = eventLinks(e);
+    const html = [
+      `<p>Happened ${spellDate(e.date)}</p>`,
+      ...(summary ? [`<p>${summary}</p>`] : []),
+      ...(e.changes?.length
+        ? [
+            `<ul>${e.changes.map((change) => `<li>${absolute(format(change))}</li>`).join("")}</ul>`,
+          ]
+        : []),
+      ...(e.corrected ? [`<p>Corrected: ${xml(e.corrected.note)}</p>`] : []),
+      ...(links.length
+        ? [
+            `<p>${links.map((link) => `<a href="${xml(link.href)}">${xml(link.text)}</a>`).join(" · ")}</p>`,
+          ]
+        : []),
     ].join("\n");
     return [
       "  <entry>",
@@ -590,7 +647,14 @@ export const feedOf = (
       ...(e.source
         ? [`    <link rel="related" href="${xml(e.source)}"/>`]
         : []),
-      `    <summary>${xml(text)}</summary>`,
+      `    <category scheme="${xml(scheme("kind"))}" term="${xml(e.kind)}" label="${xml(label)}"/>`,
+      ...(e.entry
+        ? [
+            `    <category scheme="${xml(scheme("entry"))}" term="${xml(e.entry)}" label="${xml(about)}"/>`,
+          ]
+        : []),
+      ...(summary ? [`    <summary>${xml(textOf(summary))}</summary>`] : []),
+      `    <content type="html">${xml(html)}</content>`,
       "  </entry>",
     ].join("\n");
   };

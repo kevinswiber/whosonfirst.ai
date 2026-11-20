@@ -7,6 +7,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { KIND_LABEL } from "../../src/lib/history.ts";
 import { faults, kind } from "../support/mermaid.mjs";
 import {
   attr,
@@ -18,6 +19,7 @@ import {
   indexed,
   main,
   ORIGIN,
+  pageAt,
   plain,
   root,
   some,
@@ -592,4 +594,93 @@ test("the IndexNow key is served from the site's root and holds its own name", (
   );
   assert.equal(keys.length, 1, `${keys.length} key files in the build`);
   assert.equal(file(keys[0]).trim(), keys[0].slice(0, -4));
+});
+
+// The changelog's feed is read away from the site, in a reader or a service
+// that posts what is new. Each entry says what its event says on the timeline,
+// where the entry leads: the HTML is made from the same text and the same
+// links, and the summary is what happened, with its formatting taken out.
+test("every entry in the changelog's feed says what the timeline says of its event, with what happened in plain text and its kind and document as categories", () => {
+  const feed = file("standards/changes.xml");
+  assert.ok(feed, "the build has no /standards/changes.xml");
+  const timeline = pageAt("/standards/timeline/").html.replace(
+    / data-astro-cid-\w+/g,
+    "",
+  );
+  const unxml = (text) =>
+    text
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&quot;", '"')
+      .replaceAll("&amp;", "&");
+  const textOf = (html) =>
+    unxml(html.replace(/<[^>]*>/g, "").replaceAll("&#39;", "'"));
+  const full = (html) => html.replaceAll('href="/', `href="${ORIGIN}/`);
+  const entries = feed.split("<entry>").slice(1);
+  assert.ok(entries.length > 0, "the feed has no entries");
+  const wrong = [];
+  for (const entry of entries) {
+    const anchor = entry.match(
+      /rel="alternate"[^>]*href="[^"#]*#([^"]+)"/,
+    )?.[1];
+    const at = timeline.indexOf(`<li id="${anchor}">`);
+    if (!anchor || at < 0) {
+      wrong.push(`${anchor ?? "an entry"}: leads to nothing on the timeline`);
+      continue;
+    }
+    const item = timeline.slice(at, timeline.indexOf("</p></div></li>", at));
+    const when = item.match(/<span class="hl-when">([^<]*)<\/span>/)[1];
+    const label = item.match(/<span class="hl-kind">([^<]*):<\/span>/)[1];
+    const named = item.match(
+      /<a href="\/standards\/#([^"]+)">([^<]*)<\/a><\/p>/,
+    );
+    const said = item.match(/<p class="hl-name">.*?<\/p><p>(.*?)<\/p>/)[1];
+    const changes = item.match(/<\/p>(<ul>.*?<\/ul>)/)?.[1];
+    const meta = item.slice(item.indexOf('<p class="hl-meta">'));
+    const links = [...meta.matchAll(/<a [^>]*>.*?<\/a>/g)].map((m) => m[0]);
+
+    const content = unxml(
+      entry.match(/<content type="html">([^<]*)<\/content>/)?.[1] ?? "",
+    ).split("\n");
+    const corrected = content.filter((line) =>
+      line.startsWith("<p>Corrected: "),
+    );
+    const expected = [
+      `<p>Happened ${when}</p>`,
+      `<p>${full(said)}</p>`,
+      ...(changes ? [full(changes)] : []),
+      `<p>${links.join(" · ")}</p>`,
+    ];
+    const has = content.filter((line) => !corrected.includes(line));
+    if (has.join("\n") !== expected.join("\n"))
+      wrong.push(
+        `${anchor}: its content is\n${has.join("\n")}\nnot\n${expected.join("\n")}`,
+      );
+    if (corrected.length !== (/ · Corrected /.test(meta) ? 1 : 0))
+      wrong.push(
+        `${anchor}: the timeline and the feed differ on whether it was corrected`,
+      );
+    if (content.some((line) => /href="(?!https:\/\/)/.test(line)))
+      wrong.push(`${anchor}: its content has a link that is not given in full`);
+
+    const summary = entry.match(/<summary>([^<]*)<\/summary>/)?.[1];
+    if (summary === undefined || unxml(summary) !== textOf(said))
+      wrong.push(`${anchor}: its summary is not “${textOf(said)}”`);
+
+    const categories = [...entry.matchAll(/<category ([^>]*)\/>/g)].map(
+      (m) => m[1],
+    );
+    const term = Object.keys(KIND_LABEL).find((k) => KIND_LABEL[k] === label);
+    const want = [
+      `scheme="tag:whosonfirst.ai,2026:standards/kind" term="${term}" label="${label}"`,
+      ...(named
+        ? [
+            `scheme="tag:whosonfirst.ai,2026:standards/entry" term="${named[1]}" label="${named[2]}"`,
+          ]
+        : []),
+    ];
+    if (categories.join("\n") !== want.join("\n"))
+      wrong.push(`${anchor}: its categories are ${JSON.stringify(categories)}`);
+  }
+  assert.deepEqual(wrong, []);
 });
