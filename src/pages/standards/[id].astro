@@ -1,0 +1,318 @@
+---
+// One standard: what it is, where it stands, its versions and what has
+// happened to it. Everything here is read from the tracker's entry, the log
+// in src/data/history/ and the citations beside it: the page has no text of
+// its own to keep up to date.
+import Base from "../../layouts/Base.astro";
+import { flows } from "../../data/flows";
+import { history } from "../../data/history";
+import { citations } from "../../data/history/citations";
+import { standards, std } from "../../data/standards";
+import {
+  RELATED_LABEL,
+  STATUS_LABEL,
+  STATUS_TONE,
+  TOPIC_LABEL,
+} from "../../data/types";
+import type { Standard } from "../../data/types";
+import {
+  citationLines,
+  eventLinks,
+  happenings,
+  historyOf,
+  KIND_LABEL,
+  readCitations,
+  recordBegan,
+  spellDate,
+  versionsOf,
+} from "../../lib/history";
+import { inline } from "../../lib/md";
+
+export function getStaticPaths() {
+  return standards.map((s) => ({ params: { id: s.id }, props: { s } }));
+}
+interface Props {
+  s: Standard;
+}
+const { s } = Astro.props;
+
+// Newest first, as a reader looks for the latest.
+const versions = versionsOf(history, s.id).reverse();
+const current = versions.find((v) => !v.pre)?.label;
+const events = happenings(historyOf(history, s.id)).reverse();
+// What a version changed is on the event that published it.
+const changesOf = (label: string) =>
+  events.find((e) => e.version?.label === label)?.changes;
+
+const related = [
+  ...(s.related ?? []).map((r) => {
+    if ("entry" in r) {
+      const e = std(r.entry);
+      return {
+        kind: RELATED_LABEL[r.kind],
+        name: `${e.name} (${e.ref})`,
+        href: `/standards/${e.id}/`,
+        out: false,
+        note: r.note ?? "",
+      };
+    }
+    return {
+      kind: RELATED_LABEL[r.kind],
+      name: r.name,
+      href: r.url,
+      out: true,
+      note: r.note ?? "",
+    };
+  }),
+  ...citationLines(
+    readCitations(citations, history),
+    s.id,
+    (id) => std(id).name,
+  ).map((line) => ({
+    kind: line.kind,
+    name: line.name,
+    href: `/standards/${line.entry}/`,
+    out: false,
+    note: line.note,
+  })),
+];
+const listed = flows.filter((f) => f.standards.includes(s.id));
+const used = listed.filter((f) => !f.roles || f.roles[s.id] === "required");
+const mentioned = listed.filter((f) => f.roles && f.roles[s.id] !== "required");
+const began = spellDate(recordBegan(history));
+---
+
+<Base
+  title={`${s.name} (${s.ref}): status and history`}
+  description={`${s.name}, ${s.ref}: what it defines, where it stands, its versions and what has happened to it, each with its source.`}
+>
+  <div class="page-head">
+    <div class="wrap">
+      <p class="eyebrow"><a href="/standards/">Standards</a></p>
+      <h1>{s.name}</h1>
+      <p class="sp-ref">{s.ref}</p>
+      <div class="chips">
+        <span class="chip" data-tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</span>
+        <span class="chip">{" · "}{s.body}</span>
+        {s.topics.map((t) => <span class="chip topic">{" · "}{TOPIC_LABEL[t]}</span>)}
+      </div>
+      <p class="lede" set:html={inline(s.summary)} />
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap sp">
+      <h2>Where it stands</h2>
+      {s.detail ? <p set:html={inline(s.detail)} /> : <p>The tracker records no more than its status: {STATUS_LABEL[s.status]}.</p>}
+      <p>
+        <strong>For agents:</strong>{" "}
+        <span set:html={inline(s.agents)} />
+      </p>
+      <p>
+        <a href={s.url} rel="noopener">Source ↗</a>
+        {" · "}
+        <a href={`/standards/#${s.id}`}>In the tracker</a>
+      </p>
+
+      {
+        versions.length > 0 && (
+          <>
+            <h2>Versions</h2>
+            <p class="sp-note">
+              The versions this site has recorded, newest first. The record began on {began}, so an earlier version is
+              here only where something cites it or the tracker had already reported it.
+            </p>
+            <ol class="sp-list">
+              {versions.map((v) => (
+                <li>
+                  <span class="sp-when">{spellDate(v.date)}</span>
+                  <div>
+                    <p class="sp-name">
+                      <a href={v.url} rel="noopener">{v.name ?? v.label} ↗</a>
+                      {v.label === current && <span class="sp-kind">Current</span>}
+                      {v.pre && <span class="sp-kind">Not a release</span>}
+                    </p>
+                    {changesOf(v.label) && (
+                      <ul>
+                        {changesOf(v.label)!.map((c) => <li set:html={inline(c)} />)}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </>
+        )
+      }
+
+      <h2>What has happened</h2>
+      {
+        events.length > 0 ? (
+          <ol class="sp-list">
+            {events.map((e) => (
+              <li>
+                <span class="sp-when">{spellDate(e.date)}</span>
+                <div>
+                  <p class="sp-name">
+                    <span class="sp-kind">{KIND_LABEL[e.kind as keyof typeof KIND_LABEL]}</span>
+                  </p>
+                  <p set:html={inline(e.summary ?? "")} />
+                  {e.corrected && <p>Corrected {spellDate(e.corrected.on)}: {e.corrected.note}</p>}
+                  <p class="sp-meta">
+                    {eventLinks(e).map((link, at) => (
+                      <>
+                        {at > 0 && " · "}
+                        <a href={link.href} rel="noopener">{link.text}</a>
+                      </>
+                    ))}
+                    {" · "}Recorded here {spellDate(e.recorded)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>
+            Nothing yet. This site began recording what happens to each standard on {began}, and has recorded nothing for
+            this one since. <a href="/standards/timeline/">The timeline</a> has every event recorded so far.
+          </p>
+        )
+      }
+
+      {
+        related.length > 0 && (
+          <>
+            <h2>Related</h2>
+            <ul class="sp-related">
+              {related.map((r) => (
+                <li>
+                  <span class="sp-kind">{r.kind}</span>{" "}
+                  {r.out ? <a href={r.href} rel="noopener">{r.name} ↗</a> : <a href={r.href}>{r.name}</a>}
+                  {r.note && <>{" "}<span set:html={inline(r.note)} /></>}
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      {
+        listed.length > 0 && (
+          <>
+            <h2>Where it is used</h2>
+            {used.length > 0 && (
+              <p>
+                Required by{" "}
+                {used.map((f, i) => (
+                  <>
+                    {i > 0 && ", "}
+                    <a href={`/flows/${f.slug}/`}>{f.short}</a>
+                  </>
+                ))}
+                .
+              </p>
+            )}
+            {mentioned.length > 0 && (
+              <p>
+                Mentioned in{" "}
+                {mentioned.map((f, i) => (
+                  <>
+                    {i > 0 && ", "}
+                    <a href={`/flows/${f.slug}/`}>{f.short}</a>
+                  </>
+                ))}
+                .
+              </p>
+            )}
+          </>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sp-ref {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+    margin: 0.25rem 0 0.6rem;
+    overflow-wrap: anywhere;
+  }
+  .page-head .chips {
+    margin-bottom: 1rem;
+  }
+  .sp > * {
+    max-width: 52rem;
+  }
+  .sp h2 {
+    margin: 2.25rem 0 0.75rem;
+  }
+  .sp h2:first-child {
+    margin-top: 0;
+  }
+  .sp-note,
+  .sp-meta {
+    color: var(--fg-muted);
+    font-size: 0.9rem;
+  }
+  .sp-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1.5px solid var(--fg);
+  }
+  .sp-list > li {
+    display: grid;
+    grid-template-columns: 11.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.8rem 0;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sp-list > li > div > * {
+    margin: 0 0 0.4rem;
+  }
+  .sp-list > li > div > :last-child {
+    margin-bottom: 0;
+  }
+  .sp-list ul {
+    padding-left: 1.2rem;
+  }
+  .sp-when,
+  .sp-kind {
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    /* blue is for links: a label that is not a link gives it up */
+    color: var(--fg-muted);
+  }
+  .sp-when {
+    padding-top: 0.25rem;
+    white-space: nowrap;
+  }
+  .sp-name {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .sp-name .sp-kind {
+    margin-left: 0.5rem;
+  }
+  .sp-name > .sp-kind:first-child {
+    margin-left: 0;
+  }
+  .sp-related {
+    padding-left: 1.2rem;
+  }
+  .sp-related li {
+    margin: 0 0 0.4rem;
+  }
+  @media (max-width: 40rem) {
+    .sp-list > li {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+</style>

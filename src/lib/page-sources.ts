@@ -36,6 +36,8 @@ export interface Site {
   records: string[];
   /** The tracker ids of the glossary terms that name a standard. */
   glossaryStandards: string[];
+  /** Each citation, as the two tracker ids it joins: the one that cites, and the one cited. */
+  cited?: [from: string, to: string][];
 }
 
 /** Each source's first and last commit. An entry's first is the commit that added it. */
@@ -132,6 +134,27 @@ const MADE_FROM: [
     /^\/standards\/(timeline|changes)\/$/,
     (page) => [`src/pages/standards/${page}.astro`, HISTORY],
   ],
+  // One standard's page: its tracker entry, what the log has recorded for it,
+  // and, where a citation names it, the citations and the log's events for the
+  // document at the other end of each. As with a flow, the file
+  // that lays every such page out is not one of them: a change to it is not a
+  // change to what any one standard's page says.
+  [
+    /^\/standards\/([^/]+)\/$/,
+    (id, site) => {
+      // A citation's line says which version is cited and which is current,
+      // so it changes with the log's events for the document at its other end.
+      const others = (site.cited ?? [])
+        .filter((pair) => pair.includes(id))
+        .flatMap((pair) => pair.filter((entry) => entry !== id));
+      return [
+        `${STANDARDS}#${id}`,
+        `${HISTORY}#${id}`,
+        ...(others.length ? [`${HISTORY}citations.ts`] : []),
+        ...[...new Set(others)].map((entry) => `${HISTORY}#${entry}`),
+      ];
+    },
+  ],
   // A term that names a standard shows that standard's status.
   [
     /^\/glossary\/$/,
@@ -210,6 +233,9 @@ export const NOT_FOLLOWED: Record<string, Record<string, string>> = {
   },
   "src/pages/standards/index.astro": {
     "src/data/flows/index.ts": "the names of the flows that list a standard",
+  },
+  "src/pages/standards/[id].astro": {
+    "src/data/flows/index.ts": "the names of the flows that list the standard",
   },
   "src/pages/standards/timeline.astro": {
     "src/data/standards.ts": "the names of the documents its events are about",

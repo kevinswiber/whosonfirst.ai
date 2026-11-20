@@ -644,7 +644,7 @@ test("every entry in the changelog's feed says what the timeline says of its eve
     const when = item.match(/<span class="hl-when">([^<]*)<\/span>/)[1];
     const label = item.match(/<span class="hl-kind">([^<]*):<\/span>/)[1];
     const named = item.match(
-      /<a href="\/standards\/#([^"]+)">([^<]*)<\/a><\/p>/,
+      /<a href="\/standards\/([^"/]+)\/">([^<]*)<\/a><\/p>/,
     );
     const said = item.match(/<p class="hl-name">.*?<\/p><p>(.*?)<\/p>/)[1];
     const changes = item.match(/<\/p>(<ul>.*?<\/ul>)/)?.[1];
