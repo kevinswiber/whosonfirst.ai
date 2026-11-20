@@ -138,6 +138,20 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     );
   });
 
+  test("a heading that was linked to does not show it, with a pointer", async () => {
+    await open(page, site.url(`${LESSON}#keep`));
+    assert.equal(await page.evaluate(() => location.hash), "#keep");
+    assert.equal(
+      await page.evaluate(
+        () => document.querySelector("#keep:target") !== null,
+      ),
+      true,
+    );
+    await page.mouse.move(0, 500);
+    await page.waitForTimeout(250);
+    assert.equal(await opacity(linkFor(page, "keep")), 0);
+  });
+
   test("pressing it copies the page's address with the section's, and says so", async () => {
     await open(page, site.url(LESSON));
     await linkFor(page, "keep").click();
@@ -256,6 +270,14 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
       ),
       1,
     );
+    await page.goto(site.url(`${LESSON}#keep`));
+    assert.equal(
+      await link.evaluate((a) =>
+        Number(getComputedStyle(a.parentElement).opacity),
+      ),
+      1,
+      "and a heading that was linked to still shows it",
+    );
     const box = await link.boundingBox();
     assert.ok(
       box.width >= 24 && box.height >= 24,
@@ -284,10 +306,12 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
   });
 });
 
-// The icon hangs in the margin to the left of its heading. Wherever a page
-// has one, it is inside the window, in front of nothing else, behind nothing,
-// level with the heading's first line, and the heading's text is where it was.
-describe("the icon in the margin", { concurrency: true }, () => {
+// Where the window is wider than 40rem (640px, as a media query reads it) the icon hangs in the margin to
+// the left of its heading, and below that it follows the heading's text. In
+// either place a page's icon is inside the window, in front of nothing else,
+// behind nothing, and the heading's text is where it was. In the margin it is
+// level with the heading's first line; after the text it is on its last.
+describe("where the icon is", { concurrency: true }, () => {
   const PAGES = [
     "/",
     "/learn/",
@@ -305,13 +329,17 @@ describe("the icon in the margin", { concurrency: true }, () => {
     "/implementations/dpop/",
   ];
   const WIDTHS = [
-    { width: 1280, height: 900 },
-    { width: 768, height: 900 },
+    { width: 1440, height: 900, left: true },
+    { width: 1280, height: 900, left: true },
+    { width: 768, height: 900, left: true },
+    { width: 641, height: 900, left: true },
+    { width: 640, height: 900, touch: true },
+    { width: 390, height: 844, touch: true },
     { width: 375, height: 667, touch: true },
     { width: 320, height: 568, touch: true },
   ];
   for (const w of WIDTHS) {
-    test(`${w.width} wide: every icon is in the window, in the clear and level with its first line`, async (t) => {
+    test(`${w.width} wide: every icon is ${w.left ? "in the margin" : "after its heading"}, in the window and in the clear`, async (t) => {
       const ctx = await site.context({
         viewport: { width: w.width, height: w.height },
         isMobile: w.touch,
@@ -323,7 +351,7 @@ describe("the icon in the margin", { concurrency: true }, () => {
       let seen = 0;
       for (const path of PAGES) {
         await open(page, site.url(path));
-        const found = await page.evaluate(() => {
+        const found = await page.evaluate((left) => {
           const out = {
             n: 0,
             wrong: [],
@@ -363,24 +391,48 @@ describe("the icon in the margin", { concurrency: true }, () => {
                 Number.parseFloat(getComputedStyle(h).paddingTop) +
                 Number.parseFloat(getComputedStyle(h).borderTopWidth));
             const problems = [];
-            if (svg.left < 0 || svg.right > head.left + 1)
-              problems.push(
-                `icon at ${Math.round(svg.left)} to ${Math.round(svg.right)}, heading at ${Math.round(head.left)}`,
-              );
+            if (left) {
+              if (svg.left < 0 || svg.right > head.left + 1)
+                problems.push(
+                  `icon at ${Math.round(svg.left)} to ${Math.round(svg.right)}, heading at ${Math.round(head.left)}`,
+                );
+              if (Number.isFinite(line) && Math.abs(first - line / 2) > 3)
+                problems.push(
+                  `not level with the first line (${Math.round(first)} of ${Math.round(line)})`,
+                );
+            } else {
+              // after the text: on the heading's last line, or alone on a line of
+              // its own below it where the last word leaves no room beside it
+              if (svg.left < 0 || svg.right > innerWidth)
+                problems.push(
+                  `icon at ${Math.round(svg.left)} to ${Math.round(svg.right)} of ${innerWidth}`,
+                );
+              if (svg.left < head.left)
+                problems.push("in the margin, where it is not wanted");
+              if (svg.top < head.top - 3 || svg.bottom > head.bottom + 3)
+                problems.push("outside its heading");
+            }
+            if (left) {
+              // nothing else is under the icon: no column, rule or text of another part
+              const under = document
+                .elementsFromPoint(
+                  svg.left + svg.width / 2,
+                  svg.top + svg.height / 2,
+                )
+                .filter((x) => !x.contains(h) && !e.contains(x) && x !== e);
+              if (under.length)
+                problems.push(`over ${under[0].tagName}.${under[0].className}`);
+            }
             if (!hit?.closest("section-link"))
               problems.push(`covered by ${hit?.tagName}.${hit?.className}`);
-            if (moved > 0.5) problems.push(`the text moved ${moved}px`);
-            if (Number.isFinite(line) && Math.abs(first - line / 2) > 3)
-              problems.push(
-                `not level with the first line (${Math.round(first)} of ${Math.round(line)})`,
-              );
+            if (left && moved > 0.5) problems.push(`the text moved ${moved}px`);
             if (problems.length)
               out.wrong.push(
                 `${h.id || h.textContent.trim().slice(0, 24)}: ${problems.join("; ")}`,
               );
           }
           return out;
-        });
+        }, w.left);
         seen += found.n;
         if (found.wide) wrong.push(`${path} is wider than the window`);
         for (const m of found.wrong.slice(0, 3)) wrong.push(`${path} ${m}`);
