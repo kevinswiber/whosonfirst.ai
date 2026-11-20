@@ -527,6 +527,12 @@ function prepare(main, page, site) {
       parent.children.splice(index, 1, ...node.children);
       return [SKIP, index];
     }
+    // 2b. A checklist is a task list, so it can be pasted into an issue.
+    if (is(node, "ul") && has(node, "checklist"))
+      for (const li of node.children.filter((c) => is(c, "li")))
+        li.children.unshift(
+          element("input", { type: "checkbox", checked: false }, []),
+        );
     // 3. Addresses are whole, so a copy of this text still leads somewhere.
     if (is(node, "a") && typeof node.properties.href === "string")
       node.properties.href = new URL(
