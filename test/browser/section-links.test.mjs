@@ -116,11 +116,6 @@ describe("with a script, on a desktop", { concurrency: 1 }, () => {
     await link.hover();
     assert.equal(await label(link), "Copy link", "says what a press does");
     assert.equal(
-      await page.locator("section-link[data-below]").count(),
-      0,
-      "to the right of the icon, where there is room",
-    );
-    assert.equal(
       await heightOf(page, "keep"),
       height,
       "and is no taller for it",
@@ -285,8 +280,113 @@ describe("with a script, on a phone", { concurrency: 1 }, () => {
   });
 });
 
-describe("the label, where the window is narrow", { concurrency: 1 }, () => {
-  test("it goes below the icon where there is no room beside it, and widens nothing", async (t) => {
+// The icon hangs in the margin to the left of its heading. Wherever a page
+// has one, it is inside the window, in front of nothing else, behind nothing,
+// level with the heading's first line, and the heading's text is where it was.
+describe("the icon in the margin", { concurrency: true }, () => {
+  const PAGES = [
+    "/",
+    "/learn/",
+    LESSON,
+    FLOW,
+    "/flows/",
+    "/about/",
+    "/standards/",
+    "/standards/rfc9449/",
+    "/standards/changes/",
+    "/deployments/gateways/",
+    "/compare/dpop-vs-oauth-mtls/",
+    "/concepts/",
+    "/guide/",
+    "/implementations/dpop/",
+  ];
+  const WIDTHS = [
+    { width: 1280, height: 900 },
+    { width: 768, height: 900 },
+    { width: 375, height: 667, touch: true },
+    { width: 320, height: 568, touch: true },
+  ];
+  for (const w of WIDTHS) {
+    test(`${w.width} wide: every icon is in the window, in the clear and level with its first line`, async (t) => {
+      const ctx = await site.context({
+        viewport: { width: w.width, height: w.height },
+        isMobile: w.touch,
+        hasTouch: w.touch,
+      });
+      t.after(() => ctx.close());
+      const page = await ctx.newPage();
+      const wrong = [];
+      let seen = 0;
+      for (const path of PAGES) {
+        await open(page, site.url(path));
+        const found = await page.evaluate(() => {
+          const out = {
+            n: 0,
+            wrong: [],
+            wide: document.documentElement.scrollWidth > innerWidth,
+          };
+          for (const e of document.querySelectorAll("section-link")) {
+            const h = e.closest("h2, h3");
+            if (!h.getClientRects().length) continue;
+            out.n++;
+            h.scrollIntoView({ block: "center", behavior: "instant" });
+            const svg = e.querySelector("svg").getBoundingClientRect();
+            const head = h.getBoundingClientRect();
+            const at = (x, y) => document.elementFromPoint(x, y);
+            const hit = at(svg.left + svg.width / 2, svg.top + svg.height / 2);
+            // the text of the heading, with and without the link
+            const range = document.createRange();
+            const text = [...h.childNodes].find(
+              (n) => n.nodeType === 3 && n.textContent.trim(),
+            );
+            let moved = 0;
+            if (text) {
+              range.selectNodeContents(text);
+              const before = range.getBoundingClientRect();
+              e.style.display = "none";
+              range.selectNodeContents(text);
+              const after = range.getBoundingClientRect();
+              e.style.display = "";
+              moved =
+                Math.abs(before.left - after.left) +
+                Math.abs(before.top - after.top);
+            }
+            const line = Number.parseFloat(getComputedStyle(h).lineHeight);
+            const first =
+              svg.top +
+              svg.height / 2 -
+              (head.top +
+                Number.parseFloat(getComputedStyle(h).paddingTop) +
+                Number.parseFloat(getComputedStyle(h).borderTopWidth));
+            const problems = [];
+            if (svg.left < 0 || svg.right > head.left + 1)
+              problems.push(
+                `icon at ${Math.round(svg.left)} to ${Math.round(svg.right)}, heading at ${Math.round(head.left)}`,
+              );
+            if (!hit?.closest("section-link"))
+              problems.push(`covered by ${hit?.tagName}.${hit?.className}`);
+            if (moved > 0.5) problems.push(`the text moved ${moved}px`);
+            if (Number.isFinite(line) && Math.abs(first - line / 2) > 3)
+              problems.push(
+                `not level with the first line (${Math.round(first)} of ${Math.round(line)})`,
+              );
+            if (problems.length)
+              out.wrong.push(
+                `${h.id || h.textContent.trim().slice(0, 24)}: ${problems.join("; ")}`,
+              );
+          }
+          return out;
+        });
+        seen += found.n;
+        if (found.wide) wrong.push(`${path} is wider than the window`);
+        for (const m of found.wrong.slice(0, 3)) wrong.push(`${path} ${m}`);
+      }
+      assert.deepEqual(wrong.slice(0, 12), []);
+      assert.ok(seen > 50, `${seen} icons checked`);
+    });
+  }
+
+  test("the label goes under the icon and widens nothing", async (t) => {
     const ctx = await site.context({ viewport: { width: 390, height: 844 } });
     t.after(() => ctx.close());
     const page = await ctx.newPage();
@@ -296,7 +396,6 @@ describe("the label, where the window is narrow", { concurrency: 1 }, () => {
     const height = await heightOf(page, "standards");
     await link.hover();
     assert.equal(await label(link), "Copy link");
-    assert.equal(await page.locator("section-link[data-below]").count(), 1);
     assert.equal(await heightOf(page, "standards"), height);
     assert.ok(
       await page.evaluate(
