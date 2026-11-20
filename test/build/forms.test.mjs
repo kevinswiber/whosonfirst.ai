@@ -714,3 +714,36 @@ test("every entry in the changelog's feed says what the timeline says of its eve
   }
   assert.deepEqual(wrong, []);
 });
+
+// The home page says when the changelog last recorded something, apart from
+// the month the sources were reviewed: a review that finds nothing changed
+// records nothing. The date links to its own heading on the changelog, and the
+// Markdown copy says it too.
+test("the home page's latest recorded change is the changelog's newest day and links to that day's heading, in the page and in its Markdown copy", () => {
+  const home = pageAt("/");
+  const changelog = pageAt("/standards/changes/").html;
+  const link =
+    /Latest change recorded:<\/span>\s*<a href="(\/standards\/changes\/#(g-[\d-]+))"><time datetime="([\d-]+)">([^<]*)<\/time>/.exec(
+      home.html,
+    );
+  assert.ok(link, "the home page has no latest recorded change");
+  const [, href, id, iso, spelled] = link;
+  assert.equal(
+    id,
+    /<h2 id="(g-[\d-]+)"/.exec(changelog)?.[1],
+    "not the changelog's newest day",
+  );
+  assert.equal(id, `g-${iso}`);
+  assert.ok(changelog.includes(`<h2 id="${id}">${spelled}</h2>`));
+  assert.ok(
+    /Reviewed:<\/span>\s*[A-Z][a-z]+ \d{4}\./.test(home.html),
+    "the review month is gone",
+  );
+  const md = file("index.md");
+  assert.ok(
+    md?.includes("Latest change recorded:") &&
+      md.includes(spelled) &&
+      md.includes(href),
+    "the Markdown copy does not say it",
+  );
+});
