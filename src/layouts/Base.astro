@@ -895,13 +895,18 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     flex-wrap: wrap;
     align-items: center;
   }
+  /* The space between two sections is a gap and not their padding, so that
+     the rule under one stops short of the rule under the next. */
+  .nav-group > ul {
+    column-gap: 0.6rem;
+  }
   #site-nav a {
     display: block;
     font-size: 0.92rem;
     font-weight: 500;
     text-decoration: none;
     color: var(--fg-muted);
-    padding: 0.5rem 0.55rem;
+    padding: 0.5rem 0.25rem;
     white-space: nowrap;
   }
   /* The section the reader is in has a rule under it in the link color.
@@ -927,7 +932,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     content: '';
     width: 1px;
     height: 1.1rem;
-    margin-inline: 0.5rem;
+    margin-inline: 0.8rem;
     background: var(--border-strong);
   }
   .nav-group {
@@ -995,7 +1000,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       column-gap: 0.75rem;
     }
     .brand {
-      margin-right: 0.9rem;
+      margin-right: 1.2rem;
     }
     #site-nav {
       margin-right: auto;
@@ -1017,13 +1022,16 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   /* just enough room: the links close up and the shortcut's keys go unsaid */
   @media (63rem < width <= 71rem) {
     .brand {
-      margin-right: 0.3rem;
+      margin-right: 0.5rem;
+    }
+    .nav-group > ul {
+      column-gap: 0.4rem;
     }
     #site-nav a {
-      padding-inline: 0.4rem;
+      padding-inline: 0.2rem;
     }
     .nav-group + .nav-group::before {
-      margin-inline: 0.35rem;
+      margin-inline: 0.55rem;
     }
     .launch-key {
       display: none;
