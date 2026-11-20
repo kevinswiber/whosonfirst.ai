@@ -280,11 +280,18 @@ const nav = groups.flatMap((g) => g.items.filter((i) => !i.more));
 // The three ways in that the home page opens with. They stay in the bar where
 // the rest of the list waits behind the menu; a phone has room for the first.
 const QUICK = [nav[0], nav[1], nav[2]];
-// A section is marked on every page under its address. The timeline is under
-// the standards, so both are marked there: the bar shows only the first.
+// Where the reader is. One section is the current page: the one whose address
+// reaches furthest into this page's. The timeline is under the standards, so on
+// it the timeline is current and the standards are the section around it. The
+// bar, which has no room for the timeline, draws its rule under the standards
+// there; the menu, which lists both, marks the timeline alone.
 const path = Astro.url.pathname;
-const marked = (item: Section) =>
-  path.startsWith(item.href) ? "page" : undefined;
+const around = groups
+  .flatMap((g) => g.items)
+  .filter((i) => path.startsWith(i.href))
+  .sort((a, b) => b.href.length - a.href.length);
+const marked = (item: Section) => (item === around[0] ? "page" : undefined);
+const within = (item: Section) => (around.indexOf(item) > 0 ? "" : undefined);
 
 /**
  * The site's mark, drawn into the header from the icon's own file. Its style
@@ -377,7 +384,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
         <div class="quick">
           {
             QUICK.map((item) => (
-              <a href={item.href} aria-current={marked(item)}>
+              <a href={item.href} aria-current={marked(item)} data-within={within(item)}>
                 {item.label}
               </a>
             ))
@@ -395,7 +402,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
                   <ul aria-labelledby={`nav-group-${i}`}>
                     {g.items.map((item) => (
                       <li class:list={{ more: item.more }}>
-                        <a href={item.href} aria-current={marked(item)}>
+                        <a href={item.href} aria-current={marked(item)} data-within={within(item)}>
                           <span class="nav-label">{item.label}</span>
                           <span class="nav-note">{item.note}</span>
                         </a>
@@ -661,6 +668,11 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       document.addEventListener('click', (e) => {
         if (!header.contains(e.target as Node)) setOpen(false);
       });
+      // The open menu can cover the page. Focus that has moved on into the page
+      // would be behind it, so the menu closes as focus leaves the header.
+      document.addEventListener('focusin', (e) => {
+        if (header.hasAttribute('data-open') && !header.contains(e.target as Node)) setOpen(false);
+      });
       window.matchMedia('(width > 63rem)').addEventListener('change', () => setOpen(false));
 
       // Color theme. With no choice made, CSS follows the system setting, and
@@ -916,7 +928,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     color: var(--fg);
     box-shadow: inset 0 -2px 0 var(--border-strong);
   }
-  #site-nav a[aria-current='page'] {
+  #site-nav a:is([aria-current='page'], [data-within]) {
     color: var(--fg);
     box-shadow: inset 0 -2px 0 var(--accent);
   }
@@ -944,10 +956,18 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
      to press and not only an icon wherever there is room for one. It says
      both things it takes: a question in the reader's own words, or a term. */
   .search-launch {
+    --launch: 44px;
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    min-height: 44px;
+    align-content: flex-start;
+    /* Its words are on one line and anything that does not fit goes to a
+       second, which is out of sight. So where a face runs wide or the bar is
+       short, the field loses its shortcut and then its words, and is never
+       laid over the section beside it. */
+    flex-wrap: wrap;
+    overflow: hidden;
+    gap: 0 0.6rem;
+    height: var(--launch);
     min-width: 44px;
     padding-inline: 0.75rem;
     border: 1px solid var(--border-strong);
@@ -960,6 +980,15 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   .search-launch:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+  /* as tall as the field, so the first line is too, whatever is left on it */
+  .search-launch::before {
+    content: '';
+    height: calc(var(--launch) - 2px);
+    margin-right: -0.6rem;
+  }
+  .launch-label {
+    white-space: nowrap;
   }
   .launch-key {
     margin-left: auto;
@@ -1009,11 +1038,14 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .nav-group > ul {
       flex-wrap: nowrap;
     }
-    .search-launch {
+    .brand,
+    #site-nav {
       flex: none;
-      min-height: 2.25rem;
+    }
+    .search-launch {
+      --launch: 2.25rem;
+      flex: 0 1 auto;
       padding-inline: 0.65rem 0.7rem;
-      white-space: nowrap;
     }
     .launch-key {
       margin-left: 1.1rem;
@@ -1022,16 +1054,16 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   /* just enough room: the links close up and the shortcut's keys go unsaid */
   @media (63rem < width <= 71rem) {
     .brand {
-      margin-right: 0.5rem;
+      margin-right: 0.4rem;
     }
     .nav-group > ul {
-      column-gap: 0.4rem;
+      column-gap: 0.3rem;
     }
     #site-nav a {
       padding-inline: 0.2rem;
     }
     .nav-group + .nav-group::before {
-      margin-inline: 0.55rem;
+      margin-inline: 0.45rem;
     }
     .launch-key {
       display: none;
@@ -1190,6 +1222,10 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       font-weight: 400;
       color: var(--fg-muted);
     }
+    /* the menu lists the page itself, so the section around it goes unmarked */
+    .site-header[data-js] #site-nav a[data-within] {
+      box-shadow: none;
+    }
     .site-header[data-js] #site-nav a[aria-current='page'] {
       box-shadow: inset 3px 0 0 var(--accent);
       padding-left: 0.8rem;
@@ -1197,9 +1233,10 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   }
   /* Between a phone and the full bar: all three ways in beside the name, and
      search as a field. The open menu sets its groups side by side. */
-  @media screen and (46rem <= width <= 63rem) {
+  @media screen and (48rem <= width <= 63rem) {
+    /* the links keep their width, and search has what is left */
     .site-header[data-js] .bar {
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto auto minmax(2.75rem, 1fr) auto;
       column-gap: 0.9rem;
     }
     .site-header[data-js] .quick {
@@ -1209,9 +1246,10 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       display: inline-flex;
     }
     .site-header[data-js] .search-launch {
+      justify-self: end;
       justify-content: flex-start;
+      max-width: 100%;
       padding-inline: 0.7rem 0.8rem;
-      white-space: nowrap;
     }
     .site-header[data-js] .launch-label {
       display: inline;
