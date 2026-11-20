@@ -1,0 +1,66 @@
+name: Preview guide search
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  preview:
+    if: >-
+      github.repository == 'kevinswiber/whosonfirst.ai' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Serialize updates to this PR's alias. Other PRs publish independently.
+    concurrency:
+      group: guide-search-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    environment:
+      name: search-preview
+      url: ${{ steps.publish.outputs.url }}
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      PREVIEW_COMMIT: ${{ github.event.pull_request.head.sha }}
+      PREVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Build the preview with its own rate limiter
+        run: npm run search:preview:build
+        env:
+          SEARCH_PREVIEW_RATE_NAMESPACE: ${{ vars.SEARCH_PREVIEW_RATE_NAMESPACE }}
+          SEARCH_NAMESPACE: ${{ vars.SEARCH_NAMESPACE || 'whosonfirst' }}
+          SEARCH_INSTANCE: ${{ vars.SEARCH_INSTANCE || 'whosonfirst-guide' }}
+      - name: Check that this commit is still under review
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          reviewed=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PREVIEW_PR_NUMBER" --jq 'select(.state == "open" and .base.ref == "main") | .head.sha')
+          if [[ "$reviewed" == "$PREVIEW_COMMIT" ]]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'A newer commit or a closed PR superseded this preview.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload the preview version and verify live search
+        id: publish
+        if: steps.current.outputs.publish == 'true'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_DEPLOY_TOKEN }}
+        run: node scripts/preview-search.mjs

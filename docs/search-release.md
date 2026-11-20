@@ -1,6 +1,6 @@
 # Releasing guide search
 
-Cloudflare Workers Builds publishes the guide. The optional GitHub Actions workflow **Release guide search** publishes the sibling search Worker after the same commit is live. Each static build writes `/search/release.json` with the public Git commit and SHA-256 digest of the passage manifest. A source archive without Git can build the site and has a null commit in this file. Production release requires both values.
+Cloudflare Workers Builds publishes the guide. Every push to `main` starts the **Release guide search** workflow, which publishes the sibling search Worker once the site serves the same commit. Each static build writes `/search/release.json` with the public Git commit and SHA-256 digest of the passage manifest. A source archive without Git can build the site and has a null commit in this file. Production release requires both values.
 
 ## Set up once
 
@@ -10,7 +10,24 @@ The search Worker uses standard invocation telemetry. It receives the question i
 2. In the public repository create the **search-production** GitHub environment, select `main` as its deployment branch, and use the repository’s existing review and CI policy. The release workflow uses the trusted code merged there. Its triggers are pushes to main and manual dispatches from main in the upstream repository.
 3. Set the environment variable `SEARCH_RATE_NAMESPACE` to an operator-chosen numeric identifier dedicated to this Worker’s rate limiter. Use a different number from other limiters in the same account. The identifier is configuration and does not require another permission or a quota increase. Set it once and reuse it across releases. The limit is 20 submissions per IP per minute per Cloudflare location. Optional environment variables are `SEARCH_WORKER_NAME` (default `whosonfirst-ai-search`), `SEARCH_NAMESPACE` (default `whosonfirst`), and `SEARCH_INSTANCE` (default `whosonfirst-guide`). Use the same values for indexing and retrieval.
 4. Set environment secrets `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN` and `CLOUDFLARE_SEARCH_WORKER_DEPLOY_TOKEN`. Scope both tokens to the intended account. The upload token needs item inventory and upload access to AI Search. Grant the deployment identity the **Editor** role on the existing sibling Worker. It needs to upload a version and activate it on that Worker. Keep route-editing/DNS permissions out of both tokens. Each token is available only to its matching release step.
-5. Configure the existing route, credentials, and service limits before setting the **repository** Actions variable `SEARCH_RELEASE_ENABLED` to `true`. Missing or different values leave the job skipped. Changing this variable does not start a run. Use **Actions → Release guide search → Run workflow**, on main, for the first release.
+5. To release the current commit again after changing settings or credentials, choose **Actions → Release guide search → Run workflow** and select `main`.
+
+## Pull request previews
+
+Open **View deployment** for **search-preview** on a pull request, or follow the link in the **Preview guide search** workflow summary. This preview serves the PR’s pages and the search endpoint together. The ordinary Workers Builds preview still covers the site Worker alone.
+
+For each same-repository PR to `main`, the workflow builds the PR head commit and uploads a version of the dedicated `whosonfirst-ai-preview` Worker with the alias `pr-<number>`. Later pushes refresh the same URL. The workflow checks that the public site and API report the reviewed commit and passage revision, then checks a real search. Fork and Dependabot PRs run the local CI checks with fixture bindings.
+
+Quick matches come from the branch’s catalog. Full search queries the published index and displays hits whose content keys are in the branch’s manifest. Added or edited passages become eligible after production indexes them. Index uploads and production traffic changes stay in the release workflow on `main`.
+
+### Set up previews once
+
+1. Create a Worker named `whosonfirst-ai-preview` in the Cloudflare account holding the published search index. A starter Worker is sufficient. Enable **Preview URLs** under **Settings → Domains & Routes**. The workflow uploads prebuilt versions with assets and bindings. A custom domain, zone route, and Git integration are unnecessary.
+2. Give a dedicated Cloudflare API token **Editor** access to that Worker. In the repository’s `search-preview` GitHub environment, save the token as the secret `CLOUDFLARE_PREVIEW_DEPLOY_TOKEN` and the account ID as the secret `CLOUDFLARE_ACCOUNT_ID`. Allow deployments from trusted PRs to this environment. Keep the production deployment and passage-upload tokens in `search-production`.
+3. Set the `search-preview` environment **variable** `SEARCH_PREVIEW_RATE_NAMESPACE` to a numeric limiter ID dedicated to previews. The preview URLs share this limiter. Set `SEARCH_NAMESPACE` and `SEARCH_INSTANCE` there if the published guide uses values other than the defaults above.
+4. Open or update a same-repository PR to `main`, or rerun its failed preview job after correcting settings. The preview step publishes one version and checks its alias. Its URL should show the PR’s site and return results for a term such as “CIBA”.
+
+For a local check, run `npm run build`, then `SEARCH_PREVIEW_RATE_NAMESPACE=1 npm run search:preview:build`. The preview build exercises the bundled handlers with local bindings.
 
 ## What a release does
 
@@ -30,7 +47,7 @@ The fixed set contains 15 situations, five lookups, one ambiguous question and t
 
 Runs are serialized. If a new push supersedes a run, the older run fails its next main-commit check. Retry the run for current main. If the site build never appears, fix its deployment and rerun. A failed upload may leave built-in items or an inactive Worker version behind. Rerunning the current commit reuses its content-addressed items. A site deploy and a sibling activation are separate Cloudflare operations, so keep the marker and final smoke check in the release path.
 
-For an incident, turn off `SEARCH_RELEASE_ENABLED` and stop any in-progress release before making an independent rollback. In the sibling Worker's deployment history, identify the last healthy version by its **Guide search for** commit message. Redeploy that Worker version to 100% through the version/deployment controls. Retain its indexed passages and confirm links still exist on the live site. If destinations changed, roll the site and Worker back to their matching commit together. Confirm the public marker, search response headers and a real result, then enable releases again when the fix is on main. The zone route stays with its current owner.
+For an incident, disable **Release guide search** in GitHub Actions and cancel any queued or in-progress release before making an independent rollback. In the sibling Worker's deployment history, identify the last healthy version by its **Guide search for** commit message. Redeploy that Worker version to 100% through the version/deployment controls. Retain its indexed passages and confirm links still exist on the live site. If destinations changed, roll the site and Worker back to their matching commit together. Confirm the public marker, search response headers and a real result, then re-enable the workflow and run it on `main` when the fix is in place. The zone route stays with its current owner.
 
 ## Retiring old passages
 

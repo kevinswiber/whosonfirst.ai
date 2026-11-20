@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main' && vars.SEARCH_RELEASE_ENABLED == 'true'
+    if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 55
     environment: search-production

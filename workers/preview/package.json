@@ -1,0 +1,8 @@
+{
+  "name": "whosonfirst-preview",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ../search/prepare.mjs && vite build && node --test built-preview.test.mjs"
+  }
+}
