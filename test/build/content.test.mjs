@@ -314,28 +314,28 @@ test("the numbers the menu gives for a section are the number of its pages", () 
         !not.includes(p.path),
     ).length;
   const terms = (pageAt("/glossary/")?.html ?? "").split("<dt").length - 1;
-  assert.deepEqual(
-    {
-      learn: notes["/learn/"],
-      flows: notes["/flows/"],
-      deployments: notes["/deployments/"],
-      standards: notes["/standards/"],
-      glossary: notes["/glossary/"],
-    },
-    {
-      learn: notes["/learn/"]?.replace(/^\d+/, LESSONS.length),
-      flows: notes["/flows/"]?.replace(/^\d+/, FLOWS.length),
-      deployments: notes["/deployments/"]?.replace(/\d+/, pages("deployments")),
-      standards: notes["/standards/"]?.replace(
-        /^\d+/,
-        pages("standards", ["/standards/changes/", "/standards/timeline/"]),
-      ),
-      glossary: notes["/glossary/"]?.replace(/^\d+/, terms),
-    },
+  // Each line that gives a number, and what that number has to be. A line that
+  // is missing, or that has lost its number, fails as one that is wrong does.
+  const counted = {
+    "/learn/": LESSONS.length,
+    "/flows/": FLOWS.length,
+    "/deployments/": pages("deployments"),
+    "/standards/": pages("standards", [
+      "/standards/changes/",
+      "/standards/timeline/",
+    ]),
+    "/glossary/": terms,
+  };
+  const said = Object.fromEntries(
+    Object.keys(counted).map((href) => {
+      const number = /\d+/.exec(notes[href] ?? "")?.[0];
+      return [href, number === undefined ? null : Number(number)];
+    }),
   );
+  assert.deepEqual(said, counted, JSON.stringify(notes));
+  for (const count of Object.values(counted)) assert.ok(count > 0);
   for (const [href, note] of Object.entries(notes))
     assert.ok(note.trim().length >= 12, `${href} says only “${note}”`);
-  assert.ok(/^\d+ /.test(notes["/learn/"] ?? ""), notes["/learn/"]);
 });
 
 // The comparisons are a section of the site, and a reader on any page can
