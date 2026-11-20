@@ -236,7 +236,7 @@ export function guideSearch(catalog, shell, securityHeaders) {
         200,
         results.length
           ? `${results.length} ${results.length === 1 ? "result" : "results"}`
-          : "No matching passages. Try another phrase or browse the guide.",
+          : "No results found. Try another phrase or browse the guide.",
         results,
       );
     } catch {

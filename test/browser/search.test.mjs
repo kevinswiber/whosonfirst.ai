@@ -56,13 +56,11 @@ test("the form and browse links work without scripts", async () => {
   await ctx.close();
 });
 
-test("examples can be edited before submitting once on a narrow phone", async () => {
+test("each example runs a full search immediately on a narrow phone", async () => {
   const ctx = await site.context({ viewport: { width: 320, height: 568 } });
   const page = await ctx.newPage();
-  const sent = [];
+  const sent = searchTraffic(page);
   await page.route("**/api/search/query", async (route) => {
-    const request = route.request();
-    sent.push([request.method(), request.postData()]);
     await route.fulfill({
       json: {
         results: [
@@ -77,24 +75,33 @@ test("examples can be edited before submitting once on a narrow phone", async ()
       },
     });
   });
-  await open(page, site.url("/search/"));
-  await page.getByRole("button", { name: "RFC 9449" }).click();
-  const input = page.getByRole("searchbox");
-  assert.equal(await input.inputValue(), "RFC 9449");
-  await input.fill("RFC9449");
-  assert.deepEqual(sent, []);
-  await page.getByRole("button", { name: "Search all passages" }).click();
-  const link = page.locator("#search-results a");
-  await link.waitFor();
-  assert.equal(
-    await link.getAttribute("href"),
-    site.url("/standards/rfc9449/"),
-  );
-  assert.match(
-    await page.locator("#search-status-text").textContent(),
-    /1 matching passage/,
-  );
-  assert.deepEqual(sent, [["POST", "q=RFC9449"]]);
+  for (const example of [
+    "My agent needs me to approve a payment on my phone",
+    "Nobody is signed in when the overnight job runs",
+    "RFC 9449",
+  ]) {
+    await open(page, site.url("/search/"));
+    sent.length = 0;
+    await page.getByRole("button", { name: example, exact: true }).click();
+    const link = page.locator("#search-results a");
+    await link.waitFor();
+    assert.equal(
+      await link.getAttribute("href"),
+      site.url("/standards/rfc9449/"),
+    );
+    assert.equal(await page.getByRole("searchbox").inputValue(), example);
+    assert.equal(
+      await page.locator("#search-status-text").textContent(),
+      `1 result for “${example}”.`,
+    );
+    assert.deepEqual(sent, [
+      [
+        "POST",
+        site.url(fullSearch),
+        new URLSearchParams({ q: example }).toString(),
+      ],
+    ]);
+  }
   assert.equal(page.url(), site.url("/search/"));
   assert.ok((await page.evaluate(sideways)).by <= 0);
   const header = page.locator(".site-header");
@@ -167,7 +174,7 @@ test("clearing or dismissing quick matches keeps the search local", async () => 
   await input.fill("unmatchablezzzy");
   await page.getByText("No quick matches.", { exact: true }).waitFor();
   assert.equal(
-    await page
+    await quick
       .getByRole("button", { name: "Search the whole guide" })
       .isEnabled(),
     true,
@@ -198,7 +205,7 @@ test("the reader can still submit once when the quick-match index fails", async 
   await input.press("Enter");
   await page
     .locator("#search-status-text")
-    .filter({ hasText: "No matching passages" })
+    .filter({ hasText: "No results found" })
     .waitFor();
   assert.deepEqual(seen, [
     ["GET", site.url(quickIndex), null],
@@ -237,10 +244,13 @@ test("a slow quick lookup cannot reopen the list over submitted results", async 
   const requested = page.waitForRequest(site.url(quickIndex));
   await input.fill("DPoP");
   await requested;
-  await page.getByRole("button", { name: "Search the whole guide" }).click();
+  await page
+    .getByRole("region", { name: "Quick matches" })
+    .getByRole("button", { name: "Search the whole guide" })
+    .click();
   await page
     .locator("#search-status-text")
-    .filter({ hasText: "No matching passages" })
+    .filter({ hasText: "No results found" })
     .waitFor();
   const delivered = page.waitForEvent(
     "requestfinished",
@@ -270,11 +280,7 @@ test("outage, rate limit, and zero matches give different outcomes", async () =>
   await open(page, site.url("/search/"));
   const input = page.getByRole("searchbox");
   await input.fill("An unfamiliar situation");
-  for (const expected of [
-    /unavailable/,
-    /60 seconds/,
-    /No matching passages/,
-  ]) {
+  for (const expected of [/unavailable/, /60 seconds/, /No results found/]) {
     await input.press("Enter");
     await page
       .locator("#search-status-text")
