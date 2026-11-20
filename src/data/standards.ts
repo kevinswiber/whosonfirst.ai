@@ -929,7 +929,7 @@ const entries: StandardEntry[] = [
     summary:
       "A survey of how credentials reach workloads today without long-lived secrets: Kubernetes projected tokens, cloud metadata services, SPIFFE, CI/CD OIDC.",
     agents:
-      "A vendor-neutral description of the patterns on the deployments pages of this site.",
+      "A vendor-neutral description of the patterns in the deployment guides of this site.",
     url: draft("draft-ietf-wimse-workload-identity-practices"),
   },
   {

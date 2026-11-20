@@ -143,7 +143,7 @@ export const lessons: Lesson[] = [
       },
       {
         href: "/deployments/",
-        label: "Deployments",
+        label: "Where agents run",
         note: "Where the first credential comes from on each kind of platform.",
       },
     ],

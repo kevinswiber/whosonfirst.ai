@@ -656,7 +656,11 @@ const SECTIONS = [
     match: /^\/implementations\//,
     order: "/implementations/",
   },
-  { title: "Deployments", match: /^\/deployments\//, order: "/deployments/" },
+  {
+    title: "Where agents run",
+    match: /^\/deployments\//,
+    order: "/deployments/",
+  },
   {
     title: "Reference",
     match: /^\/(standards\/(timeline\/|changes\/)?|glossary\/)$/,
