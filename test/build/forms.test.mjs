@@ -739,12 +739,15 @@ test("the home page's latest recorded change is the changelog's newest day and l
   assert.equal(id, `g-${iso}`);
   assert.ok(changelog.includes(`<h2 id="${id}">${spelled}</h2>`));
   assert.ok(
-    /Reviewed:<\/span>\s*[A-Z][a-z]+ \d{4}\./.test(home.html),
-    "the review month is gone",
+    /Latest change recorded:[\s\S]*Reviewed:<\/span>\s*[A-Z][a-z]+ \d{4}\./.test(
+      home.html,
+    ),
+    "the review month is gone, or does not come after the latest change",
   );
   const md = file("index.md");
   assert.ok(
     md?.includes("Latest change recorded:") &&
+      md.indexOf("Latest change recorded:") < md.indexOf("Reviewed:") &&
       md.includes(spelled) &&
       md.includes(href),
     "the Markdown copy does not say it",

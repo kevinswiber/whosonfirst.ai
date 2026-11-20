@@ -89,19 +89,19 @@ const whole = (s: string) => s.replace(/(\d)-(?=\d)/g, "$1\u2011");
       )
     }
     {' '}{lead && <span class="doc-fact">{lead}.</span>}{' '}
-    <span class="doc-fact">
-      <span class="doc-key">{subject ? `${subject} reviewed` : 'Reviewed'}:</span>{' '}
-      {reviewed}.
-    </span>
     {latest && (
       <>
-        {' '}
         <span class="doc-fact">
           <span class="doc-key">Latest change recorded:</span>{' '}
           <a href={latest.href}><time datetime={latest.iso}>{latest.date}</time></a>.
         </span>
+        {' '}
       </>
     )}
+    <span class="doc-fact">
+      <span class="doc-key">{subject ? `${subject} reviewed` : 'Reviewed'}:</span>{' '}
+      {reviewed}.
+    </span>
   </p>
   {
     columns.some((column) => column.items.length > 0) && (
