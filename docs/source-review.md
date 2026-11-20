@@ -109,15 +109,11 @@ npm run standards:citations
 - **A new version of a citing document** is a new citation, from that version. Leave the old one: it is still what that version cites.
 - **A citation to a revision the log does not have** is refused by `npm test`. Record the event that published the revision, with its date and its own address.
 
-The flow pages still state some of these in their own words, and nothing ties those to the data:
+A flow page that names a version in its own sentence reads the name from the log, with `current`, `currentDate` and `cited` from `src/data/history/says.ts`, so it needs no edit when a draft moves. One thing is still stated by hand, because it is neither: the revisions a flow page was reviewed against.
 
-| The site says                                                                                                           | Where                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| MCP 2026-07-28 requires OAuth 2.1 and cites draft -13; the current draft is -17                                         | `standards.ts` (`mcp-authorization`); `flows/mcp-authorization.ts` (comment in `roles`, and the note on what the revision rests on) |
-| MCP 2026-07-28 cites Client ID Metadata Documents -00; the MCP draft revision moves to -03                              | `standards.ts` (`cimd`, `mcp-authorization`); `flows/mcp-authorization.ts`                                                          |
-| The MCP enterprise-managed authorization extension pins ID-JAG -04; the draft is at -06                                 | `standards.ts` (`id-jag`); `flows/cross-app-access.ts` (cautions)                                                                   |
-| OAuth 2.1 is at revision -17 dated October 31, 2026, and gathers the RFCs listed                                        | `flows/authorization-code-pkce.ts` (notes)                                                                                          |
-| AAuth is at revision -11, which added the person token and the five access modes, and builds on HTTP Signature Keys -09 | `standards.ts` (`aauth-hardt`, `signature-key`); `flows/aauth.ts` (every step, the comparison, cautions and notes)                  |
+| The site says                                                                                                           | Where                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| AAuth is at revision -11, which added the person token and the five access modes, and builds on HTTP Signature Keys -09 | `standards.ts` (`aauth-hardt`, `signature-key`); `flows/aauth.ts` (every step, the comparison, cautions and notes) |
 
 ### Projects with releases
 

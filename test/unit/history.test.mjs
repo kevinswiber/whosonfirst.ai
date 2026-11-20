@@ -2,7 +2,7 @@
 // well formed, that it agrees with the tracker it describes, and that the
 // functions that read it give what they say.
 import { strict as assert } from "node:assert";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { citations } from "../../src/data/history/citations.ts";
 import { history } from "../../src/data/history/index.ts";
@@ -655,4 +655,43 @@ test("whether a cited revision is still current is read from the log", () => {
     readCitations([{ ...cite, to: "a" }], [base, b, later])[0].behind,
     false,
   );
+});
+
+test("a page's own sentence gets a version's name from the log, or the build stops", async () => {
+  const { cited, current, currentDate } = await import(
+    "../../src/data/history/says.ts"
+  );
+  const now = currentOf(history, "oauth-2-1").version;
+  assert.equal(current("oauth-2-1"), now.name);
+  assert.match(current("oauth-2-1"), /^draft-ietf-oauth-v2-1-\d+$/);
+  assert.match(currentDate("oauth-2-1"), /^[A-Z][a-z]+ \d{1,2}, \d{4}$/);
+  assert.equal(
+    cited("mcp-authorization@2026-07-28", "oauth-2-1"),
+    "draft-ietf-oauth-v2-1-13",
+  );
+  // nothing to give: an entry with no version, a citation that is not there, one that names no revision
+  assert.throws(() => current("aws-iam-roles"), /no current version/);
+  assert.throws(
+    () => cited("mcp-authorization@2026-07-28", "id-jag"),
+    /no citation/,
+  );
+  assert.throws(() => cited("aauth-hardt@-11", "signature-key"), /no citation/);
+});
+
+// A flow that reads a version from the log has to be dated by the log's
+// events for that standard, which it is only if it lists the standard.
+test("a flow that names a standard's version from the log lists that standard", () => {
+  const dir = new URL("../../src/data/flows/", import.meta.url);
+  const wrong = [];
+  for (const file of readdirSync(dir)) {
+    const text = readFileSync(new URL(file, dir), "utf8");
+    const listed = /standards:\s*\[([^\]]*)\]/.exec(text)?.[1] ?? "";
+    for (const [, id] of text.matchAll(
+      /\b(?:current|currentDate)\("([^"]+)"\)/g,
+    ))
+      if (!listed.includes(`"${id}"`)) wrong.push(`${file}: ${id}`);
+    for (const [, id] of text.matchAll(/\bcited\("[^"]+",\s*"([^"]+)"\)/g))
+      if (!listed.includes(`"${id}"`)) wrong.push(`${file}: ${id}`);
+  }
+  assert.deepEqual(wrong, []);
 });
