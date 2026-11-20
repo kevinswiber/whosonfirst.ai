@@ -21,6 +21,11 @@ import markFile from "../../public/favicon.svg?raw";
 import Here from "../components/Here.astro";
 import SearchDialog from "../components/SearchDialog.astro";
 import { longDate, pageDates } from "../lib/page-dates";
+import { places } from "../data/deployments";
+import { flows } from "../data/flows";
+import { glossary } from "../data/glossary";
+import { lessons, totalMinutes } from "../data/learn/lessons";
+import { standards } from "../data/standards";
 import {
   AUTHOR,
   CHANNEL,
@@ -189,11 +194,104 @@ const jsonLd = JSON.stringify({
   "@graph": graph,
 }).replace(/</g, "\\u003c");
 
-// In the order a reader new to the subject needs them: learn it, choose with it,
-// then look things up. The first stays in reach on a phone, where the rest wait
-// behind the menu. Concepts, the one-page version of the lessons, is reached
-// from them and from the footer.
-const QUICK = { href: "/learn/", label: "Learn" };
+// The guide's sections, in the order a reader new to the subject needs them:
+// start, then the flows in practice, then what to look things up in. The grouping is the one the home page opens with. The header shows it
+// with a gap and a rule, and the menu and the footer, which have the room,
+// name each group and say what each section holds. An entry marked `more` is
+// in the menu and the footer only.
+interface Section {
+  href: string;
+  label: string;
+  note: string;
+  more?: boolean;
+}
+const groups: { name: string; items: Section[] }[] = [
+  {
+    name: "Start here",
+    items: [
+      {
+        href: "/learn/",
+        label: "Learn",
+        note: `${lessons.length} short lessons, about ${totalMinutes} minutes`,
+      },
+      {
+        href: "/guide/",
+        label: "Choose a flow",
+        note: "Six questions about your agent",
+      },
+      {
+        href: "/concepts/",
+        label: "Concepts",
+        note: "The ideas, on one page",
+        more: true,
+      },
+      {
+        href: "/compare/",
+        label: "Comparisons",
+        note: "Two flows, set against each other",
+        more: true,
+      },
+    ],
+  },
+  {
+    name: "In practice",
+    items: [
+      {
+        href: "/flows/",
+        label: "All flows",
+        note: `${flows.length} flows, step by step`,
+      },
+      {
+        href: "/deployments/",
+        label: "Where agents run",
+        note: `${places.length} guides, from your own machine to Kubernetes`,
+      },
+      {
+        href: "/implementations/",
+        label: "Implementations",
+        note: "Products and production reports",
+        more: true,
+      },
+    ],
+  },
+  {
+    name: "Reference",
+    items: [
+      {
+        href: "/standards/",
+        label: "Standards",
+        note: `${standards.length} specifications and where each stands`,
+      },
+      {
+        href: "/glossary/",
+        label: "Glossary",
+        note: `${glossary.length} terms, each in a sentence or two`,
+      },
+      {
+        href: "/standards/timeline/",
+        label: "Timeline",
+        note: "What has happened to the specifications, by date",
+        more: true,
+      },
+    ],
+  },
+];
+const nav = groups.flatMap((g) => g.items.filter((i) => !i.more));
+// The three ways in that the home page opens with. They stay in the bar where
+// the rest of the list waits behind the menu; a phone has room for the first.
+const QUICK = [nav[0], nav[1], nav[2]];
+// Where the reader is. One section is the current page: the one whose address
+// reaches furthest into this page's. The timeline is under the standards, so on
+// it the timeline is current and the standards are the section around it. The
+// bar, which has no room for the timeline, draws its rule under the standards
+// there; the menu, which lists both, marks the timeline alone.
+const path = Astro.url.pathname;
+const around = groups
+  .flatMap((g) => g.items)
+  .filter((i) => path.startsWith(i.href))
+  .sort((a, b) => b.href.length - a.href.length);
+const marked = (item: Section) => (item === around[0] ? "page" : undefined);
+const within = (item: Section) => (around.indexOf(item) > 0 ? "" : undefined);
 
 /**
  * The site's mark, drawn into the header from the icon's own file. Its style
@@ -204,16 +302,6 @@ const MARK = markFile
   .replace(/<!--[\s\S]*?-->/g, "")
   .replace(/<style>[\s\S]*?<\/style>/, "")
   .replace("<svg ", '<svg class="mark" aria-hidden="true" ');
-const nav = [
-  QUICK,
-  { href: "/guide/", label: "Choose a flow" },
-  { href: "/flows/", label: "Flows" },
-  { href: "/implementations/", label: "Implementations" },
-  { href: "/deployments/", label: "Deployments" },
-  { href: "/standards/", label: "Standards" },
-  { href: "/glossary/", label: "Glossary" },
-];
-const path = Astro.url.pathname;
 const SPECULATION = JSON.stringify({
   prerender: [
     {
@@ -272,7 +360,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     <meta name="theme-color" content="#0e0f11" media="(prefers-color-scheme: dark)" />
     <script is:inline>
       // The page follows the system's light or dark setting through CSS alone.
-      // A theme picked with the header button is kept only while it differs
+      // A theme picked with the footer's button is kept only while it differs
       // from the system's; once they agree, the page is simply following again.
       (() => {
         try {
@@ -289,43 +377,48 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap bar">
-        <div class="bar-start">
-          <a class="brand" href="/" aria-label={`${SITE}, home`}>
-            <Fragment set:html={MARK} />
-            <span class="wordmark">{SITE}</span>
-          </a>
-          <a class="quick" href={QUICK.href} aria-current={path.startsWith(QUICK.href) ? 'page' : undefined}>
-            {QUICK.label}
-          </a>
+        <a class="brand" href="/" aria-label={`${SITE}, home`}>
+          <Fragment set:html={MARK} />
+          <span class="wordmark">{SITE}</span>
+        </a>
+        <div class="quick">
+          {
+            QUICK.map((item) => (
+              <a href={item.href} aria-current={marked(item)} data-within={within(item)}>
+                {item.label}
+              </a>
+            ))
+          }
         </div>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
+        <nav id="site-nav" aria-label="Primary">
+          <ul class="nav-groups">
+            {
+              groups.map((g, i) => (
+                <li class="nav-group">
+                  <span class="nav-group-name" id={`nav-group-${i}`}>
+                    {g.name}
+                  </span>
+                  <ul aria-labelledby={`nav-group-${i}`}>
+                    {g.items.map((item) => (
+                      <li class:list={{ more: item.more }}>
+                        <a href={item.href} aria-current={marked(item)} data-within={within(item)}>
+                          <span class="nav-label">{item.label}</span>
+                          <span class="nav-note">{item.note}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
         <a class="search-launch" data-search-launch href="/search/" aria-labelledby="header-search-label header-search-key" aria-current={path === '/search/' ? 'page' : undefined}>
           <span class="search-glass" aria-hidden="true"></span>
-          <span class="launch-label" id="header-search-label">Search the guide</span>
+          <span class="launch-label" id="header-search-label">Ask or search</span>
           <kbd class="launch-key" id="header-search-key" hidden></kbd>
         </a>
-        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
-        <div class="nav-tools">
-          <nav id="site-nav" aria-label="Primary">
-            <ul>
-              {
-                nav.map((item) => (
-                  <li>
-                    <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
-                      {item.label}
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </nav>
-          <button class="theme" type="button" title="Switch color theme">
-            <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-              <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
-              <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5Z" fill="currentColor"></path>
-            </svg>
-            <span class="theme-text">Switch color theme</span>
-          </button>
-        </div>
       </div>
       {
         here && (
@@ -352,8 +445,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             {DESCRIPTOR}. Who is acting, for whom, and who said they could?
           </p>
           <p class="by">
-            Made by <a href="/about/#who-makes-it" rel="author">{AUTHOR.name}</a>. The <a href={SOURCE}>source is on GitHub</a>,
-            and the <a href={CHANNEL.url}>films are on YouTube</a>.
+            Made by <a href="/about/#who-makes-it" rel="author">{AUTHOR.name}</a>.
             Found something wrong or out of date? <a href="/about/#corrections">Say so</a>.
           </p>
           {
@@ -369,25 +461,55 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
             )
           }
         </div>
-        <ul>
-          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-          <li><a href="/search/">Search the guide</a></li>
-          <li><a href="/concepts/">Concepts</a></li>
-          <li><a href="/compare/">Comparisons</a></li>
-          <li><a href="/about/">About</a></li>
-        </ul>
-        <p class="fine">
-          <a href="/">whosonfirst.ai</a> ·{' '}
+        <nav class="foot-map" aria-label="All sections">
           {
-            changed && (
-              <>
-                This page last changed <time datetime={changed.iso}>{changed.day}</time> (<a href={changed.log}>its history</a>).{' '}
-              </>
-            )
+            groups.map((g, i) => (
+              <div>
+                <p class="foot-head" id={`foot-group-${i}`}>
+                  {g.name}
+                </p>
+                <ul aria-labelledby={`foot-group-${i}`}>
+                  {g.items.map((item) => (
+                    <li>
+                      <a href={item.href}>{item.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
           }
-          Standards status last reviewed {REVIEWED}. Drafts move quickly: check the linked source before you build
-          on one.
-        </p>
+          <div>
+            <p class="foot-head" id="foot-group-site">This guide</p>
+            <ul aria-labelledby="foot-group-site">
+              <li><a href="/about/">About</a></li>
+              <li><a href="/search/">Search the guide</a></li>
+              <li><a href="/standards/changes/">Changelog</a></li>
+              <li><a href={SOURCE}>Source on GitHub</a></li>
+              <li><a href={CHANNEL.url}>Films on YouTube</a></li>
+            </ul>
+          </div>
+        </nav>
+        <div class="foot-end">
+          <p class="fine">
+            <a href="/">whosonfirst.ai</a> ·{' '}
+            {
+              changed && (
+                <>
+                  This page last changed <time datetime={changed.iso}>{changed.day}</time> (<a href={changed.log}>its history</a>).{' '}
+                </>
+              )
+            }
+            Standards status last reviewed {REVIEWED}. Drafts move quickly: check the linked source before you build
+            on one.
+          </p>
+          <button class="theme" type="button">
+            <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+              <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5Z" fill="currentColor"></path>
+            </svg>
+            Switch color theme
+          </button>
+        </div>
       </div>
     </footer>
     {path !== '/search/' && <SearchDialog />}
@@ -546,7 +668,12 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       document.addEventListener('click', (e) => {
         if (!header.contains(e.target as Node)) setOpen(false);
       });
-      window.matchMedia('(width > 79rem)').addEventListener('change', () => setOpen(false));
+      // The open menu can cover the page. Focus that has moved on into the page
+      // would be behind it, so the menu closes as focus leaves the header.
+      document.addEventListener('focusin', (e) => {
+        if (header.hasAttribute('data-open') && !header.contains(e.target as Node)) setOpen(false);
+      });
+      window.matchMedia('(width > 63rem)').addEventListener('change', () => setOpen(false));
 
       // Color theme. With no choice made, CSS follows the system setting, and
       // keeps following it when it changes. The button picks the other theme;
@@ -723,7 +850,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   .bar {
     display: flex;
     align-items: center;
-    gap: 0.5rem 1.5rem;
+    gap: 0.5rem 1rem;
     min-height: 3.5rem;
     flex-wrap: wrap;
   }
@@ -763,89 +890,105 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     letter-spacing: -0.02em;
     white-space: nowrap;
   }
-  nav ul {
-    display: flex;
-    gap: 0.2rem;
+
+  /* The sections. A link is in the face the page is read in: the monospaced
+     face is for what is literal and for labels, and a group's name is one. */
+  #site-nav ul {
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  nav li {
+  #site-nav li {
     margin: 0;
   }
-  nav a {
+  .nav-groups,
+  .nav-group > ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  /* The space between two sections is a gap and not their padding, so that
+     the rule under one stops short of the rule under the next. */
+  .nav-group > ul {
+    column-gap: 0.6rem;
+  }
+  #site-nav a {
     display: block;
-    font-family: var(--font-label);
-    font-size: 0.74rem;
+    font-size: 0.92rem;
     font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     text-decoration: none;
     color: var(--fg-muted);
-    padding: 0.55rem 0.6rem;
-    border-radius: var(--radius);
+    padding: 0.5rem 0.25rem;
     white-space: nowrap;
   }
-  nav a:hover {
+  /* The section the reader is in has a rule under it in the link color.
+     Under the pointer a section gets the same rule in grey: where the mark
+     would be, and not yet the mark. */
+  #site-nav a:hover {
     color: var(--fg);
-    background: var(--bg-sunken);
+    box-shadow: inset 0 -2px 0 var(--border-strong);
   }
-  nav a[aria-current='page'] {
+  #site-nav a:is([aria-current='page'], [data-within]) {
     color: var(--fg);
     box-shadow: inset 0 -2px 0 var(--accent);
-    border-radius: 0;
   }
-  .theme {
-    display: grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--fg);
-    cursor: pointer;
-    flex: none;
+  /* In the bar a group is told from the next by a short rule. Its name, what
+     each section holds and the lesser sections are for the menu, which has
+     the room. */
+  .nav-group-name,
+  .nav-note,
+  #site-nav .more {
+    display: none;
   }
-  .theme:hover {
-    background: var(--bg-sunken);
+  .nav-group + .nav-group::before {
+    content: '';
+    width: 1px;
+    height: 1.1rem;
+    margin-inline: 0.8rem;
+    background: var(--border-strong);
   }
-
-  .bar-start { display: contents; }
-  .nav-tools {
+  .nav-group {
     display: flex;
     align-items: center;
-    justify-self: end;
-    gap: 0.85rem;
   }
-  @media (width > 79rem) {
-    .bar {
-      display: grid;
-      grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
-      column-gap: clamp(0.5rem, 1.3vw, 1.4rem);
-      max-width: 110rem;
-    }
-    .search-launch {
-      width: clamp(13.75rem, 16vw, 17rem);
-    }
-  }
+
+  /* Search is at the end of the bar, where it is looked for, and is a field
+     to press and not only an icon wherever there is room for one. It says
+     both things it takes: a question in the reader's own words, or a term. */
   .search-launch {
+    --launch: 44px;
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    min-height: 44px;
+    align-content: flex-start;
+    /* Its words are on one line and anything that does not fit goes to a
+       second, which is out of sight. So where a face runs wide or the bar is
+       short, the field loses its shortcut and then its words, and is never
+       laid over the section beside it. */
+    flex-wrap: wrap;
+    overflow: hidden;
+    gap: 0 0.6rem;
+    height: var(--launch);
     min-width: 44px;
-    padding-inline: 0.8rem;
+    padding-inline: 0.75rem;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
-    background: var(--bg-sunken);
+    background: var(--bg);
     color: var(--fg-muted);
-    font: 500 0.92rem var(--font-body);
+    font: 400 0.92rem var(--font-body);
     text-decoration: none;
   }
   .search-launch:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+  /* as tall as the field, so the first line is too, whatever is left on it */
+  .search-launch::before {
+    content: '';
+    height: calc(var(--launch) - 2px);
+    margin-right: -0.6rem;
+  }
+  .launch-label {
+    white-space: nowrap;
   }
   .launch-key {
     margin-left: auto;
@@ -854,6 +997,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     white-space: nowrap;
   }
   .search-glass {
+    flex: none;
     width: 0.78rem;
     height: 0.78rem;
     border: 2px solid currentColor;
@@ -875,23 +1019,68 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   .menu-toggle {
     display: none;
   }
-  /* beside the navigation the theme button is an icon; its name is still there to be read */
-  .theme-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+
+  /* Room for every section: the name, the sections in their groups, then
+     search at the far end. The bar is as wide as the page under
+     it, so the name stands over the page's left edge. */
+  @media (width > 63rem) {
+    .bar {
+      flex-wrap: nowrap;
+      column-gap: 0.75rem;
+    }
+    .brand {
+      margin-right: 1.2rem;
+    }
+    #site-nav {
+      margin-right: auto;
+    }
+    .nav-groups,
+    .nav-group > ul {
+      flex-wrap: nowrap;
+    }
+    .brand,
+    #site-nav {
+      flex: none;
+    }
+    .search-launch {
+      --launch: 2.25rem;
+      flex: 0 1 auto;
+      padding-inline: 0.65rem 0.7rem;
+    }
+    .launch-key {
+      margin-left: 1.1rem;
+    }
+  }
+  /* just enough room: the links close up and the shortcut's keys go unsaid */
+  @media (63rem < width <= 71rem) {
+    .brand {
+      margin-right: 0.4rem;
+    }
+    .nav-group > ul {
+      column-gap: 0.3rem;
+    }
+    #site-nav a {
+      padding-inline: 0.2rem;
+    }
+    .nav-group + .nav-group::before {
+      margin-inline: 0.45rem;
+    }
+    .launch-key {
+      display: none;
+    }
   }
 
-  /* Phone and tablet: the brand, the one task link and a menu button. Every
-     destination is one tap away and none is off the edge of the screen. */
-  @media (width <= 79rem) {
+  /* Narrower than that: the name, the ways in that the home page opens with,
+     search and a menu button. Every section is one press away, with its group
+     and what it holds, and none is off the edge of the screen. */
+  @media (width <= 63rem) {
     .bar {
       gap: 0 0.7rem;
     }
-    /* one row: the brand takes what is left after the two controls */
+    #site-nav {
+      order: 3;
+      width: 100%;
+    }
     .site-header[data-js] .bar {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto auto auto;
@@ -900,28 +1089,51 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .site-header[data-js] .brand {
       margin-right: 0;
       min-width: 0;
-      gap: 0.45rem;
     }
-    .site-header[data-js] :is(nav, .theme) {
+    .site-header[data-js] .search-launch {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    .site-header[data-js] .menu-toggle {
+      grid-column: 4;
+      grid-row: 1;
+    }
+    .site-header[data-js] #site-nav {
       grid-column: 1 / -1;
+      grid-row: 2;
     }
-    .nav-tools { display: contents; }
     .search-launch {
       padding-inline: 0;
       justify-content: center;
     }
-    .launch-label, .launch-key { display: none; }
-    .quick {
+    .launch-label,
+    .launch-key {
+      display: none;
+    }
+    .site-header[data-js] .quick {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+    }
+    .quick a {
       display: inline-flex;
       align-items: center;
       min-height: 2.75rem;
-      font-size: 0.88rem;
+      font-size: 0.92rem;
       font-weight: 500;
       white-space: nowrap;
-      text-decoration-thickness: 1px;
+      color: var(--fg);
+      text-decoration: none;
     }
-    .quick[aria-current='page'] {
-      text-decoration-thickness: 2px;
+    .quick a:hover {
+      box-shadow: inset 0 -2px 0 var(--border-strong);
+    }
+    .quick a[aria-current='page'] {
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+    /* a phone has room for the first */
+    .quick a:nth-child(n + 2) {
+      display: none;
     }
     .menu-toggle:not([hidden]) {
       display: inline-flex;
@@ -943,21 +1155,14 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       background: var(--fg);
       color: var(--bg);
     }
-    nav {
-      order: 3;
-      width: 100%;
-    }
-    nav ul {
-      flex-wrap: wrap;
-    }
-    /* with the script running, the list and the theme control wait behind the button */
-    .site-header[data-js] nav,
-    .site-header[data-js] .theme {
+    /* with the script running, the list waits behind the button */
+    .site-header[data-js] #site-nav {
       display: none;
     }
-    .site-header[data-js][data-open] nav {
+    .site-header[data-js][data-open] #site-nav {
       display: block;
       border-top: 1px solid var(--border);
+      padding-block: 0.4rem 0.6rem;
     }
     /* a phone on its side is shorter than the open menu: the menu scrolls */
     .site-header[data-js][data-open] {
@@ -965,78 +1170,99 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       overflow-y: auto;
       overscroll-behavior: contain;
     }
-    .site-header[data-js] nav ul {
+    /* The open menu is the guide's contents: each group under its name, each
+       section with what it holds. */
+    .site-header[data-js] .nav-groups {
+      display: grid;
+      align-items: start;
+      gap: 0 2.5rem;
+    }
+    .site-header[data-js] .nav-group,
+    .site-header[data-js] .nav-group > ul {
       display: block;
     }
-    .site-header[data-js] nav a {
-      display: flex;
-      align-items: center;
-      min-height: 3rem;
-      padding: 0;
-      font-size: 0.86rem;
-      color: var(--fg);
-      border-bottom: 1px solid var(--border);
-      border-radius: 0;
+    .site-header[data-js] .nav-group::before {
+      content: none;
     }
-    .site-header[data-js] nav a[aria-current='page'] {
+    .site-header[data-js] .nav-group-name {
+      display: block;
+      padding-top: 1rem;
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-subtle);
+    }
+    .site-header[data-js] #site-nav .more {
+      display: block;
+    }
+    .site-header[data-js] #site-nav a {
+      display: block;
+      min-height: 3rem;
+      padding: 0.45rem 0;
+      color: var(--fg);
+      white-space: normal;
+      border-bottom: 1px solid var(--border);
+    }
+    /* in the menu a section is a row with a rule under it, and the rule
+       turns the link color under the pointer, as a card's does */
+    .site-header[data-js] #site-nav a:hover {
+      border-bottom-color: var(--accent);
+      box-shadow: none;
+    }
+    .site-header[data-js] .nav-label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .site-header[data-js] .nav-note {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 400;
+      color: var(--fg-muted);
+    }
+    /* the menu lists the page itself, so the section around it goes unmarked */
+    .site-header[data-js] #site-nav a[data-within] {
+      box-shadow: none;
+    }
+    .site-header[data-js] #site-nav a[aria-current='page'] {
       box-shadow: inset 3px 0 0 var(--accent);
       padding-left: 0.8rem;
     }
-    .site-header[data-js][data-open] .theme {
-      order: 4;
-      display: flex;
-      justify-content: flex-start;
-      gap: 0.7rem;
-      width: 100%;
-      height: auto;
-      min-height: 3rem;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      font: inherit;
-      font-size: 0.92rem;
-    }
-    .site-header[data-js][data-open] .theme-text {
-      position: static;
-      width: auto;
-      height: auto;
-      clip-path: none;
-    }
-    /* without the script the whole list is shown, so the shortcut would only repeat it */
-    .site-header:not([data-js]) .quick {
-      display: none;
-    }
   }
-  /* Between a phone and the full navigation, balance the two sides of the
-     search field. The brand and Learn share the left side, Menu takes the right. */
-  @media screen and (46rem <= width <= 79rem) {
+  /* Between a phone and the full bar: all three ways in beside the name, and
+     search as a field. The open menu sets its groups side by side. */
+  @media screen and (48rem <= width <= 63rem) {
+    /* the links keep their width, and search has what is left */
     .site-header[data-js] .bar {
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      column-gap: 0.75rem;
+      grid-template-columns: auto auto minmax(2.75rem, 1fr) auto;
+      column-gap: 0.9rem;
     }
-    .site-header[data-js] .bar-start {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      grid-column: 1;
-      grid-row: 1;
+    .site-header[data-js] .quick {
+      padding-left: 0.6rem;
+    }
+    .site-header[data-js] .quick a:nth-child(n + 2) {
+      display: inline-flex;
     }
     .site-header[data-js] .search-launch {
-      grid-column: 2;
-      grid-row: 1;
-      width: clamp(11rem, 24vw, 17rem);
-      justify-content: flex-start;
-      padding-inline: 0.7rem;
-    }
-    .site-header[data-js] .launch-label { display: inline; }
-    .site-header[data-js] .menu-toggle {
-      grid-column: 3;
-      grid-row: 1;
       justify-self: end;
+      justify-content: flex-start;
+      max-width: 100%;
+      padding-inline: 0.7rem 0.8rem;
+    }
+    .site-header[data-js] .launch-label {
+      display: inline;
+    }
+    .site-header[data-js] .nav-groups {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  @media screen and (54rem <= width <= 79rem) {
-    .site-header[data-js] .launch-key:not([hidden]) { display: inline; }
+  @media screen and (54rem <= width <= 63rem) {
+    .site-header[data-js] .launch-key:not([hidden]) {
+      display: inline;
+      margin-left: 0.9rem;
+    }
   }
   /* on a phone the name steps down a size to leave room */
   @media (max-width: 30rem) {
@@ -1046,7 +1272,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     .site-header[data-js] .bar {
       column-gap: 0.25rem;
     }
-    .quick {
+    .quick a {
       font-size: 0.84rem;
     }
     .menu-toggle:not([hidden]) {
@@ -1068,8 +1294,11 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
   }
   .foot {
     display: grid;
-    gap: 1.5rem 3rem;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 2rem 3.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  }
+  .foot .brand {
+    padding-block: 0;
   }
   .foot p {
     max-width: 30rem;
@@ -1086,25 +1315,78 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     color: var(--fg-muted);
     font-size: 0.85rem;
   }
+  /* The guide's contents again, where a long page ends: the header's groups by
+     name, with the sections the header has no room for. */
+  .foot-map {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: space-between;
+    gap: 1.5rem 1.5rem;
+  }
+  .foot .foot-head {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+  }
   .foot ul {
     list-style: none;
     padding: 0;
     margin: 0;
-    columns: 2;
-    column-gap: 2rem;
+  }
+  .foot li {
+    margin: 0;
+    padding-block: 0.18rem;
+  }
+  /* The foot's last row: the small print, and the one setting the site has.
+     The page follows the system's theme, so the switch is for the reader who
+     wants the other, once. */
+  .foot-end {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 2rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
   }
   .foot .fine {
-    grid-column: 1 / -1;
+    flex: 1 1 24rem;
     max-width: none;
-    padding-top: 1.2rem;
-    border-top: 1px solid var(--border);
+    margin: 0;
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.02em;
   }
-  @media (max-width: 40rem) {
+  .theme {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.75rem;
+    padding: 0 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--fg);
+    font: 500 0.86rem var(--font-body);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .theme:hover {
+    background: var(--bg-inset);
+  }
+  @media (max-width: 60rem) {
     .foot {
       grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 34rem) {
+    .foot-map {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>

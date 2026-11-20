@@ -247,6 +247,97 @@ test("no page marks the OAuth client inside “client certificate”", () => {
   );
 });
 
+// The guide's sections are listed twice on every page, in the same groups
+// under the same names: in the header, whose menu shows the names, and in the
+// footer. The footer adds a group of its own for the guide itself.
+const text = (html) =>
+  html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+const listed = (html, item, name) =>
+  html
+    .split(item)
+    .slice(1)
+    .map((part) => ({
+      name: text(
+        new RegExp(`${name}[^>]*>([\\s\\S]*?)</`).exec(part)?.[1] ?? "",
+      ),
+      links: [...part.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]),
+    }));
+const headerGroups = (p) => {
+  const nav = /<nav id="site-nav"[\s\S]*?<\/nav>/.exec(p.html)?.[0] ?? "";
+  return listed(nav, 'class="nav-group"', 'class="nav-group-name"');
+};
+const footerGroups = (p) => {
+  const map = /<nav class="foot-map"[\s\S]*?<\/nav>/.exec(p.html)?.[0] ?? "";
+  return listed(map, "<div", 'class="foot-head"');
+};
+
+test("every page's footer lists the sections in the header's groups, then the guide's own", () => {
+  const wrong = [];
+  for (const p of built) {
+    const header = headerGroups(p);
+    const footer = footerGroups(p);
+    if (header.map((g) => g.name).join() !== "Start here,In practice,Reference")
+      wrong.push(
+        `${p.path}: the header's groups are ${header.map((g) => g.name)}`,
+      );
+    if (JSON.stringify(footer.slice(0, -1)) !== JSON.stringify(header))
+      wrong.push(`${p.path}: the footer's groups are not the header's`);
+    const own = footer.at(-1);
+    if (
+      own?.name !== "This guide" ||
+      !["/about/", "/search/", "/standards/changes/"].every((href) =>
+        own.links.includes(href),
+      )
+    )
+      wrong.push(`${p.path}: “This guide” has ${own?.links}`);
+  }
+  assert.deepEqual(some(wrong), []);
+});
+
+// What the menu says each section holds is a claim about the site, with a
+// number in it. Each number is counted here from the pages that were built.
+test("the numbers the menu gives for a section are the number of its pages", () => {
+  const notes = Object.fromEntries(
+    [
+      ...(pageAt("/")?.html ?? "").matchAll(
+        /<a href="([^"]+)"[^>]*>\s*<span class="nav-label"[^>]*>[^<]*<\/span>\s*<span class="nav-note"[^>]*>([^<]*)</g,
+      ),
+    ].map((m) => [m[1], m[2]]),
+  );
+  const pages = (section, not = []) =>
+    built.filter(
+      (p) =>
+        new RegExp(`^/${section}/[^/]+/$`).test(p.path) &&
+        !not.includes(p.path),
+    ).length;
+  const terms = (pageAt("/glossary/")?.html ?? "").split("<dt").length - 1;
+  // Each line that gives a number, and what that number has to be. A line that
+  // is missing, or that has lost its number, fails as one that is wrong does.
+  const counted = {
+    "/learn/": LESSONS.length,
+    "/flows/": FLOWS.length,
+    "/deployments/": pages("deployments"),
+    "/standards/": pages("standards", [
+      "/standards/changes/",
+      "/standards/timeline/",
+    ]),
+    "/glossary/": terms,
+  };
+  const said = Object.fromEntries(
+    Object.keys(counted).map((href) => {
+      const number = /\d+/.exec(notes[href] ?? "")?.[0];
+      return [href, number === undefined ? null : Number(number)];
+    }),
+  );
+  assert.deepEqual(said, counted, JSON.stringify(notes));
+  for (const count of Object.values(counted)) assert.ok(count > 0);
+  for (const [href, note] of Object.entries(notes))
+    assert.ok(note.trim().length >= 12, `${href} says only “${note}”`);
+});
+
 // The comparisons are a section of the site, and a reader on any page can
 // reach it: from the footer, and from the lessons that teach what a pair of
 // flows share.
