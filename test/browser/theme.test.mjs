@@ -1,5 +1,5 @@
 // The color theme follows the system setting, live, and a theme picked with
-// the header button lasts only until the system setting next changes.
+// the footer button lasts only until the system setting next changes.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { frames, open, useBrowser } from "../support/browser.mjs";
@@ -53,3 +53,35 @@ test("theme follows the system setting, and a picked theme ends when it changes"
   });
   assert.deepEqual(steps, []);
 });
+
+// The switch is used once, if at all, so it is at the foot of the page and not
+// in the bar. There it has room to say what it is.
+for (const [name, viewport, options] of [
+  ["desktop", { width: 1280, height: 900 }, {}],
+  ["phone", { width: 390, height: 844 }, { isMobile: true, hasTouch: true }],
+]) {
+  test(`${name}: the theme switch is in the footer, by name, and a full target`, async (t) => {
+    const ctx = await site.context({ viewport, ...options });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url("/flows/dpop/"));
+    const got = await page.evaluate(() => {
+      const all = [...document.querySelectorAll("button.theme")];
+      const r = all[0]?.getBoundingClientRect();
+      return {
+        count: all.length,
+        inFooter: Boolean(all[0]?.closest(".site-footer")),
+        name: all[0]?.textContent.trim(),
+        tall: r?.height >= 44,
+        within: r?.left >= 0 && r?.right <= innerWidth,
+      };
+    });
+    assert.deepEqual(got, {
+      count: 1,
+      inFooter: true,
+      name: "Switch color theme",
+      tall: true,
+      within: true,
+    });
+  });
+}

@@ -1,5 +1,6 @@
 // The home page, in each theme, on a desktop and on a phone: the header and its
-// menu, the hero, the question of whose authority, and the ways in.
+// menu, the hero, the question of whose authority, and the ways in. Then the
+// header at the widths between, where its layout changes.
 import { strict as assert } from "node:assert";
 import { after, before, beforeEach, describe, test } from "node:test";
 import {
@@ -246,3 +247,176 @@ for (const theme of THEMES) {
     });
   }
 }
+
+// The header at each of its layouts. The widths are the edges of each: one
+// pixel more or less and the next layout takes over.
+describe("header by width", () => {
+  const BAR = [
+    "/learn/",
+    "/guide/",
+    "/flows/",
+    "/deployments/",
+    "/standards/",
+    "/glossary/",
+  ];
+  const GROUPS = ["Start here", "In practice", "Reference"];
+
+  const at = async (t, width, path = "/", options = {}) => {
+    const ctx = await site.context({
+      viewport: { width, height: 800 },
+      reducedMotion: "reduce",
+      ...options,
+    });
+    t.after(() => ctx.close());
+    const page = await ctx.newPage();
+    await open(page, site.url(path));
+    return page;
+  };
+
+  // What of the header is drawn, and where.
+  const seen = (page) =>
+    page.evaluate(() => {
+      const box = (el) => el.getBoundingClientRect();
+      const shown = (el) => {
+        const r = box(el);
+        return r.width > 0 && r.height > 0;
+      };
+      const header = document.querySelector(".site-header");
+      const one = (sel) => {
+        const el = header.querySelector(sel);
+        if (!el || !shown(el)) return null;
+        const r = box(el);
+        return { left: Math.round(r.left), right: Math.round(r.right) };
+      };
+      const hrefs = (sel) =>
+        [...header.querySelectorAll(sel)]
+          .filter(shown)
+          .map((a) => a.getAttribute("href"));
+      const text = (sel) =>
+        [...header.querySelectorAll(sel)]
+          .filter(shown)
+          .map((el) => el.textContent.trim());
+      return {
+        bar: hrefs("#site-nav a"),
+        quick: hrefs(".quick a"),
+        groups: text(".nav-group-name"),
+        notes: text(".nav-note"),
+        marked: hrefs('#site-nav a[aria-current="page"]'),
+        quickMarked: hrefs('.quick a[aria-current="page"]'),
+        label: text(".launch-label").join(""),
+        brand: one(".brand"),
+        wordmark: one(".wordmark"),
+        quickBox: one(".quick"),
+        nav: one("#site-nav"),
+        search: one(".search-launch"),
+        menu: one(".menu-toggle"),
+        page: Math.round(
+          box(document.querySelector("main .wrap")).left +
+            parseFloat(
+              getComputedStyle(document.querySelector("main .wrap"))
+                .paddingLeft,
+            ),
+        ),
+        width: innerWidth,
+        sideways:
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+      };
+    });
+
+  for (const width of [961, 1088, 1089, 1280, 1680]) {
+    test(`${width}px: every section of the bar, in its groups, then search`, async (t) => {
+      const got = await seen(await at(t, width));
+      assert.deepEqual(got.bar, BAR);
+      // the group names and what each section holds are for the menu
+      assert.deepEqual([got.groups, got.notes, got.quick], [[], [], []]);
+      assert.equal(got.menu, null, "a menu button beside the full bar");
+      assert.equal(got.label, "Ask or search");
+      assert.ok(
+        got.brand.right <= got.nav.left &&
+          got.nav.right <= got.search.left &&
+          got.search.right <= got.width,
+        JSON.stringify(got),
+      );
+      // the name stands over the page's left edge
+      assert.ok(Math.abs(got.brand.left - got.page) <= 1, JSON.stringify(got));
+      assert.equal(got.sideways, 0);
+    });
+  }
+
+  test("the bar has three groups, told apart by a rule between them", async (t) => {
+    const page = await at(t, 1280);
+    const rules = await page.evaluate(() =>
+      [...document.querySelectorAll("#site-nav .nav-group")].map((g) => {
+        const rule = getComputedStyle(g, "::before");
+        return rule.content !== "none" && parseFloat(rule.width) >= 1;
+      }),
+    );
+    assert.deepEqual(rules, [false, true, true]);
+  });
+
+  for (const width of [736, 900, 960]) {
+    test(`${width}px: the home page's three ways in stay in the bar, beside search and the menu`, async (t) => {
+      const page = await at(t, width);
+      const got = await seen(page);
+      const ways = await page.evaluate(() =>
+        [...document.querySelectorAll(".hero .routes li > a")].map((a) =>
+          a.getAttribute("href"),
+        ),
+      );
+      assert.deepEqual(got.quick, ways);
+      assert.deepEqual(got.bar, [], "the full list beside the menu button");
+      assert.equal(got.label, "Ask or search");
+      assert.ok(
+        got.wordmark.right <= got.quickBox.left &&
+          got.quickBox.right <= got.search.left &&
+          got.search.right <= got.menu.left &&
+          got.menu.right <= got.width,
+        JSON.stringify(got),
+      );
+      assert.equal(got.sideways, 0);
+    });
+  }
+
+  for (const width of [390, 900]) {
+    test(`${width}px: the open menu names each group and says what each section holds`, async (t) => {
+      const page = await at(t, width);
+      await page.click(".menu-toggle");
+      const got = await seen(page);
+      assert.deepEqual(got.groups, GROUPS);
+      // the bar's six, and the sections the bar has no room for
+      assert.deepEqual(
+        [...BAR, "/concepts/", "/compare/", "/implementations/"].filter(
+          (href) => !got.bar.includes(href),
+        ),
+        [],
+        got.bar.join(" "),
+      );
+      assert.equal(got.notes.length, got.bar.length, got.notes.join(" | "));
+      assert.deepEqual(
+        got.notes.filter((note) => note.length < 12),
+        [],
+      );
+      assert.equal(got.sideways, 0);
+    });
+  }
+
+  test("a section is marked on its own pages: in the bar, or in the menu if it waits there", async (t) => {
+    const changes = await seen(await at(t, 1280, "/standards/changes/"));
+    assert.deepEqual(changes.marked, ["/standards/"]);
+    const flow = await seen(await at(t, 900, "/flows/dpop/"));
+    assert.deepEqual(flow.quickMarked, ["/flows/"]);
+    const page = await at(t, 900, "/implementations/");
+    assert.deepEqual((await seen(page)).marked, []);
+    await page.click(".menu-toggle");
+    assert.deepEqual((await seen(page)).marked, ["/implementations/"]);
+  });
+
+  test("without scripts a narrow header lists the bar's sections and has no menu button", async (t) => {
+    const got = await seen(await at(t, 390, "/", { javaScriptEnabled: false }));
+    assert.deepEqual(got.bar, BAR);
+    assert.deepEqual([got.menu, got.quick], [null, []]);
+    assert.ok(got.search.right <= got.width, JSON.stringify(got));
+    assert.equal(got.sideways, 0);
+  });
+});
