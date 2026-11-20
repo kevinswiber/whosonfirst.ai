@@ -403,6 +403,8 @@ for (const [device, viewport] of [
       );
     }
     assert.equal(await focused(standard), true);
+    // A focused, nonempty search field has its own native Escape behavior.
+    if (device === "phone") await input.focus();
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
     await page.clock.fastForward(1000);

@@ -80,6 +80,14 @@ import GuideSearch from "./GuideSearch.astro";
       search.dispatchEvent(new Event('guide-search-reset'));
       if (restoreFocus) (returnTo.isConnected ? returnTo : launcher).focus({ preventScroll: true });
     };
+    // Some browsers clear a focused search input on Escape before firing
+    // the dialog's cancel event. Close on the first press in either case.
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing ||
+          event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      event.preventDefault();
+      closeSearch();
+    });
     dialog.addEventListener('cancel', (event) => {
       event.preventDefault();
       closeSearch();
