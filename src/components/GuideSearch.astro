@@ -10,10 +10,10 @@ const examples = [
   <form id="guide-search-form" role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
     <label for="guide-query">Describe your situation, or enter a term or RFC number.</label>
     <div class="search-controls">
-      <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-privacy" />
+      <input id="guide-query" name="q" type="search" required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby="search-hint" />
       <button class="btn primary" type="submit">Search the whole guide</button>
     </div>
-    <p id="search-privacy">Quick matches run in your browser. Searching the whole guide sends your question to Cloudflare.</p>
+    <p id="search-hint">Press Enter to search the whole guide.</p>
   </form>
   <section class="quick-matches" aria-labelledby="quick-matches-title" hidden>
     <h2 id="quick-matches-title">Quick matches</h2>
@@ -227,7 +227,7 @@ const examples = [
     background: var(--bg-raised);
     color: var(--fg);
   }
-  #search-privacy { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
+  #search-hint { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
   [role='status'] { margin: 1.6rem 0 0; }
   .quick-matches, .search-examples { border-top: 1px solid var(--fg); padding-top: 0.8rem; margin-top: 2rem; }
   .quick-matches h2, .search-examples h2 { margin: 0; font-size: 0.95rem; text-transform: none; }
