@@ -144,7 +144,7 @@ export const events: HistoryEvent[] = [
     date: "2026-09-01",
     recorded: "2026-11-09",
     summary:
-      "Revision -00, its first as a document of the Web Bot Auth working group.",
+      "draft-ietf-webbotauth-httpsig-protocol-00, its first as a document of the Web Bot Auth working group.",
     status: "wg-draft",
     source: history("draft-ietf-webbotauth-httpsig-protocol"),
     version: {
@@ -159,7 +159,7 @@ export const events: HistoryEvent[] = [
     date: "2026-09-15",
     recorded: "2026-11-09",
     summary:
-      "Revision -00, its first as a document of the WIMSE working group.",
+      "draft-ietf-wimse-aims-00, its first as a document of the WIMSE working group.",
     status: "wg-draft",
     source: history("draft-ietf-wimse-aims"),
     version: {
@@ -174,7 +174,7 @@ export const events: HistoryEvent[] = [
     date: "2026-09-16",
     recorded: "2026-11-09",
     summary:
-      "Revision -00, its first as a document of the OAuth working group.",
+      "draft-ietf-oauth-deferred-token-response-00, its first as a document of the OAuth working group.",
     status: "wg-draft",
     source: history("draft-ietf-oauth-deferred-token-response"),
     version: {
@@ -206,7 +206,8 @@ export const events: HistoryEvent[] = [
     kind: "version",
     date: "2026-10-31",
     recorded: "2026-11-09",
-    summary: "Revision -06, a day after revision -05.",
+    summary:
+      "draft-ietf-oauth-identity-assertion-authz-grant-06, a day after draft-ietf-oauth-identity-assertion-authz-grant-05.",
     source: history("draft-ietf-oauth-identity-assertion-authz-grant"),
     version: {
       label: "-06",
@@ -234,7 +235,7 @@ export const events: HistoryEvent[] = [
     kind: "version",
     date: "2026-11-02",
     recorded: "2026-11-09",
-    summary: "Revision -03.",
+    summary: "draft-ietf-oauth-client-id-metadata-document-03.",
     source: history("draft-ietf-oauth-client-id-metadata-document"),
     version: {
       label: "-03",
@@ -280,7 +281,7 @@ export const events: HistoryEvent[] = [
     date: "2026-06-18",
     recorded: "2026-11-11",
     summary:
-      "Promoted to stable among MCP’s authorization extensions, and aligned with revision -04 of the Identity Assertion JWT Authorization Grant. MCP announced it the same day.",
+      "Promoted to stable among MCP’s authorization extensions, and aligned with the Identity Assertion JWT Authorization Grant, draft-ietf-oauth-identity-assertion-authz-grant-04. MCP announced it the same day.",
     status: "final",
     source: "https://github.com/modelcontextprotocol/ext-auth/pull/29",
     corrected: {
@@ -322,7 +323,8 @@ export const events: HistoryEvent[] = [
     kind: "version",
     date: "2026-11-02",
     recorded: "2026-11-14",
-    summary: "Revision -02, an individual draft intended as Informational.",
+    summary:
+      "draft-carleton-workload-authz-grant-02, an individual draft intended as Informational.",
     source: history("draft-carleton-workload-authz-grant"),
     version: {
       label: "-02",
@@ -362,7 +364,7 @@ export const events: HistoryEvent[] = [
     kind: "version",
     date: "2026-11-17",
     recorded: "2026-11-19",
-    summary: "Revision -09.",
+    summary: "draft-ietf-wimse-arch-09.",
     source: history("draft-ietf-wimse-arch"),
     version: {
       label: "-09",
@@ -1827,7 +1829,7 @@ export const events: HistoryEvent[] = [
     kind: "version",
     date: "2025-05-28",
     recorded: "2026-11-20",
-    summary: "Revision -13, the one MCP 2026-07-28 cites.",
+    summary: "draft-ietf-oauth-v2-1-13, the one MCP 2026-07-28 cites.",
     source: history("draft-ietf-oauth-v2-1"),
     version: {
       label: "-13",
@@ -1841,7 +1843,7 @@ export const events: HistoryEvent[] = [
     date: "2025-10-08",
     recorded: "2026-11-20",
     summary:
-      "Revision -00, its first as an OAuth working group document, and the one MCP 2026-07-28 cites.",
+      "draft-ietf-oauth-client-id-metadata-document-00, its first as an OAuth working group document, and the one MCP 2026-07-28 cites.",
     source: history("draft-ietf-oauth-client-id-metadata-document"),
     version: {
       label: "-00",
@@ -1855,7 +1857,7 @@ export const events: HistoryEvent[] = [
     date: "2026-05-21",
     recorded: "2026-11-20",
     summary:
-      "Revision -04, the one MCP’s Enterprise-Managed Authorization extension cites.",
+      "draft-ietf-oauth-identity-assertion-authz-grant-04, the one MCP’s Enterprise-Managed Authorization extension cites.",
     source: history("draft-ietf-oauth-identity-assertion-authz-grant"),
     version: {
       label: "-04",
