@@ -377,7 +377,7 @@ The conversion knows the site's components by class name: which are controls (`C
 
 ### Searching across the guide
 
-The header opens search over the page the reader is on. Command-K or Ctrl-K opens it from the keyboard. The address `/search/` also works as a standalone page, including a native HTML form when JavaScript is off. A search has an address of its own, `/search?q=…`, which can be bookmarked and shared. Directory filters still narrow their own pages in the browser.
+The header opens search over the page the reader is on. Command-K or Ctrl-K opens it from the keyboard. The address `/search/` also works as a standalone page, including a native HTML form when JavaScript is off. A search has an address of its own, `/search?q=…`, which can be bookmarked and shared, and the guide describes itself to browsers as a search engine in `public/opensearch.xml`. Directory filters still narrow their own pages in the browser.
 
 After two letters or digits, quick matches look up names, terms and identifiers in the static `/search/quick-matches.json` directory. After three letters or digits and a 450 ms pause, the browser requests ranked results from `/search?q=…&format=json`. Enter and the examples run that search immediately. Clearing the field restores the examples. To preview the quick-match directory locally, build the site and serve its built assets.
 

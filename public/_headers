@@ -62,3 +62,8 @@
 
 /search/quick-matches.json
   X-Robots-Tag: noindex
+
+# Lets a browser offer the guide as a search engine, under the type the
+# OpenSearch description format gives it.
+/opensearch.xml
+  Content-Type: application/opensearchdescription+xml; charset=utf-8
