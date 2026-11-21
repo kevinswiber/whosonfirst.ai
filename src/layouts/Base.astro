@@ -314,7 +314,12 @@ const SPECULATION = JSON.stringify({
   prerender: [
     {
       where: {
-        and: [{ href_matches: "/*" }, { not: { href_matches: "/*.*" } }],
+        // A link to a search is not opened ahead: it would run the search.
+        and: [
+          { href_matches: "/*" },
+          { not: { href_matches: "/*.*" } },
+          { not: { href_matches: "/search" } },
+        ],
       },
       eagerness: "moderate",
     },
@@ -336,6 +341,7 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
     {!noindex && <meta name="robots" content="max-image-preview:large" />}
     {markdown && <link rel="alternate" type="text/markdown" href={markdownHref} title="This page as Markdown" />}
     {feed && <link rel="alternate" type="application/atom+xml" href={feed.href} title={feed.title} />}
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title={SITE} />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

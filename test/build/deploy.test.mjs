@@ -21,6 +21,14 @@ test("the deployment has the Markdown Worker and serves files through its ASSETS
     sources.some((source) => resolve(dirname(bundle), source) === worker),
   );
   assert.equal(config.env.ASSETS.type, "assets");
+  // A search is handed to the search Worker, which has no route of its own:
+  // a route matches the query string, so none can take /search?q= alone.
+  assert.deepEqual(config.env.SEARCH, {
+    type: "worker",
+    worker: "whosonfirst-ai-search",
+  });
+  // The question is in that address's query string.
+  assert.equal(config.observability.redactQueryString, true);
 });
 
 test("the Worker stands in front of extensionless paths and files go straight to assets", () => {

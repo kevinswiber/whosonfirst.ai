@@ -1,6 +1,7 @@
 # Sent with every page and file the site serves. (The host does not add them to
-# its own "not found" response.) Assets load from this origin. The search form
-# posts to a separate Worker on this host, which sets its own response headers.
+# its own "not found" response.) Assets load from this origin. A search, at
+# /search, is answered by a separate Worker on this host, which sets its own
+# response headers.
 #
 # script-src and style-src allow inline code because the theme switch has to
 # run before the first paint, and code samples and diagrams are colored and
@@ -61,3 +62,8 @@
 
 /search/quick-matches.json
   X-Robots-Tag: noindex
+
+# Lets a browser offer the guide as a search engine, under the type the
+# OpenSearch description format gives it.
+/opensearch.xml
+  Content-Type: application/opensearchdescription+xml; charset=utf-8

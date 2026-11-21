@@ -104,12 +104,15 @@ async function requireLive(local, wait) {
 async function smoke(local) {
   for (let attempt = 1; attempt <= 5; attempt++) {
     try {
-      const response = await fetch(new URL("/api/search/query", origin), {
-        method: "POST",
+      // The search address, as the search box asks it. Workers Cache keeps
+      // answers for each deployed version, so the new version answers.
+      const address = new URL("/search", origin);
+      address.search = new URLSearchParams({
+        q: "How does a device with no browser sign in?",
+        format: "json",
+      }).toString();
+      const response = await fetch(address, {
         headers: { Accept: "application/json" },
-        body: new URLSearchParams({
-          q: "How does a device with no browser sign in?",
-        }),
         redirect: "error",
         signal: AbortSignal.timeout(10000),
       });

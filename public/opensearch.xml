@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lets a browser offer the guide as a search engine. A search opens the
+     guide's own search address, as the form on /search/ does. -->
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Who’s on First</ShortName>
+  <Description>Search the field guide to agent authentication and authorization.</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="16" height="16" type="image/x-icon">https://whosonfirst.ai/favicon.ico</Image>
+  <Url type="text/html" method="get" template="https://whosonfirst.ai/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://whosonfirst.ai/opensearch.xml"/>
+</OpenSearchDescription>

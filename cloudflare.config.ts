@@ -25,9 +25,9 @@ export default defineConfig(({ mode, isPreview }) => ({
     name: "whosonfirst-ai",
     compatibilityDate: "2026-11-03",
     compatibilityFlags: ["global_fetch_strictly_public"],
-    // Production routes search to a separate Worker. A preview handles
-    // /api/search/query here and forwards every other request it receives to
-    // src/worker.ts, which serves the page as HTML or Markdown.
+    // In production, src/worker.ts serves the page as HTML or Markdown and
+    // hands /search to the search Worker. A preview answers /search here and
+    // forwards every other request it receives to src/worker.ts.
     entrypoint:
       mode === "development" ? astro : isPreview ? pagesWithSearch : pages,
     env: {
@@ -49,6 +49,15 @@ export default defineConfig(({ mode, isPreview }) => ({
         }),
         SEARCH_DAILY_BUDGET: bindings.secret(),
       }),
+      // In production, src/worker.ts hands /search to the search Worker. A
+      // call through a service binding is answered from that Worker's cache
+      // when it can be, without running it.
+      ...(!isPreview &&
+        mode !== "development" && {
+          SEARCH: bindings.worker({
+            worker: process.env.SEARCH_WORKER_NAME ?? "whosonfirst-ai-search",
+          }),
+        }),
     },
     assets: {
       notFoundHandling: "404-page",
@@ -57,6 +66,9 @@ export default defineConfig(({ mode, isPreview }) => ({
     },
     observability: {
       enabled: true,
+      // A search passes through this Worker, with the question in the query
+      // string. Logs and traces drop it.
+      redactQueryString: true,
     },
   },
 }));

@@ -13,7 +13,7 @@ let search: ReturnType<typeof guideSearch> | undefined;
 export default {
   async fetch(request: Request, env: SearchBindings & { ASSETS: Assets }) {
     const url = new URL(request.url);
-    if (url.pathname !== "/api/search/query") return pages.fetch(request, env);
+    if (url.pathname !== "/search") return pages.fetch(request, env);
     if (!search) {
       const asset = await env.ASSETS.fetch(
         new Request(new URL("/search/preview-catalog.json", url)),

@@ -9,7 +9,8 @@ import { file } from "../support/site.mjs";
 
 const site = useBrowser();
 const quickIndex = "/search/quick-matches.json";
-const fullSearch = "/api/search/query";
+// A full search is a GET to /search, with the question in the query string.
+const fullSearch = (url) => new URL(url).pathname === "/search";
 const exampleName = "RFC 9449";
 const passage = {
   href: "/standards/rfc9449/",
@@ -22,9 +23,9 @@ const passage = {
 function submittedQueries(page) {
   const queries = [];
   page.on("request", (request) => {
-    if (request.url() === site.url(fullSearch)) {
-      assert.equal(request.method(), "POST");
-      queries.push(new URLSearchParams(request.postData()).get("q"));
+    if (fullSearch(request.url())) {
+      assert.equal(request.method(), "GET");
+      queries.push(new URL(request.url()).searchParams.get("q"));
     }
   });
   return queries;
@@ -49,10 +50,10 @@ test("without scripts the header leads to a native form and browse links", async
   await page.locator('.site-header a[href="/search/"]:visible').click();
   const form = page.getByRole("search");
   assert.equal(page.url(), site.url("/search/"));
-  assert.equal(await form.getAttribute("method"), "post");
-  assert.equal(await form.getAttribute("action"), fullSearch);
+  assert.equal(await form.getAttribute("method"), "get");
+  assert.equal(await form.getAttribute("action"), "/search");
   assert.equal(await page.locator('aside a[href="/guide/"]').isVisible(), true);
-  await page.route(site.url(fullSearch), (route) =>
+  await page.route(fullSearch, (route) =>
     route.fulfill({ contentType: "text/html", body: "<h1>Guide results</h1>" }),
   );
   await form.getByRole("searchbox").fill("Agent on a phone");
@@ -62,7 +63,7 @@ test("without scripts the header leads to a native form and browse links", async
   await ctx.close();
 });
 
-test("deleting a query restored from a native POST clears the server-rendered results", async () => {
+test("deleting a query restored from the form's search address clears the server-rendered results", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
   const sent = submittedQueries(page);
@@ -77,31 +78,20 @@ test("deleting a query restored from a native POST clears the server-rendered re
     file("search/index.html"),
     {},
   );
-  await page.route(site.url(fullSearch), async (route) => {
-    const request = route.request();
-    const response = await render(
-      new Request(request.url(), {
-        method: "POST",
-        body: request.postData(),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "text/html",
-        },
-      }),
-      {
-        SEARCH_LIMITER: { limit: async () => ({ success: true }) },
-        AI_SEARCH: { get: () => ({ search: async () => ({ chunks: [] }) }) },
-      },
-    );
+  await page.route(fullSearch, async (route) => {
+    const response = await render(new Request(route.request().url()), {
+      SEARCH_LIMITER: { limit: async () => ({ success: true }) },
+      AI_SEARCH: { get: () => ({ search: async () => ({ chunks: [] }) }) },
+    });
     await route.fulfill({
       status: response.status,
-      contentType: "text/html",
+      headers: Object.fromEntries(response.headers),
       body: await response.text(),
     });
   });
   await open(page, site.url("/search/"));
   await Promise.all([
-    page.waitForURL(site.url(fullSearch)),
+    page.waitForURL((url) => fullSearch(url)),
     page.getByRole("searchbox").evaluate((input, query) => {
       input.value = query;
       input.form.submit();
@@ -127,7 +117,7 @@ test("a short term gives local matches, followed by one remote query after typin
     if (r.url().includes(quickIndex)) indexRequests.push([r.method(), r.url()]);
   });
   const release = Promise.withResolvers();
-  await page.route(site.url(fullSearch), async (route) => {
+  await page.route(fullSearch, async (route) => {
     await release.promise;
     await route.fulfill({ json: { results: [passage] } });
   });
@@ -150,7 +140,7 @@ test("a short term gives local matches, followed by one remote query after typin
   assert.equal(await focused(input), true);
   await page.clock.fastForward(350);
   assert.deepEqual(sent, []);
-  const requested = page.waitForRequest(site.url(fullSearch));
+  const requested = page.waitForRequest((r) => fullSearch(r.url()));
   await page.clock.fastForward(150);
   await requested;
   await input.press("Enter");
@@ -174,7 +164,7 @@ test("each example searches immediately and clearing restores the examples", asy
   const ctx = await site.context({ viewport: { width: 320, height: 568 } });
   const page = await ctx.newPage();
   const sent = submittedQueries(page);
-  await page.route(site.url(fullSearch), (route) =>
+  await page.route(fullSearch, (route) =>
     route.fulfill({ json: { results: [passage] } }),
   );
   await open(page, site.url("/search/"));
@@ -210,9 +200,7 @@ test("clearing cancels both a scheduled query and an in-flight query", async () 
   await page.addInitScript(() => {
     const fetchOriginal = window.fetch;
     window.fetch = (input, init) => {
-      if (
-        new URL(String(input), location.href).pathname === "/api/search/query"
-      ) {
+      if (new URL(String(input), location.href).pathname === "/search") {
         window.previousSearchSignal = init.signal;
         return fetchOriginal(input, { ...init, signal: undefined });
       }
@@ -221,7 +209,7 @@ test("clearing cancels both a scheduled query and an in-flight query", async () 
   });
   const release = Promise.withResolvers();
   const sent = submittedQueries(page);
-  await page.route(site.url(fullSearch), async (route) => {
+  await page.route(fullSearch, async (route) => {
     await release.promise;
     await route.fulfill({ json: { results: [passage] } });
   });
@@ -233,7 +221,7 @@ test("clearing cancels both a scheduled query and an in-flight query", async () 
   await page.clock.fastForward(1100);
   assert.deepEqual(sent, []);
   await input.fill("obsolete response");
-  const requested = page.waitForRequest(site.url(fullSearch));
+  const requested = page.waitForRequest((r) => fullSearch(r.url()));
   await page.clock.fastForward(600);
   await requested;
   await input.fill("");
@@ -241,9 +229,8 @@ test("clearing cancels both a scheduled query and an in-flight query", async () 
     await page.evaluate(() => window.previousSearchSignal.aborted),
     true,
   );
-  const delivered = page.waitForEvent(
-    "requestfinished",
-    (r) => r.url() === site.url(fullSearch),
+  const delivered = page.waitForEvent("requestfinished", (r) =>
+    fullSearch(r.url()),
   );
   release.resolve();
   await delivered;
@@ -261,8 +248,8 @@ test("a superseded query cannot replace results for the current input", async ()
   const ctx = await site.context();
   const page = await ctx.newPage();
   const release = Promise.withResolvers();
-  await page.route(site.url(fullSearch), async (route) => {
-    const query = new URLSearchParams(route.request().postData()).get("q");
+  await page.route(fullSearch, async (route) => {
+    const query = new URL(route.request().url()).searchParams.get("q");
     if (query === "first query") await release.promise;
     await route.fulfill({ json: { results: [{ ...passage, title: query }] } });
   });
@@ -270,7 +257,7 @@ test("a superseded query cannot replace results for the current input", async ()
   await pauseTimers(page);
   const input = page.getByRole("searchbox");
   await input.fill("first query");
-  const first = page.waitForRequest(site.url(fullSearch));
+  const first = page.waitForRequest((r) => fullSearch(r.url()));
   await page.clock.fastForward(600);
   await first;
   await input.fill("second query");
@@ -290,7 +277,7 @@ test("a stalled automatic search times out, keeps local matches, and can be retr
   const sent = submittedQueries(page);
   const first = Promise.withResolvers();
   let attempts = 0;
-  await page.route(site.url(fullSearch), async (route) => {
+  await page.route(fullSearch, async (route) => {
     if (++attempts === 1) await first.promise;
     await route.fulfill({ json: { results: [passage] } });
   });
@@ -299,7 +286,7 @@ test("a stalled automatic search times out, keeps local matches, and can be retr
   const input = page.getByRole("searchbox");
   await input.fill("DPoP");
   await page.locator(".quick-matches a").first().waitFor();
-  const started = page.waitForRequest(site.url(fullSearch));
+  const started = page.waitForRequest((r) => fullSearch(r.url()));
   await page.clock.fastForward(600);
   await started;
   await page.clock.fastForward(13000);
@@ -330,9 +317,7 @@ test("local index failure, unavailable service, rate limiting and zero results a
     { status: 429, headers: { "Retry-After": "60" }, body: "" },
     { json: { results: [] } },
   ];
-  await page.route(site.url(fullSearch), (route) =>
-    route.fulfill(replies.shift()),
-  );
+  await page.route(fullSearch, (route) => route.fulfill(replies.shift()));
   await open(page, site.url("/search/"));
   await pauseTimers(page);
   const input = page.getByRole("searchbox");
@@ -369,9 +354,7 @@ test("a spent daily budget says so, sends nothing more, and searches again when 
     { status: 503, headers: { "Retry-After": "3600" }, body: "" },
     { json: { results: [] } },
   ];
-  await page.route(site.url(fullSearch), (route) =>
-    route.fulfill(replies.shift()),
-  );
+  await page.route(fullSearch, (route) => route.fulfill(replies.shift()));
   await open(page, site.url("/search/"));
   await pauseTimers(page);
   const input = page.getByRole("searchbox");
@@ -474,7 +457,7 @@ for (const [device, viewport] of [
 test("the keyboard legend stays in view and a click on result padding opens the link", async () => {
   const ctx = await site.context({ viewport: { width: 840, height: 480 } });
   const page = await ctx.newPage();
-  await page.route(site.url(fullSearch), (route) =>
+  await page.route(fullSearch, (route) =>
     route.fulfill({ json: { results: [passage] } }),
   );
   await open(page, site.url("/"));

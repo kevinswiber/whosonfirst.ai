@@ -24,6 +24,8 @@ test("the native site preview carries the guide’s retrieval bindings", () => {
   assert.equal(config.name, "whosonfirst-ai");
   assert.equal(config.routes, undefined);
   assert.equal(config.env.SEARCH_LIMITER.namespace, "512806497");
+  // A preview answers searches, with the question in the query string.
+  assert.equal(config.observability.redactQueryString, true);
   // The limit is a build variable, so that it is not written in the repository.
   assert.equal(
     config.env.SEARCH_LIMITER.simple.limit,
@@ -106,12 +108,11 @@ test("same-origin search responses carry the release of the preview's pages", as
       },
     },
   };
-  for (const accept of ["application/json", "text/html"]) {
-    const request = new Request(`${origin}/api/search/query`, {
-      method: "POST",
-      body: new URLSearchParams({ q: "proof of possession" }),
-      headers: { Accept: accept, Origin: origin },
-    });
+  for (const json of [true, false]) {
+    const request = new Request(
+      `${origin}/search?q=proof+of+possession${json ? "&format=json" : ""}`,
+      { headers: { "Sec-Fetch-Site": "same-origin" } },
+    );
     const response = await preview.fetch(request, env);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("X-Guide-Search-Commit"), marker.commit);
@@ -119,7 +120,7 @@ test("same-origin search responses carry the release of the preview's pages", as
       response.headers.get("X-Guide-Search-Revision"),
       marker.revision,
     );
-    if (accept === "application/json")
+    if (json)
       assert.equal(
         (await response.json()).results[0].href,
         "/standards/rfc9449/",

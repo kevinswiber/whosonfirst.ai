@@ -8,15 +8,16 @@ import {
 import {
   catalogFor,
   guideSearch,
+  plainQuestion,
   rankedResults,
+  searchAddress,
   searchRequest,
   validateShell,
 } from "../../workers/search/search.ts";
 
 const site = "https://example.org";
-const url = `${site}/api/search/query`;
 const shell =
-  '<main><form method="post" action="/api/search/query"><input name="q"></form><span id="search-status-text"></span><ol id="search-results"></ol><a href="/guide/">Decision guide</a></main>';
+  '<main><form method="get" action="/search"><input name="q"></form><span id="search-status-text"></span><ol id="search-results"></ol><a href="/guide/">Decision guide</a></main>';
 const records = [
   {
     key: "proof.md",
@@ -43,16 +44,17 @@ const catalog = catalogFor(records);
 const handle = guideSearch(catalog, shell, {
   "Content-Security-Policy": "default-src 'self'",
 });
-const submit = (q, headers = {}, body = new URLSearchParams({ q })) =>
-  new Request(url, {
-    method: "POST",
+// A search as the search box asks it, or, with html, as the form sends it
+// after the redirect to the address's one spelling.
+const submit = (q, { html = false, headers = {} } = {}) =>
+  new Request(`${site}${searchAddress(plainQuestion(q), !html)}`, {
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-Mode": html ? "navigate" : "cors",
       ...headers,
     },
-    body,
   });
+const at = (path, headers = {}) => new Request(`${site}${path}`, { headers });
 const envFor = (search, success = true) => ({
   SEARCH_INSTANCE: "guide",
   SEARCH_LIMITER: { limit: async () => ({ success }) },
@@ -81,7 +83,11 @@ test("the Worker pins the standard for an exact RFC and serves only current, uni
   });
   const response = await handle(submit("RFC-9449"), env);
   assert.equal(response.status, 200);
-  assert.equal(response.headers.get("Cache-Control"), "no-store");
+  assert.equal(
+    response.headers.get("Cache-Control"),
+    "public, max-age=0, s-maxage=172800",
+  );
+  assert.equal(response.headers.get("Vary"), null);
   const { results } = await response.json();
   assert.deepEqual(
     results.map((r) => r.href),
@@ -99,7 +105,7 @@ test("the Worker pins the standard for an exact RFC and serves only current, uni
 test("the native form gets escaped page markup, a useful status and a way to search again", async () => {
   validateShell(shell);
   const response = await handle(
-    submit('"<$&>', { Accept: "text/html" }),
+    submit('"<$&>', { html: true }),
     envFor(async () => ({ chunks: [chunk("flow.md", "b")] })),
   );
   const html = await response.text();
@@ -108,7 +114,7 @@ test("the native form gets escaped page markup, a useful status and a way to sea
   assert.match(html, /data-search-submitted/);
   assert.match(html, /DPoP &amp; proofs/);
   assert.match(html, /&lt;proof&gt;/);
-  assert.match(html, /action="\/api\/search\/query"/);
+  assert.match(html, /action="\/search"/);
   assert.equal(
     response.headers.get("Content-Security-Policy"),
     "default-src 'self'",
@@ -118,16 +124,18 @@ test("the native form gets escaped page markup, a useful status and a way to sea
 test("invalid requests are rejected without invoking AI Search", async () => {
   const env = {};
   for (const [request, status] of [
-    [new Request(url), 405],
-    [new Request(`${site}/`), 404],
-    [submit("word", { Origin: "https://elsewhere.example" }), 403],
-    [submit("word", { "Content-Type": "application/json" }), 415],
-    [submit(" "), 400],
-    [submit("x".repeat(501)), 400],
-    [submit("x", {}, "q=x&q=y"), 400],
-    [submit("x", {}, `q=${"x".repeat(8200)}`), 413],
-  ])
-    assert.equal((await handle(request, env)).status, status);
+    [new Request(`${site}/search?q=word`, { method: "POST" }), 405],
+    [at("/"), 404],
+    [at("/api/search/query?q=word"), 404],
+    [at(`/search?q=${"x".repeat(501)}`), 400],
+    [at("/search?q=x&q=y"), 400],
+    [submit("word", { headers: { "Sec-Fetch-Site": "cross-site" } }), 403],
+    [submit("word", { headers: { "Sec-Purpose": "prefetch;prerender" } }), 503],
+  ]) {
+    const response = await handle(request, env);
+    assert.equal(response.status, status, request.url);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  }
   assert.throws(() =>
     catalogFor([{ ...records[0], href: "//other.example/" }]),
   );
@@ -320,6 +328,58 @@ test("a search says how long each step took, and nothing about the question", as
     envFor(async () => ({}), false),
   );
   assert.match(limited.headers.get("Server-Timing"), /^limit;dur=\d+$/);
-  const invalid = await handle(new Request(url), {});
+  const invalid = await handle(at("/"), {});
   assert.equal(invalid.headers.get("Server-Timing"), null);
+});
+
+test("each question has one address, with the reader's capitals, and every other spelling is sent there", async () => {
+  assert.equal(searchAddress("Token exchange"), "/search?q=Token+exchange");
+  assert.equal(
+    searchAddress("RFC 9449", true),
+    "/search?q=RFC+9449&format=json",
+  );
+  for (const [path, to] of [
+    ["/search?q=Token%20exchange", "/search?q=Token+exchange"],
+    ["/search?q=++Token++exchange+", "/search?q=Token+exchange"],
+    [
+      "/search?q=RFC+%EF%BC%99%EF%BC%94%EF%BC%94%EF%BC%99",
+      "/search?q=RFC+9449",
+    ],
+    ["/search?format=json&q=CIBA", "/search?q=CIBA&format=json"],
+    ["/search?q=CIBA&format=html", "/search?q=CIBA"],
+    ["/search?q=CIBA&utm_source=x", "/search?q=CIBA"],
+  ]) {
+    const response = await handle(at(path), {});
+    assert.equal(response.status, 308, path);
+    assert.equal(response.headers.get("Location"), to);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  }
+  for (const path of ["/search", "/search?q=", "/search?q=+"]) {
+    const response = await handle(at(path), {});
+    assert.equal(response.status, 302, path);
+    assert.equal(response.headers.get("Location"), "/search/");
+  }
+});
+
+test("a link to a search works from any site, but another site cannot run one in the background", async () => {
+  const env = envFor(async () => ({ chunks: [chunk("flow.md", "b")] }));
+  const followed = await handle(
+    submit("DPoP proof", {
+      html: true,
+      headers: { "Sec-Fetch-Site": "cross-site" },
+    }),
+    env,
+  );
+  assert.equal(followed.status, 200);
+  assert.match(await followed.text(), /1 result</);
+  const background = await handle(
+    submit("DPoP proof", { headers: { "Sec-Fetch-Site": "cross-site" } }),
+    env,
+  );
+  assert.equal(background.status, 403);
+  const typed = await handle(
+    submit("DPoP proof", { html: true, headers: { "Sec-Fetch-Site": "none" } }),
+    env,
+  );
+  assert.equal(typed.status, 200);
 });

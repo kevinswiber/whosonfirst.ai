@@ -141,3 +141,29 @@ test("quick matches ship one short entry per named destination", () => {
   assert.ok(!byHref.has("/flows/dpop/#step-1"));
   assert.ok(!byHref.has("/implementations/dpop/#field-dates"));
 });
+
+test("every page offers the guide to browsers as a search engine that opens the search address", () => {
+  const description = file("opensearch.xml");
+  const short = /<ShortName>([^<]*)<\/ShortName>/.exec(description)?.[1];
+  assert.ok(
+    short && [...short].length <= 16,
+    "a short name of 16 characters or fewer",
+  );
+  assert.match(
+    description,
+    /<Url type="text\/html" method="get" template="https:\/\/whosonfirst\.ai\/search\?q=\{searchTerms\}"\/>/,
+  );
+  assert.match(
+    file("_headers"),
+    /\/opensearch\.xml\n\s+Content-Type: application\/opensearchdescription\+xml/,
+  );
+  const missing = built
+    .filter(
+      (p) =>
+        !p.html.includes(
+          '<link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml"',
+        ),
+    )
+    .map((p) => p.path);
+  assert.deepEqual(missing, []);
+});

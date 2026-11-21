@@ -45,7 +45,11 @@ export default defineConfig({
     exports: {
       SearchBudget: exports.durableObject({ storage: "sqlite" }),
     },
-    // The application sends query text in the POST body and never logs it.
-    observability: { enabled: true },
+    // A found answer is kept in front of the Worker, for each deployed
+    // version, and the Worker does not run when it is reused.
+    cache: { enabled: true },
+    // The question is in the query string. Logs and traces drop it, and the
+    // Worker logs nothing of its own.
+    observability: { enabled: true, redactQueryString: true },
   },
 });
