@@ -51,7 +51,7 @@ export async function listItems(request) {
   }
 }
 
-async function forEachLimited(records, operation) {
+async function forEachLimited(records, operation, limit = 4) {
   let next = 0;
   let failure;
   async function run() {
@@ -64,7 +64,9 @@ async function forEachLimited(records, operation) {
       }
     }
   }
-  await Promise.all(Array.from({ length: Math.min(4, records.length) }, run));
+  await Promise.all(
+    Array.from({ length: Math.min(limit, records.length) }, run),
+  );
   if (failure) throw failure;
 }
 
@@ -174,29 +176,52 @@ export async function retireSearch(
     log(
       `Left ${other.length} items not named as this project names a passage.`,
     );
+  // One at a time: AI Search rate limits item writes, and there is no bulk
+  // delete. A run that stops says how far it got, and the next one, which
+  // lists the items again, retires the rest.
   let done = 0;
-  await forEachLimited(retired, async ({ id }) => {
-    await request(`/${encodeURIComponent(id)}`, { method: "DELETE" });
-    done++;
-    if (done % 100 === 0) log(`Retired ${done}/${retired.length}.`);
-  });
+  try {
+    await forEachLimited(
+      retired,
+      async ({ id }) => {
+        await request(`/${encodeURIComponent(id)}`, { method: "DELETE" });
+        done++;
+        if (done % 100 === 0) log(`Retired ${done}/${retired.length}.`);
+      },
+      1,
+    );
+  } catch (error) {
+    throw new Error(
+      `${error.message} Retired ${done} of ${retired.length} before stopping. The next run retires the rest.`,
+    );
+  }
   log(`Retired ${retired.length} passages.`);
 }
 
-function cloudflareRequest(account, token, namespace, instance) {
+// A failed request is tried again. A 429 or a dropped connection is tried for
+// longer than a server error, for about three minutes: AI Search rate limits
+// item writes without saying how many it takes, asks for backoff or for the
+// Retry-After delay, and while overloaded can drop the connection instead.
+export function cloudflareRequest(
+  account,
+  token,
+  namespace,
+  instance,
+  { fetch: send = fetch, pause = sleep } = {},
+) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/ai-search/namespaces/${encodeURIComponent(namespace)}/instances/${encodeURIComponent(instance)}`;
   return async (suffix, options = {}) => {
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; ; attempt++) {
       let response;
       try {
-        response = await fetch(url + suffix, {
+        response = await send(url + suffix, {
           ...options,
           headers: { Authorization: `Bearer ${token}` },
           redirect: "error",
           signal: AbortSignal.timeout(60_000),
         });
       } catch {
-        if (attempt === 5)
+        if (attempt >= 8)
           throw new Error(
             "Cloudflare request failed. Check network access and rerun to resume.",
           );
@@ -206,9 +231,10 @@ function cloudflareRequest(account, token, namespace, instance) {
         if (body.success === true) return body;
         throw new Error("Cloudflare rejected the AI Search request.");
       }
+      const limited = response?.status === 429;
       if (
         response &&
-        ((response.status !== 429 && response.status < 500) || attempt === 5)
+        ((!limited && response.status < 500) || attempt >= (limited ? 8 : 5))
       ) {
         throw new Error(
           `Cloudflare AI Search request failed (HTTP ${response.status}).`,
@@ -216,7 +242,7 @@ function cloudflareRequest(account, token, namespace, instance) {
       }
       const retryAfter = Number(response?.headers.get("retry-after")) || 0;
       await response?.body?.cancel();
-      await sleep(Math.max(2 ** attempt, retryAfter) * 1000);
+      await pause(Math.min(Math.max(2 ** attempt, retryAfter), 60) * 1000);
     }
   };
 }
