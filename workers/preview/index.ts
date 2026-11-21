@@ -11,7 +11,11 @@ import {
 // after the asset has loaded so simultaneous requests never share pending I/O.
 let search: ReturnType<typeof guideSearch> | undefined;
 export default {
-  async fetch(request: Request, env: SearchBindings & { ASSETS: Assets }) {
+  async fetch(
+    request: Request,
+    env: SearchBindings & { ASSETS: Assets },
+    ctx?: { waitUntil(promise: Promise<unknown>): void },
+  ) {
     const url = new URL(request.url);
     if (url.pathname !== "/api/search/query") return pages.fetch(request, env);
     if (!search) {
@@ -23,6 +27,6 @@ export default {
       const { records, shell, headers }: SearchSiteData = await asset.json();
       search = guideSearch(catalogFor(records), shell, headers);
     }
-    return search(request, env);
+    return search(request, env, ctx);
   },
 };

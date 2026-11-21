@@ -235,12 +235,56 @@ export function searchRequest(
   };
 }
 
+// The part of the Workers Cache API this file uses. Each Cloudflare location
+// keeps its own copy.
+export interface AnswerCache {
+  match(request: Request): Promise<Response | undefined>;
+  put(request: Request, response: Response): Promise<void>;
+}
+const ANSWER_TTL_SECONDS = 172800;
+
+// One key for a question however it is capitalised or spaced, under this
+// release's commit and passages. A new release looks up new keys, so nothing
+// has to be evicted. The key holds a hash of the question, never its text.
+export async function answerKey(
+  origin: string,
+  release: string,
+  query: string,
+) {
+  const question = query
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(question),
+  );
+  const hash = [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+  return new Request(
+    `${origin}/api/search/answers/${encodeURIComponent(release)}/${hash}`,
+  );
+}
+
 export function guideSearch(
   catalog: ReturnType<typeof catalogFor>,
   shell: string,
   securityHeaders: Record<string, string>,
+  answers: AnswerCache | undefined = (
+    globalThis as { caches?: { default?: AnswerCache } }
+  ).caches?.default,
 ) {
-  return async (request: Request, env: SearchBindings): Promise<Response> => {
+  const release = [
+    securityHeaders["X-Guide-Search-Commit"] ?? "",
+    securityHeaders["X-Guide-Search-Revision"] ?? "",
+  ].join(".");
+  return async (
+    request: Request,
+    env: SearchBindings,
+    ctx?: { waitUntil(promise: Promise<unknown>): void },
+  ): Promise<Response> => {
     const url = new URL(request.url);
     const json = request.headers.get("Accept")?.includes("application/json");
     let query = "";
@@ -317,6 +361,30 @@ export function guideSearch(
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",
         });
+      const found = (results: SearchResult[]) =>
+        respond(
+          200,
+          results.length
+            ? `${results.length} ${results.length === 1 ? "result" : "results"}`
+            : "No results found. Try another phrase or browse the guide.",
+          results,
+        );
+      // A cached answer costs no AI Search query, so it is not counted against
+      // the day's budget. A cache that fails is treated as empty.
+      const key = answers && (await answerKey(url.origin, release, query));
+      if (answers && key) {
+        let cached: SearchResult[] | undefined;
+        const start = performance.now();
+        try {
+          cached = await (await answers.match(key))?.json();
+        } catch {
+          cached = undefined;
+        }
+        timings.push(
+          `cache;desc=${cached ? "hit" : "miss"};dur=${Math.round(performance.now() - start)}`,
+        );
+        if (Array.isArray(cached)) return found(cached);
+      }
       if (env.SEARCH_BUDGET) {
         // Without a valid cap, search stays off rather than run without one.
         const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
@@ -346,13 +414,19 @@ export function guideSearch(
       if (reply === TIMED_OUT)
         return respond(504, "Guide results took too long to load. Try again.");
       const results = rankedResults(catalog, query, reply.chunks);
-      return respond(
-        200,
-        results.length
-          ? `${results.length} ${results.length === 1 ? "result" : "results"}`
-          : "No results found. Try another phrase or browse the guide.",
-        results,
-      );
+      if (answers && key) {
+        const store = answers
+          .put(
+            key,
+            Response.json(results, {
+              headers: { "Cache-Control": `max-age=${ANSWER_TTL_SECONDS}` },
+            }),
+          )
+          .catch(() => {});
+        if (ctx) ctx.waitUntil(store);
+        else await store;
+      }
+      return found(results);
     } catch {
       return respond(
         503,

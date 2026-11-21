@@ -6,6 +6,7 @@ import {
   spend,
 } from "../../workers/search/budget.ts";
 import {
+  answerKey,
   catalogFor,
   guideSearch,
   rankedResults,
@@ -322,4 +323,109 @@ test("a search says how long each step took, and nothing about the question", as
   assert.match(limited.headers.get("Server-Timing"), /^limit;dur=\d+$/);
   const invalid = await handle(new Request(url), {});
   assert.equal(invalid.headers.get("Server-Timing"), null);
+});
+
+const answerCache = () => {
+  const stored = new Map();
+  return {
+    stored,
+    match: async (request) => {
+      const body = stored.get(request.url);
+      return body === undefined ? undefined : new Response(body);
+    },
+    put: async (request, response) => {
+      stored.set(request.url, await response.text());
+    },
+  };
+};
+const release = {
+  "X-Guide-Search-Commit": "c1",
+  "X-Guide-Search-Revision": "r1",
+};
+
+test("one answer key serves a question however it is capitalised or spaced, under one release only", async () => {
+  const key = async (q, rel = "c1.r1") => (await answerKey(site, rel, q)).url;
+  assert.equal(await key("CIBA"), await key("  ciba "));
+  assert.equal(await key("token  exchange"), await key("Token Exchange"));
+  assert.notEqual(await key("CIBA"), await key("CIBA flow"));
+  assert.notEqual(await key("CIBA"), await key("CIBA", "c2.r1"));
+  assert.doesNotMatch(await key("a private question"), /private/);
+});
+
+test("a repeated question is answered from the cache, without the budget or AI Search", async () => {
+  const cache = answerCache();
+  const search = guideSearch(catalog, shell, release, cache);
+  let searched = 0;
+  let spent = 0;
+  const env = {
+    ...envFor(async () => {
+      searched++;
+      return { chunks: [chunk("flow.md", "b")] };
+    }),
+    SEARCH_BUDGET: {
+      idFromName: (name) => name,
+      get: () => ({
+        spend: async () => {
+          spent++;
+          return true;
+        },
+      }),
+    },
+    SEARCH_DAILY_BUDGET: "10",
+  };
+  const waits = [];
+  const first = await search(submit("DPoP proof"), env, {
+    waitUntil: (promise) => waits.push(promise),
+  });
+  await Promise.all(waits);
+  assert.match(first.headers.get("Server-Timing"), /cache;desc=miss/);
+  const again = await search(submit("dpop  PROOF"), env);
+  assert.equal(again.status, 200);
+  assert.deepEqual(await again.json(), await first.json());
+  assert.match(
+    again.headers.get("Server-Timing"),
+    /^limit;dur=\d+, cache;desc=hit;dur=\d+$/,
+  );
+  assert.equal(searched, 1);
+  assert.equal(spent, 1);
+
+  const next = guideSearch(
+    catalog,
+    shell,
+    { ...release, "X-Guide-Search-Commit": "c2" },
+    cache,
+  );
+  await next(submit("DPoP proof"), env);
+  assert.equal(searched, 2, "a new release does not reuse the old answers");
+});
+
+test("only a found answer is cached, and a cache that fails is passed over", async () => {
+  const cache = answerCache();
+  const search = guideSearch(catalog, shell, release, cache);
+  const failing = async () => {
+    throw new Error("provider");
+  };
+  assert.equal((await search(submit("q"), envFor(failing))).status, 503);
+  assert.equal((await search(submit("q"), envFor(failing, false))).status, 429);
+  assert.equal(cache.stored.size, 0);
+
+  let searched = 0;
+  const broken = guideSearch(catalog, shell, release, {
+    match: async () => {
+      throw new Error("cache down");
+    },
+    put: async () => {
+      throw new Error("cache down");
+    },
+  });
+  const response = await broken(
+    submit("DPoP proof"),
+    envFor(async () => {
+      searched++;
+      return { chunks: [chunk("flow.md", "b")] };
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(searched, 1);
+  assert.match(response.headers.get("Server-Timing"), /cache;desc=miss/);
 });
