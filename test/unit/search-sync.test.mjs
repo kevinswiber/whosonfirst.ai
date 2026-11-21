@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
-import { listItems, syncSearch } from "../../scripts/sync-search.mjs";
+import {
+  listItems,
+  retireSearch,
+  syncSearch,
+} from "../../scripts/sync-search.mjs";
 
 const passage = {
   title: "Token exchange",
@@ -119,4 +123,66 @@ test("the cache is purged once, after this release's passages are indexed, and n
     /Indexing failed/,
   );
   assert.equal(purged, false);
+});
+
+test("retiring deletes only this project's passages that the site no longer has", async () => {
+  const kept = {
+    id: "k",
+    key: record.key,
+    status: "completed",
+    chunks_count: 1,
+  };
+  const old = {
+    id: "o",
+    key: `${"c".repeat(32)}-${"d".repeat(32)}.md`,
+    status: "completed",
+    chunks_count: 1,
+  };
+  const stray = {
+    id: "s",
+    key: "notes.md",
+    status: "completed",
+    chunks_count: 1,
+  };
+  const deleted = [];
+  const lines = [];
+  await retireSearch(
+    [record],
+    async (path, options) => {
+      if (options) {
+        assert.equal(options.method, "DELETE");
+        deleted.push(path);
+        return { success: true };
+      }
+      return page([kept, old, stray]);
+    },
+    { log: (line) => lines.push(line) },
+  );
+  assert.deepEqual(deleted, ["/o"]);
+  assert.match(lines.join("\n"), /Retiring 1 passages .* Keeping 1\./);
+  assert.match(lines.join("\n"), /Left 1 items not named/);
+});
+
+test("nothing is retired until every passage of this release is indexed", async () => {
+  const old = {
+    id: "o",
+    key: `${"c".repeat(32)}-${"d".repeat(32)}.md`,
+    status: "completed",
+    chunks_count: 1,
+  };
+  await assert.rejects(
+    () =>
+      retireSearch(
+        [record],
+        async (_path, options) => {
+          assert.equal(options, undefined, "nothing deleted");
+          return page([
+            { id: "k", key: record.key, status: "running", chunks_count: 0 },
+            old,
+          ]);
+        },
+        { log: () => {} },
+      ),
+    /not indexed\. Nothing was retired/,
+  );
 });

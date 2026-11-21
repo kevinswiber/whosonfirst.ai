@@ -51,3 +51,10 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_SEARCH_WORKER_DEPLOY_TOKEN }}
+      # Only once the new search Worker is answering: until then the one it
+      # replaces still searches the passages this deletes.
+      - name: Retire the passages the site no longer has
+        run: npm run search:sync -- --retire
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN: ${{ secrets.CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN }}

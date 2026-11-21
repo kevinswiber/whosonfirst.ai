@@ -142,6 +142,47 @@ export async function syncSearch(
   }
 }
 
+// A passage this project uploads is named for its location and its content.
+const PASSAGE = /^[a-f0-9]{32}-[a-f0-9]{32}\.md$/;
+
+// Delete the passages the site no longer has, once the new search Worker is
+// answering. Nothing is kept for a rollback: the release run for an older
+// commit uploads whatever its passages are missing before it activates. Only
+// items named as this project names a passage are retired, and only when every
+// passage of this release is indexed.
+export async function retireSearch(
+  records,
+  request,
+  { log = console.log } = {},
+) {
+  checkRecords(records);
+  const current = new Set(records.map(({ key }) => key));
+  const items = await listItems(request);
+  const missing = records.filter(({ key }) => !indexed(items.get(key)));
+  if (missing.length)
+    throw new Error(
+      `${missing.length} passages of this release are not indexed. Nothing was retired.`,
+    );
+  const retired = [...items.values()].filter(
+    ({ key }) => PASSAGE.test(key) && !current.has(key),
+  );
+  const other = [...items.values()].filter(({ key }) => !PASSAGE.test(key));
+  log(
+    `Retiring ${retired.length} passages the site no longer has. Keeping ${current.size}.`,
+  );
+  if (other.length)
+    log(
+      `Left ${other.length} items not named as this project names a passage.`,
+    );
+  let done = 0;
+  await forEachLimited(retired, async ({ id }) => {
+    await request(`/${encodeURIComponent(id)}`, { method: "DELETE" });
+    done++;
+    if (done % 100 === 0) log(`Retired ${done}/${retired.length}.`);
+  });
+  log(`Retired ${retired.length} passages.`);
+}
+
 function cloudflareRequest(account, token, namespace, instance) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/ai-search/namespaces/${encodeURIComponent(namespace)}/instances/${encodeURIComponent(instance)}`;
   return async (suffix, options = {}) => {
@@ -182,8 +223,13 @@ function cloudflareRequest(account, token, namespace, instance) {
 
 async function main() {
   const args = process.argv.slice(2);
-  if (args.some((arg) => arg !== "--dry-run"))
-    throw new Error("Usage: node scripts/sync-search.mjs [--dry-run]");
+  if (
+    args.length > 1 ||
+    args.some((arg) => !["--dry-run", "--retire"].includes(arg))
+  )
+    throw new Error(
+      "Usage: node scripts/sync-search.mjs [--dry-run | --retire]",
+    );
   requireCurrentBuild("Search must index the current guide.");
   const { records, revision } = JSON.parse(
     await readFile(manifestPath, "utf8"),
@@ -213,13 +259,14 @@ async function main() {
       "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN.",
     );
   const request = cloudflareRequest(account, token, namespace, instance);
-  await syncSearch(
-    records,
-    (suffix, options) => request(`/items${suffix}`, options),
-    {
-      purge: () => request("/purge_cache", { method: "POST" }),
-    },
-  );
+  const items = (suffix, options) => request(`/items${suffix}`, options);
+  if (args.includes("--retire")) {
+    await retireSearch(records, items);
+    return;
+  }
+  await syncSearch(records, items, {
+    purge: () => request("/purge_cache", { method: "POST" }),
+  });
 }
 
 if (
