@@ -401,14 +401,15 @@ Which of the two a request prefers is settled by weight. The RFC calls two types
 
 The copy is sent with `Content-Location`, which gives the address where that form lives on its own, and with `Vary: Accept`. It is sent without the `X-Robots-Tag: noindex` it has at its own address: there the header keeps a search engine from listing the copy, and here the address is the page's. A page with no copy, such as the style guide, answers with the page.
 
-**Which addresses the Worker stands in front of.** Pages, and nothing else: a request for a file is served as a file, without the Worker, and does not count as a Worker request. `cloudflare.config.ts` says which is which by the rule the site already keeps, that a page's address has no dot in it and a file's has one (`runWorkerFirst: ["/*", "!/*.*"]`). So the Markdown copies at their own addresses, `llms.txt`, the styles and the pictures never reach it.
+**Which addresses the Worker stands in front of.** Pages, and one address that is not a page: `/search`, a search, which it hands unchanged to the search Worker over the `SEARCH` service binding. A route could not send it there, since Cloudflare matches a route against the query string too. Otherwise nothing: a request for a file is served as a file, without the Worker, and does not count as a Worker request. `cloudflare.config.ts` says which is which by the rule the site already keeps, that a page's address has no dot in it and a file's has one (`runWorkerFirst: ["/*", "!/*.*"]`). So the Markdown copies at their own addresses, `llms.txt`, the styles and the pictures never reach it.
 
 **How the build keeps it.** The Cloudflare adapter emits only assets when Astro uses static output. The config selects server output to retain the Worker bundle, and the route setup hook prerenders every Astro route. `cloudflare.config.ts` selects `src/worker.ts` for the build and Astro’s own entrypoint for `cf dev`, so pages render as they are edited.
 
-It is tested at three levels:
+It is tested at these levels:
 
 - **How the header is read**, in `test/unit/markdown-negotiation.test.mjs`, which `npm test` runs. The weights are held to the examples RFC 9110 and RFC 7231 work through. Each rule above has its cases. Then a few thousand headers are made from the grammar, the same ones on every run, and held to what must be true of any header: how one is spelled does not change what it says, the order of its ranges does not change any type's weight, and the answer follows from the weights. The same file covers what the Worker sends for each case, with a table standing in for the files.
-- **The deployed configuration**, in `test/build/deploy.test.mjs`: it names the Worker, the files, and the addresses the Worker stands in front of.
+- **The hand-off of a search**, in `test/unit/site-worker.test.mjs`: `/search` goes to the search Worker unchanged and no other address does, and if the search Worker cannot be reached, the request gets what is at its address.
+- **The deployed configuration**, in `test/build/deploy.test.mjs`: it names the Worker, the files, the addresses the Worker stands in front of, and the `SEARCH` binding.
 - **The site as it is deployed**, in `test/worker/`, which `npm run check:rendered` runs. `astro preview` serves the build in the Workers runtime, and the tests ask it: every page's copy is the one the build wrote, a browser gets every page, both answers keep the headers every response has, a file answers as itself, and a reader that has the copy is told so.
 
 The browser tests do not go through the Worker: they serve the built files themselves, with the site's headers.
