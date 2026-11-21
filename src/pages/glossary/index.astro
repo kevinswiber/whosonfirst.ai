@@ -37,7 +37,7 @@ const letters = [...new Set(terms.map((t) => t.term[0].toUpperCase()))];
       <div class="gl-tools">
         <label hidden>
           <span class="visually-hidden">Filter terms</span>
-          <input type="search" placeholder="Filter terms…" autocomplete="off" />
+          <input type="search" placeholder="Filter terms…" autocomplete="off" autocorrect="off" spellcheck="false" />
         </label>
         <nav aria-label="Jump to letter">
           {letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}

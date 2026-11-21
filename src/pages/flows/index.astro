@@ -145,7 +145,7 @@ const start = START.map(([slug, when]) => ({ flow: flow(slug), when }));
       <form class="fl-sidebar" role="search" aria-label="Filter flows" hidden>
         <label class="fl-search">
           Search by flow or standard
-          <input type="search" id="flow-search" name="q" placeholder="e.g. OAuth or RFC 8693" autocomplete="off" />
+          <input type="search" id="flow-search" name="q" placeholder="e.g. OAuth or RFC 8693" autocomplete="off" autocorrect="off" spellcheck="false" />
         </label>
         <details class="fl-facets" open>
           <summary>Filters <span class="fl-active"></span></summary>
