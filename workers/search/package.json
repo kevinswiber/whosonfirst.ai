@@ -1,8 +1,0 @@
-{
-  "name": "whosonfirst-search",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "node prepare.mjs && vite build"
-  }
-}

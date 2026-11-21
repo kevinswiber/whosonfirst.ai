@@ -3,14 +3,17 @@
 # had to run `npm run indexnow -- --since <day>` by hand after a deploy, and
 # remember the day.
 #
-# The site is not deployed from here: Cloudflare's Workers Builds builds and
-# deploys every push to main, a minute or two after it. So this workflow
-# builds the same commit for itself, from the whole history, since the dates
-# in the sitemap and what each commit changed are read from it. Then scripts/indexnow.mjs does three things:
+# It does not start on a push. The release workflow calls it as its last job,
+# once the site is deployed, so its wait for the pages starts when they can
+# be there: a release indexes the passages for search before it deploys, and
+# that alone can take longer than the wait. This workflow builds the same
+# commit for itself, from the whole history, since the dates in the sitemap
+# and what each commit changed are read from it. Then scripts/indexnow.mjs
+# does three things:
 #
 #   chooses  the pages made from a file or an entry changed by a commit that
-#            main has now and did not have when this workflow last succeeded
-#            on a push. No page, and it says so and sends nothing
+#            main has now and did not have at the last release whose pages
+#            were sent. No page, and it says so and sends nothing
 #   waits    until the deployed sitemap lists each of those pages with a date
 #            no older than this build's, looking every fifteen seconds. An
 #            engine that is told about a page goes and reads it, and should
@@ -18,13 +21,15 @@
 #   sends    the list
 #
 # The commit to start from is asked of GitHub: the commit of the last run of
-# this workflow that succeeded on a push to main. A run that succeeded sent
-# its pages or had none to send, so everything since is still owed. That
-# covers a run that failed because the deploy never showed up, and a run that
-# never started: the next push sends their pages with its own. Asking is what
-# `actions: read` is for. Where no run has succeeded yet, every page is sent:
-# nothing says which pages an engine has been told about, and a run that
-# failed before the first success would otherwise leave its pages behind.
+# the release workflow that succeeded on main. This job is part of that run,
+# so a release run succeeded only if its pages were sent or it had none to
+# send, and everything since is still owed. That covers a release that failed
+# before it deployed, one whose pages could not be sent, and one that never
+# started: the next release sends their pages with its own. Asking is what
+# `actions: read` is for. Before the release workflow called this one, this
+# workflow ran on a push, so where no release has succeeded yet the commit is
+# that of its own last run that succeeded on a push. Where neither has, every
+# page is sent: nothing says which pages an engine has been told about.
 # Where GitHub does not answer, the run fails with nothing sent, and the next
 # one starts from the last success as it would have.
 #
@@ -35,12 +40,12 @@
 # sent, with a warning on the run.
 #
 # Run by hand, it sends every page or the pages changed since a day or a
-# commit, and with "dry run" it only prints the list. A run by hand does not
-# move where the next push starts from, so a dry run cannot hide a page.
+# commit, and with "dry run" it only prints the list. A run by hand is a run
+# of this workflow and not of the release, so it does not move where the next
+# release starts from, and a dry run cannot hide a page.
 #
-# One run at a time, in the order they were asked for. GitHub keeps one run
-# waiting behind the one in progress and drops any other, which loses
-# nothing: the run that does go starts from the last one that succeeded.
+# One at a time. Releases already run one after another, and a run by hand
+# waits for a release's job, or the other way round.
 #
 # The key that proves the list comes from whoever runs the site is the file in
 # public/ named for it. It is not a secret, and this workflow needs none. It
@@ -48,8 +53,13 @@
 name: IndexNow
 
 on:
-  push:
-    branches: [main]
+  # From .github/workflows/release.yml, after the deployment.
+  workflow_call:
+    inputs:
+      released:
+        description: The site has just been deployed from this commit
+        type: boolean
+        required: true
   workflow_dispatch:
     inputs:
       pages:
@@ -70,10 +80,6 @@ permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: indexnow
-  cancel-in-progress: false
-
 env:
   ASTRO_TELEMETRY_DISABLED: "1"
 
@@ -82,8 +88,11 @@ jobs:
     name: Tell IndexNow what changed
     if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    # The build takes about a minute, and the wait for the deploy up to ten.
+    # The build takes about a minute, and the wait for the pages up to ten.
     timeout-minutes: 20
+    concurrency:
+      group: indexnow
+      cancel-in-progress: false
     steps:
       # The whole history: a shallow clone cannot date a page, and the build
       # fetches the rest by itself only in Workers Builds.
@@ -103,19 +112,24 @@ jobs:
       - name: Choose the pages, wait for the deploy and send
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASED: ${{ inputs.released }}
           PAGES: ${{ inputs.pages }}
           SINCE: ${{ inputs.since }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = push ]; then
-            # The commit of the last run that succeeded on a push to main.
-            runs="repos/$GITHUB_REPOSITORY/actions/workflows/indexnow.yml/runs?branch=main&event=push&status=success&per_page=1"
-            if ! last=$(gh api "$runs" --jq '.workflow_runs[0].head_sha // empty'); then
-              echo "::error::GitHub did not say which run last succeeded, so nothing is sent. The next run sends these pages with its own."
+          # The commit of the last run of a workflow that succeeded on main.
+          last_success() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$1/runs?branch=main&status=success&per_page=1$2" --jq '.workflow_runs[0].head_sha // empty'
+          }
+          if [ "$RELEASED" = true ]; then
+            # The last release whose pages were sent. Before the release
+            # called this workflow, it ran on a push: start from its last.
+            if ! last=$(last_success release.yml "") || { [ -z "$last" ] && ! last=$(last_success indexnow.yml "&event=push"); }; then
+              echo "::error::GitHub did not say which run last succeeded, so nothing is sent. The next release sends these pages with its own."
               exit 1
             fi
             if [ -z "$last" ]; then
-              echo "No run has succeeded on a push yet: every page."
+              echo "No release has succeeded yet: every page."
               set -- --all
             else
               echo "Pages changed since $last."

@@ -1,0 +1,95 @@
+# Releases the guide on every change to main: the pages and their search, in
+# one Worker. The steps are in the order that keeps a search right while they
+# run, and docs/release.md says why.
+#
+#   1. build the site, once
+#   2. upload the passages this build has that the index does not, and wait
+#      until they are indexed. The site being replaced does not see them.
+#   3. deploy the build, and ask it for a search
+#   4. delete the passages the site no longer has
+#   5. tell the search engines that take part in IndexNow which pages changed
+#
+# The credentials are in the search-production environment, which only main
+# may use.
+name: Release the guide
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      index:
+        description: Index the passages before deploying. Turn off only to release the pages while AI Search cannot be reached.
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guide-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'kevinswiber/whosonfirst.ai' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    environment: search-production
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      # Whether this run indexes. A push always does.
+      INDEX: ${{ github.event_name == 'push' || inputs.index }}
+      SEARCH_RATE_NAMESPACE: ${{ vars.SEARCH_RATE_NAMESPACE }}
+      # A secret, so the public run log masks it.
+      SEARCH_RATE_LIMIT: ${{ secrets.SEARCH_RATE_LIMIT }}
+      SEARCH_NAMESPACE: ${{ vars.SEARCH_NAMESPACE || 'whosonfirst' }}
+      SEARCH_INSTANCE: ${{ vars.SEARCH_INSTANCE || 'whosonfirst-guide' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Check that this build is the head of main and has search
+        run: node scripts/release.ts check
+      - run: npm run search:sync -- --dry-run
+      - name: Upload the new passages and wait for indexing
+        if: env.INDEX == 'true'
+        run: npm run search:sync
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN: ${{ secrets.CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN }}
+      # A run that does not index asks the site for its release marker, not
+      # for a search, which cannot answer while AI Search is unreachable.
+      - name: Deploy the guide and ask it for a search
+        run: node scripts/release.ts deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_DEPLOY_TOKEN }}
+      # Only once the new site is answering: until then the one it replaces
+      # still searches the passages this deletes.
+      - name: Retire the passages the site no longer has
+        if: env.INDEX == 'true'
+        run: npm run search:sync -- --retire
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN: ${{ secrets.CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN }}
+
+  # After the deployment, and not on the push: the wait for the pages starts
+  # when they can be there. It is part of this run, so a release whose pages
+  # were not sent has not succeeded, and the next one sends them.
+  indexnow:
+    name: IndexNow
+    needs: release
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/indexnow.yml
+    with:
+      released: true

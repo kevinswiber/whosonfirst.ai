@@ -1,6 +1,8 @@
 /**
  * The built site, served as it is deployed: by the Workers runtime, with the
  * Worker in front of the pages. What the tests in test/worker/ start from.
+ * A runtime starts with nothing kept from the one before: no searches
+ * counted against an address or against the day.
  *
  * `astro preview` serves the same Cloudflare Build Output that `cf deploy`
  * uploads. It runs on this machine and needs no account.
@@ -27,9 +29,10 @@ const freePort = () =>
 
 /**
  * Starts the site in the Workers runtime and waits until it answers. Gives
- * its origin and a function that stops it.
+ * its origin and a function that stops it. `secrets` are the Worker's, by
+ * name: the runtime reads them from the environment it is started in.
  */
-export async function startWorker() {
+export async function startWorker(secrets = {}) {
   const port = await freePort();
   const child = spawn(
     process.execPath,
@@ -44,7 +47,9 @@ export async function startWorker() {
     ],
     {
       cwd: repository,
-      env: { ...process.env, CI: "1" },
+      // A runtime to itself: state in memory and no debugger, so that two
+      // started together share nothing. astro.config.mjs reads this.
+      env: { ...process.env, ...secrets, WORKER_UNDER_TEST: "1", CI: "1" },
       stdio: ["ignore", "pipe", "pipe"],
       // a group of its own, so that the runtime it starts stops with it
       detached: true,

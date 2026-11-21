@@ -1,74 +1,92 @@
 import * as astro from "@astrojs/cloudflare/entrypoints/server" with {
   type: "cf-worker",
 };
-import { bindings, defineConfig } from "cf/config";
-import * as pages from "./src/worker.ts" with { type: "cf-worker" };
-import * as pagesWithSearch from "./workers/preview/index.ts" with {
-  type: "cf-worker",
-};
+import { bindings, defineConfig, exports } from "cf/config";
+import * as site from "./src/site.ts" with { type: "cf-worker" };
 
-// The config runs under Node. The site has no dependency on Node’s types.
-declare const process: { env: Record<string, string | undefined> };
-
-// A preview’s limit is a build variable in Workers Builds, not written here.
-function previewRateLimit() {
+// Search is set up where the site is built and not written here: an account’s
+// identifiers and its limits are its own. With neither variable, the site is
+// built without search, and a search answers that it is unavailable. The site
+// and a branch preview are built from the same settings, each with the values
+// of the place that builds it.
+function searchSettings() {
+  const namespace = process.env.SEARCH_RATE_NAMESPACE;
   const limit = process.env.SEARCH_RATE_LIMIT;
+  if (!namespace && !limit) return undefined;
+  if (!namespace || !/^\d+$/.test(namespace))
+    throw new Error(
+      "Set SEARCH_RATE_NAMESPACE to the numeric namespace allocated to the search limiter.",
+    );
   if (!limit || !/^[1-9]\d*$/.test(limit))
     throw new Error(
-      "Set SEARCH_RATE_LIMIT to the number of searches one address may make in a minute on a preview.",
+      "Set SEARCH_RATE_LIMIT to the number of searches one address may make in a minute.",
     );
-  return Number(limit);
+  return {
+    AI_SEARCH: bindings.aiSearchNamespace({
+      namespace: process.env.SEARCH_NAMESPACE ?? "whosonfirst",
+    }),
+    SEARCH_INSTANCE: bindings.text(
+      process.env.SEARCH_INSTANCE ?? "whosonfirst-guide",
+    ),
+    SEARCH_LIMITER: bindings.rateLimit({
+      namespace,
+      simple: { limit: Number(limit), period: 60 },
+    }),
+    // How many searches may reach AI Search in a UTC day. SearchBudget counts
+    // them, and the cap is a secret of the Worker, and of a preview.
+    SEARCH_DAILY_BUDGET: bindings.secret(),
+  };
 }
 
-export default defineConfig(({ mode, isPreview }) => ({
-  worker: {
-    name: "whosonfirst-ai",
-    compatibilityDate: "2026-11-03",
-    compatibilityFlags: ["global_fetch_strictly_public"],
-    // In production, src/worker.ts serves the page as HTML or Markdown and
-    // hands /search to the search Worker. A preview answers /search here and
-    // forwards every other request it receives to src/worker.ts.
-    entrypoint:
-      mode === "development" ? astro : isPreview ? pagesWithSearch : pages,
-    env: {
-      ASSETS: bindings.assets(),
-      ...(isPreview && {
-        AI_SEARCH: bindings.aiSearchNamespace({ namespace: "whosonfirst" }),
-        SEARCH_INSTANCE: bindings.text("whosonfirst-guide"),
-        SEARCH_LIMITER: bindings.rateLimit({
-          // Branch previews share a limiter separate from production search.
-          namespace: "512806497",
-          simple: { limit: previewRateLimit(), period: 60 },
-        }),
-        // Previews spend the same AI Search queries as production, so they
-        // count against the same daily budget, kept by the search Worker. The
-        // cap is a secret in Previews Base.
-        SEARCH_BUDGET: bindings.durableObject({
-          worker: process.env.SEARCH_WORKER_NAME ?? "whosonfirst-ai-search",
-          exportName: "SearchBudget",
-        }),
-        SEARCH_DAILY_BUDGET: bindings.secret(),
-      }),
-      // In production, src/worker.ts hands /search to the search Worker. A
-      // call through a service binding is answered from that Worker's cache
-      // when it can be, without running it.
-      ...(!isPreview &&
-        mode !== "development" && {
-          SEARCH: bindings.worker({
-            worker: process.env.SEARCH_WORKER_NAME ?? "whosonfirst-ai-search",
+// Only for the move from two Workers to one, and removed with the second
+// Worker: a build given SEARCH_WORKER hands a search to that Worker, as the
+// site did before the move, and has no search of its own. The first
+// deployment of one Worker creates SearchBudget, and Cloudflare refuses a
+// rollback across that, so going back is deploying this build. It keeps
+// SearchBudget. docs/release.md has the steps.
+const searchWorker = process.env.SEARCH_WORKER;
+
+export default defineConfig(({ mode }) => {
+  // `cf dev` serves the pages through Astro. What is built is src/site.ts.
+  const built = mode !== "development";
+  return {
+    worker: {
+      name: "whosonfirst-ai",
+      compatibilityDate: "2026-11-20",
+      compatibilityFlags: ["global_fetch_strictly_public"],
+      entrypoint: built ? site : astro,
+      env: {
+        ASSETS: bindings.assets(),
+        ...(built &&
+          (searchWorker
+            ? { SEARCH: bindings.worker({ worker: searchWorker }) }
+            : searchSettings())),
+      },
+      // src/worker.ts serves the page as HTML or Markdown and hands /search
+      // to Search. Workers Cache keeps a found answer in front of Search,
+      // for each deployed version, and Search does not run when one is
+      // reused. Nothing the page handler sends is kept.
+      ...(built && {
+        cache: { enabled: !searchWorker },
+        exports: {
+          ...(!searchWorker && {
+            default: exports.worker({ cache: { enabled: false } }),
+            Search: exports.worker({ cache: { enabled: true } }),
           }),
-        }),
+          SearchBudget: exports.durableObject({ storage: "sqlite" }),
+        },
+      }),
+      assets: {
+        notFoundHandling: "404-page",
+        // Pages have extensionless paths. Files with a dot go straight to assets.
+        runWorkerFirst: ["/*", "!/*.*"],
+      },
+      observability: {
+        enabled: true,
+        // A search passes through this Worker, with the question in the query
+        // string. Logs and traces drop it.
+        redactQueryString: true,
+      },
     },
-    assets: {
-      notFoundHandling: "404-page",
-      // Pages have extensionless paths. Files with a dot go straight to assets.
-      runWorkerFirst: ["/*", "!/*.*"],
-    },
-    observability: {
-      enabled: true,
-      // A search passes through this Worker, with the question in the query
-      // string. Logs and traces drop it.
-      redactQueryString: true,
-    },
-  },
-}));
+  };
+});

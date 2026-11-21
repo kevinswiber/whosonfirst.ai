@@ -1,0 +1,86 @@
+// A search, asked of the site as it is deployed: the Workers runtime hands
+// /search from the page handler to the Search entrypoint, which reads the
+// catalog the build wrote and counts against the day's budget. No account is
+// reached from here, so the search itself finds nothing to ask and says that
+// it is unavailable. What a found answer looks like is in
+// test/build/site-search.test.mjs and test/unit/guide-search.test.mjs.
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { after, before, test } from "node:test";
+import { WORKER_BUILD } from "../../scripts/built-site.mjs";
+import { file, SITE_HEADERS } from "../support/site.mjs";
+import { startWorker } from "../support/worker.mjs";
+
+const marker = JSON.parse(file("search/release.json"));
+const { env } = JSON.parse(
+  readFileSync(join(WORKER_BUILD, "worker.config.json"), "utf8"),
+);
+/** Whether this build was given a limiter, and so has search. */
+const hasSearch = Boolean(env.SEARCH_LIMITER);
+/** A build made to go back to two Workers: the other one is not here. */
+const elsewhere = env.SEARCH && "this build hands a search to another Worker";
+
+let site;
+before(async () => {
+  // The day's cap. The runtime starts with nothing counted against it.
+  site = await startWorker({ SEARCH_DAILY_BUDGET: "100" });
+});
+after(async () => {
+  await site?.stop();
+});
+
+// Each request comes from an address of its own, in the range kept for
+// documentation, so no search here meets the count of another: the limit for
+// one address may be as low as one search a minute.
+let asked = 0;
+const ask = (path, headers = {}) =>
+  fetch(`${site.origin}${path}`, {
+    headers: { "CF-Connecting-IP": `2001:db8::${++asked}`, ...headers },
+    redirect: "manual",
+  });
+
+test("a search with no question goes to the search page, and another spelling to the one address", {
+  skip: elsewhere,
+}, async () => {
+  const empty = await ask("/search");
+  assert.equal(empty.status, 302);
+  assert.equal(empty.headers.get("location"), "/search/");
+  const spelled = await ask("/search?q=%20DPoP%20%20proof&utm=1");
+  assert.equal(spelled.status, 308);
+  assert.equal(spelled.headers.get("location"), "/search?q=DPoP+proof");
+  const page = await ask("/search/");
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /id="search-results"/);
+});
+
+test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", {
+  skip: elsewhere,
+}, async () => {
+  const answer = await ask("/search?q=DPoP&format=json");
+  assert.equal(answer.status, 503);
+  assert.equal(answer.headers.get("cache-control"), "no-store");
+  assert.equal(answer.headers.get("x-robots-tag"), "noindex");
+  assert.equal(answer.headers.get("x-guide-search-commit"), marker.commit);
+  assert.equal(answer.headers.get("x-guide-search-revision"), marker.revision);
+  for (const name of ["content-security-policy", "x-content-type-options"])
+    assert.equal(answer.headers.get(name), SITE_HEADERS[name], name);
+  assert.match((await answer.json()).error, /unavailable/);
+
+  const page = await ask("/search?q=DPoP");
+  assert.equal(page.status, 503);
+  const html = await page.text();
+  assert.match(html, /<input value="DPoP"/);
+  assert.match(html, /id="search-status-text"[^>]*>Search is temporarily/);
+});
+
+test("a search passes the limit for its address and is counted against the day before it is asked", {
+  skip: !hasSearch && "this build has no search",
+}, async () => {
+  const answer = await ask("/search?q=token+exchange&format=json");
+  assert.equal(answer.status, 503);
+  assert.match(
+    answer.headers.get("server-timing"),
+    /^limit;dur=\d+, budget;dur=\d+, search;dur=\d+$/,
+  );
+});

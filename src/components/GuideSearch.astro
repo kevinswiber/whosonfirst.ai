@@ -43,7 +43,7 @@ const examples = [
 </guide-search>
 
 <script>
-  import type { SearchResult } from "../../workers/search/search.ts";
+  import type { SearchResult } from "../search/search.ts";
   import { quickMatches } from "../lib/quick-matches.mjs";
 
   type QuickRecord = { href: string; type: string; title: string; summary: string; aliases: string[] };
@@ -228,7 +228,7 @@ const examples = [
         const deadline = window.setTimeout(() => request.abort(), 12000);
         try {
           // The one address the Worker answers for this question, as
-          // plainQuestion() and searchAddress() in workers/search/search.ts
+          // plainQuestion() and searchAddress() in src/search/search.ts
           // make it, so a cached answer is found without a redirect.
           const plain = query.normalize('NFKC').trim().replace(/\s+/g, ' ');
           const address = `/search?${new URLSearchParams({ q: plain, format: 'json' })}`;

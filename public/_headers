@@ -1,7 +1,6 @@
 # Sent with every page and file the site serves. (The host does not add them to
 # its own "not found" response.) Assets load from this origin. A search, at
-# /search, is answered by a separate Worker on this host, which sets its own
-# response headers.
+# /search, is answered by the Worker, which sends these same headers itself.
 #
 # script-src and style-src allow inline code because the theme switch has to
 # run before the first paint, and code samples and diagrams are colored and
@@ -55,9 +54,14 @@
 /*.txt
   Content-Type: text/plain; charset=utf-8
 
-# The search release checks the commit and passage revision currently served.
+# The commit and passage revision this build was made from. A search carries
+# the same two, and the release checks them.
 /search/release.json
   Cache-Control: no-store
+  X-Robots-Tag: noindex
+
+# What the Worker answers a search from: the passages of the pages, again.
+/search/catalog.json
   X-Robots-Tag: noindex
 
 /search/quick-matches.json
