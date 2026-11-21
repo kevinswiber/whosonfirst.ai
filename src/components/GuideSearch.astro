@@ -113,6 +113,13 @@ const examples = [
       let timer: number | undefined;
       let pending: AbortController | undefined;
       let retryAfter = 0;
+      // Set when the day's budget is spent. Search answers again at midnight UTC.
+      let spentUntil = 0;
+      const spent = 'Search has answered all it can for today. Browse the guide, or try again tomorrow.';
+      const until = (delay: string | null, fallback: number) => {
+        const time = delay && /^\d+$/.test(delay) ? Date.now() + Number(delay) * 1000 : Date.parse(delay ?? '');
+        return Number.isFinite(time) ? time : Date.now() + fallback;
+      };
 
       hint.textContent = 'Results update as you type. Press Enter to search immediately.';
       examples.hidden = results.hasAttribute('data-search-submitted');
@@ -204,6 +211,10 @@ const examples = [
           return;
         }
         if (pending) return;
+        if (Date.now() < spentUntil) {
+          status.textContent = spent;
+          return;
+        }
         if (Date.now() < retryAfter) {
           const seconds = Math.ceil((retryAfter - Date.now()) / 1000);
           status.textContent = `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
@@ -224,11 +235,15 @@ const examples = [
           });
           if (pending !== request) return;
           if (response.status === 429) {
-            const delay = response.headers.get('Retry-After') || '60';
-            const until = /^\d+$/.test(delay) ? Date.now() + Number(delay) * 1000 : Date.parse(delay);
-            retryAfter = Number.isFinite(until) ? until : Date.now() + 60000;
+            retryAfter = until(response.headers.get('Retry-After'), 60000);
             const seconds = Math.max(1, Math.ceil((retryAfter - Date.now()) / 1000));
             status.textContent = `Too many searches. Try again in ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
+            return;
+          }
+          // Only the spent budget sends a 503 with a time to come back.
+          if (response.status === 503 && response.headers.has('Retry-After')) {
+            spentUntil = until(response.headers.get('Retry-After'), 3600000);
+            status.textContent = spent;
             return;
           }
           if (response.status === 504) {

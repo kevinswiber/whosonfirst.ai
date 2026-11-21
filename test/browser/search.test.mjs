@@ -361,6 +361,39 @@ test("local index failure, unavailable service, rate limiting and zero results a
   await ctx.close();
 });
 
+test("a spent daily budget says so, sends nothing more, and searches again when the day is over", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  const sent = submittedQueries(page);
+  const replies = [
+    { status: 503, headers: { "Retry-After": "3600" }, body: "" },
+    { json: { results: [] } },
+  ];
+  await page.route(site.url(fullSearch), (route) =>
+    route.fulfill(replies.shift()),
+  );
+  await open(page, site.url("/search/"));
+  await pauseTimers(page);
+  const input = page.getByRole("searchbox");
+  const status = page.locator("#search-status-text");
+  await input.fill("DPoP");
+  await input.press("Enter");
+  await status.filter({ hasText: /all it can for today/i }).waitFor();
+  assert.equal(
+    await page.getByRole("button", { name: "Try again" }).isVisible(),
+    false,
+  );
+  await input.fill("a revised question");
+  await input.press("Enter");
+  await status.filter({ hasText: /all it can for today/i }).waitFor();
+  assert.deepEqual(sent, ["DPoP"]);
+  await page.clock.fastForward(3600000);
+  await input.press("Enter");
+  await status.filter({ hasText: /No results found/i }).waitFor();
+  assert.deepEqual(sent, ["DPoP", "a revised question"]);
+  await ctx.close();
+});
+
 for (const [device, viewport] of [
   ["desktop", { width: 1280, height: 900 }],
   ["phone", { width: 320, height: 568 }],
