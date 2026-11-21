@@ -28,7 +28,7 @@ A search is `GET /search?q=…`, with the question in the query string. The Work
 8. In the Worker’s Workers Builds settings, keep the repository connected and preview builds on, with the preview command `npx cf previews deploy`. Set the production deploy command to one that deploys nothing: the workflow deploys `main`, after indexing, and a second deployment from Workers Builds would go out before the passages are indexed. Leave the separate build command empty.
 9. For previews, set the build variables `SEARCH_RATE_NAMESPACE` and `SEARCH_RATE_LIMIT` in Workers Builds, and the secret `SEARCH_DAILY_BUDGET` in the Worker’s Previews Base. [Pull request previews](#pull-request-previews) says what each does.
 
-To release the current commit again after changing settings or credentials, choose **Actions → Release the guide → Run workflow** and select `main`. The run’s one input, **index**, is on. Turn it off only to release the pages while AI Search cannot be reached: the run then deploys without uploading or retiring passages, and search finds less for the passages that changed until the next run with it on.
+To release the current commit again after changing settings or credentials, choose **Actions → Release the guide → Run workflow** and select `main`. The run’s one input, **index**, is on. Turn it off only to release the pages while AI Search cannot be reached: the run then deploys without uploading or retiring passages, and search finds less for the passages that changed until the next run with it on. A search cannot answer then, so that run checks the deployment by the site’s release marker alone: `/search/release.json` has to name this commit and its passages.
 
 ## Pull request previews
 

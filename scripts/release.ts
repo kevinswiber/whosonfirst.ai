@@ -4,7 +4,10 @@
 //   check   before anything is uploaded: the build is this commit, it has
 //           search, and the commit is still the head of main
 //   deploy  after the passages are indexed: deploy the build, then ask the
-//           site for a search and see that this release answers
+//           site for a search and see that this release answers. In a run
+//           that does not index (INDEX=false), made while AI Search cannot
+//           be reached, a search cannot answer: the site is asked for its
+//           release marker and no more
 //
 // The passages are indexed first because a search shows only the passages in
 // its own build: the site being replaced does not see the new ones, and the
@@ -33,6 +36,12 @@ export interface BuiltWorker {
     string,
     { type?: string; cache?: { enabled?: boolean } } | undefined
   >;
+}
+
+/** Whether the site is serving this build: the same commit and passages. */
+export function sameRelease(marker: Marker, live: unknown): boolean {
+  const { commit, revision } = (live ?? {}) as Partial<Marker>;
+  return commit === marker.commit && revision === marker.revision;
 }
 
 /** A build made from a commit, with the digest of its passages. */
@@ -134,30 +143,58 @@ async function deploy(commit: string) {
   }
 }
 
-async function smoke(marker: Marker, origin: string) {
+/** Asks the site until `answers` says yes, five times, ten seconds apart. */
+async function eventually(answers: () => Promise<boolean>) {
   for (let attempt = 1; attempt <= 5; attempt++) {
     try {
-      // The search address, as the search box asks it. Workers Cache keeps
-      // answers for each deployed version, so the new version answers.
-      const address = new URL("/search", origin);
-      address.search = new URLSearchParams({
-        q: "How does a device with no browser sign in?",
-        format: "json",
-      }).toString();
-      const response = await fetch(address, {
-        headers: { Accept: "application/json" },
-        redirect: "error",
-        signal: AbortSignal.timeout(15000),
-      });
-      if (await answeredBy(marker, origin, response)) return;
+      if (await answers()) return true;
     } catch {
       /* A newly deployed version may still be propagating. */
     }
     if (attempt < 5) await sleep(10000);
   }
-  throw new Error(
-    "The guide was deployed, but a search did not return passages from this release. Check the Worker’s deployment and its SEARCH_DAILY_BUDGET secret, then retry or roll back.",
-  );
+  return false;
+}
+
+/** The pages alone: the site's release marker is this build's. */
+async function pagesAreLive(marker: Marker, origin: string) {
+  const live = await eventually(async () => {
+    const address = new URL("/search/release.json", origin);
+    // The file is sent no-store. This is for anything in between.
+    address.searchParams.set("check", Date.now().toString());
+    const response = await fetch(address, {
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    return response.ok && sameRelease(marker, await response.json());
+  });
+  if (!live)
+    throw new Error(
+      "The guide was deployed, but the site does not serve this commit and its passages. Check the Worker’s deployment history, then retry or go back.",
+    );
+}
+
+async function smoke(marker: Marker, origin: string) {
+  const answered = await eventually(async () => {
+    // The search address, as the search box asks it. Workers Cache keeps
+    // answers for each deployed version, so the new version answers.
+    const address = new URL("/search", origin);
+    address.search = new URLSearchParams({
+      q: "How does a device with no browser sign in?",
+      format: "json",
+    }).toString();
+    const response = await fetch(address, {
+      headers: { Accept: "application/json" },
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    return answeredBy(marker, origin, response);
+  });
+  if (!answered)
+    throw new Error(
+      "The guide was deployed, but a search did not return passages from this release. Check the Worker’s deployment and its SEARCH_DAILY_BUDGET secret, then retry or go back.",
+    );
 }
 
 async function main(mode: string | undefined) {
@@ -193,6 +230,13 @@ async function main(mode: string | undefined) {
     readFileSync(join(BUILT_ASSETS, "sitemap.xml"), "utf8"),
   );
   await deploy(marker.commit);
+  if (process.env.INDEX === "false") {
+    await pagesAreLive(marker, origin);
+    console.log(
+      "The guide is deployed and serves this commit. No search was asked: this run did not index.",
+    );
+    return;
+  }
   await smoke(marker, origin);
   console.log("The guide is deployed, and a search returned its passages.");
 }

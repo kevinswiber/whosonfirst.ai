@@ -4,6 +4,7 @@ import {
   answeredBy,
   missingFromSearch,
   releasable,
+  sameRelease,
   siteOrigin,
 } from "../../scripts/release.ts";
 
@@ -20,6 +21,19 @@ test("a release needs a build made from a commit, with the digest of its passage
     { ...marker, revision: "b".repeat(63) },
   ])
     assert.equal(releasable(other), false);
+});
+
+test("the site serves a release when its marker has the same commit and passages", () => {
+  assert.equal(sameRelease(marker, { ...marker }), true);
+  for (const live of [
+    undefined,
+    null,
+    {},
+    { ...marker, commit: "c".repeat(40) },
+    { ...marker, revision: "c".repeat(64) },
+    { commit: marker.commit },
+  ])
+    assert.equal(sameRelease(marker, live), false);
 });
 
 test("a build without search is not released, and what it lacks is named", () => {
