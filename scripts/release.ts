@@ -135,13 +135,29 @@ async function mainIsCurrent(commit: string) {
     );
 }
 
+/**
+ * What the CLI is asked to do. Where the Worker was last changed in the
+ * dashboard and the build would undo part of that, the CLI stops and names
+ * the difference. `force` is the answer that the build is right: a run by
+ * hand gives it, after someone has read the difference. A push never does.
+ */
+export function deployArguments(commit: string, force: boolean): string[] {
+  return [
+    "deploy",
+    "--prebuilt",
+    "--message",
+    `Guide at ${commit}`,
+    ...(force ? ["--force"] : []),
+  ];
+}
+
 async function deploy(commit: string) {
   try {
     // The CLI's report can name the account. Nothing it prints is shown
     // when it succeeds.
     await run(
       join(root, "node_modules/.bin/cf"),
-      ["deploy", "--prebuilt", "--message", `Guide at ${commit}`],
+      deployArguments(commit, process.env.FORCE === "true"),
       {
         cwd: root,
         env: {
