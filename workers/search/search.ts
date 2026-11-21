@@ -243,19 +243,22 @@ export interface AnswerCache {
 }
 const ANSWER_TTL_SECONDS = 172800;
 
+// The form of a question that is searched, ranked and cached, so the three
+// always agree. Compatibility characters such as full-width digits become
+// their plain form, and runs of spaces become one.
+export const plainQuestion = (query: string) =>
+  query.normalize("NFKC").trim().replace(/\s+/g, " ");
+
 // One key for a question however it is capitalised or spaced, under this
-// release's commit and passages. A new release looks up new keys, so nothing
-// has to be evicted. The key holds a hash of the question, never its text.
+// release's commit and passages. Ranking ignores case, so the key does too.
+// A new release looks up new keys, so nothing has to be evicted. The key
+// holds a hash of the question, never its text.
 export async function answerKey(
   origin: string,
   release: string,
   query: string,
 ) {
-  const question = query
-    .normalize("NFKC")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
+  const question = plainQuestion(query).toLowerCase();
   const digest = await crypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(question),
@@ -361,6 +364,7 @@ export function guideSearch(
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",
         });
+      const question = plainQuestion(query);
       const found = (results: SearchResult[]) =>
         respond(
           200,
@@ -371,7 +375,7 @@ export function guideSearch(
         );
       // A cached answer costs no AI Search query, so it is not counted against
       // the day's budget. A cache that fails is treated as empty.
-      const key = answers && (await answerKey(url.origin, release, query));
+      const key = answers && (await answerKey(url.origin, release, question));
       if (answers && key) {
         let cached: SearchResult[] | undefined;
         const start = performance.now();
@@ -401,7 +405,7 @@ export function guideSearch(
           );
       }
       const search = env.AI_SEARCH.get(env.SEARCH_INSTANCE).search(
-        searchRequest(query),
+        searchRequest(question),
       );
       const reply = await timed("search", () =>
         Promise.race([
@@ -413,7 +417,7 @@ export function guideSearch(
       );
       if (reply === TIMED_OUT)
         return respond(504, "Guide results took too long to load. Try again.");
-      const results = rankedResults(catalog, query, reply.chunks);
+      const results = rankedResults(catalog, question, reply.chunks);
       if (answers && key) {
         const store = answers
           .put(

@@ -429,3 +429,25 @@ test("only a found answer is cached, and a cache that fails is passed over", asy
   assert.equal(searched, 1);
   assert.match(response.headers.get("Server-Timing"), /cache;desc=miss/);
 });
+
+test("a question in compatibility characters is searched and ranked as its plain form, so the two can share an answer", async () => {
+  const cache = answerCache();
+  const search = guideSearch(catalog, shell, release, cache);
+  const sent = [];
+  const env = envFor(async (input) => {
+    sent.push(input.messages[0].content);
+    return { chunks: [] };
+  });
+  const wide = await search(submit("RFC ９４４９"), env);
+  assert.deepEqual(
+    (await wide.json()).results.map((r) => r.href),
+    ["/standards/rfc9449/"],
+  );
+  assert.deepEqual(sent, ["RFC 9449"]);
+  const plain = await search(submit("RFC 9449"), env);
+  assert.match(plain.headers.get("Server-Timing"), /cache;desc=hit/);
+  assert.deepEqual(
+    (await plain.json()).results.map((r) => r.href),
+    ["/standards/rfc9449/"],
+  );
+});
