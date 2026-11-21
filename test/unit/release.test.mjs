@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   answeredBy,
+  failureReport,
   missingFromSearch,
   releasable,
   sameRelease,
@@ -21,6 +22,33 @@ test("a release needs a build made from a commit, with the digest of its passage
     { ...marker, revision: "b".repeat(63) },
   ])
     assert.equal(releasable(other), false);
+});
+
+test("a failed deployment says what the CLI said, without what names the account", () => {
+  const id = "a4cfb9a304047b872fa17279ace30697";
+  const said = failureReport(
+    [
+      "\u001b[31m✘ [ERROR]\u001b[0m A request to the Cloudflare API failed.   ",
+      "",
+      `  GET /accounts/${id}/workers/services/guide [code: 10000]`,
+      "  Authentication error for someone@example.com",
+    ].join("\n"),
+  );
+  assert.equal(
+    said,
+    [
+      "✘ [ERROR] A request to the Cloudflare API failed.",
+      "  GET /accounts/<id>/workers/services/guide [code: 10000]",
+      "  Authentication error for <address>",
+    ].join("\n"),
+  );
+  // The end of a long report, where the error is.
+  const long = failureReport(
+    Array.from({ length: 100 }, (_, i) => `line ${i + 1}`).join("\n"),
+  );
+  assert.equal(long.split("\n").length, 40);
+  assert.ok(long.endsWith("line 100"));
+  assert.equal(failureReport("\n  \n"), "");
 });
 
 test("the site serves a release when its marker has the same commit and passages", () => {
