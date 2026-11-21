@@ -74,6 +74,7 @@ jobs:
       - name: Build the search Worker from the same pages
         env:
           SEARCH_RATE_NAMESPACE: "1" # Local build fixture
+          SEARCH_RATE_LIMIT: "5" # Local build fixture, not the deployed limit
         run: |
           npm run search:sync -- --dry-run
           npm run search:build
@@ -88,4 +89,6 @@ jobs:
       - name: Rendered checks
         run: npm run check:rendered
       - name: Build and test the site’s Cloudflare branch preview
+        env:
+          SEARCH_RATE_LIMIT: "5" # Local build fixture, not the deployed limit
         run: npm run search:preview:build
