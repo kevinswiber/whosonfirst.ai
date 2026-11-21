@@ -11,7 +11,9 @@ const ADDRESS = "/search";
 const FOUND = "public, max-age=0, s-maxage=172800";
 const MAX_CHARS = 500;
 const MAX_RESULTS = 8;
-const PROVIDER_TIMEOUT_MS = 5000;
+// Reranking makes a search slower, and a reranked search can take several
+// seconds. The page gives up after 12, so this leaves time to answer it.
+const PROVIDER_TIMEOUT_MS = 10000;
 // The least vector similarity a passage needs to be found, as the instance
 // sets it. AI Search stops applying it when it reranks, so the Worker does.
 export const MATCH_THRESHOLD = 0.4;
