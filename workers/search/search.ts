@@ -10,7 +10,7 @@ const ADDRESS = "/search";
 // so a new release reaches readers as soon as it is deployed.
 const FOUND = "public, max-age=0, s-maxage=172800";
 const MAX_CHARS = 500;
-const MAX_RESULTS = 5;
+const MAX_RESULTS = 8;
 const PROVIDER_TIMEOUT_MS = 5000;
 const TIMED_OUT = Symbol("search timed out");
 
