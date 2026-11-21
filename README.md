@@ -17,7 +17,7 @@
   </picture>
 </a>
 
-Every API an agent calls needs three answers: which software is calling, which person it is working for, and what that person approved. An API key gives one of them. Who’s on First starts from that key and goes as deep as the specifications, for an agent with a person present, with a person on call, and with no human at all.
+Every API an agent calls needs three answers: which software is calling, which person it is working for, and what that person approved. An API key names the agent or the person it is working for, never both. It says little about what was approved, or by whom. Who’s on First shows how an API gets all three answers, from short lessons to the standards themselves, for an agent with a person present, with a person on call, and with no human at all.
 
 It is an independent reference, not a specification. Every page says which month it was last checked against its sources, and links to them.
 
