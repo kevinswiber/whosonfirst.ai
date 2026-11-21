@@ -11,7 +11,12 @@ const ADDRESS = "/search";
 const FOUND = "public, max-age=0, s-maxage=172800";
 const MAX_CHARS = 500;
 const MAX_RESULTS = 8;
-const PROVIDER_TIMEOUT_MS = 5000;
+// Reranking makes a search slower, and a reranked search can take several
+// seconds. The page gives up after 12, so this leaves time to answer it.
+const PROVIDER_TIMEOUT_MS = 10000;
+// The least vector similarity a passage needs to be found, as the instance
+// sets it. AI Search stops applying it when it reranks, so the Worker does.
+export const MATCH_THRESHOLD = 0.4;
 const TIMED_OUT = Symbol("search timed out");
 
 interface PassageRecord {
@@ -40,7 +45,15 @@ export interface SearchSiteData {
 
 interface SearchChunk {
   item?: { key: string; metadata?: Record<string, unknown> };
+  scoring_details?: { vector_score?: number; keyword_score?: number };
 }
+
+// A passage the words of the question found is kept. One found only by its
+// meaning is kept if it is close enough to the question.
+const closeEnough = ({ scoring_details: score }: SearchChunk) =>
+  !score ||
+  score.keyword_score !== undefined ||
+  (score.vector_score ?? 0) >= MATCH_THRESHOLD;
 
 export interface SearchBindings {
   SEARCH_INSTANCE: string;
@@ -103,8 +116,9 @@ export function rankedResults(
   };
   const number = rfcNumber(query);
   if (number) add(catalog.byRFC.get(number));
-  for (const { item } of chunks) {
-    if (!item) continue;
+  for (const chunk of chunks) {
+    const { item } = chunk;
+    if (!item || !closeEnough(chunk)) continue;
     const record = catalog.byKey.get(item.key);
     // Item keys include the content digest, so an old index cannot silently
     // return the new passage at a previously used destination.
@@ -191,10 +205,16 @@ function render(
 // AI Search may answer from its cache, but only for a question worded almost
 // exactly the same. A looser match can give one flow or RFC another's
 // passages. The release purges the cache once it has indexed new passages.
+//
+// The passages found are put in order again by a model that reads each one
+// beside the question. It needs their text, though the Worker shows its own.
+// Its scores are not a measure of whether a passage belongs, so it keeps all of
+// them, and the Worker applies the match threshold that reranking skips.
 export function searchRequest(
   query: string,
   mode: "hybrid" | "keyword" | "vector" = "hybrid",
   cache = true,
+  rerank = true,
 ) {
   return {
     messages: [{ role: "user" as const, content: query }],
@@ -203,10 +223,17 @@ export function searchRequest(
         retrieval_type: mode,
         fusion_method: "rrf" as const,
         max_num_results: 24,
-        metadata_only: true,
+        match_threshold: MATCH_THRESHOLD,
+        metadata_only: !rerank,
       },
       query_rewrite: { enabled: false },
-      reranking: { enabled: false },
+      reranking: rerank
+        ? {
+            enabled: true,
+            model: "@cf/baai/bge-reranker-base",
+            match_threshold: 0,
+          }
+        : { enabled: false },
       cache: cache
         ? { enabled: true, cache_threshold: "super_strict_match" as const }
         : { enabled: false },
