@@ -17,7 +17,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
+import { promisify, stripVTControlCharacters } from "node:util";
 import { BUILT_ASSETS, WORKER_BUILD } from "./built-site.mjs";
 
 const run = promisify(execFile);
@@ -107,6 +107,22 @@ export async function answeredBy(
   );
 }
 
+/**
+ * What the CLI said when it failed, fit for a public log: its last lines,
+ * with what names the account taken out. A deployment that fails and says
+ * nothing cannot be put right, and the log is all a run leaves behind.
+ */
+export function failureReport(output: string): string {
+  return stripVTControlCharacters(output)
+    .replace(/\b[0-9a-f]{32}\b/gi, "<id>")
+    .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "<address>")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .slice(-40)
+    .join("\n");
+}
+
 async function mainIsCurrent(commit: string) {
   const { stdout } = await run(
     "git",
@@ -121,7 +137,8 @@ async function mainIsCurrent(commit: string) {
 
 async function deploy(commit: string) {
   try {
-    // The CLI's report can name the account. Nothing it prints is shown.
+    // The CLI's report can name the account. Nothing it prints is shown
+    // when it succeeds.
     await run(
       join(root, "node_modules/.bin/cf"),
       ["deploy", "--prebuilt", "--message", `Guide at ${commit}`],
@@ -136,7 +153,13 @@ async function deploy(commit: string) {
         timeout: 300000,
       },
     );
-  } catch {
+  } catch (error) {
+    const { stdout = "", stderr = "" } = error as {
+      stdout?: string;
+      stderr?: string;
+    };
+    const said = failureReport(`${stdout}\n${stderr}`);
+    if (said) console.error(`What the CLI said, at its end:\n${said}\n`);
     throw new Error(
       "Cloudflare did not deploy the guide. Check the release environment’s credentials and the Worker’s deployment history.",
     );
