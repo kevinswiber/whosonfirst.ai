@@ -30,8 +30,15 @@ after(async () => {
   await site?.stop();
 });
 
+// Each request comes from an address of its own, in the range kept for
+// documentation, so no search here meets the count of another: the limit for
+// one address may be as low as one search a minute.
+let asked = 0;
 const ask = (path, headers = {}) =>
-  fetch(`${site.origin}${path}`, { headers, redirect: "manual" });
+  fetch(`${site.origin}${path}`, {
+    headers: { "CF-Connecting-IP": `2001:db8::${++asked}`, ...headers },
+    redirect: "manual",
+  });
 
 test("a search with no question goes to the search page, and another spelling to the one address", {
   skip: elsewhere,
