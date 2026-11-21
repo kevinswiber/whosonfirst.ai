@@ -16,7 +16,7 @@ const examples = [
     <label class:list={[{ "visually-hidden": idPrefix }]} for={id("guide-query")}>{idPrefix ? "Search the guide" : "Describe a task, or enter a term or RFC number."}</label>
     <div class="search-controls">
       <div class="search-field">
-        <input id={id("guide-query")} name="q" type="search" placeholder={idPrefix ? "Ask a question or find a term" : undefined} required maxlength="500" autocomplete="off" enterkeyhint="search" aria-describedby={id("search-hint")} />
+        <input id={id("guide-query")} name="q" type="search" placeholder={idPrefix ? "Ask a question or find a term" : undefined} required maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-describedby={id("search-hint")} />
         <button class="clear-query" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
       </div>
       <button class="btn primary" type="submit" aria-label="Search the whole guide">Search</button>
