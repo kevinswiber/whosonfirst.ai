@@ -9,6 +9,7 @@ import {
   catalogFor,
   guideSearch,
   rankedResults,
+  searchRequest,
   validateShell,
 } from "../../workers/search/search.ts";
 
@@ -279,4 +280,46 @@ test("search stops for the day once the budget is spent, and without a budget it
     assert.equal(unset.calls.length, 0);
   }
   assert.equal(searched, 1);
+});
+
+test("AI Search reuses a cached answer only for a question worded almost the same, and an evaluation uses none", () => {
+  assert.deepEqual(searchRequest("CIBA").ai_search_options.cache, {
+    enabled: true,
+    cache_threshold: "super_strict_match",
+  });
+  assert.deepEqual(
+    searchRequest("CIBA", "keyword", false).ai_search_options.cache,
+    { enabled: false },
+  );
+});
+
+test("a search says how long each step took, and nothing about the question", async () => {
+  const sent = [];
+  const env = {
+    ...envFor(async (input) => {
+      sent.push(input);
+      return { chunks: [chunk("flow.md", "b")] };
+    }),
+    SEARCH_BUDGET: {
+      idFromName: (name) => name,
+      get: () => ({ spend: async () => true }),
+    },
+    SEARCH_DAILY_BUDGET: "10",
+  };
+  const response = await handle(submit("a private question"), env);
+  assert.equal(response.status, 200);
+  const timing = response.headers.get("Server-Timing");
+  assert.match(timing, /^limit;dur=\d+, budget;dur=\d+, search;dur=\d+$/);
+  assert.doesNotMatch(timing, /private/);
+  assert.equal(
+    sent[0].ai_search_options.cache.cache_threshold,
+    "super_strict_match",
+  );
+  const limited = await handle(
+    submit("q"),
+    envFor(async () => ({}), false),
+  );
+  assert.match(limited.headers.get("Server-Timing"), /^limit;dur=\d+$/);
+  const invalid = await handle(new Request(url), {});
+  assert.equal(invalid.headers.get("Server-Timing"), null);
 });

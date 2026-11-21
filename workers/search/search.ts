@@ -209,9 +209,13 @@ async function readQuery(request: Request) {
   }
 }
 
+// AI Search may answer from its cache, but only for a question worded almost
+// exactly the same. A looser match can give one flow or RFC another's
+// passages. The release purges the cache once it has indexed new passages.
 export function searchRequest(
   query: string,
   mode: "hybrid" | "keyword" | "vector" = "hybrid",
+  cache = true,
 ) {
   return {
     messages: [{ role: "user" as const, content: query }],
@@ -224,6 +228,9 @@ export function searchRequest(
       },
       query_rewrite: { enabled: false },
       reranking: { enabled: false },
+      cache: cache
+        ? { enabled: true, cache_threshold: "super_strict_match" as const }
+        : { enabled: false },
     },
   };
 }
@@ -237,6 +244,17 @@ export function guideSearch(
     const url = new URL(request.url);
     const json = request.headers.get("Accept")?.includes("application/json");
     let query = "";
+    // How long each step took, for the browser's network panel. Durations
+    // only: nothing about the question, and nothing is logged.
+    const timings: string[] = [];
+    async function timed<T>(name: string, step: () => Promise<T>) {
+      const start = performance.now();
+      try {
+        return await step();
+      } finally {
+        timings.push(`${name};dur=${Math.round(performance.now() - start)}`);
+      }
+    }
     function respond(
       status: number,
       message: string,
@@ -248,6 +266,7 @@ export function guideSearch(
         "Cache-Control": "no-store",
         "X-Robots-Tag": "noindex",
         Vary: "Accept",
+        ...(timings.length && { "Server-Timing": timings.join(", ") }),
         ...extraHeaders,
       };
       if (json)
@@ -289,9 +308,11 @@ export function guideSearch(
           400,
           "Enter a term or question of up to 500 characters.",
         );
-      const { success } = await env.SEARCH_LIMITER.limit({
-        key: request.headers.get("CF-Connecting-IP") || "unknown",
-      });
+      const { success } = await timed("limit", () =>
+        env.SEARCH_LIMITER.limit({
+          key: request.headers.get("CF-Connecting-IP") || "unknown",
+        }),
+      );
       if (!success)
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",
@@ -303,7 +324,7 @@ export function guideSearch(
         const budget = env.SEARCH_BUDGET.get(
           env.SEARCH_BUDGET.idFromName("guide"),
         );
-        if (!(await budget.spend(cap)))
+        if (!(await timed("budget", () => budget.spend(cap))))
           return respond(
             503,
             "Search has answered all it can for today. Browse the guide, or try again tomorrow.",
@@ -314,12 +335,14 @@ export function guideSearch(
       const search = env.AI_SEARCH.get(env.SEARCH_INSTANCE).search(
         searchRequest(query),
       );
-      const reply = await Promise.race([
-        search,
-        new Promise<typeof TIMED_OUT>((resolve) => {
-          timer = setTimeout(() => resolve(TIMED_OUT), PROVIDER_TIMEOUT_MS);
-        }),
-      ]);
+      const reply = await timed("search", () =>
+        Promise.race([
+          search,
+          new Promise<typeof TIMED_OUT>((resolve) => {
+            timer = setTimeout(() => resolve(TIMED_OUT), PROVIDER_TIMEOUT_MS);
+          }),
+        ]),
+      );
       if (reply === TIMED_OUT)
         return respond(504, "Guide results took too long to load. Try again.");
       const results = rankedResults(catalog, query, reply.chunks);

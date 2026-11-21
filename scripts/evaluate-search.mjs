@@ -75,7 +75,8 @@ async function run() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(searchRequest(query, mode)),
+        // Measure retrieval itself, not answers AI Search has cached.
+        body: JSON.stringify(searchRequest(query, mode, false)),
         signal: AbortSignal.timeout(30000),
       });
       if (!response.ok)
