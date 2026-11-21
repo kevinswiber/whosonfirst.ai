@@ -30,6 +30,14 @@ test("the native site preview carries the guide’s retrieval bindings", () => {
     Number(process.env.SEARCH_RATE_LIMIT),
   );
   assert.equal(config.env.ASSETS.type, "assets");
+  // Previews count against production's daily budget, not one of their own.
+  assert.deepEqual(config.env.SEARCH_BUDGET, {
+    type: "durable-object",
+    worker: "whosonfirst-ai-search",
+    exportName: "SearchBudget",
+  });
+  assert.equal(config.env.SEARCH_DAILY_BUDGET.type, "secret");
+  assert.equal(config.exports, undefined);
   assert.equal(config.env.AI_SEARCH.namespace, "whosonfirst");
   assert.equal(config.env.SEARCH_INSTANCE.value, "whosonfirst-guide");
   assert.equal(
