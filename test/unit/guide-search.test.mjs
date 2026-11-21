@@ -383,3 +383,29 @@ test("a link to a search works from any site, but another site cannot run one in
   );
   assert.equal(typed.status, 200);
 });
+
+test("a search shows up to eight results, from a larger set of passages", () => {
+  const many = Array.from({ length: 12 }, (_, i) => ({
+    ...records[1],
+    key: `page${i}.md`,
+    href: `/flows/flow-${i}/`,
+    digest: `d${i}`,
+  }));
+  const lookup = catalogFor(many);
+  const results = rankedResults(
+    lookup,
+    "how does a token change hands",
+    many.map((r) => chunk(r.key, r.digest)),
+  );
+  assert.equal(results.length, 8);
+  assert.deepEqual(
+    results.map((r) => r.href),
+    many.slice(0, 8).map((r) => r.href),
+  );
+  assert.equal(
+    searchRequest("how does a token change hands").ai_search_options.retrieval
+      .max_num_results,
+    24,
+    "more passages are asked for than shown: some are dropped or share a page",
+  );
+});
