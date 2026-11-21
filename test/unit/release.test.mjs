@@ -7,8 +7,11 @@ import {
   missingFromSearch,
   releasable,
   sameRelease,
+  servedBy,
   siteOrigin,
+  WHO_ANSWERS,
 } from "../../scripts/release.ts";
+import { catalogFor, guideSearch } from "../../src/search/search.ts";
 
 const marker = { commit: "a".repeat(40), revision: "b".repeat(64) };
 const origin = "https://guide.example.test";
@@ -114,6 +117,39 @@ test("the site's address is the one its own sitemap gives", () => {
     origin,
   );
   assert.throws(() => siteOrigin("<urlset></urlset>"));
+});
+
+test("the release can ask which build answers a search without a search being made, counted or kept", async () => {
+  const headers = {
+    "X-Guide-Search-Commit": marker.commit,
+    "X-Guide-Search-Revision": marker.revision,
+  };
+  const search = guideSearch(
+    catalogFor([]),
+    '<form><input name="q"></form><span id="search-status-text"></span><ol id="search-results"></ol>',
+    headers,
+  );
+  const asked = [];
+  const note = (what) => () => {
+    asked.push(what);
+    throw new Error(`${what} was asked`);
+  };
+  const answer = await search(new Request(`${origin}${WHO_ANSWERS}`), {
+    SEARCH_INSTANCE: "guide",
+    SEARCH_LIMITER: { limit: note("the limit") },
+    SEARCH_BUDGET: { idFromName: note("the budget"), get: note("the budget") },
+    AI_SEARCH: { get: note("the search") },
+  });
+  assert.equal(answer.status, 400);
+  assert.equal(answer.headers.get("Cache-Control"), "no-store");
+  assert.deepEqual(asked, []);
+  assert.equal(servedBy(marker, answer), true);
+  assert.equal(
+    servedBy({ ...marker, commit: "c".repeat(40) }, answer),
+    false,
+    "another build's answer",
+  );
+  assert.equal(servedBy(marker, new Response("page")), false);
 });
 
 test("a search answers for a release only with its commit, its passages and a result on the site", async () => {

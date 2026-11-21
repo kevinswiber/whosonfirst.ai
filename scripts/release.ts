@@ -3,8 +3,9 @@
 //
 //   check   before anything is uploaded: the build is this commit, it has
 //           search, and the commit is still the head of main
-//   deploy  after the passages are indexed: deploy the build, then ask the
-//           site for a search and see that this release answers. In a run
+//   deploy  after the passages are indexed: deploy the build, wait until
+//           this build is the one answering a search, then ask the site for
+//           a search and see that this release answers. In a run
 //           that does not index (INDEX=false), made while AI Search cannot
 //           be reached, a search cannot answer: the site is asked for its
 //           release marker and no more
@@ -83,18 +84,25 @@ export function siteOrigin(sitemap: string): string {
   return new URL(first).origin;
 }
 
+/**
+ * Whether the part of the Worker that answers a search is this build: every
+ * answer it sends, a refusal too, carries the commit and passages it was
+ * built from.
+ */
+export function servedBy(marker: Marker, response: Response): boolean {
+  return (
+    response.headers.get("X-Guide-Search-Commit") === marker.commit &&
+    response.headers.get("X-Guide-Search-Revision") === marker.revision
+  );
+}
+
 /** Whether an answer to a search came from this release, with a passage. */
 export async function answeredBy(
   marker: Marker,
   origin: string,
   response: Response,
 ): Promise<boolean> {
-  if (
-    !response.ok ||
-    response.headers.get("X-Guide-Search-Commit") !== marker.commit ||
-    response.headers.get("X-Guide-Search-Revision") !== marker.revision
-  )
-    return false;
+  if (!response.ok || !servedBy(marker, response)) return false;
   const { results } = (await response.json()) as { results?: unknown };
   return (
     Array.isArray(results) &&
@@ -182,17 +190,52 @@ async function deploy(commit: string) {
   }
 }
 
-/** Asks the site until `answers` says yes, five times, ten seconds apart. */
-async function eventually(answers: () => Promise<boolean>) {
-  for (let attempt = 1; attempt <= 5; attempt++) {
+/** Asks the site until `answers` says yes, ten seconds apart: five times, or `tries`. */
+async function eventually(answers: () => Promise<boolean>, tries = 5) {
+  for (let attempt = 1; attempt <= tries; attempt++) {
     try {
       if (await answers()) return true;
     } catch {
       /* A newly deployed version may still be propagating. */
     }
-    if (attempt < 5) await sleep(10000);
+    if (attempt < tries) await sleep(10000);
   }
   return false;
+}
+
+/**
+ * A request the search refuses by itself: two questions. The refusal costs
+ * no search, is counted against nothing and is never kept, and like every
+ * answer it says which build sent it.
+ */
+export const WHO_ANSWERS = "/search?q=release&q=check&format=json";
+
+/**
+ * Waits until this build is the one answering a search, for up to six
+ * minutes. A deployment is in service at once, but for a while after it a
+ * search can still be answered by the build before: on 21 November 2026 the
+ * new page handler handed the first search after a deployment to the earlier
+ * build's search, and it was the new build's four minutes later. Cloudflare
+ * says code updates reach its network over time, and that an active Durable
+ * Object can keep its code for five minutes:
+ * https://developers.cloudflare.com/durable-objects/platform/known-issues/#code-updates
+ *
+ * The real search waits for this. Asked sooner, it is answered by the
+ * earlier build, that answer is kept, and every later try is given it again.
+ */
+async function newBuildAnswers(marker: Marker, origin: string) {
+  const answering = await eventually(async () => {
+    const response = await fetch(new URL(WHO_ANSWERS, origin), {
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    return servedBy(marker, response);
+  }, 36);
+  if (!answering)
+    throw new Error(
+      "The guide was deployed, but after six minutes a search is still not answered by this build. Check the Worker’s deployment history, then retry or go back.",
+    );
 }
 
 /** The pages alone: the site's release marker is this build's. */
@@ -216,8 +259,9 @@ async function pagesAreLive(marker: Marker, origin: string) {
 
 async function smoke(marker: Marker, origin: string) {
   const answered = await eventually(async () => {
-    // The search address, as the search box asks it. Workers Cache keeps
-    // answers for each deployed version, so the new version answers.
+    // The search address, as the search box asks it. This build is the one
+    // answering by now, and Workers Cache keeps answers for each build, so
+    // none from the build before is given back.
     const address = new URL("/search", origin);
     address.search = new URLSearchParams({
       q: "How does a device with no browser sign in?",
@@ -276,6 +320,7 @@ async function main(mode: string | undefined) {
     );
     return;
   }
+  await newBuildAnswers(marker, origin);
   await smoke(marker, origin);
   console.log("The guide is deployed, and a search returned its passages.");
 }

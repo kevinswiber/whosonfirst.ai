@@ -54,6 +54,17 @@ test("a search with no question goes to the search page, and another spelling to
   assert.match(await page.text(), /id="search-results"/);
 });
 
+test("a request for two questions is refused by this build, which is how a release asks who is answering", {
+  skip: elsewhere,
+}, async () => {
+  const answer = await ask("/search?q=release&q=check&format=json");
+  assert.equal(answer.status, 400);
+  assert.equal(answer.headers.get("cache-control"), "no-store");
+  assert.equal(answer.headers.get("x-guide-search-commit"), marker.commit);
+  assert.equal(answer.headers.get("x-guide-search-revision"), marker.revision);
+  assert.equal(answer.headers.get("server-timing"), null, "nothing was asked");
+});
+
 test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", {
   skip: elsewhere,
 }, async () => {
