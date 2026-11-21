@@ -90,7 +90,7 @@ A new check is a test in the file for what it reads. Tests in a suite run in ord
 
 `.github/workflows/ci.yml` runs the same commands on every pull request and on every change to `main`, as two jobs side by side: Biome, then `npm test`; and the build, then `npm run check:rendered`. It needs no secret and deploys nothing, so it runs the same on a pull request from a fork.
 
-`.github/workflows/indexnow.yml` is not a check. It runs after a push to `main` and tells search engines which pages changed: see [Telling a search engine that a page changed](#other-forms-of-a-page).
+`.github/workflows/indexnow.yml` is not a check. The release runs it after it has deployed a push to `main`, and it tells search engines which pages changed: see [Telling a search engine that a page changed](#other-forms-of-a-page).
 
 The workflow names each action by commit, not by tag. `.github/dependabot.yml` opens one pull request a month when those have moved.
 
@@ -347,7 +347,7 @@ The release builds from the whole history, which its workflow checks out. A bran
 
 **Telling a search engine that a page changed.** Google reads the sitemap. Bing, and the other engines that take part in [IndexNow](https://www.indexnow.org/), can be told directly, and read a page again without waiting to find out.
 
-Nobody has to do it by hand. `.github/workflows/indexnow.yml` runs on every push to `main`: it builds that commit from the whole history, waits for Cloudflare to deploy it, and sends the pages the push changed. It runs `scripts/indexnow.mjs`, which can also be run from a full clone, after a build:
+Nobody has to do it by hand. `.github/workflows/indexnow.yml` is the last job of every release of `main`, so it starts once the site is deployed: it builds that commit from the whole history, waits for the deployed site to have its pages, and sends the pages changed since the last release whose pages were sent. It runs `scripts/indexnow.mjs`, which can also be run from a full clone, after a build:
 
 ```bash
 npm run indexnow -- --since 4c1c6a6 --dry-run
