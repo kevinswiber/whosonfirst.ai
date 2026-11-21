@@ -84,3 +84,39 @@ test("a duplicated manifest key fails before contacting the provider", async () 
     /duplicate passage/,
   );
 });
+
+test("the cache is purged once, after this release's passages are indexed, and not when indexing fails", async () => {
+  const events = [];
+  const item = { key: record.key, status: "completed", chunks_count: 1 };
+  await syncSearch([record], async () => page([item]), {
+    purge: async () => events.push("purge"),
+    log: (line) => events.push(line),
+  });
+  assert.deepEqual(events.slice(-2), [
+    "purge",
+    "Cleared the answers AI Search had cached.",
+  ]);
+  assert.match(events.at(-3), /^Indexed 1 passages/);
+
+  let purged = false;
+  let reads = 0;
+  await assert.rejects(
+    () =>
+      syncSearch(
+        [record],
+        async (_path, options) => {
+          assert.equal(options, undefined);
+          return page([
+            {
+              key: record.key,
+              status: ++reads === 1 ? "running" : "error",
+              chunks_count: 0,
+            },
+          ]);
+        },
+        { purge: async () => (purged = true), log: () => {} },
+      ),
+    /Indexing failed/,
+  );
+  assert.equal(purged, false);
+});

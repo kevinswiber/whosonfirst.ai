@@ -85,10 +85,12 @@ function upload(record) {
 
 // Page the inventory again after upload. Items can finish asynchronously and
 // unrelated items may already exist. Only this release is required to finish.
+// Then clear AI Search's cache: an answer cached from the earlier index can
+// leave out passages this release added, and new passages do not clear it.
 export async function syncSearch(
   records,
   request,
-  { pause = sleep, log = console.log } = {},
+  { purge, pause = sleep, log = console.log } = {},
 ) {
   checkRecords(records);
   const before = await listItems(request);
@@ -121,6 +123,10 @@ export async function syncSearch(
       log(
         `Indexed ${count} passages. Preserved ${current.size - count} other items.`,
       );
+      if (purge) {
+        await purge();
+        log("Cleared the answers AI Search had cached.");
+      }
       return;
     }
     log(`Indexed ${count}/${records.length}. Waiting for Cloudflare.`);
@@ -137,7 +143,7 @@ export async function syncSearch(
 }
 
 function cloudflareRequest(account, token, namespace, instance) {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/ai-search/namespaces/${encodeURIComponent(namespace)}/instances/${encodeURIComponent(instance)}/items`;
+  const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/ai-search/namespaces/${encodeURIComponent(namespace)}/instances/${encodeURIComponent(instance)}`;
   return async (suffix, options = {}) => {
     for (let attempt = 0; attempt < 6; attempt++) {
       let response;
@@ -157,14 +163,14 @@ function cloudflareRequest(account, token, namespace, instance) {
       if (response?.ok) {
         const body = await response.json();
         if (body.success === true) return body;
-        throw new Error("Cloudflare rejected the items request.");
+        throw new Error("Cloudflare rejected the AI Search request.");
       }
       if (
         response &&
         ((response.status !== 429 && response.status < 500) || attempt === 5)
       ) {
         throw new Error(
-          `Cloudflare items request failed (HTTP ${response.status}).`,
+          `Cloudflare AI Search request failed (HTTP ${response.status}).`,
         );
       }
       const retryAfter = Number(response?.headers.get("retry-after")) || 0;
@@ -206,9 +212,13 @@ async function main() {
     throw new Error(
       "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN.",
     );
+  const request = cloudflareRequest(account, token, namespace, instance);
   await syncSearch(
     records,
-    cloudflareRequest(account, token, namespace, instance),
+    (suffix, options) => request(`/items${suffix}`, options),
+    {
+      purge: () => request("/purge_cache", { method: "POST" }),
+    },
   );
 }
 
