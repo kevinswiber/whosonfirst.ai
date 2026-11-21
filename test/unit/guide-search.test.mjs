@@ -301,6 +301,47 @@ test("AI Search reuses a cached answer only for a question worded almost the sam
   );
 });
 
+test("passages are ranked again by a model that reads them, and an evaluation can ask for AI Search's own order", () => {
+  const { retrieval, reranking } = searchRequest("CIBA").ai_search_options;
+  assert.deepEqual(reranking, {
+    enabled: true,
+    model: "@cf/baai/bge-reranker-base",
+    match_threshold: 0,
+  });
+  assert.equal(
+    retrieval.metadata_only,
+    false,
+    "the reranker skips passages it is not given the text of",
+  );
+  assert.equal(retrieval.match_threshold, 0.4);
+  const plain = searchRequest("CIBA", "hybrid", false, false).ai_search_options;
+  assert.deepEqual(plain.reranking, { enabled: false });
+  assert.equal(plain.retrieval.metadata_only, true);
+});
+
+test("a passage found only by its meaning needs to be close to the question, since reranking finds the rest", () => {
+  const many = ["near", "far", "worded", "unscored"].map((name, i) => ({
+    ...records[1],
+    key: `${name}.md`,
+    href: `/flows/${name}/`,
+    digest: `d${i}`,
+  }));
+  const scored = (record, scoring_details) => ({
+    ...chunk(record.key, record.digest),
+    ...(scoring_details && { scoring_details }),
+  });
+  const results = rankedResults(catalogFor(many), "museum opening hours", [
+    scored(many[0], { vector_score: 0.4, reranking_score: 0.001 }),
+    scored(many[1], { vector_score: 0.39, reranking_score: 0.9 }),
+    scored(many[2], { keyword_score: 3.1, reranking_score: 0.2 }),
+    scored(many[3]),
+  ]);
+  assert.deepEqual(
+    results.map((r) => r.href),
+    ["/flows/near/", "/flows/worded/", "/flows/unscored/"],
+  );
+});
+
 test("a search says how long each step took, and nothing about the question", async () => {
   const sent = [];
   const env = {

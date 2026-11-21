@@ -24,7 +24,14 @@ const questions = JSON.parse(
     "utf8",
   ),
 );
-const modes = ["keyword", "hybrid"];
+// Each mode is a request: keyword and hybrid search as AI Search ranks them,
+// and the hybrid search the Worker makes, ranked again by a second model.
+const requests = {
+  keyword: (query) => searchRequest(query, "keyword", false, false),
+  hybrid: (query) => searchRequest(query, "hybrid", false, false),
+  reranked: (query) => searchRequest(query, "hybrid", false),
+};
+const modes = Object.keys(requests);
 const pathOf = (href) => href.split("#")[0];
 
 function destinationFound(results, target) {
@@ -76,7 +83,7 @@ async function run() {
           "Content-Type": "application/json",
         },
         // Measure retrieval itself, not answers AI Search has cached.
-        body: JSON.stringify(searchRequest(query, mode, false)),
+        body: JSON.stringify(requests[mode](query)),
         signal: AbortSignal.timeout(30000),
       });
       if (!response.ok)
