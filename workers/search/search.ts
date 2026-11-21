@@ -49,7 +49,7 @@ export interface SearchBindings {
       ): Promise<{ chunks: SearchChunk[] }>;
     };
   };
-  // The daily cap, in the search Worker only. A branch preview has neither.
+  // The daily cap. A branch preview reaches the search Worker's counter.
   SEARCH_BUDGET?: {
     idFromName(name: string): unknown;
     get(id: unknown): { spend(cap: number): Promise<boolean> };

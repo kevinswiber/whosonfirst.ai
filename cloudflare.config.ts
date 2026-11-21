@@ -40,6 +40,14 @@ export default defineConfig(({ mode, isPreview }) => ({
           namespace: "512806497",
           simple: { limit: previewRateLimit(), period: 60 },
         }),
+        // Previews spend the same AI Search queries as production, so they
+        // count against the same daily budget, kept by the search Worker. The
+        // cap is a secret in Previews Base.
+        SEARCH_BUDGET: bindings.durableObject({
+          worker: process.env.SEARCH_WORKER_NAME ?? "whosonfirst-ai-search",
+          exportName: "SearchBudget",
+        }),
+        SEARCH_DAILY_BUDGET: bindings.secret(),
       }),
     },
     assets: {
