@@ -31,7 +31,7 @@ const requests = {
   hybrid: (query) => searchRequest(query, "hybrid", false, false),
   reranked: (query) => searchRequest(query, "hybrid", false),
 };
-const modes = Object.keys(requests);
+const requested = Object.keys(requests);
 const pathOf = (href) => href.split("#")[0];
 
 function destinationFound(results, target) {
@@ -75,7 +75,7 @@ async function run() {
   for (const [i, { query }] of questions.entries()) {
     const row = { query };
     // Alternate request order to spread the effects of warm caches.
-    for (const mode of i % 2 === 0 ? modes : modes.toReversed()) {
+    for (const mode of i % 2 === 0 ? requested : requested.toReversed()) {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -107,9 +107,20 @@ if (values.json) {
   const byQuery = new Map(rows.map((row) => [row.query, row]));
   if (rows.length !== questions.length || byQuery.size !== rows.length)
     throw new Error("The run and the editorial question set differ");
+  // A saved report is scored with the modes it was run with, so a report
+  // from before a mode was added can still be read. Every row needs the same.
+  const modesOf = (row) => Object.keys(row).filter((key) => key !== "query");
+  const modes = modesOf(rows[0] ?? {});
+  const sameModes = (row) =>
+    modesOf(row).sort().join() === modes.toSorted().join();
   for (const { query, targets } of questions) {
     const row = byQuery.get(query);
-    if (!row || modes.some((mode) => !Array.isArray(row[mode])))
+    if (
+      !row ||
+      !modes.length ||
+      !sameModes(row) ||
+      modes.some((mode) => !Array.isArray(row[mode]))
+    )
       throw new Error("Missing question or search mode in evaluation");
     if (!values.review) continue;
     console.log(
