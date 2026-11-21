@@ -314,7 +314,12 @@ const SPECULATION = JSON.stringify({
   prerender: [
     {
       where: {
-        and: [{ href_matches: "/*" }, { not: { href_matches: "/*.*" } }],
+        // A link to a search is not opened ahead: it would run the search.
+        and: [
+          { href_matches: "/*" },
+          { not: { href_matches: "/*.*" } },
+          { not: { href_matches: "/search" } },
+        ],
       },
       eagerness: "moderate",
     },

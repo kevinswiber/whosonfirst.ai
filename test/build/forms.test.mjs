@@ -570,10 +570,12 @@ test("every page with a Markdown copy links to it in its footer, and every page'
     )?.[1];
     try {
       const where = JSON.parse(rules).prerender[0].where.and;
-      // a page's address has no dot in it; every file's has
+      // a page's address has no dot in it; every file's has. A search's
+      // address is not opened ahead, since that would run the search.
       assert.deepEqual(where, [
         { href_matches: "/*" },
         { not: { href_matches: "/*.*" } },
+        { not: { href_matches: "/search" } },
       ]);
     } catch {
       wrong.push(`${p.path} (no speculation rules, or not the ones expected)`);

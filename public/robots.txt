@@ -7,6 +7,10 @@
 User-agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
+# A search runs on each request and is not a page to index. The search page
+# itself, /search/, is.
+Disallow: /search?
+Disallow: /api/search
 
 Sitemap: https://whosonfirst.ai/sitemap.xml
 

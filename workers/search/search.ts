@@ -2,8 +2,13 @@
 // service supplies candidate keys and their order, never links or markup.
 import { dailyBudget, secondsUntilTomorrow } from "./budget.ts";
 
-const ENDPOINT = "/api/search/query";
-const MAX_BYTES = 8192;
+// A search has its own address, with the question in the query string. The
+// Workers redact query strings from logs and traces, and Workers Cache keeps a
+// found answer in front of this Worker.
+const ADDRESS = "/search";
+// Kept by Workers Cache for 48 hours, and revalidated by a browser each time,
+// so a new release reaches readers as soon as it is deployed.
+const FOUND = "public, max-age=0, s-maxage=172800";
 const MAX_CHARS = 500;
 const MAX_RESULTS = 5;
 const PROVIDER_TIMEOUT_MS = 5000;
@@ -183,32 +188,6 @@ function render(
     );
 }
 
-async function readQuery(request: Request) {
-  if (Number(request.headers.get("Content-Length")) > MAX_BYTES) return null;
-  const reader = request.body?.getReader();
-  if (!reader) return "";
-  const decoder = new TextDecoder();
-  let bytes = 0;
-  let body = "";
-  try {
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      bytes += value.byteLength;
-      if (bytes > MAX_BYTES) {
-        void reader.cancel();
-        return null;
-      }
-      body += decoder.decode(value, { stream: true });
-    }
-    const form = new URLSearchParams(body + decoder.decode());
-    const values = form.getAll("q");
-    return values.length === 1 ? values[0].trim() : "";
-  } finally {
-    reader.releaseLock();
-  }
-}
-
 // AI Search may answer from its cache, but only for a question worded almost
 // exactly the same. A looser match can give one flow or RFC another's
 // passages. The release purges the cache once it has indexed new passages.
@@ -235,6 +214,17 @@ export function searchRequest(
   };
 }
 
+// The form of a question that is searched, ranked and put in the address, so
+// the three always agree. Compatibility characters such as full-width digits
+// become their plain form, and runs of spaces become one. Case is kept.
+export const plainQuestion = (query: string) =>
+  query.normalize("NFKC").trim().replace(/\s+/g, " ");
+
+// The one address for a question. Workers Cache keys on the path and query
+// string, so each question has exactly one spelling of them.
+export const searchAddress = (question: string, json = false) =>
+  `${ADDRESS}?${new URLSearchParams(json ? { q: question, format: "json" } : { q: question })}`;
+
 export function guideSearch(
   catalog: ReturnType<typeof catalogFor>,
   shell: string,
@@ -242,7 +232,7 @@ export function guideSearch(
 ) {
   return async (request: Request, env: SearchBindings): Promise<Response> => {
     const url = new URL(request.url);
-    const json = request.headers.get("Accept")?.includes("application/json");
+    const json = url.searchParams.get("format") === "json";
     let query = "";
     // How long each step took, for the browser's network panel. Durations
     // only: nothing about the question, and nothing is logged.
@@ -263,9 +253,11 @@ export function guideSearch(
     ) {
       const headers: Record<string, string> = {
         ...securityHeaders,
-        "Cache-Control": "no-store",
+        // Only a found answer is kept. The format is in the address, so the
+        // answer does not vary by Accept: Workers Cache compares a Vary
+        // header's values exactly, and every browser's differ.
+        "Cache-Control": status === 200 ? FOUND : "no-store",
         "X-Robots-Tag": "noindex",
-        Vary: "Accept",
         ...(timings.length && { "Server-Timing": timings.join(", ") }),
         ...extraHeaders,
       };
@@ -280,34 +272,40 @@ export function guideSearch(
         headers,
       });
     }
-    if (url.pathname !== ENDPOINT)
+    const redirect = (to: string, status: number) =>
+      new Response(null, {
+        status,
+        headers: { Location: to, "Cache-Control": "no-store" },
+      });
+    if (url.pathname !== ADDRESS)
       return respond(404, "This search address does not exist.");
-    if (request.method !== "POST")
-      return respond(405, "Use the search form below.", [], { Allow: "POST" });
-    const origin = request.headers.get("Origin");
+    if (request.method !== "GET" && request.method !== "HEAD")
+      return respond(405, "Use the search form below.", [], {
+        Allow: "GET, HEAD",
+      });
+    const values = url.searchParams.getAll("q");
+    if (values.length > 1) return respond(400, "Enter one term or question.");
+    query = plainQuestion(values[0] ?? "");
+    if (!query) return redirect("/search/", 302);
+    if ([...query].length > MAX_CHARS)
+      return respond(400, "Enter a term or question of up to 500 characters.");
+    const canonical = searchAddress(query, json);
+    if (url.pathname + url.search !== canonical)
+      return redirect(canonical, 308);
+    // A browser opening a link ahead of time would run a real search for a
+    // page the reader may never see. It opens the page again when it is
+    // followed, so the search runs then.
+    if (request.headers.get("Sec-Purpose")?.includes("prefetch"))
+      return respond(503, "Search runs when the page is opened.");
+    // A reader may follow a link to a search from anywhere. Another site
+    // may not make the browser run one in the background.
     if (
-      (origin && origin !== url.origin) ||
-      request.headers.get("Sec-Fetch-Site") === "cross-site"
+      request.headers.get("Sec-Fetch-Site") === "cross-site" &&
+      request.headers.get("Sec-Fetch-Mode") !== "navigate"
     )
       return respond(403, "Open the search page to submit your question.");
-    if (
-      request.headers
-        .get("Content-Type")
-        ?.split(";")[0]
-        .trim()
-        .toLowerCase() !== "application/x-www-form-urlencoded"
-    )
-      return respond(415, "Use the search form below.");
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const input = await readQuery(request);
-      if (input === null) return respond(413, "Use a shorter question.");
-      query = input;
-      if (!query || [...query].length > MAX_CHARS)
-        return respond(
-          400,
-          "Enter a term or question of up to 500 characters.",
-        );
       const { success } = await timed("limit", () =>
         env.SEARCH_LIMITER.limit({
           key: request.headers.get("CF-Connecting-IP") || "unknown",

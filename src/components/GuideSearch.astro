@@ -12,7 +12,7 @@ const examples = [
 ---
 
 <guide-search class:list={[{ compact: Boolean(idPrefix) }]}>
-  <form id={id("guide-search-form")} role="search" aria-label="Search the whole guide" method="post" action="/api/search/query">
+  <form id={id("guide-search-form")} role="search" aria-label="Search the whole guide" method="get" action="/search">
     <label class:list={[{ "visually-hidden": idPrefix }]} for={id("guide-query")}>{idPrefix ? "Search the guide" : "Describe a task, or enter a term or RFC number."}</label>
     <div class="search-controls">
       <div class="search-field">
@@ -227,10 +227,13 @@ const examples = [
         status.textContent = 'Searching…';
         const deadline = window.setTimeout(() => request.abort(), 12000);
         try {
-          const response = await fetch(form.action, {
-            method: 'POST',
+          // The one address the Worker answers for this question, as
+          // plainQuestion() and searchAddress() in workers/search/search.ts
+          // make it, so a cached answer is found without a redirect.
+          const plain = query.normalize('NFKC').trim().replace(/\s+/g, ' ');
+          const address = `/search?${new URLSearchParams({ q: plain, format: 'json' })}`;
+          const response = await fetch(address, {
             headers: { Accept: 'application/json' },
-            body: new URLSearchParams({ q: query }),
             signal: request.signal,
           });
           if (pending !== request) return;

@@ -25,8 +25,8 @@ export default defineConfig(({ mode, isPreview }) => ({
     name: "whosonfirst-ai",
     compatibilityDate: "2026-11-03",
     compatibilityFlags: ["global_fetch_strictly_public"],
-    // Production routes search to a separate Worker. A preview handles
-    // /api/search/query here and forwards every other request it receives to
+    // Production routes /search to a separate Worker. A preview handles
+    // /search here and forwards every other request it receives to
     // src/worker.ts, which serves the page as HTML or Markdown.
     entrypoint:
       mode === "development" ? astro : isPreview ? pagesWithSearch : pages,
@@ -57,6 +57,9 @@ export default defineConfig(({ mode, isPreview }) => ({
     },
     observability: {
       enabled: true,
+      // A preview answers searches here, with the question in the query
+      // string. Logs and traces drop it.
+      redactQueryString: true,
     },
   },
 }));
