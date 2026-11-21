@@ -5,7 +5,7 @@ import {
   missingFromSearch,
   releasable,
   siteOrigin,
-} from "../../scripts/release.mjs";
+} from "../../scripts/release.ts";
 
 const marker = { commit: "a".repeat(40), revision: "b".repeat(64) };
 const origin = "https://guide.example.test";

@@ -20,11 +20,29 @@ import { BUILT_ASSETS, WORKER_BUILD } from "./built-site.mjs";
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
 
+/** What the build writes at /search/release.json. */
+export interface Marker {
+  commit: string;
+  revision: string;
+}
+
+/** The part of the built Worker’s configuration that search is declared in. */
+export interface BuiltWorker {
+  env?: Record<string, { type?: string } | undefined>;
+  exports?: Record<
+    string,
+    { type?: string; cache?: { enabled?: boolean } } | undefined
+  >;
+}
+
 /** A build made from a commit, with the digest of its passages. */
-export function releasable(marker) {
+export function releasable(marker: unknown): marker is Marker {
+  const { commit, revision } = (marker ?? {}) as Partial<Marker>;
   return (
-    /^[0-9a-f]{40}$/.test(marker?.commit) &&
-    /^[0-9a-f]{64}$/.test(marker?.revision)
+    typeof commit === "string" &&
+    typeof revision === "string" &&
+    /^[0-9a-f]{40}$/.test(commit) &&
+    /^[0-9a-f]{64}$/.test(revision)
   );
 }
 
@@ -33,7 +51,7 @@ export function releasable(marker) {
  * leaves search out when its limiter is not set, and the release must not
  * put a site without search in the place of one that has it.
  */
-export function missingFromSearch(config) {
+export function missingFromSearch(config: BuiltWorker | undefined): string[] {
   const kinds = {
     AI_SEARCH: "ai-search-namespace",
     SEARCH_INSTANCE: "text",
@@ -50,25 +68,29 @@ export function missingFromSearch(config) {
 }
 
 /** The site's own address, as the build's sitemap gives it. */
-export function siteOrigin(sitemap) {
+export function siteOrigin(sitemap: string): string {
   const first = /<loc>([^<]+)<\/loc>/.exec(sitemap)?.[1];
   if (!first) throw new Error("The built sitemap lists no page.");
   return new URL(first).origin;
 }
 
 /** Whether an answer to a search came from this release, with a passage. */
-export async function answeredBy(marker, origin, response) {
+export async function answeredBy(
+  marker: Marker,
+  origin: string,
+  response: Response,
+): Promise<boolean> {
   if (
     !response.ok ||
     response.headers.get("X-Guide-Search-Commit") !== marker.commit ||
     response.headers.get("X-Guide-Search-Revision") !== marker.revision
   )
     return false;
-  const { results } = await response.json();
+  const { results } = (await response.json()) as { results?: unknown };
   return (
     Array.isArray(results) &&
     results.some(
-      (r) =>
+      (r: { href?: unknown }) =>
         typeof r.href === "string" &&
         r.href.startsWith("/") &&
         new URL(r.href, origin).origin === origin,
@@ -76,7 +98,7 @@ export async function answeredBy(marker, origin, response) {
   );
 }
 
-async function mainIsCurrent(commit) {
+async function mainIsCurrent(commit: string) {
   const { stdout } = await run(
     "git",
     ["ls-remote", "--exit-code", "origin", "refs/heads/main"],
@@ -88,7 +110,7 @@ async function mainIsCurrent(commit) {
     );
 }
 
-async function deploy(commit) {
+async function deploy(commit: string) {
   try {
     // The CLI's report can name the account. Nothing it prints is shown.
     await run(
@@ -112,7 +134,7 @@ async function deploy(commit) {
   }
 }
 
-async function smoke(marker, origin) {
+async function smoke(marker: Marker, origin: string) {
   for (let attempt = 1; attempt <= 5; attempt++) {
     try {
       // The search address, as the search box asks it. Workers Cache keeps
@@ -138,10 +160,10 @@ async function smoke(marker, origin) {
   );
 }
 
-async function main(mode) {
-  if (!["check", "deploy"].includes(mode))
+async function main(mode: string | undefined) {
+  if (mode !== "check" && mode !== "deploy")
     throw new Error("Use check or deploy.");
-  const marker = JSON.parse(
+  const marker: unknown = JSON.parse(
     readFileSync(join(BUILT_ASSETS, "search/release.json"), "utf8"),
   );
   const { stdout } = await run("git", ["rev-parse", "HEAD"], { cwd: root });
@@ -179,7 +201,7 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  main(process.argv[2]).catch((error) => {
+  main(process.argv[2]).catch((error: Error) => {
     console.error(error.message);
     process.exitCode = 1;
   });

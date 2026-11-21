@@ -20,7 +20,7 @@ const PROVIDER_TIMEOUT_MS = 10000;
 export const MATCH_THRESHOLD = 0.4;
 const TIMED_OUT = Symbol("search timed out");
 
-interface PassageRecord {
+export interface PassageRecord {
   key: string;
   digest: string;
   href: string;

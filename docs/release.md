@@ -40,11 +40,11 @@ A preview is built with the limiter that Workers Builds’ variables give it. Wi
 
 ## What a release does
 
-The workflow builds the checked-out commit once. `node scripts/release.mjs check` stops the run unless the build was made from that commit, has search, and the commit is still the head of `main`.
+The workflow builds the checked-out commit once. `node scripts/release.ts check` stops the run unless the build was made from that commit, has search, and the commit is still the head of `main`.
 
 Then the passages are indexed, before anything is deployed. `search:sync` uploads the passages this build has that the index does not, reuses the ones it has, and waits for Cloudflare to report completion and at least one indexed chunk for every current passage. Then it purges the instance’s similarity cache, because new passages do not clear an answer cached from the earlier index. This is safe to do under the site that is still serving: a search shows only the passages in its own build, each named by its place and a digest of its text, so the site being replaced does not see the new ones. Item inventory, upload and purge errors stop the run before the deployment.
 
-`node scripts/release.mjs deploy` checks `main` again and deploys the build with `cf deploy --prebuilt`. The pages and search change together, in one deployment, so there is no moment when one is from a different commit than the other. The version’s message is **Guide at** and the commit.
+`node scripts/release.ts deploy` checks `main` again and deploys the build with `cf deploy --prebuilt`. The pages and search change together, in one deployment, so there is no moment when one is from a different commit than the other. The version’s message is **Guide at** and the commit.
 
 A search that passes the limit for its address is counted against the daily budget before it reaches AI Search, and one that does not pass is not counted. Each search asks AI Search to reuse a cached answer only for a near-identical question (`super_strict_match`), whatever the instance’s own cache setting. With the looser default, a search for RFC 9396 listed a page that does not mention it (seen 21 November 2026). The response’s `Server-Timing` header gives how long the address limit, the budget and AI Search took, and nothing about the question. The service returns opaque keys.
 

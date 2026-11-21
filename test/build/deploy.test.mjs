@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { WORKER_BUILD } from "../../scripts/built-site.mjs";
-import { missingFromSearch } from "../../scripts/release.mjs";
+import { missingFromSearch } from "../../scripts/release.ts";
 import { exists, root } from "../support/site.mjs";
 
 const config = JSON.parse(

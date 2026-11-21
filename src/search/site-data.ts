@@ -1,10 +1,24 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalogFor, validateShell } from "./search.ts";
+import {
+  catalogFor,
+  type PassageRecord,
+  type SearchSiteData,
+  validateShell,
+} from "./search.ts";
+
+/** The passages of a build, with the digest of all of them. */
+interface Manifest {
+  records: PassageRecord[];
+  revision: string;
+}
 
 // What a search is answered from: the rendered form, the passages and the
 // response headers of one build. The build writes it beside the pages.
-export function searchSiteData(assets, { records, revision }) {
+export function searchSiteData(
+  assets: string,
+  { records, revision }: Manifest,
+): SearchSiteData {
   catalogFor(records);
   const shell = readFileSync(join(assets, "search/index.html"), "utf8");
   validateShell(shell);
@@ -23,7 +37,7 @@ export function searchSiteData(assets, { records, revision }) {
       .filter(([name]) => name !== "Link" && name !== "Vary"),
   );
   if (!headers["Content-Security-Policy"]) throw new Error("Missing site CSP");
-  const marker = JSON.parse(
+  const marker: { commit: string | null; revision: string } = JSON.parse(
     readFileSync(join(assets, "search/release.json"), "utf8"),
   );
   if (marker.commit) headers["X-Guide-Search-Commit"] = marker.commit;

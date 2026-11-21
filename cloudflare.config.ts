@@ -4,9 +4,6 @@ import * as astro from "@astrojs/cloudflare/entrypoints/server" with {
 import { bindings, defineConfig, exports } from "cf/config";
 import * as site from "./src/site.ts" with { type: "cf-worker" };
 
-// The config runs under Node. The site has no dependency on Node’s types.
-declare const process: { env: Record<string, string | undefined> };
-
 // Search is set up where the site is built and not written here: an account’s
 // identifiers and its limits are its own. With neither variable, the site is
 // built without search, and a search answers that it is unavailable. The site

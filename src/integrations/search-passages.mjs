@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rehypeParse from "rehype-parse";
 import { unified } from "unified";
-import { searchSiteData } from "../search/site-data.mjs";
+import { searchSiteData } from "../search/site-data.ts";
 import { builtPages } from "./built-pages.mjs";
 import { omitFromReading } from "./markdown-pages.mjs";
 
