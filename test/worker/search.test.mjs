@@ -13,11 +13,13 @@ import { file, SITE_HEADERS } from "../support/site.mjs";
 import { startWorker } from "../support/worker.mjs";
 
 const marker = JSON.parse(file("search/release.json"));
-/** Whether this build was given a limiter, and so has search. */
-const hasSearch = Boolean(
-  JSON.parse(readFileSync(join(WORKER_BUILD, "worker.config.json"), "utf8")).env
-    .SEARCH_LIMITER,
+const { env } = JSON.parse(
+  readFileSync(join(WORKER_BUILD, "worker.config.json"), "utf8"),
 );
+/** Whether this build was given a limiter, and so has search. */
+const hasSearch = Boolean(env.SEARCH_LIMITER);
+/** A build made to go back to two Workers: the other one is not here. */
+const elsewhere = env.SEARCH && "this build hands a search to another Worker";
 
 let site;
 before(async () => {
@@ -31,7 +33,9 @@ after(async () => {
 const ask = (path, headers = {}) =>
   fetch(`${site.origin}${path}`, { headers, redirect: "manual" });
 
-test("a search with no question goes to the search page, and another spelling to the one address", async () => {
+test("a search with no question goes to the search page, and another spelling to the one address", {
+  skip: elsewhere,
+}, async () => {
   const empty = await ask("/search");
   assert.equal(empty.status, 302);
   assert.equal(empty.headers.get("location"), "/search/");
@@ -43,7 +47,9 @@ test("a search with no question goes to the search page, and another spelling to
   assert.match(await page.text(), /id="search-results"/);
 });
 
-test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", async () => {
+test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", {
+  skip: elsewhere,
+}, async () => {
   const answer = await ask("/search?q=DPoP&format=json");
   assert.equal(answer.status, 503);
   assert.equal(answer.headers.get("cache-control"), "no-store");
