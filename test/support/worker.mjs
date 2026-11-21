@@ -27,9 +27,10 @@ const freePort = () =>
 
 /**
  * Starts the site in the Workers runtime and waits until it answers. Gives
- * its origin and a function that stops it.
+ * its origin and a function that stops it. `secrets` are the Worker's, by
+ * name: the runtime reads them from the environment it is started in.
  */
-export async function startWorker() {
+export async function startWorker(secrets = {}) {
   const port = await freePort();
   const child = spawn(
     process.execPath,
@@ -44,7 +45,7 @@ export async function startWorker() {
     ],
     {
       cwd: repository,
-      env: { ...process.env, CI: "1" },
+      env: { ...process.env, ...secrets, CI: "1" },
       stdio: ["ignore", "pipe", "pipe"],
       // a group of its own, so that the runtime it starts stops with it
       detached: true,

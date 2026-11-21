@@ -27,9 +27,7 @@
     "implementations:check": "node scripts/implementation-check.mjs",
     "generate-types": "cf workers types",
     "deploy": "cf deploy",
-    "search:sync": "node scripts/sync-search.mjs",
-    "search:build": "npm --prefix workers/search run build",
-    "search:preview:build": "CLOUDFLARE_PREVIEW_BUILD=true cf build && node --test test/preview/search.test.mjs"
+    "search:sync": "node scripts/sync-search.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

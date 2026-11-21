@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalogFor, validateShell } from "./search.ts";
 
-// Use the same rendered form, passages and response headers for both Workers.
+// What a search is answered from: the rendered form, the passages and the
+// response headers of one build. The build writes it beside the pages.
 export function searchSiteData(assets, { records, revision }) {
   catalogFor(records);
   const shell = readFileSync(join(assets, "search/index.html"), "utf8");
@@ -28,6 +29,8 @@ export function searchSiteData(assets, { records, revision }) {
   if (marker.commit) headers["X-Guide-Search-Commit"] = marker.commit;
   headers["X-Guide-Search-Revision"] = marker.revision;
   if (marker.revision !== revision)
-    throw new Error("Search Worker and site have different passage manifests.");
+    throw new Error(
+      "The release marker and the passages are from different builds.",
+    );
   return { records, shell, headers };
 }

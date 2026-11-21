@@ -4,7 +4,7 @@ import {
   dailyBudget,
   secondsUntilTomorrow,
   spend,
-} from "../../workers/search/budget.ts";
+} from "../../src/search/budget.ts";
 import {
   catalogFor,
   guideSearch,
@@ -13,7 +13,7 @@ import {
   searchAddress,
   searchRequest,
   validateShell,
-} from "../../workers/search/search.ts";
+} from "../../src/search/search.ts";
 
 const site = "https://example.org";
 const shell =
@@ -55,9 +55,15 @@ const submit = (q, { html = false, headers = {} } = {}) =>
     },
   });
 const at = (path, headers = {}) => new Request(`${site}${path}`, { headers });
+// A day with room in it. A test of the budget gives a count of its own.
 const envFor = (search, success = true) => ({
   SEARCH_INSTANCE: "guide",
   SEARCH_LIMITER: { limit: async () => ({ success }) },
+  SEARCH_BUDGET: {
+    idFromName: (name) => name,
+    get: () => ({ spend: async () => true }),
+  },
+  SEARCH_DAILY_BUDGET: "10",
   AI_SEARCH: {
     get: (name) => {
       assert.equal(name, "guide");

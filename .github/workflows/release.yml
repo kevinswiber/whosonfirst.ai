@@ -1,15 +1,32 @@
-name: Release guide search
+# Releases the guide on every change to main: the pages and their search, in
+# one Worker. The steps are in the order that keeps a search right while they
+# run, and docs/release.md says why.
+#
+#   1. build the site, once
+#   2. upload the passages this build has that the index does not, and wait
+#      until they are indexed. The site being replaced does not see them.
+#   3. deploy the build, and ask it for a search
+#   4. delete the passages the site no longer has
+#
+# The credentials are in the search-production environment, which only main
+# may use.
+name: Release the guide
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      index:
+        description: Index the passages before deploying. Turn off only to release the pages while AI Search cannot be reached.
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: guide-search-production
+  group: guide-production
   cancel-in-progress: false
 
 jobs:
@@ -20,12 +37,13 @@ jobs:
     environment: search-production
     env:
       ASTRO_TELEMETRY_DISABLED: "1"
+      # Whether this run indexes. A push always does.
+      INDEX: ${{ github.event_name == 'push' || inputs.index }}
       SEARCH_RATE_NAMESPACE: ${{ vars.SEARCH_RATE_NAMESPACE }}
       # A secret, so the public run log masks it.
       SEARCH_RATE_LIMIT: ${{ secrets.SEARCH_RATE_LIMIT }}
       SEARCH_NAMESPACE: ${{ vars.SEARCH_NAMESPACE || 'whosonfirst' }}
       SEARCH_INSTANCE: ${{ vars.SEARCH_INSTANCE || 'whosonfirst-guide' }}
-      SEARCH_WORKER_NAME: ${{ vars.SEARCH_WORKER_NAME || 'whosonfirst-ai-search' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -37,23 +55,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm run search:build
+      - name: Check that this build is the head of main and has search
+        run: node scripts/release.mjs check
       - run: npm run search:sync -- --dry-run
-      - name: Wait for Cloudflare Workers Builds to publish this guide
-        run: node scripts/release-search.mjs wait
-      - name: Sync the public passages and wait for indexing
+      - name: Upload the new passages and wait for indexing
+        if: env.INDEX == 'true'
         run: npm run search:sync
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN: ${{ secrets.CLOUDFLARE_AI_SEARCH_UPLOAD_TOKEN }}
-      - name: Upload the search Worker, activate it and check the same-origin route
-        run: node scripts/release-search.mjs publish
+      - name: Deploy the guide and ask it for a search
+        run: node scripts/release.mjs deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_SEARCH_WORKER_DEPLOY_TOKEN }}
-      # Only once the new search Worker is answering: until then the one it
-      # replaces still searches the passages this deletes.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_DEPLOY_TOKEN }}
+      # Only once the new site is answering: until then the one it replaces
+      # still searches the passages this deletes.
       - name: Retire the passages the site no longer has
+        if: env.INDEX == 'true'
         run: npm run search:sync -- --retire
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

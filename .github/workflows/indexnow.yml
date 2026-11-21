@@ -3,9 +3,9 @@
 # had to run `npm run indexnow -- --since <day>` by hand after a deploy, and
 # remember the day.
 #
-# The site is not deployed from here: Cloudflare's Workers Builds builds and
-# deploys every push to main, a minute or two after it. So this workflow
-# builds the same commit for itself, from the whole history, since the dates
+# The site is not deployed from here: the release workflow builds and deploys
+# every push to main, a few minutes after it. So this workflow builds the
+# same commit for itself, from the whole history, since the dates
 # in the sitemap and what each commit changed are read from it. Then scripts/indexnow.mjs does three things:
 #
 #   chooses  the pages made from a file or an entry changed by a commit that

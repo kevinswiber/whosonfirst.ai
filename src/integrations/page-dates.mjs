@@ -26,9 +26,10 @@
  * the oldest of them: a date read from that would be wrong, and no date is
  * better than a wrong one. The build says which it found.
  *
- * The build that is deployed is one of those: Cloudflare's Workers Builds
+ * A branch preview is built from one of those: Cloudflare's Workers Builds
  * clones shallowly, and its settings have nothing to change that. So there,
- * and only there, the build fetches the rest of the history first. Workers
+ * and only there, the build fetches the rest of the history first. (The
+ * site itself is released from a checkout of the whole history.) Workers
  * Builds says where it is with `WORKERS_CI=1`:
  * https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
  * Anywhere else a shallow clone is left as it is, and a build never goes to

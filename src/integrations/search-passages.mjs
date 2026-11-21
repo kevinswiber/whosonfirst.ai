@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rehypeParse from "rehype-parse";
 import { unified } from "unified";
-import { searchSiteData } from "../../workers/search/site-data.mjs";
+import { searchSiteData } from "../search/site-data.mjs";
 import { builtPages } from "./built-pages.mjs";
 import { omitFromReading } from "./markdown-pages.mjs";
 
@@ -389,8 +389,8 @@ export default function searchPassages() {
           new URL("search/quick-matches.json", dir),
           JSON.stringify(quickMatches(manifest.records)),
         );
-        // The site and its independently deployed search Worker must agree on
-        // both the source revision and the passages produced from it.
+        // The release checks that the site it deployed is the one answering:
+        // the commit it was built from and the passages made from it.
         const git = spawnSync("git", ["rev-parse", "HEAD"], {
           encoding: "utf8",
         });
@@ -399,12 +399,12 @@ export default function searchPassages() {
           new URL("search/release.json", dir),
           JSON.stringify({ commit, revision: manifest.revision }),
         );
-        if (process.env.CLOUDFLARE_PREVIEW_BUILD === "true") {
-          writeFileSync(
-            new URL("search/preview-catalog.json", dir),
-            JSON.stringify(searchSiteData(fileURLToPath(dir), manifest)),
-          );
-        }
+        // What the Worker answers a search from. It is written here, after
+        // the pages, because the Worker is bundled before they are rendered.
+        writeFileSync(
+          new URL("search/catalog.json", dir),
+          JSON.stringify(searchSiteData(fileURLToPath(dir), manifest)),
+        );
         logger.info(`${manifest.records.length} passages for site search`);
       },
     },

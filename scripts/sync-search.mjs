@@ -147,9 +147,9 @@ export async function syncSearch(
 // A passage this project uploads is named for its location and its content.
 const PASSAGE = /^[a-f0-9]{32}-[a-f0-9]{32}\.md$/;
 
-// Delete the passages the site no longer has, once the new search Worker is
+// Delete the passages the site no longer has, once the new site is
 // answering. Nothing is kept for a rollback: the release run for an older
-// commit uploads whatever its passages are missing before it activates. Only
+// commit uploads whatever its passages are missing before it deploys. Only
 // items named as this project names a passage are retired, and only when every
 // passage of this release is indexed.
 export async function retireSearch(

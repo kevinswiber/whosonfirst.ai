@@ -2,7 +2,7 @@
 // directory and index are real built assets; only the Cloudflare API is stubbed.
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { catalogFor, guideSearch } from "../../workers/search/search.ts";
+import { catalogFor, guideSearch } from "../../src/search/search.ts";
 import { frames, open, useBrowser } from "../support/browser.mjs";
 import { sideways } from "../support/measure.mjs";
 import { file } from "../support/site.mjs";
@@ -81,6 +81,11 @@ test("deleting a query restored from the form's search address clears the server
   await page.route(fullSearch, async (route) => {
     const response = await render(new Request(route.request().url()), {
       SEARCH_LIMITER: { limit: async () => ({ success: true }) },
+      SEARCH_BUDGET: {
+        idFromName: (name) => name,
+        get: () => ({ spend: async () => true }),
+      },
+      SEARCH_DAILY_BUDGET: "10",
       AI_SEARCH: { get: () => ({ search: async () => ({ chunks: [] }) }) },
     });
     await route.fulfill({
