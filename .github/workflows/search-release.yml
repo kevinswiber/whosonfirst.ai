@@ -21,6 +21,8 @@ jobs:
     env:
       ASTRO_TELEMETRY_DISABLED: "1"
       SEARCH_RATE_NAMESPACE: ${{ vars.SEARCH_RATE_NAMESPACE }}
+      # A secret, so the public run log masks it.
+      SEARCH_RATE_LIMIT: ${{ secrets.SEARCH_RATE_LIMIT }}
       SEARCH_NAMESPACE: ${{ vars.SEARCH_NAMESPACE || 'whosonfirst' }}
       SEARCH_INSTANCE: ${{ vars.SEARCH_INSTANCE || 'whosonfirst-guide' }}
       SEARCH_WORKER_NAME: ${{ vars.SEARCH_WORKER_NAME || 'whosonfirst-ai-search' }}

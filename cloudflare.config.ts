@@ -7,6 +7,19 @@ import * as pagesWithSearch from "./workers/preview/index.ts" with {
   type: "cf-worker",
 };
 
+// The config runs under Node. The site has no dependency on Node’s types.
+declare const process: { env: Record<string, string | undefined> };
+
+// A preview’s limit is a build variable in Workers Builds, not written here.
+function previewRateLimit() {
+  const limit = process.env.SEARCH_RATE_LIMIT;
+  if (!limit || !/^[1-9]\d*$/.test(limit))
+    throw new Error(
+      "Set SEARCH_RATE_LIMIT to the number of searches one address may make in a minute on a preview.",
+    );
+  return Number(limit);
+}
+
 export default defineConfig(({ mode, isPreview }) => ({
   worker: {
     name: "whosonfirst-ai",
@@ -25,7 +38,7 @@ export default defineConfig(({ mode, isPreview }) => ({
         SEARCH_LIMITER: bindings.rateLimit({
           // Branch previews share a limiter separate from production search.
           namespace: "512806497",
-          simple: { limit: 20, period: 60 },
+          simple: { limit: previewRateLimit(), period: 60 },
         }),
       }),
     },

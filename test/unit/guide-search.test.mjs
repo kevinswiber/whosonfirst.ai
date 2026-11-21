@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  dailyBudget,
+  secondsUntilTomorrow,
+  spend,
+} from "../../workers/search/budget.ts";
+import {
   catalogFor,
   guideSearch,
   rankedResults,
@@ -174,4 +179,104 @@ test("distinct pages lead before a second passage and unknown identifiers return
     rankedResults(lookup, "RFC9449", matches)[0].href,
     records[0].href,
   );
+});
+
+const memory = () => {
+  const values = new Map();
+  return {
+    get: async (key) => values.get(key),
+    put: async (key, value) => {
+      values.set(key, value);
+    },
+  };
+};
+
+test("the daily budget counts to its cap and starts again at midnight UTC", async () => {
+  const storage = memory();
+  const today = new Date("2026-11-21T23:59:58Z");
+  assert.equal(await spend(storage, 2, today), true);
+  assert.equal(await spend(storage, 2, today), true);
+  assert.equal(await spend(storage, 2, today), false);
+  assert.equal(await spend(storage, 2, today), false);
+  assert.equal(await spend(storage, 2, new Date("2026-11-22T00:00:00Z")), true);
+  assert.equal(secondsUntilTomorrow(today), 2);
+  assert.equal(secondsUntilTomorrow(new Date("2026-11-22T00:00:00Z")), 86400);
+});
+
+test("only a whole number above zero is a daily budget", () => {
+  assert.equal(dailyBudget("2000"), 2000);
+  assert.equal(dailyBudget(" 7 "), 7);
+  for (const value of [
+    undefined,
+    "",
+    "0",
+    "-1",
+    "1.5",
+    "lots",
+    "1e3",
+    "99999999999999999999",
+  ])
+    assert.equal(dailyBudget(value), undefined, String(value));
+});
+
+test("search stops for the day once the budget is spent, and without a budget it stays off", async () => {
+  let searched = 0;
+  const search = async () => {
+    searched++;
+    return { chunks: [chunk("flow.md", "b")] };
+  };
+  const budgetFor = (left) => {
+    let spent = 0;
+    const calls = [];
+    return {
+      calls,
+      binding: {
+        idFromName: (name) => name,
+        get: (id) => ({
+          async spend(cap) {
+            calls.push({ id, cap });
+            if (spent >= Math.min(cap, left)) return false;
+            spent++;
+            return true;
+          },
+        }),
+      },
+    };
+  };
+  const one = budgetFor(1);
+  const env = {
+    ...envFor(search),
+    SEARCH_BUDGET: one.binding,
+    SEARCH_DAILY_BUDGET: "3",
+  };
+  assert.equal((await handle(submit("proof"), env)).status, 200);
+  const spent = await handle(submit("proof"), env);
+  assert.equal(spent.status, 503);
+  assert.match((await spent.json()).error, /all it can for today/);
+  assert.ok(Number(spent.headers.get("Retry-After")) > 0);
+  assert.equal(searched, 1);
+  assert.deepEqual(one.calls, [
+    { id: "guide", cap: 3 },
+    { id: "guide", cap: 3 },
+  ]);
+
+  const limited = budgetFor(10);
+  await handle(submit("proof"), {
+    ...envFor(search, false),
+    SEARCH_BUDGET: limited.binding,
+    SEARCH_DAILY_BUDGET: "3",
+  });
+  assert.equal(limited.calls.length, 0, "a refused address spends nothing");
+
+  for (const secret of [undefined, "0", "many"]) {
+    const unset = budgetFor(10);
+    const response = await handle(submit("proof"), {
+      ...envFor(search),
+      SEARCH_BUDGET: unset.binding,
+      SEARCH_DAILY_BUDGET: secret,
+    });
+    assert.equal(response.status, 503, String(secret));
+    assert.equal(unset.calls.length, 0);
+  }
+  assert.equal(searched, 1);
 });

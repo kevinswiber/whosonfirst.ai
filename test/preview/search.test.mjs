@@ -24,6 +24,11 @@ test("the native site preview carries the guide’s retrieval bindings", () => {
   assert.equal(config.name, "whosonfirst-ai");
   assert.equal(config.routes, undefined);
   assert.equal(config.env.SEARCH_LIMITER.namespace, "512806497");
+  // The limit is a build variable, so that it is not written in the repository.
+  assert.equal(
+    config.env.SEARCH_LIMITER.simple.limit,
+    Number(process.env.SEARCH_RATE_LIMIT),
+  );
   assert.equal(config.env.ASSETS.type, "assets");
   assert.equal(config.env.AI_SEARCH.namespace, "whosonfirst");
   assert.equal(config.env.SEARCH_INSTANCE.value, "whosonfirst-guide");

@@ -1,5 +1,7 @@
 // The manifest, snippets and page shell come from one site build. The search
 // service supplies candidate keys and their order, never links or markup.
+import { dailyBudget, secondsUntilTomorrow } from "./budget.ts";
+
 const ENDPOINT = "/api/search/query";
 const MAX_BYTES = 8192;
 const MAX_CHARS = 500;
@@ -47,6 +49,12 @@ export interface SearchBindings {
       ): Promise<{ chunks: SearchChunk[] }>;
     };
   };
+  // The daily cap, in the search Worker only. A branch preview has neither.
+  SEARCH_BUDGET?: {
+    idFromName(name: string): unknown;
+    get(id: unknown): { spend(cap: number): Promise<boolean> };
+  };
+  SEARCH_DAILY_BUDGET?: string;
 }
 
 const entities: Record<string, string> = {
@@ -288,6 +296,21 @@ export function guideSearch(
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",
         });
+      if (env.SEARCH_BUDGET) {
+        // Without a valid cap, search stays off rather than run without one.
+        const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
+        if (cap === undefined) throw new Error("no daily budget");
+        const budget = env.SEARCH_BUDGET.get(
+          env.SEARCH_BUDGET.idFromName("guide"),
+        );
+        if (!(await budget.spend(cap)))
+          return respond(
+            503,
+            "Search has answered all it can for today. Browse the guide, or try again tomorrow.",
+            [],
+            { "Retry-After": String(secondsUntilTomorrow()) },
+          );
+      }
       const search = env.AI_SEARCH.get(env.SEARCH_INSTANCE).search(
         searchRequest(query),
       );
