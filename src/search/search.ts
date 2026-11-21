@@ -1,10 +1,11 @@
 // The manifest, snippets and page shell come from one site build. The search
 // service supplies candidate keys and their order, never links or markup.
+import type { Assets } from "../lib/markdown-negotiation.ts";
 import { dailyBudget, secondsUntilTomorrow } from "./budget.ts";
 
 // A search has its own address, with the question in the query string. The
-// Workers redact query strings from logs and traces, and Workers Cache keeps a
-// found answer in front of this Worker.
+// Worker redacts query strings from logs and traces, and Workers Cache keeps a
+// found answer in front of the entrypoint that answers a search.
 const ADDRESS = "/search";
 // Kept by Workers Cache for 48 hours, and revalidated by a browser each time,
 // so a new release reaches readers as soon as it is deployed.
@@ -19,7 +20,7 @@ const PROVIDER_TIMEOUT_MS = 10000;
 export const MATCH_THRESHOLD = 0.4;
 const TIMED_OUT = Symbol("search timed out");
 
-interface PassageRecord {
+export interface PassageRecord {
   key: string;
   digest: string;
   href: string;
@@ -67,8 +68,9 @@ export interface SearchBindings {
       ): Promise<{ chunks: SearchChunk[] }>;
     };
   };
-  // The daily cap. A branch preview reaches the search Worker's counter.
-  SEARCH_BUDGET?: {
+  // The daily cap, counted by the Worker's SearchBudget. The cap itself is a
+  // secret, and a branch preview has a count and a secret of its own.
+  SEARCH_BUDGET: {
     idFromName(name: string): unknown;
     get(id: unknown): { spend(cap: number): Promise<boolean> };
   };
@@ -342,21 +344,19 @@ export function guideSearch(
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",
         });
-      if (env.SEARCH_BUDGET) {
-        // Without a valid cap, search stays off rather than run without one.
-        const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
-        if (cap === undefined) throw new Error("no daily budget");
-        const budget = env.SEARCH_BUDGET.get(
-          env.SEARCH_BUDGET.idFromName("guide"),
+      // Without a valid cap, search stays off rather than run without one.
+      const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
+      if (cap === undefined) throw new Error("no daily budget");
+      const budget = env.SEARCH_BUDGET.get(
+        env.SEARCH_BUDGET.idFromName("guide"),
+      );
+      if (!(await timed("budget", () => budget.spend(cap))))
+        return respond(
+          503,
+          "Search has answered all it can for today. Browse the guide, or try again tomorrow.",
+          [],
+          { "Retry-After": String(secondsUntilTomorrow()) },
         );
-        if (!(await timed("budget", () => budget.spend(cap))))
-          return respond(
-            503,
-            "Search has answered all it can for today. Browse the guide, or try again tomorrow.",
-            [],
-            { "Retry-After": String(secondsUntilTomorrow()) },
-          );
-      }
       const search = env.AI_SEARCH.get(env.SEARCH_INSTANCE).search(
         searchRequest(query),
       );
@@ -386,5 +386,36 @@ export function guideSearch(
     } finally {
       clearTimeout(timer);
     }
+  };
+}
+
+/** Where the build writes what a search is answered from. */
+export const CATALOG = "/search/catalog.json";
+
+/**
+ * Search for the site as it was built. The build writes the catalog after it
+ * has bundled the Worker, so the Worker reads it as a file, once. The handler
+ * is kept only after the file has loaded, so that requests arriving together
+ * never share a read that has not finished.
+ */
+export function siteSearch() {
+  let search: ReturnType<typeof guideSearch> | undefined;
+  return async (
+    request: Request,
+    env: SearchBindings & { ASSETS: Assets },
+  ): Promise<Response> => {
+    if (!search) {
+      const asset = await env.ASSETS.fetch(
+        new Request(new URL(CATALOG, request.url)),
+      );
+      if (!asset.ok)
+        return new Response("Search is unavailable.", {
+          status: 503,
+          headers: { "Cache-Control": "no-store" },
+        });
+      const { records, shell, headers }: SearchSiteData = await asset.json();
+      search = guideSearch(catalogFor(records), shell, headers);
+    }
+    return search(request, env);
   };
 }

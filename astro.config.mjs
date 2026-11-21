@@ -10,7 +10,7 @@ import { codeThemes } from "./src/lib/code-themes.mjs";
 export default defineConfig({
   site: "https://whosonfirst.ai",
   // Keep the Worker bundle even though every Astro route is prerendered.
-  // The only production entrypoint is src/worker.ts.
+  // What is deployed is src/site.ts: the page handler and search.
   output: "server",
   integrations: [
     mdx(),
@@ -40,5 +40,8 @@ export default defineConfig({
   adapter: cloudflare({
     imageService: "passthrough",
     prerenderEnvironment: "node",
+    // `astro preview` runs the built Worker on this machine, with no account.
+    // A search then finds its AI Search binding empty, and says so.
+    remoteBindings: false,
   }),
 });

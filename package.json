@@ -27,9 +27,7 @@
     "implementations:check": "node scripts/implementation-check.mjs",
     "generate-types": "cf workers types",
     "deploy": "cf deploy",
-    "search:sync": "node scripts/sync-search.mjs",
-    "search:build": "npm --prefix workers/search run build",
-    "search:preview:build": "CLOUDFLARE_PREVIEW_BUILD=true cf build && node --test test/preview/search.test.mjs"
+    "search:sync": "node scripts/sync-search.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
@@ -54,6 +52,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
     "@mmds/wasm": "2.6.1",
+    "@types/node": "^22.20.5",
     "axe-core": "4.14.0",
     "cf": "^1.0.0-rc.1",
     "playwright": "1.63.0"

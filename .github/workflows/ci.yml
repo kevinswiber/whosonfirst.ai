@@ -69,15 +69,16 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Built with search, as the site is deployed. The two values are local
+      # fixtures, not the deployed limiter. Without them the site builds
+      # without search, which is what a contributor's own build is.
       - name: Build
-        run: npm run build
-      - name: Build the search Worker from the same pages
         env:
-          SEARCH_RATE_NAMESPACE: "1" # Local build fixture
-          SEARCH_RATE_LIMIT: "5" # Local build fixture, not the deployed limit
-        run: |
-          npm run search:sync -- --dry-run
-          npm run search:build
+          SEARCH_RATE_NAMESPACE: "1"
+          SEARCH_RATE_LIMIT: "5"
+        run: npm run build
+      - name: Check the passages the build would upload
+        run: npm run search:sync -- --dry-run
       # The checks run headless, so the headless shell is all they need, and the
       # runner's image already has the libraries it links against. With
       # `--with-deps` the step also asked apt for nine font packages: fonts for
@@ -87,8 +88,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --only-shell chromium
       - name: Rendered checks
-        run: npm run check:rendered
-      - name: Build and test the site’s Cloudflare branch preview
         env:
-          SEARCH_RATE_LIMIT: "5" # Local build fixture, not the deployed limit
-        run: npm run search:preview:build
+          SEARCH_RATE_NAMESPACE: "1" # As the build above had them
+          SEARCH_RATE_LIMIT: "5"
+        run: npm run check:rendered
