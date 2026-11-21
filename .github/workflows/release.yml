@@ -22,6 +22,10 @@ on:
         description: Index the passages before deploying. Turn off only to release the pages while AI Search cannot be reached.
         type: boolean
         default: true
+      force:
+        description: Replace what was set on the Worker in the dashboard. Turn on only after a run has stopped at the deployment and named a difference you mean to undo.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,6 +44,9 @@ jobs:
       ASTRO_TELEMETRY_DISABLED: "1"
       # Whether this run indexes. A push always does.
       INDEX: ${{ github.event_name == 'push' || inputs.index }}
+      # Whether the build may replace settings made in the dashboard. A push
+      # never may: the deployment stops and names the difference.
+      FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
       SEARCH_RATE_NAMESPACE: ${{ vars.SEARCH_RATE_NAMESPACE }}
       # A secret, so the public run log masks it.
       SEARCH_RATE_LIMIT: ${{ secrets.SEARCH_RATE_LIMIT }}

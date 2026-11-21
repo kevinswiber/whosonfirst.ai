@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   answeredBy,
+  deployArguments,
   failureReport,
   missingFromSearch,
   releasable,
@@ -22,6 +23,17 @@ test("a release needs a build made from a commit, with the digest of its passage
     { ...marker, revision: "b".repeat(63) },
   ])
     assert.equal(releasable(other), false);
+});
+
+test("a deployment replaces what was set in the dashboard only when it is told to", () => {
+  const commit = "a".repeat(40);
+  assert.deepEqual(deployArguments(commit, false), [
+    "deploy",
+    "--prebuilt",
+    "--message",
+    `Guide at ${commit}`,
+  ]);
+  assert.deepEqual(deployArguments(commit, true).slice(-1), ["--force"]);
 });
 
 test("a failed deployment says what the CLI said, without what names the account", () => {
