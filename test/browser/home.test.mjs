@@ -408,6 +408,34 @@ describe("header by width", () => {
     });
   }
 
+  // Where the bar has more room than it needs, the name stands further from
+  // the sections and the search field takes some of the rest. Both stop
+  // growing where the bar does.
+  test("with room to spare, the name stands further off and search is wider", async (t) => {
+    const space = async (width, options) => {
+      const got = await seen(await at(t, width, "/", options));
+      return {
+        name: got.nav.left - got.wordmark.right,
+        field: got.search.right - got.search.left,
+        air: got.search.left - got.lastLink,
+      };
+    };
+    const tight = await space(1137);
+    const roomy = await space(1440);
+    const wide = await space(1860);
+    assert.ok(
+      roomy.name >= tight.name + 12 && roomy.field >= tight.field + 48,
+      JSON.stringify({ tight, roomy }),
+    );
+    // search is still set apart from the sections
+    assert.ok(roomy.air >= 64, JSON.stringify(roomy));
+    assert.deepEqual(wide, roomy);
+    // The field has a width of its own there, so it does not grow, and move
+    // its near edge, when the script adds the shortcut's keys.
+    const unscripted = await space(1440, { javaScriptEnabled: false });
+    assert.equal(unscripted.field, roomy.field);
+  });
+
   // Type is drawn wider on some systems than on the one the tests run on, and
   // a layout that only just fits here would lay search over a link there. The
   // field is made to give way first. Here every word in the header is set

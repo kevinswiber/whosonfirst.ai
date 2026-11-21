@@ -1060,6 +1060,22 @@ const preloadFonts = [plexSans400, plexSans600, plexMono500, plexMono600];
       margin-left: 1.1rem;
     }
   }
+  /* With room to spare, the name stands further from the sections and the
+     search field takes some of the rest. Both grow with the bar from the
+     width at which every section first fits at ease, so nothing moves there.
+     The field has a width of its own here, and keeps it when the script adds
+     the shortcut's keys. */
+  @media (width > 71rem) {
+    .brand {
+      margin-right: clamp(1.2rem, calc(1.2rem + (100vw - 1136px) * 0.11), 2.3rem);
+    }
+    .search-launch {
+      flex-basis: clamp(13rem, calc(13rem + (100vw - 1136px) * 0.39), 17rem);
+    }
+    .launch-key {
+      margin-left: auto;
+    }
+  }
   /* just enough room: the links close up and the shortcut's keys go unsaid */
   @media (63rem < width <= 71rem) {
     .brand {
