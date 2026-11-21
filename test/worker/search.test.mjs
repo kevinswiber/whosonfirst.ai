@@ -21,8 +21,8 @@ const hasSearch = Boolean(
 
 let site;
 before(async () => {
-  // A cap no run of these tests reaches: the count is kept between runs.
-  site = await startWorker({ SEARCH_DAILY_BUDGET: "1000000" });
+  // The day's cap. The runtime starts with nothing counted against it.
+  site = await startWorker({ SEARCH_DAILY_BUDGET: "100" });
 });
 after(async () => {
   await site?.stop();

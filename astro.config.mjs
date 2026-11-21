@@ -43,5 +43,16 @@ export default defineConfig({
     // `astro preview` runs the built Worker on this machine, with no account.
     // A search then finds its AI Search binding empty, and says so.
     remoteBindings: false,
+    // The checks start one runtime for each file in test/worker/, at the same
+    // moment, and two cannot share what one alone takes. Both would keep the
+    // Worker’s state in .cloudflare/state, where each locks the other out of
+    // the daily count’s storage. Both would open a debugger on port 9229, the
+    // first that looks free to each. Either way one of them answers every
+    // request with an error. So a runtime started by the checks keeps its
+    // state in memory and opens no debugger.
+    ...(process.env.WORKER_UNDER_TEST === "1" && {
+      persistState: false,
+      inspectorPort: false,
+    }),
   }),
 });
