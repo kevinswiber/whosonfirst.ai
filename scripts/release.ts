@@ -117,11 +117,14 @@ export async function answeredBy(
 
 /**
  * What the CLI said when it failed, fit for a public log: its last lines,
- * with what names the account taken out. A deployment that fails and says
- * nothing cannot be put right, and the log is all a run leaves behind.
+ * with what names the account taken out, and the search limit, which the
+ * CLI lists with the Worker’s bindings and the release keeps out of the log.
+ * A deployment that fails and says nothing cannot be put right, and the log
+ * is all a run leaves behind.
  */
 export function failureReport(output: string): string {
   return stripVTControlCharacters(output)
+    .replace(/\d+ requests\/\d+s/g, "<limit>")
     .replace(/\b[0-9a-f]{32}\b/gi, "<id>")
     .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "<address>")
     .split("\n")

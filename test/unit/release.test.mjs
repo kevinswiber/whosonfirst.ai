@@ -47,6 +47,7 @@ test("a failed deployment says what the CLI said, without what names the account
       "",
       `  GET /accounts/${id}/workers/services/guide [code: 10000]`,
       "  Authentication error for someone@example.com",
+      "|  env.SEARCH_LIMITER (12 requests/60s)      Rate Limit",
     ].join("\n"),
   );
   assert.equal(
@@ -55,6 +56,7 @@ test("a failed deployment says what the CLI said, without what names the account
       "✘ [ERROR] A request to the Cloudflare API failed.",
       "  GET /accounts/<id>/workers/services/guide [code: 10000]",
       "  Authentication error for <address>",
+      "|  env.SEARCH_LIMITER (<limit>)      Rate Limit",
     ].join("\n"),
   );
   // The end of a long report, where the error is.

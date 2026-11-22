@@ -5,6 +5,7 @@ import {
   secondsUntilTomorrow,
   spend,
 } from "../../src/search/budget.ts";
+import { searchLimit } from "../../src/search/limit.ts";
 import {
   catalogFor,
   guideSearch,
@@ -455,4 +456,29 @@ test("a search shows up to eight results, from a larger set of passages", () => 
     24,
     "more passages are asked for than shown: some are dropped or share a page",
   );
+});
+
+test("the limit for an address is read as a number, alone or after a label that keeps it out of a public log", () => {
+  assert.equal(searchLimit("12"), 12);
+  assert.equal(searchLimit("1"), 1);
+  // As a secret of a public log: a label of the operator's own, then the number.
+  assert.equal(searchLimit("guide-limit-4f9c2e7a1b:12"), 12);
+  for (const written of [
+    undefined,
+    "",
+    "0",
+    "020",
+    "-5",
+    "2.5",
+    "many",
+    "label:",
+    "label:0",
+    "label:many",
+    "a:b:12",
+    "label: 12",
+    ":12",
+    "12:label",
+    "9".repeat(20),
+  ])
+    assert.equal(searchLimit(written), undefined, String(written));
 });
