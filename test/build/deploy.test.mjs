@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { WORKER_BUILD } from "../../scripts/built-site.mjs";
 import { missingFromSearch } from "../../scripts/release.ts";
+import { searchLimit } from "../../src/search/limit.ts";
 import { exists, root } from "../support/site.mjs";
 
 const config = JSON.parse(
@@ -68,7 +69,7 @@ test("search is set up where the site is built, and no account's identifiers are
   assert.deepEqual(config.env.SEARCH_LIMITER, {
     type: "rate-limit",
     namespace,
-    simple: { limit: Number(limit), period: 60 },
+    simple: { limit: searchLimit(limit), period: 60 },
   });
   assert.equal(config.env.AI_SEARCH.namespace, SEARCH_NAMESPACE);
   assert.equal(config.env.SEARCH_INSTANCE.value, SEARCH_INSTANCE);

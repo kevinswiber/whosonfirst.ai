@@ -2,6 +2,7 @@ import * as astro from "@astrojs/cloudflare/entrypoints/server" with {
   type: "cf-worker",
 };
 import { bindings, defineConfig, exports } from "cf/config";
+import { searchLimit } from "./src/search/limit.ts";
 import * as site from "./src/site.ts" with { type: "cf-worker" };
 
 // Search is set up where the site is built and not written here: an account’s
@@ -11,15 +12,17 @@ import * as site from "./src/site.ts" with { type: "cf-worker" };
 // of the place that builds it.
 function searchSettings() {
   const namespace = process.env.SEARCH_RATE_NAMESPACE;
-  const limit = process.env.SEARCH_RATE_LIMIT;
-  if (!namespace && !limit) return undefined;
+  const written = process.env.SEARCH_RATE_LIMIT;
+  if (!namespace && !written) return undefined;
   if (!namespace || !/^\d+$/.test(namespace))
     throw new Error(
       "Set SEARCH_RATE_NAMESPACE to the numeric namespace allocated to the search limiter.",
     );
-  if (!limit || !/^[1-9]\d*$/.test(limit))
+  // The number, or a label, a colon and the number: src/search/limit.ts.
+  const limit = searchLimit(written);
+  if (limit === undefined)
     throw new Error(
-      "Set SEARCH_RATE_LIMIT to the number of searches one address may make in a minute.",
+      "Set SEARCH_RATE_LIMIT to the number of searches one address may make in a minute, alone or after a label and a colon.",
     );
   return {
     AI_SEARCH: bindings.aiSearchNamespace({
@@ -30,7 +33,7 @@ function searchSettings() {
     ),
     SEARCH_LIMITER: bindings.rateLimit({
       namespace,
-      simple: { limit: Number(limit), period: 60 },
+      simple: { limit, period: 60 },
     }),
     // How many searches may reach AI Search in a UTC day. SearchBudget counts
     // them, and the cap is a secret of the Worker, and of a preview.
