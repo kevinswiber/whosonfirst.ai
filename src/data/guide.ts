@@ -197,7 +197,7 @@ export const questions: Question[] = [
   // ── more questions ──
   // Each asks a fact that a reason in the rules below already depends on:
   // whether the work goes further, whether access has to end with a session,
-  // whether there is a client certificate, whether a gateway ends TLS, whether
+  // whether there is a client certificate, whether a gateway terminates TLS, whether
   // the agent buys things. A reader who leaves them unanswered gets the whole
   // list; one who answers can take out what does not apply.
   {
@@ -265,7 +265,7 @@ export const questions: Question[] = [
       {
         value: "yes",
         label: "Yes",
-        brief: "Ends TLS on the way",
+        brief: "Terminates TLS on the way",
         hint: "An API gateway, an MCP gateway, an inspection proxy",
       },
       {
