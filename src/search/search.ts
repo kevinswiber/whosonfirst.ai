@@ -39,6 +39,7 @@ export type SearchResult = Pick<
 };
 
 export interface SearchSiteData {
+  flowTitles?: Record<string, string>;
   records: PassageRecord[];
   shell: string;
   headers: Record<string, string>;
@@ -95,7 +96,11 @@ const nameKey = (name: string) => {
   return number ? `rfc ${number}` : plainQuestion(name).toLowerCase();
 };
 
-export function catalogFor(records: PassageRecord[]) {
+export function catalogFor(
+  records: PassageRecord[],
+  flowTitles: Record<string, string> = {},
+) {
+  const pageNames: { name: string; record: PassageRecord }[] = [];
   const byKey = new Map<string, PassageRecord>();
   const byName = new Map<string, PassageRecord[]>();
   for (const record of records) {
@@ -104,18 +109,34 @@ export function catalogFor(records: PassageRecord[]) {
       throw new Error("Invalid or duplicate search record");
     byKey.set(key, record);
     const names = new Set(record.aliases.map(nameKey));
-    if (!href.includes("#")) names.add(nameKey(record.title));
+    if (!href.includes("#")) {
+      names.add(nameKey(record.title));
+      if (record.type === "Flow") {
+        const slug = /^\/flows\/([^/]+)\/$/.exec(href)?.[1];
+        if (slug) names.add(nameKey(slug.replaceAll("-", " ")));
+        if (flowTitles[href]) names.add(nameKey(flowTitles[href]));
+      }
+      const acronym = /\(([A-Z][A-Z0-9.-]+)\)$/.exec(record.title)?.[1];
+      if (acronym) names.add(nameKey(acronym));
+      for (const name of names) pageNames.push({ name, record });
+    }
     for (const name of names) {
       const matches = byName.get(name);
       if (matches) matches.push(record);
       else byName.set(name, [record]);
     }
   }
-  return { byKey, byName };
+  // Among partial title matches, the shortest name is usually the most specific.
+  pageNames.sort(
+    (a, b) =>
+      a.name.length - b.name.length ||
+      a.record.href.localeCompare(b.record.href),
+  );
+  return { byKey, byName, pageNames };
 }
 
 // Only a complete published name takes this path. Keep related reading below
-// the named entries, with matches in headings before mentions in the prose.
+// the named entries to pages named for the term, or passages citing that RFC.
 export function namedResults(
   catalog: ReturnType<typeof catalogFor>,
   query: string,
@@ -130,14 +151,13 @@ export function namedResults(
     `(?<![\\p{L}\\p{N}])${literal}(?![\\p{L}\\p{N}])`,
     "iu",
   );
-  const headings: PassageRecord[] = [],
-    prose: PassageRecord[] = [];
-  for (const record of catalog.byKey.values()) {
-    if (mentions.test(record.title) || mentions.test(record.section))
-      headings.push(record);
-    else if (mentions.test(record.text)) prose.push(record);
-  }
-  return displayedResults([...named, ...headings, ...prose]);
+  const pages = catalog.pageNames
+    .filter(({ name }) => mentions.test(name))
+    .map(({ record }) => record);
+  const citations = number
+    ? [...catalog.byKey.values()].filter((record) => mentions.test(record.text))
+    : [];
+  return displayedResults([...named, ...pages, ...citations]);
 }
 
 export function rankedResults(
@@ -258,7 +278,7 @@ export function searchRequest(
       retrieval: {
         retrieval_type: mode,
         fusion_method: "rrf" as const,
-        max_num_results: 16,
+        max_num_results: 24,
         match_threshold: MATCH_THRESHOLD,
         metadata_only: !rerank,
       },
@@ -452,8 +472,9 @@ export function siteSearch() {
           status: 503,
           headers: { "Cache-Control": "no-store" },
         });
-      const { records, shell, headers }: SearchSiteData = await asset.json();
-      search = guideSearch(catalogFor(records), shell, headers);
+      const { records, flowTitles, shell, headers }: SearchSiteData =
+        await asset.json();
+      search = guideSearch(catalogFor(records, flowTitles), shell, headers);
     }
     return search(request, env);
   };

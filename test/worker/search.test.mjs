@@ -95,6 +95,8 @@ test("the running Worker serves a named protocol with no AI Search call", {
   assert.equal(answer.status, 200);
   assert.match(answer.headers.get("server-timing"), /^limit;dur=\d+$/);
   const { results } = await answer.json();
-  assert.equal(results[0].href, "/flows/dpop/");
-  assert.ok(results.some(({ href }) => href === "/standards/rfc9449/"));
+  assert.deepEqual(
+    new Set(results.slice(0, 3).map((r) => r.href)),
+    new Set(["/flows/dpop/", "/glossary/#dpop", "/standards/rfc9449/"]),
+  );
 });

@@ -4,7 +4,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
-import { CATALOG, siteSearch } from "../../src/search/search.ts";
+import {
+  CATALOG,
+  catalogFor,
+  namedResults,
+  siteSearch,
+} from "../../src/search/search.ts";
 import { file } from "../support/site.mjs";
 
 const marker = JSON.parse(file("search/release.json"));
@@ -16,6 +21,33 @@ test("the build's release marker names the commit it was made from", () => {
     execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
   );
   assert.match(marker.revision, /^[0-9a-f]{64}$/);
+});
+
+test("short lookups lead to the pages named for the subject", () => {
+  const { records, flowTitles } = JSON.parse(file(CATALOG.slice(1)));
+  const catalog = catalogFor(records, flowTitles);
+  for (const [query, wanted] of [
+    ["token exchange", ["/flows/token-exchange/", "/standards/rfc8693/"]],
+    ["MCP", ["/flows/mcp-authorization/", "/standards/mcp-authorization/"]],
+    ["JWT", ["/standards/rfc7519/"]],
+    ["mTLS", ["/flows/oauth-mtls/"]],
+    [flowTitles["/flows/oauth-mtls/"], ["/flows/oauth-mtls/"]],
+  ]) {
+    const first = namedResults(catalog, query)
+      .slice(0, 4)
+      .map((r) => r.href);
+    for (const href of wanted)
+      assert.ok(first.includes(href), `${query} → ${href}`);
+  }
+  for (const term of ["scope", "audience"]) {
+    const results = namedResults(catalog, term);
+    assert.ok(results.some((r) => r.href === `/glossary/#${term}`));
+    assert.ok(
+      results.every(
+        (r) => !r.href.includes("#") || r.href === `/glossary/#${term}`,
+      ),
+    );
+  }
 });
 
 test("a search is answered from the build's own catalog, read once, and carries its release", async () => {

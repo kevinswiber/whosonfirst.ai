@@ -489,7 +489,7 @@ test("a search shows up to eight results, from a larger set of passages", () => 
   assert.equal(
     searchRequest("how does a token change hands").ai_search_options.retrieval
       .max_num_results,
-    16,
+    24,
     "more passages are asked for than shown: some are dropped or share a page",
   );
 });

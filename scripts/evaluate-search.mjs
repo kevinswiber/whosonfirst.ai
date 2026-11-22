@@ -65,13 +65,13 @@ async function run() {
     encodeURIComponent(instance),
     "search",
   ].join("/");
-  const { revision, records } = JSON.parse(
+  const { revision, records, flowTitles } = JSON.parse(
     await readFile(
       new URL("../.astro/search/manifest.json", import.meta.url),
       "utf8",
     ),
   );
-  const catalog = catalogFor(records);
+  const catalog = catalogFor(records, flowTitles);
   const rows = [];
   for (const [i, { query }] of questions.entries()) {
     const row = { query };
