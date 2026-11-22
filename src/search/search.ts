@@ -39,6 +39,7 @@ export type SearchResult = Pick<
 };
 
 export interface SearchSiteData {
+  flowTitles?: Record<string, string>;
   records: PassageRecord[];
   shell: string;
   headers: Record<string, string>;
@@ -90,21 +91,49 @@ const escapeHTML = (value: string) =>
 const rfcNumber = (value: string) =>
   /^rfc[\s-]*(\d+)$/i.exec(value.trim())?.[1];
 
-export function catalogFor(records: PassageRecord[]) {
+const nameKey = (name: string) => {
+  const number = rfcNumber(name);
+  return number ? `rfc ${number}` : plainQuestion(name).toLowerCase();
+};
+
+export function catalogFor(
+  records: PassageRecord[],
+  flowTitles: Record<string, string> = {},
+) {
   const byKey = new Map<string, PassageRecord>();
-  const byRFC = new Map<string, PassageRecord>();
+  const byName = new Map<string, PassageRecord[]>();
   for (const record of records) {
     const { key, href } = record;
     if (!/^\/(?!\/)/.test(href) || /[\\\s<>?]/.test(href) || byKey.has(key))
       throw new Error("Invalid or duplicate search record");
     byKey.set(key, record);
-    if (!/^\/standards\/[^/#]+\/$/.test(href)) continue;
-    for (const alias of [record.title, ...record.aliases]) {
-      const number = rfcNumber(alias);
-      if (number && !byRFC.has(number)) byRFC.set(number, record);
+    const names = new Set(record.aliases.map(nameKey));
+    if (!href.includes("#")) {
+      names.add(nameKey(record.title));
+      if (record.type === "Flow") {
+        const slug = /^\/flows\/([^/]+)\/$/.exec(href)?.[1];
+        if (slug) names.add(nameKey(slug.replaceAll("-", " ")));
+        if (flowTitles[href]) names.add(nameKey(flowTitles[href]));
+      }
+      const acronym = /\(([A-Z][A-Z0-9.-]+)\)$/.exec(record.title)?.[1];
+      if (acronym) names.add(nameKey(acronym));
+    }
+    for (const name of names) {
+      const matches = byName.get(name);
+      if (matches) matches.push(record);
+      else byName.set(name, [record]);
     }
   }
-  return { byKey, byRFC };
+  return { byKey, byName };
+}
+
+// The entries a question names exactly: a page's title, a flow's short name
+// or search title, a published alias or an RFC number.
+export function namedEntries(
+  catalog: ReturnType<typeof catalogFor>,
+  query: string,
+) {
+  return catalog.byName.get(nameKey(query)) ?? [];
 }
 
 export function rankedResults(
@@ -116,8 +145,9 @@ export function rankedResults(
   const add = (record: PassageRecord | undefined) => {
     if (record && !records.has(record.href)) records.set(record.href, record);
   };
-  const number = rfcNumber(query);
-  if (number) add(catalog.byRFC.get(number));
+  // What the question names comes first, then what AI Search found for it.
+  const named = namedEntries(catalog, query);
+  for (const record of named) add(record);
   for (const chunk of chunks) {
     const { item } = chunk;
     if (!item || !closeEnough(chunk)) continue;
@@ -134,7 +164,7 @@ export function rankedResults(
   const candidates = [...records.values()];
   // A single alphanumeric identifier can have a vector neighbour even when it
   // never appears in the guide. Allow common punctuation variants such as X.509.
-  if (/^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
+  if (!named.length && /^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
     const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
     const id = normalize(query);
     const found = candidates.some((r) =>
@@ -413,8 +443,9 @@ export function siteSearch() {
           status: 503,
           headers: { "Cache-Control": "no-store" },
         });
-      const { records, shell, headers }: SearchSiteData = await asset.json();
-      search = guideSearch(catalogFor(records), shell, headers);
+      const { records, flowTitles, shell, headers }: SearchSiteData =
+        await asset.json();
+      search = guideSearch(catalogFor(records, flowTitles), shell, headers);
     }
     return search(request, env);
   };

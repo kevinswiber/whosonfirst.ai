@@ -4,7 +4,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
-import { CATALOG, siteSearch } from "../../src/search/search.ts";
+import {
+  CATALOG,
+  catalogFor,
+  namedEntries,
+  siteSearch,
+} from "../../src/search/search.ts";
 import { file } from "../support/site.mjs";
 
 const marker = JSON.parse(file("search/release.json"));
@@ -16,6 +21,23 @@ test("the build's release marker names the commit it was made from", () => {
     execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
   );
   assert.match(marker.revision, /^[0-9a-f]{64}$/);
+});
+
+test("a name people type for a flow, standard or term finds its entries", () => {
+  const { records, flowTitles } = JSON.parse(file(CATALOG.slice(1)));
+  const catalog = catalogFor(records, flowTitles);
+  for (const [query, wanted] of [
+    ["token exchange", ["/flows/token-exchange/", "/standards/rfc8693/"]],
+    ["credential broker", ["/flows/credential-broker/"]],
+    ["DPoP", ["/flows/dpop/", "/glossary/#dpop", "/standards/rfc9449/"]],
+    ["RFC 8705", ["/standards/rfc8705/"]],
+    ["Scope", ["/glossary/#scope"]],
+    [flowTitles["/flows/oauth-mtls/"], ["/flows/oauth-mtls/"]],
+  ]) {
+    const found = namedEntries(catalog, query).map((r) => r.href);
+    for (const href of wanted)
+      assert.ok(found.includes(href), `${query} → ${href}`);
+  }
 });
 
 test("a search is answered from the build's own catalog, read once, and carries its release", async () => {
@@ -51,7 +73,7 @@ test("a search is answered from the build's own catalog, read once, and carries 
   const search = siteSearch();
   for (const json of [true, false]) {
     const request = new Request(
-      `${origin}/search?q=proof+of+possession${json ? "&format=json" : ""}`,
+      `${origin}/search?q=How+does+a+client+prove+possession${json ? "&format=json" : ""}`,
       { headers: { "Sec-Fetch-Site": "same-origin" } },
     );
     const response = await search(request, env);

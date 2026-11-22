@@ -293,7 +293,14 @@ export function searchManifest(root) {
     (p) => p.indexed && p.markdown && p.path !== "/search/",
   );
   const records = pages.flatMap(passages);
-  return { revision: hash(JSON.stringify(records)), records };
+  // The rendered document title carries the flow's searchTitle. Keep these
+  // local lookup names separate from the passages uploaded to AI Search.
+  const flowTitles = Object.fromEntries(
+    pages
+      .filter((p) => /^\/flows\/[^/]+\/$/.test(p.path))
+      .map((p) => [p.path, p.name]),
+  );
+  return { revision: hash(JSON.stringify(records)), records, flowTitles };
 }
 
 // The browser only needs named destinations. Descriptive queries still go to

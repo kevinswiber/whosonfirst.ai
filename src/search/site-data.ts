@@ -11,15 +11,16 @@ import {
 interface Manifest {
   records: PassageRecord[];
   revision: string;
+  flowTitles: Record<string, string>;
 }
 
 // What a search is answered from: the rendered form, the passages and the
 // response headers of one build. The build writes it beside the pages.
 export function searchSiteData(
   assets: string,
-  { records, revision }: Manifest,
+  { records, revision, flowTitles }: Manifest,
 ): SearchSiteData {
-  catalogFor(records);
+  catalogFor(records, flowTitles);
   const shell = readFileSync(join(assets, "search/index.html"), "utf8");
   validateShell(shell);
   const policy = readFileSync(join(assets, "_headers"), "utf8")
@@ -46,5 +47,5 @@ export function searchSiteData(
     throw new Error(
       "The release marker and the passages are from different builds.",
     );
-  return { records, shell, headers };
+  return { records, flowTitles, shell, headers };
 }

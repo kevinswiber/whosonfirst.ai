@@ -9,6 +9,7 @@ import { searchLimit } from "../../src/search/limit.ts";
 import {
   catalogFor,
   guideSearch,
+  namedEntries,
   plainQuestion,
   rankedResults,
   searchAddress,
@@ -109,6 +110,57 @@ test("the Worker pins the standard for an exact RFC and serves only current, uni
     "type",
   ]);
 });
+test("a question that is exactly a name puts its entries first, and AI Search still finds the rest", async () => {
+  const broker = {
+    ...records[1],
+    key: "broker.md",
+    href: "/flows/credential-broker/",
+    title: "Credential injection at the egress proxy",
+    section: "",
+    digest: "c",
+  };
+  const lookup = catalogFor([...records, broker], {
+    "/flows/credential-broker/":
+      "Credential broker: injecting keys at the proxy",
+  });
+  let asked = 0;
+  const env = envFor(async () => {
+    asked++;
+    // AI Search finds other passages, and the named page further down.
+    return {
+      chunks: [
+        chunk("flow.md", "b"),
+        chunk("proof.md", "a"),
+        chunk("broker.md", "c"),
+      ],
+    };
+  });
+  const search = guideSearch(lookup, shell, {});
+  for (const query of [
+    "credential broker",
+    "Credential Broker",
+    "Credential broker: injecting keys at the proxy",
+  ]) {
+    const response = await search(submit(query), env);
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      (await response.json()).results.map((r) => r.href),
+      [broker.href, records[1].href, records[0].href],
+      query,
+    );
+    assert.match(
+      response.headers.get("Server-Timing"),
+      /^limit;dur=\d+, budget;dur=\d+, search;dur=\d+$/,
+    );
+  }
+  assert.equal(asked, 3, "a named search is still a search");
+  assert.deepEqual(namedEntries(lookup, "credential brokers"), []);
+  assert.deepEqual(
+    namedEntries(lookup, "how does a credential broker work?"),
+    [],
+  );
+});
+
 test("the native form gets escaped page markup, a useful status and a way to search again", async () => {
   validateShell(shell);
   const response = await handle(
