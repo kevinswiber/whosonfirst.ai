@@ -135,6 +135,12 @@ export function catalogFor(
   return { byKey, byName, pageNames };
 }
 
+function citationPriority(record: PassageRecord) {
+  if (record.type === "Flow" || record.type === "Comparison") return 0;
+  if (record.type !== "Implementation evidence") return 1;
+  return record.href.endsWith("#field-scope") ? 3 : 2;
+}
+
 // Only a complete published name takes this path. Keep related reading below
 // the named entries to pages named for the term, or passages citing that RFC.
 export function namedResults(
@@ -155,7 +161,9 @@ export function namedResults(
     .filter(({ name }) => mentions.test(name))
     .map(({ record }) => record);
   const citations = number
-    ? [...catalog.byKey.values()].filter((record) => mentions.test(record.text))
+    ? [...catalog.byKey.values()]
+        .filter((record) => mentions.test(record.text))
+        .sort((a, b) => citationPriority(a) - citationPriority(b))
     : [];
   return displayedResults([...named, ...pages, ...citations]);
 }

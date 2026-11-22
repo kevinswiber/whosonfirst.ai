@@ -148,6 +148,39 @@ test("exact names use the catalog after the address limit, without spending a pr
   );
 });
 
+test("an RFC lookup puts citing flows and comparisons before implementation records and their scope notes", () => {
+  const cite = (href, type) => ({
+    ...records[1],
+    href,
+    key: href,
+    type,
+    text: "See RFC 9449.",
+  });
+  const scope = cite(
+    "/implementations/example/#field-scope",
+    "Implementation evidence",
+  );
+  const product = cite(
+    "/implementations/example/#product",
+    "Implementation evidence",
+  );
+  const guide = cite("/concepts/#proof", "Guide");
+  const flow = cite("/flows/example/#proof", "Flow");
+  const comparison = cite("/compare/example/#points", "Comparison");
+  const catalog = catalogFor([
+    scope,
+    product,
+    guide,
+    flow,
+    comparison,
+    records[0],
+  ]);
+  assert.deepEqual(
+    namedResults(catalog, "RFC 9449").map((r) => r.href),
+    [records[0], flow, comparison, guide, product, scope].map((r) => r.href),
+  );
+});
+
 test("the native form gets escaped page markup, a useful status and a way to search again", async () => {
   validateShell(shell);
   const response = await handle(
