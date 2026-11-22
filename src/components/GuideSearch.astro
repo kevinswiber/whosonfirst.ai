@@ -156,6 +156,12 @@ const examples = [
         quick.hidden = count === 0 && (searchableLength(draft) >= 3 || results.children.length > 0);
         quickCount.textContent = count ? `${count} quick ${count === 1 ? 'match' : 'matches'}.` : 'No quick matches.';
       };
+      // Results that arrived while the reader was choosing are grouped once
+      // they move away, so a quick link the results repeat is not left twice.
+      quick.addEventListener('pointerleave', groupQuickLinks);
+      quick.addEventListener('focusout', (event) => {
+        if (!quick.contains(event.relatedTarget as Node | null)) groupQuickLinks();
+      });
 
       const showQuick = async (query: string, version: number) => {
         try {

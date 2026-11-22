@@ -165,6 +165,45 @@ test("a short term gives local matches, followed by one remote query after typin
   await ctx.close();
 });
 
+test("a quick match the results repeat stays while the reader is on it, then collapses when they move away", async () => {
+  const ctx = await site.context();
+  const page = await ctx.newPage();
+  await open(page, site.url("/search/"));
+  const input = page.getByRole("searchbox");
+  const quick = page.locator(".quick-matches");
+  const repeated = quick.locator('a[href$="/standards/rfc9449/"]:visible');
+  // A question the box has not asked yet, so each one sends a search.
+  for (const [reader, question] of [
+    ["pointer", exampleName],
+    ["keyboard", "DPoP"],
+  ]) {
+    const release = Promise.withResolvers();
+    await page.unroute(fullSearch);
+    await page.route(fullSearch, async (route) => {
+      await release.promise;
+      await route.fulfill({ json: { results: [passage] } });
+    });
+    await input.fill("");
+    const requested = page.waitForRequest((r) => fullSearch(r.url()));
+    await input.fill(question);
+    await repeated.waitFor();
+    await requested;
+    if (reader === "pointer") await repeated.hover();
+    else await repeated.focus();
+    release.resolve();
+    await page
+      .locator(".search-results")
+      .getByRole("link", { name: passage.title, exact: true })
+      .waitFor();
+    assert.equal(await repeated.count(), 1, `${reader}: left in place`);
+    if (reader === "pointer") await page.mouse.move(0, 0);
+    else await input.focus();
+    await repeated.waitFor({ state: "detached" });
+    assert.equal(await repeated.count(), 0, `${reader}: collapsed`);
+  }
+  await ctx.close();
+});
+
 test("each example searches immediately and clearing restores the examples", async () => {
   const ctx = await site.context({ viewport: { width: 320, height: 568 } });
   const page = await ctx.newPage();
