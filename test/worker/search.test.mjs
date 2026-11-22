@@ -60,7 +60,7 @@ test("a request for two questions is refused by this build, which is how a relea
 });
 
 test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", async () => {
-  const answer = await ask("/search?q=DPoP&format=json");
+  const answer = await ask("/search?q=How+does+DPoP+work&format=json");
   assert.equal(answer.status, 503);
   assert.equal(answer.headers.get("cache-control"), "no-store");
   assert.equal(answer.headers.get("x-robots-tag"), "noindex");
@@ -70,20 +70,31 @@ test("the Search entrypoint answers from this build's catalog, with the site's h
     assert.equal(answer.headers.get(name), SITE_HEADERS[name], name);
   assert.match((await answer.json()).error, /unavailable/);
 
-  const page = await ask("/search?q=DPoP");
+  const page = await ask("/search?q=How+does+DPoP+work");
   assert.equal(page.status, 503);
   const html = await page.text();
-  assert.match(html, /<input value="DPoP"/);
+  assert.match(html, /<input value="How does DPoP work"/);
   assert.match(html, /id="search-status-text"[^>]*>Search is temporarily/);
 });
 
 test("a search passes the limit for its address and is counted against the day before it is asked", {
   skip: !hasSearch && "this build has no search",
 }, async () => {
-  const answer = await ask("/search?q=token+exchange&format=json");
+  const answer = await ask("/search?q=How+do+I+exchange+a+token&format=json");
   assert.equal(answer.status, 503);
   assert.match(
     answer.headers.get("server-timing"),
     /^limit;dur=\d+, budget;dur=\d+, search;dur=\d+$/,
   );
+});
+
+test("the running Worker serves a named protocol with no AI Search call", {
+  skip: !hasSearch && "this build has no search",
+}, async () => {
+  const answer = await ask("/search?q=DPoP&format=json");
+  assert.equal(answer.status, 200);
+  assert.match(answer.headers.get("server-timing"), /^limit;dur=\d+$/);
+  const { results } = await answer.json();
+  assert.equal(results[0].href, "/flows/dpop/");
+  assert.ok(results.some(({ href }) => href === "/standards/rfc9449/"));
 });

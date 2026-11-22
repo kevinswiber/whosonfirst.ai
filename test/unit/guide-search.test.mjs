@@ -9,6 +9,7 @@ import { searchLimit } from "../../src/search/limit.ts";
 import {
   catalogFor,
   guideSearch,
+  namedResults,
   plainQuestion,
   rankedResults,
   searchAddress,
@@ -74,12 +75,13 @@ const envFor = (search, success = true) => ({
 });
 const chunk = (key, digest) => ({ item: { key, metadata: { digest } } });
 
-test("the Worker pins the standard for an exact RFC and serves only current, unique local passages", async () => {
+test("the Worker serves only current, unique local passages for a question", async () => {
   const env = envFor(async (input) => {
     assert.equal(input.ai_search_options.retrieval.retrieval_type, "hybrid");
-    assert.equal(input.messages[0].content, "RFC-9449");
+    assert.equal(input.messages[0].content, "How is the sender identified?");
     return {
       chunks: [
+        chunk("proof.md", "a"),
         chunk("unknown.md", "a"),
         chunk("flow.md", "stale"),
         chunk("flow.md", "b"),
@@ -88,7 +90,7 @@ test("the Worker pins the standard for an exact RFC and serves only current, uni
       ],
     };
   });
-  const response = await handle(submit("RFC-9449"), env);
+  const response = await handle(submit("How is the sender identified?"), env);
   assert.equal(response.status, 200);
   assert.equal(
     response.headers.get("Cache-Control"),
@@ -109,6 +111,43 @@ test("the Worker pins the standard for an exact RFC and serves only current, uni
     "type",
   ]);
 });
+test("exact names use the catalog after the address limit, without spending a provider query", async () => {
+  const lookup = catalogFor([
+    { ...records[1], text: "This flow follows RFC-9449 and RFC 94490." },
+    { ...records[1], key: "other.md", href: "/other/", text: "See RFC 94490." },
+    { ...records[0], aliases: ["RFC 9449", "X.509"] },
+  ]);
+  const search = guideSearch(lookup, shell, {});
+  const env = { ...envFor(), SEARCH_BUDGET: undefined, AI_SEARCH: undefined };
+  for (const query of ["rFc9449", "RFC-9449", "RFC ９４４９"]) {
+    const response = await search(submit(query), env);
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      (await response.json()).results.map((r) => r.href),
+      records.map((r) => r.href),
+    );
+    assert.match(response.headers.get("Server-Timing"), /^limit;dur=\d+$/);
+  }
+  const html = await search(submit("x.509", { html: true }), env);
+  assert.match(await html.text(), /1 result</);
+  assert.equal(namedResults(lookup, "Xx509"), undefined);
+  assert.equal(namedResults(lookup, "RFC 944"), undefined);
+  assert.equal(namedResults(lookup, "how does RFC 9449 work?"), undefined);
+  assert.equal(
+    (await search(submit("RFC9449"), envFor(undefined, false))).status,
+    429,
+  );
+  assert.equal(
+    (
+      await search(submit("RFC9449"), {
+        ...env,
+        SEARCH_DAILY_BUDGET: undefined,
+      })
+    ).status,
+    503,
+  );
+});
+
 test("the native form gets escaped page markup, a useful status and a way to search again", async () => {
   validateShell(shell);
   const response = await handle(
@@ -191,10 +230,7 @@ test("distinct pages lead before a second passage and unknown identifiers return
     [records[1].href, records[0].href, tracer.href],
   );
   assert.deepEqual(rankedResults(lookup, "XZ-9581", matches), []);
-  assert.equal(
-    rankedResults(lookup, "RFC9449", matches)[0].href,
-    records[0].href,
-  );
+  assert.equal(namedResults(lookup, "RFC9449")[0].href, records[0].href);
 });
 
 const memory = () => {
@@ -453,7 +489,7 @@ test("a search shows up to eight results, from a larger set of passages", () => 
   assert.equal(
     searchRequest("how does a token change hands").ai_search_options.retrieval
       .max_num_results,
-    24,
+    16,
     "more passages are asked for than shown: some are dropped or share a page",
   );
 });

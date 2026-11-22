@@ -7,6 +7,7 @@ import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import {
   catalogFor,
+  namedResults,
   rankedResults,
   searchRequest,
 } from "../src/search/search.ts";
@@ -74,6 +75,12 @@ async function run() {
   const rows = [];
   for (const [i, { query }] of questions.entries()) {
     const row = { query };
+    const named = namedResults(catalog, query);
+    if (named) {
+      for (const mode of requested) row[mode] = named.slice(0, 3);
+      rows.push(row);
+      continue;
+    }
     // Alternate request order to spread the effects of warm caches.
     for (const mode of i % 2 === 0 ? requested : requested.toReversed()) {
       const response = await fetch(endpoint, {

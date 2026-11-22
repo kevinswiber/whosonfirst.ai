@@ -51,7 +51,7 @@ test("a search is answered from the build's own catalog, read once, and carries 
   const search = siteSearch();
   for (const json of [true, false]) {
     const request = new Request(
-      `${origin}/search?q=proof+of+possession${json ? "&format=json" : ""}`,
+      `${origin}/search?q=How+does+a+client+prove+possession${json ? "&format=json" : ""}`,
       { headers: { "Sec-Fetch-Site": "same-origin" } },
     );
     const response = await search(request, env);

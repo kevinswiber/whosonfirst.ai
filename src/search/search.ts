@@ -90,21 +90,54 @@ const escapeHTML = (value: string) =>
 const rfcNumber = (value: string) =>
   /^rfc[\s-]*(\d+)$/i.exec(value.trim())?.[1];
 
+const nameKey = (name: string) => {
+  const number = rfcNumber(name);
+  return number ? `rfc ${number}` : plainQuestion(name).toLowerCase();
+};
+
 export function catalogFor(records: PassageRecord[]) {
   const byKey = new Map<string, PassageRecord>();
-  const byRFC = new Map<string, PassageRecord>();
+  const byName = new Map<string, PassageRecord[]>();
   for (const record of records) {
     const { key, href } = record;
     if (!/^\/(?!\/)/.test(href) || /[\\\s<>?]/.test(href) || byKey.has(key))
       throw new Error("Invalid or duplicate search record");
     byKey.set(key, record);
-    if (!/^\/standards\/[^/#]+\/$/.test(href)) continue;
-    for (const alias of [record.title, ...record.aliases]) {
-      const number = rfcNumber(alias);
-      if (number && !byRFC.has(number)) byRFC.set(number, record);
+    const names = new Set(record.aliases.map(nameKey));
+    if (!href.includes("#")) names.add(nameKey(record.title));
+    for (const name of names) {
+      const matches = byName.get(name);
+      if (matches) matches.push(record);
+      else byName.set(name, [record]);
     }
   }
-  return { byKey, byRFC };
+  return { byKey, byName };
+}
+
+// Only a complete published name takes this path. Keep related reading below
+// the named entries, with matches in headings before mentions in the prose.
+export function namedResults(
+  catalog: ReturnType<typeof catalogFor>,
+  query: string,
+) {
+  const named = catalog.byName.get(nameKey(query));
+  if (!named) return undefined;
+  const number = rfcNumber(query);
+  const literal = number
+    ? `rfc[\\s-]*${number}`
+    : query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const mentions = new RegExp(
+    `(?<![\\p{L}\\p{N}])${literal}(?![\\p{L}\\p{N}])`,
+    "iu",
+  );
+  const headings: PassageRecord[] = [],
+    prose: PassageRecord[] = [];
+  for (const record of catalog.byKey.values()) {
+    if (mentions.test(record.title) || mentions.test(record.section))
+      headings.push(record);
+    else if (mentions.test(record.text)) prose.push(record);
+  }
+  return displayedResults([...named, ...headings, ...prose]);
 }
 
 export function rankedResults(
@@ -112,12 +145,7 @@ export function rankedResults(
   query: string,
   chunks: SearchChunk[],
 ): SearchResult[] {
-  const records = new Map<string, PassageRecord>();
-  const add = (record: PassageRecord | undefined) => {
-    if (record && !records.has(record.href)) records.set(record.href, record);
-  };
-  const number = rfcNumber(query);
-  if (number) add(catalog.byRFC.get(number));
+  const candidates: PassageRecord[] = [];
   for (const chunk of chunks) {
     const { item } = chunk;
     if (!item || !closeEnough(chunk)) continue;
@@ -128,10 +156,9 @@ export function rankedResults(
       record &&
       (!item.metadata?.digest || item.metadata.digest === record.digest)
     )
-      add(record);
+      candidates.push(record);
   }
 
-  const candidates = [...records.values()];
   // A single alphanumeric identifier can have a vector neighbour even when it
   // never appears in the guide. Allow common punctuation variants such as X.509.
   if (/^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
@@ -145,12 +172,19 @@ export function rankedResults(
     if (!found) return [];
   }
 
+  return displayedResults(candidates);
+}
+
+function displayedResults(candidates: PassageRecord[]): SearchResult[] {
   // Show different destinations first. Keep a second relevant passage from
   // the same page when the search found fewer pages than the list can show.
   const first: PassageRecord[] = [],
     second: PassageRecord[] = [];
   const perPage = new Map<string, number>();
+  const seen = new Set<string>();
   for (const record of candidates) {
+    if (seen.has(record.href)) continue;
+    seen.add(record.href);
     const page = record.href.split("#")[0];
     const count = perPage.get(page) ?? 0;
     if (count === 0) first.push(record);
@@ -224,7 +258,7 @@ export function searchRequest(
       retrieval: {
         retrieval_type: mode,
         fusion_method: "rrf" as const,
-        max_num_results: 24,
+        max_num_results: 16,
         match_threshold: MATCH_THRESHOLD,
         metadata_only: !rerank,
       },
@@ -301,6 +335,15 @@ export function guideSearch(
         headers,
       });
     }
+    function found(results: SearchResult[]) {
+      return respond(
+        200,
+        results.length
+          ? `${results.length} ${results.length === 1 ? "result" : "results"}`
+          : "No results found. Try another phrase or browse the guide.",
+        results,
+      );
+    }
     const redirect = (to: string, status: number) =>
       new Response(null, {
         status,
@@ -347,6 +390,8 @@ export function guideSearch(
       // Without a valid cap, search stays off rather than run without one.
       const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
       if (cap === undefined) throw new Error("no daily budget");
+      const named = namedResults(catalog, query);
+      if (named) return found(named);
       const budget = env.SEARCH_BUDGET.get(
         env.SEARCH_BUDGET.idFromName("guide"),
       );
@@ -371,13 +416,7 @@ export function guideSearch(
       if (reply === TIMED_OUT)
         return respond(504, "Guide results took too long to load. Try again.");
       const results = rankedResults(catalog, query, reply.chunks);
-      return respond(
-        200,
-        results.length
-          ? `${results.length} ${results.length === 1 ? "result" : "results"}`
-          : "No results found. Try another phrase or browse the guide.",
-        results,
-      );
+      return found(results);
     } catch {
       return respond(
         503,
