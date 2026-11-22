@@ -43,7 +43,7 @@ Both need the authorization server and the API to take part. An API that accepts
       "Is a copied token refused?",
       "Is a copied request refused?",
       "Does it work without a certificate?",
-      "Does it work behind a proxy that ends TLS?",
+      "Does it work behind a proxy that terminates TLS?",
     ],
     sides: [
       {
@@ -96,7 +96,7 @@ Both need the authorization server and the API to take part. An API that accepts
             note: "The handshake proves the key to the proxy, not to the API. The proxy has to enforce the binding, or pass the certificate to the API on a path the API trusts.",
           },
         ],
-        so: "The proof is the connection itself, so nothing in the request is worth copying. **Everything that ends TLS becomes part of the check.** A proxy in front of the API has to enforce the binding or hand the certificate on, and a proxy in front of the token endpoint has to do the same for the authorization server.",
+        so: "The proof is the connection itself, so nothing in the request is worth copying. **Everything that terminates TLS becomes part of the check.** A proxy in front of the API has to enforce the binding or hand the certificate on, and a proxy in front of the token endpoint has to do the same for the authorization server.",
       },
     ],
   },
