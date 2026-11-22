@@ -38,14 +38,6 @@ function searchSettings() {
   };
 }
 
-// Only for the move from two Workers to one, and removed with the second
-// Worker: a build given SEARCH_WORKER hands a search to that Worker, as the
-// site did before the move, and has no search of its own. The first
-// deployment of one Worker creates SearchBudget, and Cloudflare refuses a
-// rollback across that, so going back is deploying this build. It keeps
-// SearchBudget. docs/release.md has the steps.
-const searchWorker = process.env.SEARCH_WORKER;
-
 export default defineConfig(({ mode }) => {
   // `cf dev` serves the pages through Astro. What is built is src/site.ts.
   const built = mode !== "development";
@@ -57,22 +49,17 @@ export default defineConfig(({ mode }) => {
       entrypoint: built ? site : astro,
       env: {
         ASSETS: bindings.assets(),
-        ...(built &&
-          (searchWorker
-            ? { SEARCH: bindings.worker({ worker: searchWorker }) }
-            : searchSettings())),
+        ...(built && searchSettings()),
       },
       // src/worker.ts serves the page as HTML or Markdown and hands /search
       // to Search. Workers Cache keeps a found answer in front of Search,
       // for each deployed version, and Search does not run when one is
       // reused. Nothing the page handler sends is kept.
       ...(built && {
-        cache: { enabled: !searchWorker },
+        cache: { enabled: true },
         exports: {
-          ...(!searchWorker && {
-            default: exports.worker({ cache: { enabled: false } }),
-            Search: exports.worker({ cache: { enabled: true } }),
-          }),
+          default: exports.worker({ cache: { enabled: false } }),
+          Search: exports.worker({ cache: { enabled: true } }),
           SearchBudget: exports.durableObject({ storage: "sqlite" }),
         },
       }),

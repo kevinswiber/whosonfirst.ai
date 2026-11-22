@@ -68,29 +68,7 @@ Runs are serialized. If a new push supersedes a run, the older run fails its nex
 
 One such failure is a difference with the dashboard. When the Worker’s latest deployment was made in the dashboard, the CLI compares the Worker’s settings there with the build’s, and stops if the build would undo any of them. It names each difference. If the build is right, run the workflow by hand with **force** on: that run replaces the dashboard’s settings with the build’s. A push never does, so a change made in the dashboard is not undone without someone reading what it was. The first deployment of one Worker met this, since the build takes away the binding to the second Worker (seen 21 November 2026). A run that fails **after** the deployment, at the synthetic search, means the new version is serving. Check the Worker’s deployment history and its `SEARCH_DAILY_BUDGET` secret before retrying.
 
-For an incident, disable **Release the guide** in GitHub Actions and cancel any queued or in-progress run. In the Worker’s deployment history, identify the last healthy version by its **Guide at** commit message, and redeploy that version to 100%. The pages and search go back together, because they are one version. A version from before the move to one Worker cannot be chosen: [Going back from the first deployment](#going-back-from-the-first-deployment) says why, and what to do. That version’s passages have been retired unless it is the current release, so index them again from its commit, as [Retiring old passages](#retiring-old-passages) describes. Confirm the release marker at `/search/release.json`, a search’s response headers and a real result, then re-enable the workflow and run it on `main` when the fix is in place.
-
-## Going back from the first deployment
-
-This section is for the move from two Workers to one. It goes when the second Worker, `whosonfirst-ai-search`, is deleted.
-
-The first deployment of one Worker cannot be undone in the Worker’s deployment history. It creates the `SearchBudget` class, and Cloudflare refuses a rollback when a Durable Object class was created, deleted or changed between the version that is serving and the version chosen ([Rollbacks: bindings](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/#bindings)). The version before the move is on the far side of that, even while the second Worker still runs.
-
-Going back is a new deployment that hands a search to the second Worker again and keeps the class:
-
-1. Disable **Release the guide** in GitHub Actions and cancel a run in progress, so that nothing is deployed over it.
-2. From a checkout of `main`, as someone who may deploy the Worker, run the command below. It builds the site and deploys it, in about two minutes.
-3. Check a page, the same page asked for as Markdown, and a search.
-
-```bash
-SEARCH_WORKER=whosonfirst-ai-search npm run deploy
-```
-
-A build given `SEARCH_WORKER` has no search of its own. Its page handler hands `/search` to that Worker over a service binding, as the site did before the move. Nothing is kept by Workers Cache, and `SearchBudget` stays declared and is not used. `test/build/deploy.test.mjs` holds such a build to that, and `npm run deploy -- --dry-run` with the variable set shows what it would deploy.
-
-The second Worker searches with the passages of the commit it was released from. If the release got as far as retiring passages, it finds fewer results for what has changed since, and none that are wrong.
-
-When the fault is fixed on `main`, enable the workflow again and run it. Every later deployment has `SearchBudget` on both sides, so it can be undone in the deployment history as [Retries and rollback](#retries-and-rollback) describes. Do not delete the second Worker until a release has passed its search and the site has been watched for a while: after that, this way back is gone.
+For an incident, disable **Release the guide** in GitHub Actions and cancel any queued or in-progress run. In the Worker’s deployment history, identify the last healthy version by its **Guide at** commit message, and redeploy that version to 100%. The pages and search go back together, because they are one version. A version from before the move to one Worker, on 21 November 2026, cannot be chosen. The first deployment of one Worker created the `SearchBudget` class, and Cloudflare refuses a rollback when a Durable Object class was created, deleted or changed between the version that is serving and the version chosen ([Rollbacks: bindings](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/#bindings)). The second Worker those versions handed a search to is gone as well. That version’s passages have been retired unless it is the current release, so index them again from its commit, as [Retiring old passages](#retiring-old-passages) describes. Confirm the release marker at `/search/release.json`, a search’s response headers and a real result, then re-enable the workflow and run it on `main` when the fix is in place.
 
 ## Retiring old passages
 

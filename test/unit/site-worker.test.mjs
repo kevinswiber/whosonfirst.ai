@@ -60,29 +60,6 @@ test("a search is handed to the Search entrypoint unchanged, and nothing else is
   }
 });
 
-test("a build that goes back to two Workers hands a search to the other one, and nothing else", async () => {
-  const handed = [];
-  const SEARCH = {
-    fetch: async (request) => {
-      handed.push(request);
-      return new Response("from the other Worker");
-    },
-  };
-  const ASSETS = { fetch: async () => new Response("page") };
-  const own = entrypoints(async () => new Response("from this Worker"));
-  const search = new Request("https://whosonfirst.ai/search?q=CIBA");
-  const answer = await worker.fetch(search, { ASSETS, SEARCH }, own);
-  assert.equal(await answer.text(), "from the other Worker");
-  assert.equal(handed[0], search, "the same request, with its headers");
-  const page = await worker.fetch(
-    new Request("https://whosonfirst.ai/search/"),
-    { ASSETS, SEARCH },
-    own,
-  );
-  assert.equal(await page.text(), "page");
-  assert.equal(handed.length, 1);
-});
-
 test("a search with no catalog to read says so, is not kept, and reads again next time", async () => {
   let reads = 0;
   const search = siteSearch();

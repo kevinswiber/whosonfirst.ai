@@ -18,8 +18,6 @@ const { env } = JSON.parse(
 );
 /** Whether this build was given a limiter, and so has search. */
 const hasSearch = Boolean(env.SEARCH_LIMITER);
-/** A build made to go back to two Workers: the other one is not here. */
-const elsewhere = env.SEARCH && "this build hands a search to another Worker";
 
 let site;
 before(async () => {
@@ -40,9 +38,7 @@ const ask = (path, headers = {}) =>
     redirect: "manual",
   });
 
-test("a search with no question goes to the search page, and another spelling to the one address", {
-  skip: elsewhere,
-}, async () => {
+test("a search with no question goes to the search page, and another spelling to the one address", async () => {
   const empty = await ask("/search");
   assert.equal(empty.status, 302);
   assert.equal(empty.headers.get("location"), "/search/");
@@ -54,9 +50,7 @@ test("a search with no question goes to the search page, and another spelling to
   assert.match(await page.text(), /id="search-results"/);
 });
 
-test("a request for two questions is refused by this build, which is how a release asks who is answering", {
-  skip: elsewhere,
-}, async () => {
+test("a request for two questions is refused by this build, which is how a release asks who is answering", async () => {
   const answer = await ask("/search?q=release&q=check&format=json");
   assert.equal(answer.status, 400);
   assert.equal(answer.headers.get("cache-control"), "no-store");
@@ -65,9 +59,7 @@ test("a request for two questions is refused by this build, which is how a relea
   assert.equal(answer.headers.get("server-timing"), null, "nothing was asked");
 });
 
-test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", {
-  skip: elsewhere,
-}, async () => {
+test("the Search entrypoint answers from this build's catalog, with the site's headers, and is not kept when it fails", async () => {
   const answer = await ask("/search?q=DPoP&format=json");
   assert.equal(answer.status, 503);
   assert.equal(answer.headers.get("cache-control"), "no-store");

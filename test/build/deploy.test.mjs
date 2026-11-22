@@ -11,8 +11,6 @@ import { exists, root } from "../support/site.mjs";
 const config = JSON.parse(
   readFileSync(join(WORKER_BUILD, "worker.config.json"), "utf8"),
 );
-/** The Worker a build made to go back hands a search to, if this is one. */
-const goesBack = process.env.SEARCH_WORKER;
 const source = (path) =>
   fileURLToPath(new URL(`../../${path}`, import.meta.url));
 
@@ -32,7 +30,6 @@ test("the deployment is one Worker: the page handler, search and its daily count
   assert.equal(config.routes, undefined);
   // The question is in a search's query string.
   assert.equal(config.observability.redactQueryString, true);
-  if (goesBack) return;
   // A search is handed to another entrypoint of this Worker, not to another
   // Worker: no route can take /search?q= alone, since a route matches the
   // query string too.
@@ -47,23 +44,7 @@ test("the deployment is one Worker: the page handler, search and its daily count
   });
 });
 
-test("a build that goes back to two Workers hands a search to the other, keeps nothing, and keeps the daily count's class", {
-  skip: !goesBack && "this build has search of its own",
-}, () => {
-  // Cloudflare refuses a rollback across the creation of SearchBudget, so
-  // this build is how the site goes back. It may not drop the class.
-  assert.deepEqual(Object.keys(config.env).sort(), ["ASSETS", "SEARCH"]);
-  assert.deepEqual(config.env.SEARCH, { type: "worker", worker: goesBack });
-  assert.deepEqual(config.cache, { enabled: false });
-  assert.deepEqual(config.exports, {
-    SearchBudget: { type: "durable-object", storage: "sqlite" },
-  });
-  assert.ok(missingFromSearch(config).length);
-});
-
-test("search is set up where the site is built, and no account's identifiers are in the repository", {
-  skip: goesBack && "this build hands a search to another Worker",
-}, () => {
+test("search is set up where the site is built, and no account's identifiers are in the repository", () => {
   const {
     SEARCH_RATE_NAMESPACE: namespace,
     SEARCH_RATE_LIMIT: limit,
