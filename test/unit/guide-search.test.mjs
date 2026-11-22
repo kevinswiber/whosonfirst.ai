@@ -9,7 +9,7 @@ import { searchLimit } from "../../src/search/limit.ts";
 import {
   catalogFor,
   guideSearch,
-  namedResults,
+  namedEntries,
   plainQuestion,
   rankedResults,
   searchAddress,
@@ -75,13 +75,12 @@ const envFor = (search, success = true) => ({
 });
 const chunk = (key, digest) => ({ item: { key, metadata: { digest } } });
 
-test("the Worker serves only current, unique local passages for a question", async () => {
+test("the Worker pins the standard for an exact RFC and serves only current, unique local passages", async () => {
   const env = envFor(async (input) => {
     assert.equal(input.ai_search_options.retrieval.retrieval_type, "hybrid");
-    assert.equal(input.messages[0].content, "How is the sender identified?");
+    assert.equal(input.messages[0].content, "RFC-9449");
     return {
       chunks: [
-        chunk("proof.md", "a"),
         chunk("unknown.md", "a"),
         chunk("flow.md", "stale"),
         chunk("flow.md", "b"),
@@ -90,7 +89,7 @@ test("the Worker serves only current, unique local passages for a question", asy
       ],
     };
   });
-  const response = await handle(submit("How is the sender identified?"), env);
+  const response = await handle(submit("RFC-9449"), env);
   assert.equal(response.status, 200);
   assert.equal(
     response.headers.get("Cache-Control"),
@@ -111,73 +110,54 @@ test("the Worker serves only current, unique local passages for a question", asy
     "type",
   ]);
 });
-test("exact names use the catalog after the address limit, without spending a provider query", async () => {
-  const lookup = catalogFor([
-    { ...records[1], text: "This flow follows RFC-9449 and RFC 94490." },
-    { ...records[1], key: "other.md", href: "/other/", text: "See RFC 94490." },
-    { ...records[0], aliases: ["RFC 9449", "X.509"] },
-  ]);
+test("a question that is exactly a name puts its entries first, and AI Search still finds the rest", async () => {
+  const broker = {
+    ...records[1],
+    key: "broker.md",
+    href: "/flows/credential-broker/",
+    title: "Credential injection at the egress proxy",
+    section: "",
+    digest: "c",
+  };
+  const lookup = catalogFor([...records, broker], {
+    "/flows/credential-broker/":
+      "Credential broker: injecting keys at the proxy",
+  });
+  let asked = 0;
+  const env = envFor(async () => {
+    asked++;
+    // AI Search finds other passages, and the named page further down.
+    return {
+      chunks: [
+        chunk("flow.md", "b"),
+        chunk("proof.md", "a"),
+        chunk("broker.md", "c"),
+      ],
+    };
+  });
   const search = guideSearch(lookup, shell, {});
-  const env = { ...envFor(), SEARCH_BUDGET: undefined, AI_SEARCH: undefined };
-  for (const query of ["rFc9449", "RFC-9449", "RFC ９４４９"]) {
+  for (const query of [
+    "credential broker",
+    "Credential Broker",
+    "Credential broker: injecting keys at the proxy",
+  ]) {
     const response = await search(submit(query), env);
     assert.equal(response.status, 200);
     assert.deepEqual(
       (await response.json()).results.map((r) => r.href),
-      records.map((r) => r.href),
+      [broker.href, records[1].href, records[0].href],
+      query,
     );
-    assert.match(response.headers.get("Server-Timing"), /^limit;dur=\d+$/);
+    assert.match(
+      response.headers.get("Server-Timing"),
+      /^limit;dur=\d+, budget;dur=\d+, search;dur=\d+$/,
+    );
   }
-  const html = await search(submit("x.509", { html: true }), env);
-  assert.match(await html.text(), /1 result</);
-  assert.equal(namedResults(lookup, "Xx509"), undefined);
-  assert.equal(namedResults(lookup, "RFC 944"), undefined);
-  assert.equal(namedResults(lookup, "how does RFC 9449 work?"), undefined);
-  assert.equal(
-    (await search(submit("RFC9449"), envFor(undefined, false))).status,
-    429,
-  );
-  assert.equal(
-    (
-      await search(submit("RFC9449"), {
-        ...env,
-        SEARCH_DAILY_BUDGET: undefined,
-      })
-    ).status,
-    503,
-  );
-});
-
-test("an RFC lookup puts citing flows and comparisons before implementation records and their scope notes", () => {
-  const cite = (href, type) => ({
-    ...records[1],
-    href,
-    key: href,
-    type,
-    text: "See RFC 9449.",
-  });
-  const scope = cite(
-    "/implementations/example/#field-scope",
-    "Implementation evidence",
-  );
-  const product = cite(
-    "/implementations/example/#product",
-    "Implementation evidence",
-  );
-  const guide = cite("/concepts/#proof", "Guide");
-  const flow = cite("/flows/example/#proof", "Flow");
-  const comparison = cite("/compare/example/#points", "Comparison");
-  const catalog = catalogFor([
-    scope,
-    product,
-    guide,
-    flow,
-    comparison,
-    records[0],
-  ]);
+  assert.equal(asked, 3, "a named search is still a search");
+  assert.deepEqual(namedEntries(lookup, "credential brokers"), []);
   assert.deepEqual(
-    namedResults(catalog, "RFC 9449").map((r) => r.href),
-    [records[0], flow, comparison, guide, product, scope].map((r) => r.href),
+    namedEntries(lookup, "how does a credential broker work?"),
+    [],
   );
 });
 
@@ -263,7 +243,10 @@ test("distinct pages lead before a second passage and unknown identifiers return
     [records[1].href, records[0].href, tracer.href],
   );
   assert.deepEqual(rankedResults(lookup, "XZ-9581", matches), []);
-  assert.equal(namedResults(lookup, "RFC9449")[0].href, records[0].href);
+  assert.equal(
+    rankedResults(lookup, "RFC9449", matches)[0].href,
+    records[0].href,
+  );
 });
 
 const memory = () => {

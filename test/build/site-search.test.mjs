@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   CATALOG,
   catalogFor,
-  namedResults,
+  namedEntries,
   siteSearch,
 } from "../../src/search/search.ts";
 import { file } from "../support/site.mjs";
@@ -23,30 +23,20 @@ test("the build's release marker names the commit it was made from", () => {
   assert.match(marker.revision, /^[0-9a-f]{64}$/);
 });
 
-test("short lookups lead to the pages named for the subject", () => {
+test("a name people type for a flow, standard or term finds its entries", () => {
   const { records, flowTitles } = JSON.parse(file(CATALOG.slice(1)));
   const catalog = catalogFor(records, flowTitles);
   for (const [query, wanted] of [
     ["token exchange", ["/flows/token-exchange/", "/standards/rfc8693/"]],
-    ["MCP", ["/flows/mcp-authorization/", "/standards/mcp-authorization/"]],
-    ["JWT", ["/standards/rfc7519/"]],
-    ["mTLS", ["/flows/oauth-mtls/"]],
+    ["credential broker", ["/flows/credential-broker/"]],
+    ["DPoP", ["/flows/dpop/", "/glossary/#dpop", "/standards/rfc9449/"]],
+    ["RFC 8705", ["/standards/rfc8705/"]],
+    ["Scope", ["/glossary/#scope"]],
     [flowTitles["/flows/oauth-mtls/"], ["/flows/oauth-mtls/"]],
   ]) {
-    const first = namedResults(catalog, query)
-      .slice(0, 4)
-      .map((r) => r.href);
+    const found = namedEntries(catalog, query).map((r) => r.href);
     for (const href of wanted)
-      assert.ok(first.includes(href), `${query} → ${href}`);
-  }
-  for (const term of ["scope", "audience"]) {
-    const results = namedResults(catalog, term);
-    assert.ok(results.some((r) => r.href === `/glossary/#${term}`));
-    assert.ok(
-      results.every(
-        (r) => !r.href.includes("#") || r.href === `/glossary/#${term}`,
-      ),
-    );
+      assert.ok(found.includes(href), `${query} → ${href}`);
   }
 });
 

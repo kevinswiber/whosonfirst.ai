@@ -100,7 +100,6 @@ export function catalogFor(
   records: PassageRecord[],
   flowTitles: Record<string, string> = {},
 ) {
-  const pageNames: { name: string; record: PassageRecord }[] = [];
   const byKey = new Map<string, PassageRecord>();
   const byName = new Map<string, PassageRecord[]>();
   for (const record of records) {
@@ -118,7 +117,6 @@ export function catalogFor(
       }
       const acronym = /\(([A-Z][A-Z0-9.-]+)\)$/.exec(record.title)?.[1];
       if (acronym) names.add(nameKey(acronym));
-      for (const name of names) pageNames.push({ name, record });
     }
     for (const name of names) {
       const matches = byName.get(name);
@@ -126,46 +124,16 @@ export function catalogFor(
       else byName.set(name, [record]);
     }
   }
-  // Among partial title matches, the shortest name is usually the most specific.
-  pageNames.sort(
-    (a, b) =>
-      a.name.length - b.name.length ||
-      a.record.href.localeCompare(b.record.href),
-  );
-  return { byKey, byName, pageNames };
+  return { byKey, byName };
 }
 
-function citationPriority(record: PassageRecord) {
-  if (record.type === "Flow" || record.type === "Comparison") return 0;
-  if (record.type !== "Implementation evidence") return 1;
-  return record.href.endsWith("#field-scope") ? 3 : 2;
-}
-
-// Only a complete published name takes this path. Keep related reading below
-// the named entries to pages named for the term, or passages citing that RFC.
-export function namedResults(
+// The entries a question names exactly: a page's title, a flow's short name
+// or search title, a published alias or an RFC number.
+export function namedEntries(
   catalog: ReturnType<typeof catalogFor>,
   query: string,
 ) {
-  const named = catalog.byName.get(nameKey(query));
-  if (!named) return undefined;
-  const number = rfcNumber(query);
-  const literal = number
-    ? `rfc[\\s-]*${number}`
-    : query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const mentions = new RegExp(
-    `(?<![\\p{L}\\p{N}])${literal}(?![\\p{L}\\p{N}])`,
-    "iu",
-  );
-  const pages = catalog.pageNames
-    .filter(({ name }) => mentions.test(name))
-    .map(({ record }) => record);
-  const citations = number
-    ? [...catalog.byKey.values()]
-        .filter((record) => mentions.test(record.text))
-        .sort((a, b) => citationPriority(a) - citationPriority(b))
-    : [];
-  return displayedResults([...named, ...pages, ...citations]);
+  return catalog.byName.get(nameKey(query)) ?? [];
 }
 
 export function rankedResults(
@@ -173,7 +141,13 @@ export function rankedResults(
   query: string,
   chunks: SearchChunk[],
 ): SearchResult[] {
-  const candidates: PassageRecord[] = [];
+  const records = new Map<string, PassageRecord>();
+  const add = (record: PassageRecord | undefined) => {
+    if (record && !records.has(record.href)) records.set(record.href, record);
+  };
+  // What the question names comes first, then what AI Search found for it.
+  const named = namedEntries(catalog, query);
+  for (const record of named) add(record);
   for (const chunk of chunks) {
     const { item } = chunk;
     if (!item || !closeEnough(chunk)) continue;
@@ -184,12 +158,13 @@ export function rankedResults(
       record &&
       (!item.metadata?.digest || item.metadata.digest === record.digest)
     )
-      candidates.push(record);
+      add(record);
   }
 
+  const candidates = [...records.values()];
   // A single alphanumeric identifier can have a vector neighbour even when it
   // never appears in the guide. Allow common punctuation variants such as X.509.
-  if (/^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
+  if (!named.length && /^(?=.*[a-z])(?=.*\d)[a-z\d.-]+$/i.test(query)) {
     const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
     const id = normalize(query);
     const found = candidates.some((r) =>
@@ -200,19 +175,12 @@ export function rankedResults(
     if (!found) return [];
   }
 
-  return displayedResults(candidates);
-}
-
-function displayedResults(candidates: PassageRecord[]): SearchResult[] {
   // Show different destinations first. Keep a second relevant passage from
   // the same page when the search found fewer pages than the list can show.
   const first: PassageRecord[] = [],
     second: PassageRecord[] = [];
   const perPage = new Map<string, number>();
-  const seen = new Set<string>();
   for (const record of candidates) {
-    if (seen.has(record.href)) continue;
-    seen.add(record.href);
     const page = record.href.split("#")[0];
     const count = perPage.get(page) ?? 0;
     if (count === 0) first.push(record);
@@ -363,15 +331,6 @@ export function guideSearch(
         headers,
       });
     }
-    function found(results: SearchResult[]) {
-      return respond(
-        200,
-        results.length
-          ? `${results.length} ${results.length === 1 ? "result" : "results"}`
-          : "No results found. Try another phrase or browse the guide.",
-        results,
-      );
-    }
     const redirect = (to: string, status: number) =>
       new Response(null, {
         status,
@@ -418,8 +377,6 @@ export function guideSearch(
       // Without a valid cap, search stays off rather than run without one.
       const cap = dailyBudget(env.SEARCH_DAILY_BUDGET);
       if (cap === undefined) throw new Error("no daily budget");
-      const named = namedResults(catalog, query);
-      if (named) return found(named);
       const budget = env.SEARCH_BUDGET.get(
         env.SEARCH_BUDGET.idFromName("guide"),
       );
@@ -444,7 +401,13 @@ export function guideSearch(
       if (reply === TIMED_OUT)
         return respond(504, "Guide results took too long to load. Try again.");
       const results = rankedResults(catalog, query, reply.chunks);
-      return found(results);
+      return respond(
+        200,
+        results.length
+          ? `${results.length} ${results.length === 1 ? "result" : "results"}`
+          : "No results found. Try another phrase or browse the guide.",
+        results,
+      );
     } catch {
       return respond(
         503,
