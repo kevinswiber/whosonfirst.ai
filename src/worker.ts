@@ -15,9 +15,6 @@
  * Its answers are kept in front of it by Workers Cache, which a call from
  * here is answered from. Nothing this handler sends is kept.
  *
- * A build made to go back to two Workers binds the other one as SEARCH, and
- * the search is handed to it. cloudflare.config.ts says when.
- *
  * If anything here fails, the request gets what is at its address, as it
  * would with no Worker at all.
  */
@@ -26,8 +23,6 @@ import { respond } from "./lib/markdown-negotiation.ts";
 
 interface Env {
   ASSETS: Assets;
-  // Bound only in a build that hands a search to another Worker.
-  SEARCH?: { fetch(request: Request): Promise<Response> };
 }
 
 /** The Worker's own entrypoints, as the runtime gives them to a handler. */
@@ -39,7 +34,7 @@ export default {
   async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
     try {
       if (new URL(request.url).pathname === "/search")
-        return await (env.SEARCH ?? ctx.exports.Search).fetch(request);
+        return await ctx.exports.Search.fetch(request);
       return await respond(request, env.ASSETS);
     } catch (error) {
       console.error("serving the page or the search failed", error);
