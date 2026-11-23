@@ -540,6 +540,77 @@ test("the keyboard legend stays in view and a click on result padding opens the 
   await ctx.close();
 });
 
+test("the Search key puts a touch keyboard away and leaves a hardware keyboard in the field", async () => {
+  const ctx = await site.context({ viewport: { width: 820, height: 1180 } });
+  const page = await ctx.newPage();
+  await page.route(fullSearch, (route) =>
+    route.fulfill({ json: { results: [passage] } }),
+  );
+  await open(page, site.url("/"));
+  await page.locator("[data-search-launch]").click();
+  const dialog = page.getByRole("dialog");
+  const input = dialog.getByRole("searchbox");
+  const results = dialog.locator(".guide-results");
+  const link = dialog.locator(".search-results a").first();
+  await input.fill("proof of possession");
+  await input.press("Enter");
+  await link.waitFor();
+  assert.equal(await focused(input), true);
+  // An on-screen keyboard takes the bottom of the visual viewport.
+  await page.evaluate(() => {
+    const full = window.innerHeight;
+    Object.defineProperty(window.visualViewport, "height", {
+      configurable: true,
+      get: () => full - 400,
+    });
+  });
+  await input.fill("sender constrained tokens");
+  await input.press("Enter");
+  await link.waitFor();
+  assert.equal(await focused(results), true);
+  assert.equal(
+    await results.evaluate((el) => getComputedStyle(el).outlineStyle),
+    "none",
+  );
+  // The first match, a quick one or a guide result, is next.
+  await page.keyboard.press("ArrowDown");
+  const first = dialog
+    .locator(".quick-matches li:visible a, .search-results a")
+    .first();
+  assert.equal(await focused(first), true);
+  await page.keyboard.press("ArrowUp");
+  assert.equal(await focused(input), true);
+  // An empty field is refused where it is, with the keyboard still up.
+  await input.fill("");
+  await input.press("Enter");
+  assert.equal(await focused(input), true);
+  await ctx.close();
+});
+
+test("a tapped example searches without raising the keyboard", async () => {
+  const ctx = await site.context({
+    viewport: { width: 820, height: 1180 },
+    hasTouch: true,
+  });
+  const page = await ctx.newPage();
+  await page.route(fullSearch, (route) =>
+    route.fulfill({ json: { results: [passage] } }),
+  );
+  await open(page, site.url("/"));
+  await page.locator("[data-search-launch]").click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: exampleName }).tap();
+  await dialog.locator(".search-results a").waitFor();
+  assert.equal(await dialog.getByRole("searchbox").inputValue(), exampleName);
+  assert.equal(await focused(dialog.locator(".guide-results")), true);
+  await page.keyboard.press("ArrowDown");
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.matches("a[href]")),
+    true,
+  );
+  await ctx.close();
+});
+
 test("the four directory filters stay local and open a fresh site-search dialog", async () => {
   const ctx = await site.context();
   const page = await ctx.newPage();
