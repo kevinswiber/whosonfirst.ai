@@ -82,7 +82,7 @@ Each flow page carries a rating: stable, emerging or experimental. The rating de
 | Role | Meaning |
 | --- | --- |
 | Required | The page names it as what the flow implements, a numbered step shows something it defines, the page teaches a security or validation rule it sets, or the page says a conforming implementation must support it, whether or not that path is drawn |
-| Optional extension | Offered as a variant or an addition. No step depends on it, and nothing on the page requires it |
+| Optional | Offered as a variant or an addition. No step depends on it, and nothing on the page requires it |
 | Background | Named for context only |
 | Not settled | The sources read so far do not decide which of these it is |
 
@@ -104,7 +104,7 @@ A mechanism is not experimental merely because no standards body owns it. It is 
 
 The same holds in the other direction. Where a published specification says that one of its features may still change, a reference to that feature is judged on that statement, not on the publication. MCP’s URL-mode elicitation is in a published revision of the specification, which says its design may change in future revisions, so it counts as emerging.
 
-**The rating.** A flow takes the level of its least mature required reference. One working-group draft among them makes the flow emerging; one individual draft makes it experimental. Optional extensions and background references never change it.
+**The rating.** A flow takes the level of its least mature required reference. One working-group draft among them makes the flow emerging; one individual draft makes it experimental. Optional and background references never change it.
 
 **When nothing is required.** A flow that requires none of its references has no level to take, and is shown as not rated. It is not called stable for having no draft among its references, and it is not rated from a product’s release stage. The [credential broker](/flows/credential-broker/) is the one such page today: no standard defines the pattern, the products that implement it differ, and no step depends on any one of them. How ready it is depends on the product you choose.
 
