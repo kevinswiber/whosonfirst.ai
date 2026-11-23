@@ -70,6 +70,9 @@
     "etag": "W/\"6adb3540-5fd4\"",
     "lastModified": "Fri, 23 Oct 2026 10:21:52 GMT"
   },
+  "https://code.claude.com/docs/en/cloud-environments": {
+    "lastModified": "Sun, 22 Nov 2026 21:26:47 GMT"
+  },
   "https://code.claude.com/docs/en/mcp": {},
   "https://code.visualstudio.com/api/extension-guides/ai/mcp": {},
   "https://community.atlassian.com/forums/Atlassian-Remote-MCP-Server/Now-GA-Connect-any-third-party-AI-agent-to-Rovo-with-A2A/ba-p/3274964": {},
@@ -559,6 +562,9 @@
   },
   "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/": {
     "etag": "W/\"421fe5eb4d571fa52563ab4aa51267cd-ssl\""
+  },
+  "https://learn.chatgpt.com/docs/environments/cloud-environments": {
+    "etag": "W/\"b0659523421359a08d0c7ce5ade25052\""
   },
   "https://learn.chatgpt.com/docs/extend/mcp": {
     "etag": "W/\"c32cd66f4ce0270de72253ecccbd0bab\""

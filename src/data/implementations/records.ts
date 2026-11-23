@@ -8319,12 +8319,12 @@ export const profiles: ImplementationProfile[] = [
   },
   {
     slug: "credential-broker",
-    reviewedOn: "2026-11-19",
+    reviewedOn: "2026-11-23",
     scope:
       "An intermediary holds the upstream secret outside the agent’s execution environment and attaches it only to selected outbound requests. The intermediary can be a sandbox egress proxy or a service that brokers a specific API.",
     genericParties: ["agent", "api"],
     searchNote:
-      "The review read sandbox and proxy documentation and two accounts of operated systems. The examples differ in where the intermediary runs and which requests it lets through. A further search on 14 November 2026 added two hosted vault-and-proxy services and Fly.io’s account of its own token proxy, a variant in which an application server is the caller. The agent and the API need nothing particular to the pattern.",
+      "The review read sandbox and proxy documentation and two accounts of operated systems. The examples differ in where the intermediary runs and which requests it lets through. A further search on 14 November 2026 added two hosted vault-and-proxy services and Fly.io’s account of its own token proxy, a variant in which an application server is the caller. The agent and the API need nothing particular to the pattern. On 23 November 2026 two hosted coding agents’ own environment settings were added, from Anthropic’s and OpenAI’s pages. Neither page names a release stage, and OpenAI’s does not say where in a request a placeholder is replaced.",
     implementations: [
       {
         kind: "implementation",
@@ -8568,6 +8568,82 @@ export const profiles: ImplementationProfile[] = [
             "The maker’s documentation and product page, read for the vault and gateway roles. The documentation’s Custom API setup lists header, query string or URL path as places the token can go. It is the first hosted store in this record that refreshes OAuth tokens itself, as the diagram’s vault does.",
         },
       },
+      {
+        kind: "implementation",
+        id: "credential-broker-claude-code",
+        organization: "Anthropic",
+        product: "Claude Code cloud sessions",
+        role: "Hosted coding agent proxy",
+        parties: ["proxy"],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The page says which plans have network secrets and names no release stage.",
+        },
+        summary:
+          "A network secret is stored on a cloud environment with the hosts it is for. Anthropic’s agent proxy adds it to requests for those hosts after they leave the session’s VM. For a key sent in a header, the form names the header: Authorization unless the person changes it.",
+        limits:
+          "Anthropic-hosted environments only. The proxy does not attach a secret to GitHub, the Anthropic API, the public package registries the page lists or a setup script’s requests. A secret applies in every session in the environment, whoever started it. The form offers other secret types, and the page does not say where those put the value.",
+        sources: [
+          {
+            title: "Configure cloud environments",
+            url: "https://code.claude.com/docs/en/cloud-environments",
+            publisher: "Anthropic",
+            section: "Add network secrets",
+            quote:
+              "Anthropic's agent proxy adds the key to requests for the hosts you list, after each request leaves the session's VM, so the key itself stays outside the VM.",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-23",
+          rationale:
+            "Anthropic’s documentation read for this product and mechanism. The proxy already has more than three entries. This one is a kind the others are not: a hosted coding agent’s own environment setting. The page describes no placeholder for a network secret: it says the key does not appear in the session’s environment variables or in any file.",
+        },
+      },
+      {
+        kind: "implementation",
+        id: "credential-broker-codex",
+        organization: "OpenAI",
+        product: "Codex Cloud environments",
+        role: "Hosted coding agent proxy",
+        parties: ["proxy"],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "The page documents network secrets without naming a release stage.",
+        },
+        summary:
+          "A network secret has a key, a value and allowed domains. Programs in the environment receive a placeholder, and the proxy substitutes the real value in requests to the allowed domains, during setup and during tasks.",
+        limits:
+          "Substitution works for HTTPS on port 443, through the environment’s proxy. The page does not say where in a request a placeholder is replaced. An environment variable, the other way to supply a value, is passed to programs directly. A person’s own network secrets are saved in a Personal vault and use the environment’s allowed destinations.",
+        sources: [
+          {
+            title: "Cloud environments",
+            url: "https://learn.chatgpt.com/docs/environments/cloud-environments",
+            publisher: "OpenAI",
+            section: "Configure environment variables and network secrets",
+            quote:
+              "Programs receive a placeholder; the proxy substitutes the real value for allowed destinations.",
+          },
+          {
+            title: "Cloud environments",
+            url: "https://learn.chatgpt.com/docs/environments/cloud-environments",
+            publisher: "OpenAI",
+            section: "Configure environment variables and network secrets",
+            quote:
+              "Substitution works for HTTPS on port 443, during setup and tasks; it doesn’t put the raw credential in a local process or file.",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-23",
+          rationale:
+            "OpenAI’s documentation on learn.chatgpt.com read for this product and mechanism. The proxy already has more than three entries. This one is a second hosted coding agent, from another maker, and it substitutes a placeholder where the first names a header.",
+        },
+      },
     ],
     deployments: [
       {
@@ -8708,6 +8784,17 @@ export const profiles: ImplementationProfile[] = [
           "credential-broker-infisical",
           "credential-broker-fly-sprites",
           "credential-broker-fly-tokenizer",
+        ],
+      },
+      {
+        id: "credential-broker-added-2026-11-23",
+        kind: "evidence-added",
+        date: "2026-11-23",
+        summary:
+          "These sources were added to the implementation record. Earlier reports and releases keep their own dates.",
+        evidenceIds: [
+          "credential-broker-claude-code",
+          "credential-broker-codex",
         ],
       },
     ],
