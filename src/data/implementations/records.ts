@@ -8324,7 +8324,7 @@ export const profiles: ImplementationProfile[] = [
       "An intermediary holds the upstream secret outside the agent’s execution environment and attaches it only to selected outbound requests. The intermediary can be a sandbox egress proxy or a service that brokers a specific API.",
     genericParties: ["agent", "api"],
     searchNote:
-      "The review read sandbox and proxy documentation and two accounts of operated systems. The examples differ in where the intermediary runs and which requests it lets through. A further search on 14 November 2026 added two hosted vault-and-proxy services and Fly.io’s account of its own token proxy, a variant in which an application server is the caller. The agent and the API need nothing particular to the pattern. On 23 November 2026 two hosted coding agents’ own environment settings were added, from Anthropic’s and OpenAI’s pages. Neither page names a release stage, and OpenAI’s does not say where in a request a placeholder is replaced.",
+      "The review read sandbox and proxy documentation and two accounts of operated systems. The examples differ in where the intermediary runs and which requests it lets through. A further search on 14 November 2026 added two hosted vault-and-proxy services and Fly.io’s account of its own token proxy, a variant in which an application server is the caller. The agent and the API need nothing particular to the pattern. On 23 November 2026 two hosted coding agents’ own environment settings were added, from Anthropic’s and OpenAI’s pages. Neither page names a release stage, and OpenAI’s does not say where in a request a placeholder is replaced. The same day agentgateway’s documentation was read for an open-source proxy an operator runs. It documents the egress proxy and backend keys separately, and no release stage for either.",
     implementations: [
       {
         kind: "implementation",
@@ -8644,6 +8644,74 @@ export const profiles: ImplementationProfile[] = [
             "OpenAI’s documentation on learn.chatgpt.com read for this product and mechanism. The proxy already has more than three entries. This one is a second hosted coding agent, from another maker, and it substitutes a placeholder where the first names a header.",
         },
       },
+      {
+        kind: "implementation",
+        id: "credential-broker-agentgateway",
+        organization: "agentgateway project",
+        product: "agentgateway 1.7, standalone",
+        role: "Self-hosted egress proxy and gateway",
+        parties: ["proxy"],
+        release: {
+          stage: "unspecified",
+          label: "Stage unspecified",
+          detail:
+            "Neither documentation page names a release stage for the egress proxy or for static backend keys.",
+        },
+        summary:
+          "An open-source gateway. As an egress proxy it can limit the hostnames clients reach to a list the operator configures. A backend policy attaches a key the operator configures, inline or from a file, to the requests it forwards to that backend.",
+        qualification:
+          "The documentation describes the egress proxy and backend keys separately, not as one setup for a sandbox.",
+        limits:
+          "To change an HTTPS request on its way out, the proxy has to terminate TLS with a certificate authority the operator supplies and the client trusts. The documentation describes no placeholder: the key goes to a set place, the Authorization header by default, or a named header, a query parameter or a cookie. Neither page says where the gateway runs, or how its configuration and key file are kept from the agent.",
+        sources: [
+          {
+            title: "agentgateway documentation index",
+            url: "https://agentgateway.dev/llms.txt",
+            publisher: "agentgateway project",
+            section: "agentgateway | Agent Connectivity Solved",
+            quote:
+              "Agentgateway is an open source HTTP and gRPC proxy and gateway",
+          },
+          {
+            title: "Egress proxy",
+            url: "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/egress-proxy/",
+            publisher: "agentgateway project",
+            section: "Egress proxy",
+            quote:
+              "Agentgateway can act as an HTTP CONNECT proxy for outbound traffic. Clients point their proxy settings at agentgateway, and agentgateway decides which destinations they are allowed to reach.",
+          },
+          {
+            title: "Egress proxy",
+            url: "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/egress-proxy/",
+            publisher: "agentgateway project",
+            section: "Inspect all HTTPS traffic",
+            quote:
+              "Agentgateway issues a certificate for each requested hostname from a certificate authority that you supply, then opens a separate TLS connection to the destination.",
+          },
+          {
+            title: "Static keys and passthrough",
+            url: "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/",
+            publisher: "agentgateway project",
+            section: "About",
+            quote:
+              "The client may already send the credential that the backend expects. If it does not, agentgateway must supply one of its own.",
+          },
+          {
+            title: "Static keys and passthrough",
+            url: "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/",
+            publisher: "agentgateway project",
+            section: "About",
+            quote:
+              "sends a value that you configure, either inline or from a file on disk.",
+          },
+        ],
+        review: {
+          state: "accepted",
+          checkedOn: "2026-11-23",
+          rationale:
+            "The project’s own documentation, read for the egress proxy, its TLS termination and static backend keys. Its documentation index names it open source and lists 1.7.x as the latest version. The entry claims no more than each page states, and says that the pages do not combine them.",
+        },
+      },
     ],
     deployments: [
       {
@@ -8795,6 +8863,7 @@ export const profiles: ImplementationProfile[] = [
         evidenceIds: [
           "credential-broker-claude-code",
           "credential-broker-codex",
+          "credential-broker-agentgateway",
         ],
       },
     ],

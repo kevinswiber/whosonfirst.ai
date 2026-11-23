@@ -435,6 +435,7 @@ developer.squareup.com
 goteleport.com
 www.uber.com
 d.spirl.com
+agentgateway.dev
 ```
 
 Through `aws.amazon.com`, these are the hosts the tracker's `url` fields and the flows' `sources` link to, plus what the checks above read: `author-tools.ietf.org` for diffs between draft revisions, `api.github.com` and `raw.githubusercontent.com` for releases and files of projects hosted on GitHub, and `www.agenticcommerce.dev`, where `agenticcommerce.dev` redirects. From `developer.okta.com` on, they are the documentation sites of the vendors on the agent platforms page, which links to them only beside a few facts; they are where that review starts, and a vendor may keep the relevant page elsewhere.

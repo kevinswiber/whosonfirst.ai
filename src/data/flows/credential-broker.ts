@@ -170,11 +170,10 @@ key=__PLACEHOLDER_REPORTS_KEY__`,
       body: `The host is not on the allow-list. Even if it were, no credential is scoped to it, so the placeholder would have gone out as a meaningless string.`,
     },
   ],
-  standards: ["agentgateway", "k8s-agent-sandbox", "spiffe", "rfc9449"],
+  standards: ["k8s-agent-sandbox", "spiffe", "rfc9449"],
   // None of these defines the pattern and no step depends on one, so the page names no primary
   // specification and none is required. With nothing required, the flow is not rated.
   roles: {
-    agentgateway: "optional", // one implementation: an egress proxy with a destination allow-list, TLS termination and a key added per backend; not named, and it swaps no placeholder
     "k8s-agent-sandbox": "optional", // no broker of its own; its execution-scoped token example is where that variation in the notes comes from
     spiffe: "optional", // one source of the workload identity the proxy shows the vault in step 5; not named
     rfc9449: "background", // DPoP, a related flow: another way to make a copied token useless; no step uses it

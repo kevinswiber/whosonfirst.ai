@@ -19,6 +19,11 @@
   "https://adk.dev/a2a/quickstart-consuming/": {
     "etag": "W/\"6aff50e3-2806f\""
   },
+  "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/egress-proxy/": {},
+  "https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/": {},
+  "https://agentgateway.dev/llms.txt": {
+    "etag": "W/\"6f04fd20a7f14d4e01a7e5200b52cb2c\""
+  },
   "https://agenticcommerce.dev": {},
   "https://ap2-protocol.org": {
     "lastModified": "Tue, 28 Apr 2026 12:33:34 GMT"
