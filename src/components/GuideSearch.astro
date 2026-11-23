@@ -340,7 +340,11 @@ const examples = [
         const button = (event.target as Element).closest<HTMLButtonElement>('button[data-query]');
         if (!button) return;
         input.value = button.dataset.query!;
-        input.focus();
+        // A tap leaves the keyboard down and the results in view. Focus moves
+        // off the button, which the search is about to hide.
+        const touch = keyboardShown() || ['touch', 'pen'].includes((event as PointerEvent).pointerType);
+        if (touch) resultsSection.focus({ preventScroll: true });
+        else input.focus();
         update(true, false);
       });
       const reset = () => {
