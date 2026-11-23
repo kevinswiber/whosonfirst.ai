@@ -25,7 +25,7 @@ There is no standard for this. It is an architecture, implemented in several man
   watchOut: [
     "It stops exfiltration of the credential, not misuse of the access. A hijacked agent can still make harmful calls to the allowed host while it runs.",
     "The proxy must see inside the request to add a header, so it terminates TLS. That makes it a high-value target and requires the sandbox to trust its certificate authority.",
-    "Scope each credential to specific hosts, and prefer a fixed place for it: one named header or one named body field, set by the operator. Never a URL. A proxy that swaps a placeholder wherever the agent wrote it leaves the host list as the only control, and an agent can then write the placeholder into a comment on an allowed API and read the key back in the reply.",
+    "Scope each credential to specific hosts, and say where in a request it goes: one named header or one named body field, set by the operator. Never a URL. The place matters because of what a proxy does without one. A proxy that swaps a placeholder wherever the agent wrote it will swap it in any field. If the agent writes the placeholder into a field that an allowed API returns in its response, the real key comes back to the agent. The host list is then the only control.",
     "The agent cannot read the key from its own environment. It can still obtain one from an allowed host that echoes what it is sent, or that lets a caller create new keys. Check both for every API you add.",
     "Clients that validate a key’s format locally may reject placeholders.",
   ],

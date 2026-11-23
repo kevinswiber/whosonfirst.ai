@@ -30,7 +30,7 @@ The step-by-step version, including what happens when an injected instruction tr
 
 **Scope every credential to hosts.** A credential that the proxy will attach to any request can be aimed at a server that echoes headers back. The allowed-hosts list is the control.
 
-**Prefer a fixed place for the credential.** One named header or one named body field, set by the operator. Never a URL, which ends up in logs, referrers and error messages on the far side. Some implementations swap a placeholder wherever the agent wrote it. The host list is then the only control, so ask what each allowed service stores or echoes: an agent can write the placeholder into a comment there and read the key back in the reply.
+**Prefer a fixed place for the credential.** One named header or one named body field, set by the operator. Never a URL, which ends up in logs, referrers and error messages on the far side. Some implementations swap a placeholder wherever the agent wrote it, in any field. If the agent writes the placeholder into a field of a request that the service returns in its response, the real key comes back to the agent. The host list is then the only control, so ask what each allowed service stores or echoes.
 
 **The proxy terminates TLS.** It has to, in order to add a header. The sandbox must therefore trust the proxy's certificate authority, and the proxy becomes the most sensitive component in the system. Treat it accordingly.
 
