@@ -83,7 +83,7 @@ export type RefRole = "required" | "optional" | "background" | "unresolved";
 
 export const REF_ROLE_TITLE: Record<RefRole, string> = {
   required: "Required",
-  optional: "Optional extensions",
+  optional: "Optional",
   background: "Background",
   unresolved: "Role not settled",
 };
