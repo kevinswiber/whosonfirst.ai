@@ -23,6 +23,7 @@ import GuideSearch from "./GuideSearch.astro";
   if (dialog && launcher && typeof dialog.showModal === 'function') {
     const input = dialog.querySelector<HTMLInputElement>('input[name="q"]')!;
     const search = dialog.querySelector('guide-search')!;
+    const results = search.querySelector<HTMLElement>('.guide-results')!;
     const hint = launcher.querySelector<HTMLElement>('.launch-key')!;
     hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? ' ⌘ K' : ' Ctrl K';
     hint.hidden = false;
@@ -58,7 +59,9 @@ import GuideSearch from "./GuideSearch.astro";
       const items = [...search.querySelectorAll<HTMLElement>('.quick-matches a[href], .search-results a[href], .search-examples button')]
         .filter((element) => element.getClientRects().length);
       const current = items.findIndex((element) => element === document.activeElement);
-      if (!items.length || (current < 0 && document.activeElement !== input)) return;
+      // Focus rests on the results once a touch keyboard is put away.
+      const start = document.activeElement === input || document.activeElement === results;
+      if (!items.length || (current < 0 && !start)) return;
       if (current < 0 && event.key === 'ArrowUp') return;
       event.preventDefault();
       if (current === 0 && event.key === 'ArrowUp') input.focus();

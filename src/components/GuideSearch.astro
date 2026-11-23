@@ -34,7 +34,7 @@ const examples = [
       {examples.map((example) => <li><button type="button" data-query={example}>{example}<span aria-hidden="true">→</span></button></li>)}
     </ul>
   </section>
-  <section class="guide-results" aria-labelledby={id("guide-results-title")}>
+  <section class="guide-results" aria-labelledby={id("guide-results-title")} tabindex="-1">
     <h2 id={id("guide-results-title")}>Guide results</h2>
     <p role="status" aria-live="polite"><span id={id("search-status-text")}></span></p>
     <button class="btn retry-query" type="button" hidden>Try again</button>
@@ -56,6 +56,14 @@ const examples = [
     });
     return catalog;
   }
+
+  // An on-screen keyboard shrinks the visual viewport and leaves the layout
+  // viewport as it was. A hardware keyboard, or a shortcut bar alone, does not
+  // take this much. Zoom shrinks the visual viewport too, so scale it back.
+  const keyboardShown = () => {
+    const view = window.visualViewport;
+    return Boolean(view) && window.innerHeight - view!.height * view!.scale > 150;
+  };
 
   const searchableLength = (text: string) => text.match(/[\p{L}\p{N}]/gu)?.length ?? 0;
 
@@ -102,6 +110,7 @@ const examples = [
       const status = this.querySelector<HTMLElement>('[role="status"] span')!;
       const retry = this.querySelector<HTMLButtonElement>('.retry-query')!;
       const results = this.querySelector<HTMLOListElement>('.search-results')!;
+      const resultsSection = this.querySelector<HTMLElement>('.guide-results')!;
       const examples = this.querySelector<HTMLElement>('.search-examples')!;
       const quick = this.querySelector<HTMLElement>('.quick-matches')!;
       const quickList = quick.querySelector('ul')!;
@@ -306,6 +315,12 @@ const examples = [
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         update(true);
+        // The Search key on a touch screen hands the screen back to the
+        // results, as it does elsewhere on the device. Focus moves to them,
+        // not to the page, so it stays in the dialog and the arrows still work.
+        if (document.activeElement === input && input.validity.valid && keyboardShown()) {
+          resultsSection.focus({ preventScroll: true });
+        }
       });
       retry.addEventListener('click', () => {
         input.focus();
@@ -386,6 +401,7 @@ const examples = [
   }
   .search-hint { font-size: 0.84rem; color: var(--fg-muted); margin-top: 0.5rem; }
   [role='status'] { margin: 0.35rem 0; }
+  .guide-results:focus { outline: none; }
   .guide-results > h2 { font-size: 1.1rem; text-transform: none; margin: 1.2rem 0 0; }
   .guide-results:not(:has([data-search-submitted], [role='status'] span:not(:empty))) > h2 { display: none; }
   .guide-results [role='status']:has(span:empty) { margin: 0; }
