@@ -225,6 +225,7 @@ test("rate limit diagnostics log the decision and a keyed fingerprint only when 
     [
       [
         {
+          message: "Search rate limit checked",
           event: "search_rate_limit_decision",
           fingerprint: createHmac("sha256", secret)
             .update(address)

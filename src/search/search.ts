@@ -102,6 +102,7 @@ async function logLimiterDecision(
     byte.toString(16).padStart(2, "0"),
   ).join("");
   console.info({
+    message: "Search rate limit checked",
     event: "search_rate_limit_decision",
     fingerprint,
     success,
