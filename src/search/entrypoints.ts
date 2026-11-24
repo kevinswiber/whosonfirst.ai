@@ -27,6 +27,7 @@ export class Search extends WorkerEntrypoint<Bindings> {
       SEARCH_INSTANCE,
       SEARCH_LIMITER,
       SEARCH_DAILY_BUDGET: this.env.SEARCH_DAILY_BUDGET,
+      SEARCH_RATE_DIAGNOSTICS_KEY: this.env.SEARCH_RATE_DIAGNOSTICS_KEY,
       SEARCH_BUDGET: this.ctx.exports.SearchBudget,
     });
   }

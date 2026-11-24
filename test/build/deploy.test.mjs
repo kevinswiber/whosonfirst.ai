@@ -65,6 +65,7 @@ test("search is set up where the site is built, and no account's identifiers are
     "SEARCH_DAILY_BUDGET",
     "SEARCH_INSTANCE",
     "SEARCH_LIMITER",
+    "SEARCH_RATE_DIAGNOSTICS_KEY",
   ]);
   assert.deepEqual(config.env.SEARCH_LIMITER, {
     type: "rate-limit",
@@ -75,6 +76,7 @@ test("search is set up where the site is built, and no account's identifiers are
   assert.equal(config.env.SEARCH_INSTANCE.value, SEARCH_INSTANCE);
   // The cap for the day is a secret, set on the Worker and on a preview.
   assert.deepEqual(config.env.SEARCH_DAILY_BUDGET, { type: "secret" });
+  assert.deepEqual(config.env.SEARCH_RATE_DIAGNOSTICS_KEY, { type: "secret" });
   assert.deepEqual(missingFromSearch(config), []);
 });
 

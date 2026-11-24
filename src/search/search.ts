@@ -76,6 +76,39 @@ export interface SearchBindings {
     get(id: unknown): { spend(cap: number): Promise<boolean> };
   };
   SEARCH_DAILY_BUDGET?: string;
+  SEARCH_RATE_DIAGNOSTICS_KEY?: string;
+}
+
+async function logLimiterDecision(
+  request: Request & { cf?: { colo?: string } },
+  key: string,
+  secret: string,
+  success: boolean,
+) {
+  const encoder = new TextEncoder();
+  const signingKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    signingKey,
+    encoder.encode(key),
+  );
+  const fingerprint = Array.from(new Uint8Array(signature), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  console.info({
+    message: "Search rate limit checked",
+    event: "search_rate_limit_decision",
+    fingerprint,
+    success,
+    ray: request.headers.get("CF-Ray"),
+    colo: request.cf?.colo,
+  });
 }
 
 const entities: Record<string, string> = {
@@ -294,7 +327,7 @@ export function guideSearch(
     const json = url.searchParams.get("format") === "json";
     let query = "";
     // How long each step took, for the browser's network panel. Durations
-    // only: nothing about the question, and nothing is logged.
+    // only: nothing about the question is logged.
     const timings: string[] = [];
     async function timed<T>(name: string, step: () => Promise<T>) {
       const start = performance.now();
@@ -365,11 +398,18 @@ export function guideSearch(
       return respond(403, "Open the search page to submit your question.");
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
+      const key = request.headers.get("CF-Connecting-IP") || "unknown";
       const { success } = await timed("limit", () =>
-        env.SEARCH_LIMITER.limit({
-          key: request.headers.get("CF-Connecting-IP") || "unknown",
-        }),
+        env.SEARCH_LIMITER.limit({ key }),
       );
+      if (env.SEARCH_RATE_DIAGNOSTICS_KEY) {
+        await logLimiterDecision(
+          request,
+          key,
+          env.SEARCH_RATE_DIAGNOSTICS_KEY,
+          success,
+        ).catch(() => console.warn("Search rate limit diagnostics failed."));
+      }
       if (!success)
         return respond(429, "Too many searches. Try again in a minute.", [], {
           "Retry-After": "60",

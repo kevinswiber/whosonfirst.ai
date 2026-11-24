@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { test } from "node:test";
 import {
   dailyBudget,
@@ -199,6 +200,45 @@ test("invalid requests are rejected without invoking AI Search", async () => {
     catalogFor([{ ...records[0], href: "//other.example/" }]),
   );
 });
+test("rate limit diagnostics log the decision and a keyed fingerprint only when enabled", async (t) => {
+  const info = t.mock.method(console, "info", () => {});
+  const address = "192.0.2.1";
+  const secret = "test-secret";
+  const request = submit("private question", {
+    headers: { "CF-Connecting-IP": address, "CF-Ray": "example-SJC" },
+  });
+  request.cf = { colo: "SJC" };
+  const env = envFor(
+    async () => assert.fail("denied search reached AI Search"),
+    false,
+  );
+  env.SEARCH_LIMITER.limit = async ({ key }) => {
+    assert.equal(key, address);
+    return { success: false };
+  };
+  assert.equal((await handle(request, env)).status, 429);
+  assert.equal(info.mock.callCount(), 0);
+  env.SEARCH_RATE_DIAGNOSTICS_KEY = secret;
+  assert.equal((await handle(request, env)).status, 429);
+  assert.deepEqual(
+    info.mock.calls.map(({ arguments: args }) => args),
+    [
+      [
+        {
+          message: "Search rate limit checked",
+          event: "search_rate_limit_decision",
+          fingerprint: createHmac("sha256", secret)
+            .update(address)
+            .digest("hex"),
+          success: false,
+          ray: "example-SJC",
+          colo: "SJC",
+        },
+      ],
+    ],
+  );
+});
+
 test("the Worker distinguishes service failures, rate limits and empty results", async () => {
   const search = async () => {
     throw new Error("provider diagnostic");
