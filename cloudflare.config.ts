@@ -74,6 +74,8 @@ export default defineConfig(({ mode }) => {
       },
       observability: {
         enabled: true,
+        logs: { enabled: true, persist: true, invocationLogs: true },
+        traces: { enabled: true, persist: true },
         // A search passes through this Worker, with the question in the query
         // string. Logs and traces drop it.
         redactQueryString: true,

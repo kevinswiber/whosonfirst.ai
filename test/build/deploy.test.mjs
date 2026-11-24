@@ -29,6 +29,16 @@ test("the deployment is one Worker: the page handler, search and its daily count
     assert.ok(bundled.has(source(path)), path);
   assert.equal(config.env.ASSETS.type, "assets");
   assert.equal(config.routes, undefined);
+  assert.equal(config.observability.enabled, true);
+  assert.deepEqual(config.observability.logs, {
+    enabled: true,
+    persist: true,
+    invocationLogs: true,
+  });
+  assert.deepEqual(config.observability.traces, {
+    enabled: true,
+    persist: true,
+  });
   // The question is in a search's query string.
   assert.equal(config.observability.redactQueryString, true);
   // A search is handed to another entrypoint of this Worker, not to another
