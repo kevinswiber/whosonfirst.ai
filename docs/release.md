@@ -56,6 +56,12 @@ Then a synthetic `GET /search?q=…&format=json` to the site checks that it serv
 
 The run’s last job tells the search engines that take part in IndexNow which pages changed. It starts after the deployment, so its wait for the pages begins when they can be there. It is part of the run: a release whose pages were not sent has not succeeded, and the next release sends them with its own. [Telling a search engine that a page changed](development.md#other-forms-of-a-page) has the rest. To go through a release without credentials or a deployment, run `SEARCH_RATE_NAMESPACE=1 SEARCH_RATE_LIMIT=5 npm run build`, `npm run search:sync -- --dry-run`, then `npx cf deploy --prebuilt --dry-run`. The limiter number and limit in this example belong only in test builds.
 
+## Diagnose the address limiter
+
+To collect limiter decisions for a short test, set `SEARCH_RATE_DIAGNOSTICS_KEY` with `npx cf workers secrets update SEARCH_RATE_DIAGNOSTICS_KEY --worker whosonfirst-ai`. Use a fresh random secret of at least 32 bytes. In Workers Logs, look for `search_rate_limit_decision` and group the test requests by fingerprint and Cloudflare location. Match the requests to the logs by Ray ID. Each entry records the binding’s decision and an HMAC of the key it received. The entries omit the raw address and question. Cache hits skip the search entrypoint and produce no decision entry.
+
+After the test, remove the secret with `npx cf workers secrets delete SEARCH_RATE_DIAGNOSTICS_KEY --worker whosonfirst-ai`. Without the secret, decision logging is off.
+
 ## Review retrieval quality
 
 Before promoting a change to passage extraction or ranking, run the editorial evaluation against the populated instance with the same build and manifest. `node scripts/evaluate-search.mjs --json > /tmp/guide-search-evaluation.json` submits the fixture questions three ways, with AI Search’s cache off, and saves the displayed results: keyword and hybrid search in AI Search’s own order, and the hybrid search the Worker makes, put in order again by the reranking model. `node scripts/evaluate-search.mjs --replay /tmp/guide-search-evaluation.json --review` prints their destinations and excerpts, followed by the scores. A replay scores the modes the saved report has, so a report saved before reranking was added is scored for keyword and hybrid. Omit `--review` for just the scores. Use the account, instance and evaluation credentials named by that script. No reader queries are needed.

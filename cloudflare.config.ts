@@ -38,6 +38,7 @@ function searchSettings() {
     // How many searches may reach AI Search in a UTC day. SearchBudget counts
     // them, and the cap is a secret of the Worker, and of a preview.
     SEARCH_DAILY_BUDGET: bindings.secret(),
+    SEARCH_RATE_DIAGNOSTICS_KEY: bindings.secret(),
   };
 }
 
